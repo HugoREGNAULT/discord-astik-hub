@@ -11,6 +11,7 @@ import {
   Target,
   ShieldAlert,
   LogOut,
+  UserPlus,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ const ITEMS: Item[] = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
   { title: "Mon profil", url: "/profile", icon: UserCircle2, perm: "profile.self" },
   { title: "Membres", url: "/members", icon: Users, perm: "members.view" },
+  { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access" },
   { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage" },
   { title: "Dons", url: "/donations", icon: ShoppingCart, perm: "donations.manage" },
   { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage" },
@@ -42,6 +44,7 @@ const ITEMS: Item[] = [
   { title: "Objectifs", url: "/objectives", icon: Target, perm: "objectives.edit" },
   { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access" },
 ];
+
 
 export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
   const path = useRouterState({ select: (r) => r.location.pathname });
