@@ -65,18 +65,6 @@ export const submitApplication = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing.data) {
       throw new Error("Tu as déjà une candidature en attente.");
-  .handler(async ({ data }) => {
-    const user = await requireSession();
-
-    // Vérifie qu'il n'a pas déjà une candidature en attente
-    const existing = await db
-      .from("applications")
-      .select("id, status")
-      .eq("discord_id", user.discordId)
-      .in("status", ["pending"])
-      .maybeSingle();
-    if (existing.data) {
-      throw new Error("Tu as déjà une candidature en attente.");
     }
 
     // Rate-limit : pas plus d'une candidature toutes les RATE_LIMIT_HOURS heures
@@ -103,6 +91,11 @@ export const submitApplication = createServerFn({ method: "POST" })
     if (isMember.data?.ig_name) {
       throw new Error("Tu es déjà membre de la PunkAstik.");
     }
+
+    // Validation du pseudo Minecraft
+    const mojang = await fetchMojang(data.mcName);
+
+    const ins = await db
       .from("applications")
       .insert({
         discord_id: user.discordId,
