@@ -8,7 +8,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
-import { clearSession } from "@/lib/auth/session.server";
+import { clearSessionData } from "@/lib/auth/session.server";
 
 const schema = z.object({
   confirm: z.literal("SUPPRIMER"),
@@ -42,7 +42,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
         messages_total: 0,
         voice_7d_seconds: 0,
         voice_total_seconds: 0,
-        recruiter_discord_id: null,
+    await clearSessionData();
       })
       .eq("discord_id", id);
 
