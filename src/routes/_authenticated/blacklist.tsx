@@ -114,12 +114,33 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
   });
 
 
+  const headId = entry.mc_uuid || entry.mc_name;
+  const avatarUrl = headId ? `https://mc-heads.net/avatar/${encodeURIComponent(headId)}/64` : null;
+  const bodyUrl = headId ? `https://mc-heads.net/body/${encodeURIComponent(headId)}/120` : null;
+  const nameLookup = entry.mc_name ? `https://fr.namemc.com/search?q=${encodeURIComponent(entry.mc_name)}` : null;
+
   return (
     <li className="p-4 flex items-start gap-3 flex-wrap">
+      {avatarUrl && (
+        <img
+          src={avatarUrl}
+          alt={entry.mc_name ?? "skin"}
+          title={bodyUrl ? "Voir le skin complet sur NameMC" : undefined}
+          className="size-12 rounded-md border border-border bg-muted shrink-0"
+          loading="lazy"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
+      )}
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex flex-wrap gap-2 items-center">
           {entry.mc_name && (
-            <Badge variant="outline" className="font-mono">MC: {entry.mc_name}</Badge>
+            nameLookup ? (
+              <a href={nameLookup} target="_blank" rel="noreferrer">
+                <Badge variant="outline" className="font-mono hover:bg-accent">MC: {entry.mc_name}</Badge>
+              </a>
+            ) : (
+              <Badge variant="outline" className="font-mono">MC: {entry.mc_name}</Badge>
+            )
           )}
           {entry.discord_id && (
             <Badge variant="outline" className="font-mono">DC: {entry.discord_id}</Badge>
@@ -156,6 +177,7 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
     </li>
   );
 }
+
 
 
 function AddEntryDialog() {
