@@ -86,9 +86,11 @@ function DonationsPage() {
 }
 
 function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
+  const cartId = useId();
   const [picked, setPicked] = useState<string>("");
   const [qty, setQty] = useState(1);
   const v = values.find((x: any) => x.id === picked);
+
 
   return (
     <Card>
@@ -99,19 +101,20 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
           </CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="secondary">+{cart.bonus_pct}%</Badge>
-            <Badge>{cart.total_final} pts</Badge>
-            <span className="text-[10px] text-muted-foreground">expire {new Date(cart.expires_at).toLocaleTimeString()}</span>
+        <div className="flex flex-wrap gap-2 items-end border-t border-border pt-3">
+          <div className="flex-1 min-w-[200px]">
+            <label htmlFor={`${cartId}-item`} className="text-xs text-muted-foreground">Item / action</label>
+            <select id={`${cartId}-item`} value={picked} onChange={(e) => setPicked(e.target.value)} className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm">
+              <option value="">—</option>
+              {values.filter((x: any) => x.active).map((x: any) => (
+                <option key={x.id} value={x.id}>[{x.category}] {x.name} ({x.points} pts)</option>
+              ))}
+            </select>
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <ul className="divide-y divide-border">
-          {cart.donation_lines?.map((l: any) => (
-            <li key={l.id} className="py-2 flex items-center gap-2 text-sm">
-              <span className="text-[10px] text-muted-foreground uppercase">{l.line_type}</span>
-              <span className="flex-1">{l.label} × {l.quantity}</span>
-              <span className="font-mono">{l.subtotal} pts</span>
-              <button onClick={() => onRemove(l.id)} aria-label={`Supprimer ${l.label}`} className="text-destructive"><Trash2 className="size-4" /></button>
+          <div className="w-20">
+            <label htmlFor={`${cartId}-qty`} className="text-xs text-muted-foreground">Qté</label>
+            <Input id={`${cartId}-qty`} type="number" value={qty} min={1} onChange={(e) => setQty(Number(e.target.value))} />
+          </div>
 
             </li>
           ))}
