@@ -262,7 +262,15 @@ function EditMemberDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="flex gap-4 items-start">
+          <MinecraftSkin
+            uuid={(patch.mc_uuid ?? member.mc_uuid) || undefined}
+            username={(patch.ig_name ?? member.ig_name) || undefined}
+            alt={`Skin ${member.ig_name ?? ""}`}
+            className="h-40 w-auto object-contain shrink-0"
+          />
+          <div className="flex-1 grid sm:grid-cols-2 gap-3">
+
           <FormField
             label="Pseudo IG"
             defaultValue={member.ig_name ?? ""}
