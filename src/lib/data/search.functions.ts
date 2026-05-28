@@ -189,7 +189,8 @@ export const globalSearch = createServerFn({ method: "GET" })
           label: `${p.amount >= 0 ? "+" : ""}${p.amount} — ${p.reason ?? p.action_type}`,
           sub: `${p.member_discord_id} · ${new Date(p.created_at).toLocaleDateString("fr-FR")}`,
           amount: p.amount,
-          to: "/points",
+          to: "/members/$id",
+          params: { id: p.member_discord_id ?? p.id },
         });
       }
     }
