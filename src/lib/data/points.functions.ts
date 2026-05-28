@@ -17,12 +17,16 @@ async function applyDelta(memberId: string, delta: number, bonusPct: number) {
   return { realDelta, total: next, bonusPct };
 }
 
+// Plafonds anti-abus côté serveur (un staff junior ne peut pas filer 1M par erreur).
+const MAX_POINTS_PER_OP = 100_000;
+const MAX_TOTAL_POINTS = 10_000_000;
+
 export const addPoints = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
       .object({
         memberDiscordId: z.string().min(1),
-        amount: z.number().int(),
+        amount: z.number().int().min(-MAX_POINTS_PER_OP).max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
         bonusPct: z.number().min(0).max(500).default(0),
       })
@@ -52,7 +56,7 @@ export const removePoints = createServerFn({ method: "POST" })
     z
       .object({
         memberDiscordId: z.string().min(1),
-        amount: z.number().int().positive(),
+        amount: z.number().int().positive().max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
       })
       .parse(input),
@@ -79,7 +83,7 @@ export const setPoints = createServerFn({ method: "POST" })
     z
       .object({
         memberDiscordId: z.string().min(1),
-        total: z.number().int().min(0),
+        total: z.number().int().min(0).max(MAX_TOTAL_POINTS),
         reason: z.string().max(500).optional(),
       })
       .parse(input),

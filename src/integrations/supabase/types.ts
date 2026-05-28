@@ -89,6 +89,42 @@ export type Database = {
         }
         Relationships: []
       }
+      blacklist: {
+        Row: {
+          added_by_discord_id: string
+          added_by_username: string | null
+          created_at: string
+          discord_id: string | null
+          id: string
+          mc_name: string | null
+          mc_uuid: string | null
+          reason: string
+          updated_at: string
+        }
+        Insert: {
+          added_by_discord_id: string
+          added_by_username?: string | null
+          created_at?: string
+          discord_id?: string | null
+          id?: string
+          mc_name?: string | null
+          mc_uuid?: string | null
+          reason?: string
+          updated_at?: string
+        }
+        Update: {
+          added_by_discord_id?: string
+          added_by_username?: string | null
+          created_at?: string
+          discord_id?: string | null
+          id?: string
+          mc_name?: string | null
+          mc_uuid?: string | null
+          reason?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       config_values: {
         Row: {
           active: boolean

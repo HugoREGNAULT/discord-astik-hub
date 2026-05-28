@@ -13,6 +13,7 @@ import {
   UserPlus,
   CalendarCheck,
   FileText,
+  Ban,
 } from "lucide-react";
 
 import {
@@ -41,6 +42,7 @@ const ITEMS: Item[] = [
 
   { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
   { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access", accent: "pink" },
+  { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
   { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage", accent: "pink" },
   { title: "Dons", url: "/donations", icon: ShoppingCart, perm: "donations.manage", accent: "pink" },
   { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage", accent: "blurple" },
