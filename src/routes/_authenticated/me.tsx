@@ -12,6 +12,14 @@ import {
   UserPlus,
   TrendingUp,
   Trash2,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  MinusCircle,
+  Gift,
+  HandCoins,
+  Gavel,
+  UserCog,
+  FileText,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
