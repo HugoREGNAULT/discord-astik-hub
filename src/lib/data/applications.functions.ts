@@ -118,7 +118,6 @@ export const submitApplication = createServerFn({ method: "POST" })
       footer: { text: `Application ${ins.data.id}` },
     });
 
-    });
 
     return { ok: true, applicationId: ins.data.id };
   });
