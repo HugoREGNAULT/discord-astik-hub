@@ -25,6 +25,7 @@ import {
   CalendarCheck,
   FileText,
   Search,
+  X,
 } from "lucide-react";
 import { globalSearch, type SearchHit } from "@/lib/data/search.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
@@ -73,6 +74,7 @@ const iconFor = (k: SearchHit["kind"]) => {
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<SearchHit["kind"] | null>(null);
   const debounced = useDebounced(q, 220);
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
@@ -90,8 +92,8 @@ export function CommandPalette() {
 
   const searchFn = useServerFn(globalSearch);
   const { data, isFetching } = useQuery({
-    queryKey: ["global-search", debounced],
-    queryFn: () => searchFn({ data: { q: debounced } }),
+    queryKey: ["global-search", debounced, filter],
+    queryFn: () => searchFn({ data: { q: debounced, filter: filter ?? undefined } }),
     enabled: open && debounced.trim().length >= 1,
     staleTime: 15_000,
   });
@@ -180,6 +182,35 @@ export function CommandPalette() {
           value={q}
           onValueChange={setQ}
         />
+        <div className="px-3 py-2 flex flex-wrap gap-1.5 border-b border-border/40">
+          {([
+            { key: "member" as const, label: "Membres", icon: Users, perm: "members.view" as Permission },
+            { key: "application" as const, label: "Candidatures", icon: UserPlus, perm: "recruit.access" as Permission },
+            { key: "donation" as const, label: "Dons", icon: ShoppingCart, perm: "donations.manage" as Permission },
+            { key: "points" as const, label: "AstikPoints", icon: Coins, perm: null },
+          ] as { key: SearchHit["kind"]; label: string; icon: any; perm: Permission | null }[])
+            .filter((f) => f.perm === null || hasPerm(user, f.perm))
+            .map((f) => {
+              const active = filter === f.key;
+              const Icon = f.icon;
+              return (
+                <button
+                  key={f.key}
+                  type="button"
+                  onClick={() => setFilter(active ? null : f.key)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors ${
+                    active
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-muted-foreground/40"
+                  }`}
+                >
+                  <Icon className="size-3" />
+                  {f.label}
+                  {active && <X className="size-3 ml-0.5" />}
+                </button>
+              );
+            })}
+        </div>
         <CommandList>
           <CommandEmpty>
             {isFetching
@@ -194,18 +225,20 @@ export function CommandPalette() {
           {renderGroup("Dons", groups.donation)}
           {renderGroup("AstikPoints", groups.points)}
 
-          <CommandGroup heading="Navigation">
-            {navs.map((n) => (
-              <CommandItem
-                key={n.to}
-                value={`nav ${n.label}`}
-                onSelect={() => go(n.to)}
-              >
-                <n.icon className="size-4 mr-2 opacity-70" />
-                {n.label}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          {!filter && (
+            <CommandGroup heading="Navigation">
+              {navs.map((n) => (
+                <CommandItem
+                  key={n.to}
+                  value={`nav ${n.label}`}
+                  onSelect={() => go(n.to)}
+                >
+                  <n.icon className="size-4 mr-2 opacity-70" />
+                  {n.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
         </CommandList>
       </CommandDialog>
     </>

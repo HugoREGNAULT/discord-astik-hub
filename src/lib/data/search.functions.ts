@@ -50,8 +50,8 @@ export type SearchHit =
     };
 
 export const globalSearch = createServerFn({ method: "GET" })
-  .inputValidator((input: { q: string }) =>
-    z.object({ q: z.string().max(100) }).parse(input),
+  .inputValidator((input: { q: string; filter?: "member" | "application" | "donation" | "points" }) =>
+    z.object({ q: z.string().max(100), filter: z.enum(["member", "application", "donation", "points"]).optional() }).parse(input),
   )
   .handler(async ({ data }): Promise<{ hits: SearchHit[] }> => {
     const user = await requireSession();
@@ -59,11 +59,12 @@ export const globalSearch = createServerFn({ method: "GET" })
     if (raw.length < 1) return { hits: [] };
     const needle = raw.toLowerCase();
     const like = `%${raw}%`;
+    const filter = data.filter;
 
     const hits: SearchHit[] = [];
 
     /* Membres */
-    if (canAccess(user, "members.view")) {
+    if ((!filter || filter === "member") && canAccess(user, "members.view")) {
       const r = await db
         .from("members")
         .select("discord_id, discord_username, ig_name, avatar_url, current_grade, status")
@@ -86,7 +87,7 @@ export const globalSearch = createServerFn({ method: "GET" })
     }
 
     /* Candidatures */
-    if (canAccess(user, "recruit.access")) {
+    if ((!filter || filter === "application") && canAccess(user, "recruit.access")) {
       const r = await db
         .from("applications")
         .select("id, mc_name, discord_username, status, created_at")
@@ -106,7 +107,7 @@ export const globalSearch = createServerFn({ method: "GET" })
     }
 
     /* Dons (par membre concerné, staff ou bonus) */
-    if (canAccess(user, "donations.manage")) {
+    if ((!filter || filter === "donation") && canAccess(user, "donations.manage")) {
       const r = await db
         .from("donations")
         .select("id, member_discord_id, staff_username, total_final, status, created_at")
@@ -127,8 +128,8 @@ export const globalSearch = createServerFn({ method: "GET" })
     }
 
     /* AstikPoints — staff voit tout, sinon ses propres mouvements */
-    const canManagePoints = canAccess(user, "points.manage");
-    {
+    if (!filter || filter === "points") {
+      const canManagePoints = canAccess(user, "points.manage");
       let q = db
         .from("points_ledger")
         .select("id, member_discord_id, amount, reason, action_type, created_at")
