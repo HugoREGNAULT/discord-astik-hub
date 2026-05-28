@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { getMyOverview } from "@/lib/data/me.functions";
 
 export const Route = createFileRoute("/_authenticated/me")({
@@ -59,27 +60,18 @@ function MePage() {
   const voiceHoursTotal = Math.round((m.voice_total_seconds ?? 0) / 360) / 10;
   const sinceArrival = daysSince(m.arrival_date);
   const sinceRankup = daysSince(m.last_rankup);
-  const skinUrl = m.mc_uuid
-    ? `https://crafatar.com/renders/body/${m.mc_uuid}?overlay&scale=10`
-    : null;
 
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Hero */}
       <Card className="overflow-hidden">
         <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-transparent p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
-          {skinUrl ? (
-            <img
-              src={skinUrl}
-              alt={`Skin de ${m.ig_name}`}
-              className="h-48 md:h-64 w-auto object-contain drop-shadow-2xl"
-              loading="lazy"
-            />
-          ) : (
-            <div className="h-48 w-24 bg-muted rounded grid place-items-center text-muted-foreground text-xs">
-              No skin
-            </div>
-          )}
+          <MinecraftSkin
+            uuid={m.mc_uuid}
+            username={m.ig_name}
+            alt={`Skin de ${m.ig_name}`}
+            className="h-48 md:h-64 w-auto object-contain drop-shadow-2xl"
+          />
           <div className="flex-1 text-center md:text-left">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Profil de</p>
             <h1 className="text-4xl font-bold tracking-tight">{m.ig_name}</h1>
