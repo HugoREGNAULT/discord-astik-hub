@@ -257,7 +257,7 @@ export function CommandPalette() {
                   onSelect={() => go(n.to)}
                 >
                   <n.icon className="size-4 mr-2 opacity-70" />
-                  {n.label}
+                  {highlightText(n.label, q)}
                 </CommandItem>
               ))}
             </CommandGroup>
