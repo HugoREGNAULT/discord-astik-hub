@@ -372,7 +372,7 @@ function PointsTimeline({ gains }: { gains: Gain[] }) {
         <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
 
         <ul className="space-y-5">
-          {slice.map((g, i) => {
+          {slice.map((g) => {
             const Icon = actionIcon(g.action_type);
             const isPositive = g.amount > 0;
             const isNegative = g.amount < 0;
