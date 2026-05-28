@@ -158,12 +158,26 @@ export const listApplications = createServerFn({ method: "GET" })
   .inputValidator((input: { status?: "pending" | "accepted" | "rejected" }) => input ?? {})
   .handler(async ({ data }) => {
     await requirePermission("recruit.access");
+    const { findBlacklistMatches } = await import("@/lib/data/blacklist.server");
     const q = db.from("applications").select("*").order("created_at", { ascending: false });
     if (data.status) q.eq("status", data.status);
     const res = await q;
     if (res.error) throw new Error(res.error.message);
-    return res.data ?? [];
+    const rows = res.data ?? [];
+
+    // Enrichit chaque candidature avec les matchs blacklist (visible staff uniquement).
+    const enriched = await Promise.all(
+      rows.map(async (app) => {
+        const matches = await findBlacklistMatches({
+          discordId: app.discord_id,
+          mcName: app.mc_name,
+        });
+        return { ...app, blacklist_matches: matches };
+      }),
+    );
+    return enriched;
   });
+
 
 const decideSchema = z.object({
   applicationId: z.string().uuid(),
