@@ -137,43 +137,52 @@ function MemberDetail() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Notes staff</h2></CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <ul className="space-y-2">
-            {data.notes.map((n: any) => (
-              <li key={n.id} className="text-sm border border-border rounded p-3">
-                <div className="text-[11px] text-muted-foreground">{new Date(n.created_at).toLocaleString()} · {n.staff_username}</div>
-                <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
-              </li>
-            ))}
-            {data.notes.length === 0 && <li className="text-sm text-muted-foreground">Aucune note.</li>}
-          </ul>
-          <div className="flex flex-col gap-2">
-            <Textarea placeholder="Nouvelle note…" value={note} onChange={(e) => setNote(e.target.value)} />
-            <Button onClick={() => mNote.mutate()} disabled={!note} className="self-end">Ajouter</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {canViewNotes && (
+        <Card>
+          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Notes staff</h2></CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <ul className="space-y-2">
+              {data.notes.map((n: any) => (
+                <li key={n.id} className="text-sm border border-border rounded p-3">
+                  <div className="text-[11px] text-muted-foreground">{new Date(n.created_at).toLocaleString()} · {n.staff_username}</div>
+                  <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
+                </li>
+              ))}
+              {data.notes.length === 0 && <li className="text-sm text-muted-foreground">Aucune note.</li>}
+            </ul>
+            {canWriteNotes && (
+              <div className="flex flex-col gap-2">
+                <Textarea placeholder="Nouvelle note…" value={note} onChange={(e) => setNote(e.target.value)} />
+                <Button onClick={() => mNote.mutate()} disabled={!note} className="self-end">Ajouter</Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Avertissements</h2></CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <ul className="space-y-2">
-            {data.warnings.map((w: any) => (
-              <li key={w.id} className="text-sm border border-destructive/50 bg-destructive/10 rounded p-3">
-                <div className="text-[11px] text-muted-foreground">{new Date(w.created_at).toLocaleString()} · {w.staff_username}</div>
-                <div className="mt-1 whitespace-pre-wrap">{w.body}</div>
-              </li>
-            ))}
-            {data.warnings.length === 0 && <li className="text-sm text-muted-foreground">Aucun avertissement.</li>}
-          </ul>
-          <div className="flex flex-col gap-2">
-            <Textarea placeholder="Nouvel avertissement…" value={warn} onChange={(e) => setWarn(e.target.value)} />
-            <Button variant="destructive" onClick={() => mWarn.mutate()} disabled={!warn} className="self-end">Avertir</Button>
-          </div>
-        </CardContent>
-      </Card>
+      {canViewWarnings && (
+        <Card>
+          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Avertissements</h2></CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <ul className="space-y-2">
+              {data.warnings.map((w: any) => (
+                <li key={w.id} className="text-sm border border-destructive/50 bg-destructive/10 rounded p-3">
+                  <div className="text-[11px] text-muted-foreground">{new Date(w.created_at).toLocaleString()} · {w.staff_username}</div>
+                  <div className="mt-1 whitespace-pre-wrap">{w.body}</div>
+                </li>
+              ))}
+              {data.warnings.length === 0 && <li className="text-sm text-muted-foreground">Aucun avertissement.</li>}
+            </ul>
+            {canWriteWarnings && (
+              <div className="flex flex-col gap-2">
+                <Textarea placeholder="Nouvel avertissement…" value={warn} onChange={(e) => setWarn(e.target.value)} />
+                <Button variant="destructive" onClick={() => mWarn.mutate()} disabled={!warn} className="self-end">Avertir</Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
