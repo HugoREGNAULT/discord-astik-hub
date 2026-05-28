@@ -12,7 +12,9 @@ import {
   ShieldAlert,
   LogOut,
   UserPlus,
+  CalendarCheck,
 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +36,7 @@ type Item = { title: string; url: string; icon: any; perm: Permission };
 const ITEMS: Item[] = [
   { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self" },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
+  { title: "Sondages", url: "/polls", icon: CalendarCheck, perm: "profile.self" },
 
   { title: "Membres", url: "/members", icon: Users, perm: "members.view" },
   { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access" },

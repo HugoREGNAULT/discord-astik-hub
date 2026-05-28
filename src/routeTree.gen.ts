@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authenticated/objectives'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
@@ -30,6 +31,7 @@ import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 
 const LoginRoute = LoginRouteImport.update({
@@ -70,6 +72,11 @@ const AuthenticatedRecruitmentRoute =
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPollsRoute = AuthenticatedPollsRouteImport.update({
+  id: '/polls',
+  path: '/polls',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedPointsRoute = AuthenticatedPointsRouteImport.update({
@@ -137,6 +144,11 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   path: '/api/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPollsIdRoute = AuthenticatedPollsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedPollsRoute,
+} as any)
 const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -157,10 +169,12 @@ export interface FileRoutesByFullPath {
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/points': typeof AuthenticatedPointsRoute
+  '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
+  '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -180,10 +194,12 @@ export interface FileRoutesByTo {
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/points': typeof AuthenticatedPointsRoute
+  '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
+  '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -205,10 +221,12 @@ export interface FileRoutesById {
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/objectives': typeof AuthenticatedObjectivesRoute
   '/_authenticated/points': typeof AuthenticatedPointsRoute
+  '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
+  '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -230,10 +248,12 @@ export interface FileRouteTypes {
     | '/members'
     | '/objectives'
     | '/points'
+    | '/polls'
     | '/profile'
     | '/recruitment'
     | '/welcome'
     | '/members/$id'
+    | '/polls/$id'
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -253,10 +273,12 @@ export interface FileRouteTypes {
     | '/members'
     | '/objectives'
     | '/points'
+    | '/polls'
     | '/profile'
     | '/recruitment'
     | '/welcome'
     | '/members/$id'
+    | '/polls/$id'
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -277,10 +299,12 @@ export interface FileRouteTypes {
     | '/_authenticated/members'
     | '/_authenticated/objectives'
     | '/_authenticated/points'
+    | '/_authenticated/polls'
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
     | '/_authenticated/welcome'
     | '/_authenticated/members/$id'
+    | '/_authenticated/polls/$id'
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -355,6 +379,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/polls': {
+      id: '/_authenticated/polls'
+      path: '/polls'
+      fullPath: '/polls'
+      preLoaderRoute: typeof AuthenticatedPollsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/points': {
@@ -448,6 +479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/polls/$id': {
+      id: '/_authenticated/polls/$id'
+      path: '/$id'
+      fullPath: '/polls/$id'
+      preLoaderRoute: typeof AuthenticatedPollsIdRouteImport
+      parentRoute: typeof AuthenticatedPollsRoute
+    }
     '/_authenticated/members/$id': {
       id: '/_authenticated/members/$id'
       path: '/$id'
@@ -469,6 +507,17 @@ const AuthenticatedMembersRouteChildren: AuthenticatedMembersRouteChildren = {
 const AuthenticatedMembersRouteWithChildren =
   AuthenticatedMembersRoute._addFileChildren(AuthenticatedMembersRouteChildren)
 
+interface AuthenticatedPollsRouteChildren {
+  AuthenticatedPollsIdRoute: typeof AuthenticatedPollsIdRoute
+}
+
+const AuthenticatedPollsRouteChildren: AuthenticatedPollsRouteChildren = {
+  AuthenticatedPollsIdRoute: AuthenticatedPollsIdRoute,
+}
+
+const AuthenticatedPollsRouteWithChildren =
+  AuthenticatedPollsRoute._addFileChildren(AuthenticatedPollsRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
@@ -479,6 +528,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedObjectivesRoute: typeof AuthenticatedObjectivesRoute
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
+  AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
@@ -494,6 +544,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedObjectivesRoute: AuthenticatedObjectivesRoute,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
+  AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
