@@ -116,3 +116,65 @@
     font-feature-settings: "ss01", "cv11";
   }
 }
+
+/* ============================================================ */
+/* LIGHT MODE OVERRIDES                                          */
+/* The app is dark-first (cyberpunk). Light mode remaps the most */
+/* common hardcoded zinc/black classes to a soft light palette,  */
+/* keeping the pink/indigo accents.                              */
+/* ============================================================ */
+html.light {
+  --background: oklch(0.985 0.003 270);
+  --foreground: oklch(0.20 0.02 270);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.20 0.02 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.20 0.02 270);
+  --primary: oklch(0.55 0.22 295);
+  --primary-foreground: oklch(0.98 0.01 270);
+  --secondary: oklch(0.95 0.01 270);
+  --secondary-foreground: oklch(0.20 0.02 270);
+  --muted: oklch(0.95 0.01 270);
+  --muted-foreground: oklch(0.45 0.02 270);
+  --accent: oklch(0.55 0.20 25);
+  --accent-foreground: oklch(0.98 0.01 270);
+  --border: oklch(0.20 0.02 270 / 12%);
+  --input: oklch(0.20 0.02 270 / 12%);
+  --ring: oklch(0.55 0.22 295);
+  --sidebar: oklch(0.97 0.005 270);
+  --sidebar-foreground: oklch(0.25 0.02 270);
+  --sidebar-primary: oklch(0.55 0.22 295);
+  --sidebar-primary-foreground: oklch(0.98 0.01 270);
+  --sidebar-accent: oklch(0.93 0.01 270);
+  --sidebar-accent-foreground: oklch(0.20 0.02 270);
+  --sidebar-border: oklch(0.20 0.02 270 / 10%);
+  --sidebar-ring: oklch(0.55 0.22 295);
+}
+
+html.light body { background-color: #f4f4f7; color: #18181b; }
+
+/* Remap hardcoded utility classes used across the app */
+html.light .bg-\[\#0a0a0c\] { background-color: #f4f4f7 !important; }
+html.light .bg-\[\#0a0a0c\]\/90 { background-color: rgb(244 244 247 / 0.9) !important; }
+html.light .bg-black\/80 { background-color: rgb(0 0 0 / 0.35) !important; }
+html.light .bg-zinc-950 { background-color: #ffffff !important; }
+html.light .bg-zinc-950\/50 { background-color: rgb(255 255 255 / 0.6) !important; }
+html.light .bg-zinc-900,
+html.light .bg-zinc-900\/90,
+html.light .bg-zinc-900\/80,
+html.light .bg-zinc-900\/50,
+html.light .bg-zinc-900\/40 { background-color: #ffffff !important; }
+html.light .bg-zinc-800 { background-color: #e4e4e7 !important; }
+html.light .bg-zinc-700 { background-color: #d4d4d8 !important; }
+
+html.light .text-white { color: #18181b !important; }
+html.light .text-zinc-300 { color: #3f3f46 !important; }
+html.light .text-zinc-400 { color: #52525b !important; }
+html.light .text-zinc-500 { color: #71717a !important; }
+html.light .text-zinc-600 { color: #71717a !important; }
+
+html.light .border-zinc-800,
+html.light .border-zinc-800\/80,
+html.light .border-zinc-800\/50,
+html.light .border-zinc-700 { border-color: #e4e4e7 !important; }
+
