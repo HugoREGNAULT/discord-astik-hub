@@ -10,6 +10,8 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
+import { logToDiscord, COLORS } from "@/lib/discord/log.server";
+
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
 const GRADES = ["Aucun", "Héros", "Légende", "Divinité", "Staff", "Affilié"] as const;
@@ -96,11 +98,26 @@ export const submitApplication = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (ins.error) throw new Error(ins.error.message);
-
     await logAction("application_submit", user.discordId, {
       application_id: ins.data.id,
       mc_name: mojang.name,
     });
+
+    await logToDiscord("site", {
+      title: "📝 Nouvelle candidature",
+      color: COLORS.info,
+      description: `**${user.username}** (<@${user.discordId}>) a candidaté à la PunkAstik.`,
+      fields: [
+        { name: "Pseudo MC", value: mojang.name, inline: true },
+        { name: "Âge", value: String(data.age), inline: true },
+        { name: "Pays", value: data.country, inline: true },
+        { name: "Grade IG", value: data.igGrade, inline: true },
+        { name: "Temps de jeu", value: data.weeklyPlaytime, inline: true },
+        { name: "Niveau /10", value: String(data.knowledgeLevel), inline: true },
+      ],
+      footer: { text: `Application ${ins.data.id}` },
+    });
+
 
     return { ok: true, applicationId: ins.data.id };
   });
@@ -210,6 +227,19 @@ export const decideApplication = createServerFn({ method: "POST" })
         dm_error: dm.error ?? null,
       },
     );
+
+    await logToDiscord("site", {
+      title: data.decision === "accepted" ? "✅ Candidature acceptée" : "❌ Candidature refusée",
+      color: data.decision === "accepted" ? COLORS.success : COLORS.danger,
+      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) traitée par **${staff.username}**.`,
+      fields: [
+        { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },
+        { name: "Décision par", value: `<@${staff.discordId}>`, inline: true },
+        { name: "DM envoyé", value: dm.ok ? "Oui" : `Non (${dm.error ?? "?"})`, inline: true },
+        ...(data.reason ? [{ name: "Motif", value: data.reason }] : []),
+      ],
+    });
+
 
     return { ok: true, dmOk: dm.ok, dmError: dm.error ?? null };
   });

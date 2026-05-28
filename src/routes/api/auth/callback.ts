@@ -12,6 +12,8 @@ import {
 import { setSessionData } from "@/lib/auth/session.server";
 import { db } from "@/lib/db.server";
 import { ROLES } from "@/lib/discord/constants";
+import { logToDiscord, COLORS } from "@/lib/discord/log.server";
+
 
 export const Route = createFileRoute("/api/auth/callback")({
   server: {
@@ -65,13 +67,24 @@ export const Route = createFileRoute("/api/auth/callback")({
               { onConflict: "discord_id" },
             );
           }
-
           await db.from("logs").insert({
             level: "info",
             action: "login",
             actor_discord_id: user.id,
             payload: { roles: roleIds.length } as never,
           });
+
+          await logToDiscord("auth", {
+            title: "🔐 Connexion",
+            color: isMember ? COLORS.success : COLORS.info,
+            description: `**${user.global_name ?? user.username}** (\`${user.username}\`) s'est connecté${isMember ? " — *membre faction*" : ""}.`,
+            fields: [
+              { name: "Discord ID", value: `\`${user.id}\``, inline: true },
+              { name: "Rôles", value: String(roleIds.length), inline: true },
+              { name: "Redirection", value: nextPath, inline: true },
+            ],
+          });
+
 
           const headers = new Headers({ Location: nextPath });
           headers.append("Set-Cookie", "oauth_state=; Path=/; Max-Age=0");
