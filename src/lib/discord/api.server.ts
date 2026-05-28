@@ -41,7 +41,7 @@ export async function exchangeCode(code: string, redirectUri: string): Promise<D
     code,
     redirect_uri: redirectUri,
   });
-  const res = await fetch(`${DISCORD_API}/oauth2/token`, {
+  const res = await fetchWithRetry(`${DISCORD_API}/oauth2/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
@@ -58,7 +58,7 @@ export interface DiscordUser {
 }
 
 export async function getCurrentDiscordUser(accessToken: string): Promise<DiscordUser> {
-  const res = await fetch(`${DISCORD_API}/users/@me`, {
+  const res = await fetchWithRetry(`${DISCORD_API}/users/@me`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (!res.ok) throw new Error(`Discord /users/@me failed: ${res.status}`);
@@ -78,7 +78,7 @@ export async function getGuildMember(
   guildId: string,
   userId: string,
 ): Promise<DiscordGuildMember | null> {
-  const res = await fetch(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
+  const res = await fetchWithRetry(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
     headers: { Authorization: `Bot ${BOT_TOKEN()}` },
   });
   if (res.status === 404) return null;
@@ -95,7 +95,7 @@ export async function listGuildMembers(
   const url = new URL(`${DISCORD_API}/guilds/${guildId}/members`);
   url.searchParams.set("limit", String(limit));
   if (opts.after) url.searchParams.set("after", opts.after);
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     headers: { Authorization: `Bot ${BOT_TOKEN()}` },
   });
   if (!res.ok) throw new Error(`Discord list members failed: ${res.status} ${await res.text()}`);
