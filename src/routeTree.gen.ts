@@ -29,6 +29,7 @@ import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDonationsRouteImport } from './routes/_authenticated/donations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
+import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
@@ -137,6 +138,11 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
+  id: '/blacklist',
+  path: '/blacklist',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByTo {
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
@@ -238,6 +246,7 @@ export interface FileRoutesById {
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/donations': typeof AuthenticatedDonationsRoute
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/login'
     | '/admin'
+    | '/blacklist'
     | '/config'
     | '/dashboard'
     | '/donations'
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/login'
     | '/admin'
+    | '/blacklist'
     | '/config'
     | '/dashboard'
     | '/donations'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/legal'
     | '/login'
     | '/_authenticated/admin'
+    | '/_authenticated/blacklist'
     | '/_authenticated/config'
     | '/_authenticated/dashboard'
     | '/_authenticated/donations'
@@ -503,6 +515,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/blacklist': {
+      id: '/_authenticated/blacklist'
+      path: '/blacklist'
+      fullPath: '/blacklist'
+      preLoaderRoute: typeof AuthenticatedBlacklistRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -579,6 +598,7 @@ const AuthenticatedPollsRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDonationsRoute: typeof AuthenticatedDonationsRoute
@@ -596,6 +616,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDonationsRoute: AuthenticatedDonationsRoute,
