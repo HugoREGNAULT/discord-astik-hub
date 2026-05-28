@@ -4,14 +4,31 @@
 let lastCapturedError: { error: unknown; at: number } | undefined;
 const TTL_MS = 5_000;
 
-function record(error: unknown) {
+function formatError(error: unknown): string {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}\n${error.stack ?? "(no stack)"}`;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
+function record(source: string, error: unknown) {
   lastCapturedError = { error, at: Date.now() };
+  // Log eagerly so the error is visible in worker logs even if the response
+  // normalizer never picks it up.
+  // eslint-disable-next-line no-console
+  console.error(`[ssr-capture:${source}] ${formatError(error)}`);
 }
 
 if (typeof globalThis.addEventListener === "function") {
-  globalThis.addEventListener("error", (event) => record((event as ErrorEvent).error ?? event));
+  globalThis.addEventListener("error", (event) =>
+    record("error", (event as ErrorEvent).error ?? event),
+  );
   globalThis.addEventListener("unhandledrejection", (event) =>
-    record((event as PromiseRejectionEvent).reason),
+    record("unhandledrejection", (event as PromiseRejectionEvent).reason),
   );
 }
 
@@ -24,4 +41,11 @@ export function consumeLastCapturedError(): unknown {
   const { error } = lastCapturedError;
   lastCapturedError = undefined;
   return error;
+}
+
+export function describeError(error: unknown): { name: string; message: string; stack?: string } {
+  if (error instanceof Error) {
+    return { name: error.name, message: error.message, stack: error.stack };
+  }
+  return { name: "UnknownError", message: typeof error === "string" ? error : JSON.stringify(error) };
 }
