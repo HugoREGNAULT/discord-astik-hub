@@ -74,7 +74,7 @@ function MemberDetail() {
 
       {data.canEdit && (
         <Card>
-          <CardHeader><CardTitle asChild><h2 className="text-lg font-semibold">Éditer</h2></CardTitle></CardHeader>
+          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Éditer</h2></CardTitle></CardHeader>
           <CardContent>
             <EditForm member={m} onSave={async (patch) => {
               await update({ data: { discordId: id, patch } });
@@ -85,7 +85,7 @@ function MemberDetail() {
       )}
 
       <Card>
-        <CardHeader><CardTitle asChild><h2 className="text-lg font-semibold">Comptes alts</h2></CardTitle></CardHeader>
+        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Comptes alts</h2></CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-1">
             {data.alts.map((a: any) => (
@@ -108,7 +108,7 @@ function MemberDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle asChild><h2 className="text-lg font-semibold">Notes staff</h2></CardTitle></CardHeader>
+        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Notes staff</h2></CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-2">
             {data.notes.map((n: any) => (
@@ -127,7 +127,7 @@ function MemberDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle asChild><h2 className="text-lg font-semibold">Avertissements</h2></CardTitle></CardHeader>
+        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Avertissements</h2></CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-2">
             {data.warnings.map((w: any) => (
