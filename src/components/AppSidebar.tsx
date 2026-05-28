@@ -12,7 +12,9 @@ import {
   ShieldAlert,
   LogOut,
   UserPlus,
+  CalendarCheck,
 } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
