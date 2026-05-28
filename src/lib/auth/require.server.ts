@@ -26,8 +26,6 @@ export async function requireSession(): Promise<SessionUser> {
     }
   }
   return toSessionUser(data);
-}
-
 export async function requirePermission(perm: Permission): Promise<SessionUser> {
   const user = await requireSession();
   if (!canAccess(user, perm)) {
@@ -35,13 +33,13 @@ export async function requirePermission(perm: Permission): Promise<SessionUser> 
       level: "warn",
       action: "permission_denied",
       actor_discord_id: user.discordId,
-      payload: { permission: perm },
+      payload: { permission: perm } as never,
     });
     throw new Error("FORBIDDEN");
   }
   return user;
 }
-
+  }
 export async function logAction(
   action: string,
   actorId: string,
@@ -52,6 +50,6 @@ export async function logAction(
     level,
     action,
     actor_discord_id: actorId,
-    payload,
+    payload: payload as never,
   });
 }

@@ -49,10 +49,11 @@ export async function getSessionManager() {
 
 export async function getSessionData(): Promise<DiscordSessionData | null> {
   const s = await getSessionManager();
-  // useSession returns {} when no session — check for required field
-  return s.data && s.data.discordId ? s.data : null;
+export async function getSessionData(): Promise<DiscordSessionData | null> {
+  const s = await getSessionManager();
+  const d = s.data as Partial<DiscordSessionData> | undefined;
+  return d && d.discordId ? (d as DiscordSessionData) : null;
 }
-
 export async function setSessionData(data: DiscordSessionData) {
   const s = await getSessionManager();
   await s.update(data);
