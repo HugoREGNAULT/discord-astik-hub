@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authenticated/objectives'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
+import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDonationsRouteImport } from './routes/_authenticated/donations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -40,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -58,6 +65,11 @@ const AuthenticatedObjectivesRoute = AuthenticatedObjectivesRouteImport.update({
 const AuthenticatedMembersRoute = AuthenticatedMembersRouteImport.update({
   id: '/members',
   path: '/members',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedEffectifRoute = AuthenticatedEffectifRouteImport.update({
@@ -114,10 +126,12 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
+  '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/welcome': typeof AuthenticatedWelcomeRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
@@ -131,10 +145,12 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
+  '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/welcome': typeof AuthenticatedWelcomeRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
@@ -150,10 +166,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/donations': typeof AuthenticatedDonationsRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
+  '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/objectives': typeof AuthenticatedObjectivesRoute
   '/_authenticated/points': typeof AuthenticatedPointsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
@@ -169,10 +187,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/donations'
     | '/effectif'
+    | '/me'
     | '/members'
     | '/objectives'
     | '/points'
     | '/profile'
+    | '/welcome'
     | '/members/$id'
     | '/api/auth/callback'
     | '/api/auth/login'
@@ -186,10 +206,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/donations'
     | '/effectif'
+    | '/me'
     | '/members'
     | '/objectives'
     | '/points'
     | '/profile'
+    | '/welcome'
     | '/members/$id'
     | '/api/auth/callback'
     | '/api/auth/login'
@@ -204,10 +226,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/donations'
     | '/_authenticated/effectif'
+    | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/objectives'
     | '/_authenticated/points'
     | '/_authenticated/profile'
+    | '/_authenticated/welcome'
     | '/_authenticated/members/$id'
     | '/api/auth/callback'
     | '/api/auth/login'
@@ -246,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/welcome': {
+      id: '/_authenticated/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -272,6 +303,13 @@ declare module '@tanstack/react-router' {
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof AuthenticatedMembersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me': {
+      id: '/_authenticated/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/effectif': {
@@ -357,10 +395,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDonationsRoute: typeof AuthenticatedDonationsRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
+  AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedObjectivesRoute: typeof AuthenticatedObjectivesRoute
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -369,10 +409,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDonationsRoute: AuthenticatedDonationsRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
+  AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedObjectivesRoute: AuthenticatedObjectivesRoute,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

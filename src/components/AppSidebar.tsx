@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Home,
   LayoutDashboard,
   UserCircle2,
   Users,
@@ -30,6 +31,7 @@ import type { Permission } from "@/lib/auth/permissions";
 type Item = { title: string; url: string; icon: any; perm: Permission };
 
 const ITEMS: Item[] = [
+  { title: "Mon espace", url: "/me", icon: Home, perm: "profile.self" },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
   { title: "Mon profil", url: "/profile", icon: UserCircle2, perm: "profile.self" },
   { title: "Membres", url: "/members", icon: Users, perm: "members.view" },
