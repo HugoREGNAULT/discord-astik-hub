@@ -1,0 +1,271 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import {
+  Coins,
+  Calendar,
+  Award,
+  MessageCircle,
+  Mic,
+  AlertTriangle,
+  UserPlus,
+  TrendingUp,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getMyOverview } from "@/lib/data/me.functions";
+
+export const Route = createFileRoute("/_authenticated/me")({
+  head: () => ({
+    meta: [
+      { title: "Mon espace · PunkAstik" },
+      {
+        name: "description",
+        content: "Ton profil PunkAstik : skin Minecraft, AstikPoints, grade et activité dans la faction.",
+      },
+    ],
+  }),
+  component: MePage,
+});
+
+function formatDate(s: string | null | undefined) {
+  if (!s) return "—";
+  return new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+function daysSince(s: string | null | undefined) {
+  if (!s) return null;
+  const diff = Date.now() - new Date(s).getTime();
+  return Math.floor(diff / 86_400_000);
+}
+
+function MePage() {
+  const navigate = useNavigate();
+  const getOverview = useServerFn(getMyOverview);
+  const { data, isLoading } = useQuery({ queryKey: ["me-overview"], queryFn: () => getOverview() });
+
+  useEffect(() => {
+    if (data?.needsOnboarding) navigate({ to: "/welcome", replace: true });
+  }, [data, navigate]);
+
+  if (isLoading || !data || data.needsOnboarding) {
+    return <div className="text-muted-foreground">Chargement…</div>;
+  }
+
+  const m = data.member;
+  const voiceHours7d = Math.round((m.voice_7d_seconds ?? 0) / 360) / 10;
+  const voiceHoursTotal = Math.round((m.voice_total_seconds ?? 0) / 360) / 10;
+  const sinceArrival = daysSince(m.arrival_date);
+  const sinceRankup = daysSince(m.last_rankup);
+  const skinUrl = m.mc_uuid
+    ? `https://crafatar.com/renders/body/${m.mc_uuid}?overlay&scale=10`
+    : null;
+
+  return (
+    <div className="space-y-6 max-w-6xl">
+      {/* Hero */}
+      <Card className="overflow-hidden">
+        <div className="bg-gradient-to-r from-primary/10 via-accent/5 to-transparent p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
+          {skinUrl ? (
+            <img
+              src={skinUrl}
+              alt={`Skin de ${m.ig_name}`}
+              className="h-48 md:h-64 w-auto object-contain drop-shadow-2xl"
+              loading="lazy"
+            />
+          ) : (
+            <div className="h-48 w-24 bg-muted rounded grid place-items-center text-muted-foreground text-xs">
+              No skin
+            </div>
+          )}
+          <div className="flex-1 text-center md:text-left">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Profil de</p>
+            <h1 className="text-4xl font-bold tracking-tight">{m.ig_name}</h1>
+            <p className="text-muted-foreground">@{m.discord_username ?? "—"}</p>
+            <div className="flex gap-2 mt-3 justify-center md:justify-start flex-wrap">
+              {m.current_grade && (
+                <Badge variant="secondary" className="gap-1">
+                  <Award className="size-3" /> {m.current_grade}
+                </Badge>
+              )}
+              {m.status === "active" ? (
+                <Badge className="bg-green-500/15 text-green-500 hover:bg-green-500/20">Actif</Badge>
+              ) : (
+                <Badge variant="outline">Ancien</Badge>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-muted-foreground justify-center md:justify-start">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="size-4" />
+                <span>
+                  Arrivé le <span className="text-foreground font-medium">{formatDate(m.arrival_date)}</span>
+                  {sinceArrival !== null && ` · ${sinceArrival}j`}
+                </span>
+              </div>
+              {data.recruiter && (
+                <div className="flex items-center gap-1.5">
+                  <UserPlus className="size-4" />
+                  <span>
+                    Recruté par{" "}
+                    <Link
+                      to="/members/$id"
+                      params={{ id: data.recruiter.discord_id }}
+                      className="text-foreground font-medium hover:underline"
+                    >
+                      {data.recruiter.ig_name ?? data.recruiter.discord_username ?? "—"}
+                    </Link>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Stats grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={Coins}
+          label="AstikPoints"
+          value={(m.astik_points ?? 0).toLocaleString("fr-FR")}
+          accent="text-primary"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Dernier rankup"
+          value={sinceRankup !== null ? `il y a ${sinceRankup}j` : "—"}
+          subtitle={formatDate(m.last_rankup)}
+        />
+        <StatCard
+          icon={MessageCircle}
+          label="Messages (7j)"
+          value={(m.messages_7d ?? 0).toLocaleString("fr-FR")}
+          subtitle={`${(m.messages_total ?? 0).toLocaleString("fr-FR")} au total`}
+        />
+        <StatCard
+          icon={Mic}
+          label="Vocal (7j)"
+          value={`${voiceHours7d}h`}
+          subtitle={`${voiceHoursTotal}h au total`}
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Derniers gains */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Coins className="size-4" /> Derniers mouvements AstikPoints
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.recentGains.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun mouvement récent.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {data.recentGains.map((g) => (
+                  <li key={g.id} className="py-2.5 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{g.reason ?? g.action_type}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(g.created_at).toLocaleString("fr-FR")}
+                        {g.staff_username && ` · par ${g.staff_username}`}
+                      </div>
+                    </div>
+                    <div
+                      className={`text-sm font-mono font-semibold ${
+                        g.amount >= 0 ? "text-green-500" : "text-destructive"
+                      }`}
+                    >
+                      {g.amount >= 0 ? "+" : ""}
+                      {g.amount.toLocaleString("fr-FR")}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Alts + warnings */}
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Mes comptes alts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.alts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun alt enregistré.</p>
+              ) : (
+                <ul className="space-y-1.5 text-sm">
+                  {data.alts.map((a) => (
+                    <li key={a.id} className="flex justify-between gap-2">
+                      <span>{a.alt_name ?? "—"}</span>
+                      <span className="text-muted-foreground text-xs font-mono">
+                        {a.alt_discord_id ?? ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <Button asChild variant="outline" size="sm" className="mt-3 w-full">
+                <Link to="/welcome">Modifier</Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          {data.warnings.length > 0 && (
+            <Card className="border-destructive/30">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2 text-destructive">
+                  <AlertTriangle className="size-4" /> Avertissements
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  {data.warnings.map((w) => (
+                    <li key={w.id} className="border-l-2 border-destructive pl-3">
+                      <div>{w.body}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(w.created_at).toLocaleDateString("fr-FR")}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  subtitle,
+  accent,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  subtitle?: string;
+  accent?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
+          <Icon className={`size-4 ${accent ?? "text-muted-foreground"}`} />
+        </div>
+        <div className={`text-2xl font-bold ${accent ?? ""}`}>{value}</div>
+        {subtitle && <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>}
+      </CardContent>
+    </Card>
+  );
+}
