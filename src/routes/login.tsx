@@ -26,9 +26,8 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { data: user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
-
   useEffect(() => {
-    if (!isLoading && user) navigate({ to: "/dashboard" });
+    if (!isLoading && user) navigate({ to: "/me" });
   }, [isLoading, user, navigate]);
 
   return (

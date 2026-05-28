@@ -251,6 +251,7 @@ export type Database = {
           discord_username: string | null
           ig_name: string | null
           last_rankup: string | null
+          mc_uuid: string | null
           messages_7d: number
           messages_total: number
           recruiter_discord_id: string | null
@@ -269,6 +270,7 @@ export type Database = {
           discord_username?: string | null
           ig_name?: string | null
           last_rankup?: string | null
+          mc_uuid?: string | null
           messages_7d?: number
           messages_total?: number
           recruiter_discord_id?: string | null
@@ -287,6 +289,7 @@ export type Database = {
           discord_username?: string | null
           ig_name?: string | null
           last_rankup?: string | null
+          mc_uuid?: string | null
           messages_7d?: number
           messages_total?: number
           recruiter_discord_id?: string | null
