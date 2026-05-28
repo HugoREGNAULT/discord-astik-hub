@@ -30,7 +30,7 @@ function PointsPage() {
 
   const history = useQuery({
     queryKey: ["history", target],
-    queryFn: () => histFn({ data: { discordId: target, limit: 25 } }),
+    queryFn: () => histFn({ data: { memberDiscordId: target, limit: 25 } }),
     enabled: !!target,
   });
 
@@ -87,9 +87,9 @@ function PointsPage() {
         <CardHeader><CardTitle>Historique du membre</CardTitle></CardHeader>
         <CardContent>
           {!target && <p className="text-sm text-muted-foreground">Sélectionne un membre.</p>}
-          {history.data?.entries && (
+          {history.data?.history && (
             <ul className="divide-y divide-border">
-              {history.data.entries.map((e: any) => (
+              {history.data.history.map((e: any) => (
                 <li key={e.id} className="py-2 flex justify-between text-sm">
                   <div>
                     <div className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString()} · {e.staff_username ?? "—"}</div>

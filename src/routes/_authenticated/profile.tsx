@@ -24,7 +24,7 @@ function Profile() {
   });
   const history = useQuery({
     queryKey: ["history", user?.discordId],
-    queryFn: () => getHistory({ data: { discordId: user!.discordId, limit: 20 } }),
+    queryFn: () => getHistory({ data: { memberDiscordId: user!.discordId, limit: 20 } }),
     enabled: !!user?.discordId,
   });
 
@@ -60,7 +60,7 @@ function Profile() {
         <CardContent>
           {history.data?.entries?.length ? (
             <ul className="divide-y divide-border">
-              {history.data.entries.map((e: any) => (
+              {history.data.history.map((e: any) => (
                 <li key={e.id} className="py-2 flex justify-between text-sm">
                   <span className="text-muted-foreground">
                     {new Date(e.created_at).toLocaleString()} · {e.action_type}
