@@ -10,10 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LegalRouteImport } from './routes/legal'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as CandidatureRouteImport } from './routes/candidature'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -39,6 +41,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRoute = LegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForbiddenRoute = ForbiddenRouteImport.update({
   id: '/forbidden',
   path: '/forbidden',
@@ -56,6 +63,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
@@ -159,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/candidature': typeof CandidatureRoute
   '/forbidden': typeof ForbiddenRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -173,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
+  '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -184,6 +198,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/candidature': typeof CandidatureRoute
   '/forbidden': typeof ForbiddenRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -198,6 +213,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
+  '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -211,6 +227,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/candidature': typeof CandidatureRoute
   '/forbidden': typeof ForbiddenRoute
+  '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
@@ -225,6 +242,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
+  '/api/health': typeof ApiHealthRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -238,6 +256,7 @@ export interface FileRouteTypes {
     | '/'
     | '/candidature'
     | '/forbidden'
+    | '/legal'
     | '/login'
     | '/admin'
     | '/config'
@@ -252,6 +271,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/recruitment'
     | '/welcome'
+    | '/api/health'
     | '/members/$id'
     | '/polls/$id'
     | '/api/auth/callback'
@@ -263,6 +283,7 @@ export interface FileRouteTypes {
     | '/'
     | '/candidature'
     | '/forbidden'
+    | '/legal'
     | '/login'
     | '/admin'
     | '/config'
@@ -277,6 +298,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/recruitment'
     | '/welcome'
+    | '/api/health'
     | '/members/$id'
     | '/polls/$id'
     | '/api/auth/callback'
@@ -289,6 +311,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/candidature'
     | '/forbidden'
+    | '/legal'
     | '/login'
     | '/_authenticated/admin'
     | '/_authenticated/config'
@@ -303,6 +326,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
     | '/_authenticated/welcome'
+    | '/api/health'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
     | '/api/auth/callback'
@@ -316,7 +340,9 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CandidatureRoute: typeof CandidatureRoute
   ForbiddenRoute: typeof ForbiddenRoute
+  LegalRoute: typeof LegalRoute
   LoginRoute: typeof LoginRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
@@ -330,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal': {
+      id: '/legal'
+      path: '/legal'
+      fullPath: '/legal'
+      preLoaderRoute: typeof LegalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forbidden': {
@@ -358,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/welcome': {
@@ -559,7 +599,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CandidatureRoute: CandidatureRoute,
   ForbiddenRoute: ForbiddenRoute,
+  LegalRoute: LegalRoute,
   LoginRoute: LoginRoute,
+  ApiHealthRoute: ApiHealthRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
@@ -568,3 +610,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
