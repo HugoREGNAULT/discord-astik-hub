@@ -1,60 +1,178 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCurrentUser } from "@/lib/auth/use-current-user";
+import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { Trophy, Coins, Mic, MessageSquare, Crown, Medal, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Users, Coins, ShoppingCart, Target, ShieldAlert, UserCircle2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  getLeaderboard,
+  type LeaderboardEntry,
+  type LeaderboardMetric,
+} from "@/lib/data/leaderboard.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard · PunkAstik" }] }),
-  component: Dashboard,
+  head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
+  component: LeaderboardPage,
 });
 
-const TILES = [
-  { to: "/profile", title: "Mon profil", icon: UserCircle2, perm: "profile.self", desc: "Tes points, ton grade, ton historique." },
-  { to: "/members", title: "Membres", icon: Users, perm: "members.view", desc: "Annuaire des membres faction." },
-  { to: "/points", title: "AstikPoints", icon: Coins, perm: "points.manage", desc: "Ajouter, retirer, historique." },
-  { to: "/donations", title: "Dons", icon: ShoppingCart, perm: "donations.manage", desc: "Panier de don, calcul des points." },
-  { to: "/effectif", title: "Effectif", icon: Users, perm: "members.view", desc: "Liste par grade." },
-  { to: "/objectives", title: "Objectifs", icon: Target, perm: "objectives.edit", desc: "Plan d'action staff." },
-  { to: "/admin", title: "Admin", icon: ShieldAlert, perm: "admin.access", desc: "Logs, état système." },
-] as const;
+function formatVoice(seconds: number) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (h > 0) return `${h}h${m.toString().padStart(2, "0")}`;
+  return `${m}m`;
+}
 
-function Dashboard() {
-  const { data: user } = useCurrentUser();
-  const visible = TILES.filter((t) => user?.permissions.includes(t.perm as never));
+function getValue(e: LeaderboardEntry, metric: LeaderboardMetric, period: "all" | "7d") {
+  if (metric === "points") return e.astik_points;
+  if (metric === "voice") return period === "7d" ? e.voice_7d_seconds : e.voice_total_seconds;
+  return period === "7d" ? e.messages_7d : e.messages_total;
+}
+
+function formatValue(value: number, metric: LeaderboardMetric) {
+  if (metric === "voice") return formatVoice(value);
+  return value.toLocaleString("fr-FR");
+}
+
+function rankIcon(rank: number) {
+  if (rank === 1) return <Crown className="size-4 text-yellow-400" />;
+  if (rank === 2) return <Medal className="size-4 text-zinc-300" />;
+  if (rank === 3) return <Award className="size-4 text-amber-600" />;
+  return null;
+}
+
+function LeaderboardList({
+  entries,
+  metric,
+  period,
+  query,
+}: {
+  entries: LeaderboardEntry[];
+  metric: LeaderboardMetric;
+  period: "all" | "7d";
+  query: string;
+}) {
+  const sorted = useMemo(() => {
+    const arr = [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period));
+    const needle = query.trim().toLowerCase();
+    if (!needle) return arr;
+    return arr.filter(
+      (e) =>
+        (e.ig_name ?? "").toLowerCase().includes(needle) ||
+        (e.discord_username ?? "").toLowerCase().includes(needle),
+    );
+  }, [entries, metric, period, query]);
+
+  return (
+    <div className="space-y-1">
+      {sorted.map((e, i) => {
+        const rank = i + 1;
+        const value = getValue(e, metric, period);
+        return (
+          <div
+            key={e.discord_id}
+            className="flex items-center gap-3 rounded-md border border-border/50 bg-card/40 px-3 py-2 hover:border-primary/40 transition"
+          >
+            <div className="flex items-center gap-2 w-12 shrink-0">
+              <span className="font-mono text-sm text-muted-foreground w-6 text-right">#{rank}</span>
+              {rankIcon(rank)}
+            </div>
+            <Avatar className="size-8">
+              <AvatarImage src={e.avatar_url ?? undefined} />
+              <AvatarFallback className="text-xs">
+                {(e.ig_name ?? e.discord_username ?? "?").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium truncate">
+                {e.ig_name ?? e.discord_username ?? e.discord_id}
+              </div>
+              {e.current_grade && (
+                <Badge variant="secondary" className="text-[10px] mt-0.5">
+                  {e.current_grade}
+                </Badge>
+              )}
+            </div>
+            <div className="font-mono text-sm font-semibold tabular-nums">
+              {formatValue(value, metric)}
+            </div>
+          </div>
+        );
+      })}
+      {sorted.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-8">Aucun résultat.</p>
+      )}
+    </div>
+  );
+}
+
+function LeaderboardPage() {
+  const fetchLb = useServerFn(getLeaderboard);
+  const { data, isLoading } = useQuery({
+    queryKey: ["leaderboard"],
+    queryFn: () => fetchLb(),
+  });
+  const [metric, setMetric] = useState<LeaderboardMetric>("points");
+  const [period, setPeriod] = useState<"all" | "7d">("all");
+  const [query, setQuery] = useState("");
+
+  const entries = data?.entries ?? [];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Salut {user?.globalName ?? user?.username} — {visible.length} module{visible.length > 1 ? "s" : ""} disponible{visible.length > 1 ? "s" : ""} selon tes rôles Discord.
-        </p>
-        <div className="flex flex-wrap gap-1 mt-3">
-          {user?.permissions.map((p) => (
-            <Badge key={p} variant="secondary" className="text-[10px]">{p}</Badge>
-          ))}
+      <div className="flex items-start gap-3">
+        <div className="size-10 rounded-md bg-primary/15 text-primary grid place-items-center">
+          <Trophy className="size-5" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Classement</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Le top de la faction — AstikPoints, vocal et messages.
+          </p>
         </div>
       </div>
 
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((t) => (
-          <Link key={t.to} to={t.to} className="group">
-            <Card className="h-full transition border-border hover:border-primary/60 hover:shadow-[0_0_0_1px_var(--primary)]">
-              <CardHeader className="flex-row items-center gap-3 space-y-0">
-                <div className="size-10 rounded-md bg-primary/15 text-primary grid place-items-center">
-                  <t.icon className="size-5" />
-                </div>
-                <CardTitle className="text-base">{t.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{t.desc}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0 gap-4 flex-wrap">
+          <Tabs value={metric} onValueChange={(v) => setMetric(v as LeaderboardMetric)}>
+            <TabsList>
+              <TabsTrigger value="points">
+                <Coins className="size-4 mr-1.5" /> Points
+              </TabsTrigger>
+              <TabsTrigger value="voice">
+                <Mic className="size-4 mr-1.5" /> Vocal
+              </TabsTrigger>
+              <TabsTrigger value="messages">
+                <MessageSquare className="size-4 mr-1.5" /> Messages
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {metric !== "points" && (
+            <Tabs value={period} onValueChange={(v) => setPeriod(v as "all" | "7d")}>
+              <TabsList>
+                <TabsTrigger value="all">Total</TabsTrigger>
+                <TabsTrigger value="7d">7 jours</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Input
+            placeholder="Rechercher un membre…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="max-w-xs"
+          />
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">Chargement…</p>
+          ) : (
+            <LeaderboardList entries={entries} metric={metric} period={period} query={query} />
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
