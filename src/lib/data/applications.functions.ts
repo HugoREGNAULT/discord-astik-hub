@@ -228,5 +228,18 @@ export const decideApplication = createServerFn({ method: "POST" })
       },
     );
 
+    await logToDiscord("site", {
+      title: data.decision === "accepted" ? "✅ Candidature acceptée" : "❌ Candidature refusée",
+      color: data.decision === "accepted" ? COLORS.success : COLORS.danger,
+      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) traitée par **${staff.username}**.`,
+      fields: [
+        { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },
+        { name: "Décision par", value: `<@${staff.discordId}>`, inline: true },
+        { name: "DM envoyé", value: dm.ok ? "Oui" : `Non (${dm.error ?? "?"})`, inline: true },
+        ...(data.reason ? [{ name: "Motif", value: data.reason }] : []),
+      ],
+    });
+
+
     return { ok: true, dmOk: dm.ok, dmError: dm.error ?? null };
   });
