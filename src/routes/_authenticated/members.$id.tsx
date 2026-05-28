@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
@@ -13,7 +14,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
   head: () => ({ meta: [{ title: "Membre · PunkAstik" }] }),
-  component: MemberDetail,
+  component: () => (<Guard perm="members.view"><MemberDetail /></Guard>),
 });
 
 function MemberDetail() {

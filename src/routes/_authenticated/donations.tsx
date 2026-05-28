@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
@@ -15,7 +16,7 @@ import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/donations")({
   head: () => ({ meta: [{ title: "Dons · PunkAstik" }] }),
-  component: DonationsPage,
+  component: () => (<Guard perm="donations.manage"><DonationsPage /></Guard>),
 });
 
 function DonationsPage() {

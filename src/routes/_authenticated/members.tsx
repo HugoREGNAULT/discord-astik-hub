@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
-  component: MembersPage,
+  component: () => (<Guard perm="members.view"><MembersPage /></Guard>),
 });
 
 function MembersPage() {

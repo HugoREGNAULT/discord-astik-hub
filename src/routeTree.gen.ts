@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as CandidatureRouteImport } from './routes/candidature'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,6 +34,11 @@ import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authentica
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForbiddenRoute = ForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CandidatureRoute = CandidatureRouteImport.update({
@@ -134,6 +140,7 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/candidature': typeof CandidatureRoute
+  '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/candidature': typeof CandidatureRoute
+  '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -178,6 +186,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/candidature': typeof CandidatureRoute
+  '/forbidden': typeof ForbiddenRoute
   '/login': typeof LoginRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/candidature'
+    | '/forbidden'
     | '/login'
     | '/admin'
     | '/config'
@@ -222,6 +232,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/candidature'
+    | '/forbidden'
     | '/login'
     | '/admin'
     | '/config'
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/candidature'
+    | '/forbidden'
     | '/login'
     | '/_authenticated/admin'
     | '/_authenticated/config'
@@ -267,6 +279,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CandidatureRoute: typeof CandidatureRoute
+  ForbiddenRoute: typeof ForbiddenRoute
   LoginRoute: typeof LoginRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forbidden': {
+      id: '/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof ForbiddenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/candidature': {
@@ -467,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CandidatureRoute: CandidatureRoute,
+  ForbiddenRoute: ForbiddenRoute,
   LoginRoute: LoginRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
