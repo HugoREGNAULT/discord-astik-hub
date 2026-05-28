@@ -29,7 +29,6 @@ function LoginPage() {
   useEffect(() => {
     if (!isLoading && user) navigate({ to: "/me" });
   }, [isLoading, user, navigate]);
-  }, [isLoading, user, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] p-4 relative overflow-hidden">
