@@ -87,7 +87,7 @@ export const globalSearch = createServerFn({ method: "GET" })
     }
 
     /* Candidatures */
-    if (canAccess(user, "recruit.access")) {
+    if ((!filter || filter === "application") && canAccess(user, "recruit.access")) {
       const r = await db
         .from("applications")
         .select("id, mc_name, discord_username, status, created_at")
