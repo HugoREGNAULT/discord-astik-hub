@@ -339,7 +339,6 @@ function MemberDetail() {
   );
 }
 
-}
 
 
 
