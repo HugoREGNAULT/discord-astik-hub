@@ -76,6 +76,8 @@ const memberPatch = z.object({
   discordId: z.string().min(1),
   patch: z.object({
     ig_name: z.string().max(64).nullable().optional(),
+    discord_username: z.string().max(64).nullable().optional(),
+    mc_uuid: z.string().max(64).nullable().optional(),
     arrival_date: z.string().nullable().optional(),
     recruiter_discord_id: z.string().max(32).nullable().optional(),
     last_rankup: z.string().nullable().optional(),
