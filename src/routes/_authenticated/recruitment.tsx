@@ -210,7 +210,27 @@ function ApplicationDetail({ app }: { app: Application }) {
 
   return (
     <div className="space-y-4 pt-2 pb-1">
+      {app.blacklist_matches && app.blacklist_matches.length > 0 && (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-2">
+          <div className="text-sm font-semibold text-destructive flex items-center gap-2">
+            🚫 Correspondance(s) blacklist détectée(s)
+          </div>
+          {app.blacklist_matches.map((m) => (
+            <div key={m.id} className="text-xs text-destructive/90 space-y-1">
+              <div>
+                <span className="font-mono">{m.matched_on.join(", ")}</span>
+                {" — ajouté par "}
+                <span className="font-medium">{m.added_by_username ?? "?"}</span>
+                {" le "}
+                {new Date(m.created_at).toLocaleDateString("fr-FR")}
+              </div>
+              {m.reason && <div className="italic">« {m.reason} »</div>}
+            </div>
+          ))}
+        </div>
+      )}
       <Info label="Présentation">{app.presentation}</Info>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Info label="Horaires">{app.schedule}</Info>
         <Info label="Temps de jeu / semaine">{app.weekly_playtime}</Info>
