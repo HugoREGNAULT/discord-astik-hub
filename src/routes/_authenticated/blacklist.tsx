@@ -157,7 +157,6 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
   );
 }
 
-}
 
 function AddEntryDialog() {
   const qc = useQueryClient();
