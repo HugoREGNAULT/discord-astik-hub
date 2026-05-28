@@ -107,7 +107,7 @@ export const globalSearch = createServerFn({ method: "GET" })
     }
 
     /* Dons (par membre concerné, staff ou bonus) */
-    if (canAccess(user, "donations.manage")) {
+    if ((!filter || filter === "donation") && canAccess(user, "donations.manage")) {
       const r = await db
         .from("donations")
         .select("id, member_discord_id, staff_username, total_final, status, created_at")
