@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useId } from "react";
+
 import { listMyActiveCarts, createCart, addCartLine, removeCartLine, validateCart, cancelCart } from "@/lib/data/donations.functions";
 import { listValues } from "@/lib/data/values.functions";
 import { listMembers } from "@/lib/data/members.functions";
@@ -47,25 +48,8 @@ function DonationsPage() {
         <h1 className="text-2xl font-bold">Dons</h1>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Nouveau panier</CardTitle></CardHeader>
-        <CardContent className="flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-xs text-muted-foreground">Membre (optionnel)</label>
-            <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm">
-              <option value="">— Aucun —</option>
-              {members.data?.members.map((m) => (
-                <option key={m.discord_id} value={m.discord_id}>{m.ig_name ?? m.discord_username}</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-32">
-            <label className="text-xs text-muted-foreground">Bonus %</label>
-            <Input type="number" value={bonus} onChange={(e) => setBonus(Number(e.target.value))} />
-          </div>
-          <Button onClick={() => mkCart.mutate()}>Créer</Button>
-        </CardContent>
-      </Card>
+      <NewCart members={members.data?.members ?? []} target={target} setTarget={setTarget} bonus={bonus} setBonus={setBonus} onCreate={() => mkCart.mutate()} />
+
 
       {carts.data?.carts.map((c: any) => (
         <Cart key={c.id} cart={c} values={values.data?.values ?? []}
@@ -107,7 +91,8 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
               <span className="text-[10px] text-muted-foreground uppercase">{l.line_type}</span>
               <span className="flex-1">{l.label} × {l.quantity}</span>
               <span className="font-mono">{l.subtotal} pts</span>
-              <button onClick={() => onRemove(l.id)} className="text-destructive"><Trash2 className="size-4" /></button>
+              <button onClick={() => onRemove(l.id)} aria-label={`Supprimer ${l.label}`} className="text-destructive"><Trash2 className="size-4" /></button>
+
             </li>
           ))}
           {(!cart.donation_lines || cart.donation_lines.length === 0) && <li className="text-sm text-muted-foreground py-2">Panier vide.</li>}

@@ -26,11 +26,9 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Salut, {user?.globalName ?? user?.username} 👋
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight">Tableau de bord</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {visible.length} module{visible.length > 1 ? "s" : ""} disponible{visible.length > 1 ? "s" : ""} selon tes rôles Discord.
+          Salut {user?.globalName ?? user?.username} — {visible.length} module{visible.length > 1 ? "s" : ""} disponible{visible.length > 1 ? "s" : ""} selon tes rôles Discord.
         </p>
         <div className="flex flex-wrap gap-1 mt-3">
           {user?.permissions.map((p) => (
@@ -38,6 +36,7 @@ function Dashboard() {
           ))}
         </div>
       </div>
+
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((t) => (
