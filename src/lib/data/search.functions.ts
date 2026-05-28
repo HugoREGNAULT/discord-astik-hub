@@ -38,7 +38,8 @@ export type SearchHit =
       sub?: string;
       total: number;
       status: string;
-      to: "/donations";
+      to: "/members/$id";
+      params: { id: string };
     }
   | {
       kind: "points";
@@ -46,7 +47,8 @@ export type SearchHit =
       label: string;
       sub?: string;
       amount: number;
-      to: "/points";
+      to: "/members/$id";
+      params: { id: string };
     };
 
 export const globalSearch = createServerFn({ method: "GET" })
