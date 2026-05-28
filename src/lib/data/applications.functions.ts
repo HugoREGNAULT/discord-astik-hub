@@ -98,10 +98,26 @@ export const submitApplication = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (ins.error) throw new Error(ins.error.message);
-
     await logAction("application_submit", user.discordId, {
       application_id: ins.data.id,
       mc_name: mojang.name,
+    });
+
+    await logToDiscord("site", {
+      title: "📝 Nouvelle candidature",
+      color: COLORS.info,
+      description: `**${user.username}** (<@${user.discordId}>) a candidaté à la PunkAstik.`,
+      fields: [
+        { name: "Pseudo MC", value: mojang.name, inline: true },
+        { name: "Âge", value: String(data.age), inline: true },
+        { name: "Pays", value: data.country, inline: true },
+        { name: "Grade IG", value: data.igGrade, inline: true },
+        { name: "Temps de jeu", value: data.weeklyPlaytime, inline: true },
+        { name: "Niveau /10", value: String(data.knowledgeLevel), inline: true },
+      ],
+      footer: { text: `Application ${ins.data.id}` },
+    });
+
     });
 
     return { ok: true, applicationId: ins.data.id };
