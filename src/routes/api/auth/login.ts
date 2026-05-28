@@ -1,22 +1,37 @@
 /**
  * GET /api/auth/login?next=/path
  * Redirige vers la page de consentement Discord OAuth2.
- * Le paramètre `next` est stocké dans le state cookie pour rediriger après login.
+ * Rate-limited à 10 tentatives / 5 minutes / IP.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { buildAuthorizeUrl } from "@/lib/discord/api.server";
 import { randomBytes } from "crypto";
+import { rateLimit, getClientIp } from "@/lib/rate-limit.server";
 
 export const Route = createFileRoute("/api/auth/login")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        const ip = getClientIp(request);
+        const rl = rateLimit(`login:${ip}`, 10, 5 * 60 * 1000);
+        if (!rl.ok) {
+          return new Response(
+            `Trop de tentatives. Réessaie dans ${Math.ceil(rl.resetIn / 1000)}s.`,
+            {
+              status: 429,
+              headers: {
+                "Retry-After": String(Math.ceil(rl.resetIn / 1000)),
+                "Content-Type": "text/plain; charset=utf-8",
+              },
+            },
+          );
+        }
+
         const url = new URL(request.url);
         const redirectUri = `${url.origin}/api/auth/callback`;
         const state = randomBytes(16).toString("hex");
         const authorizeUrl = buildAuthorizeUrl(redirectUri, state);
 
-        // Whitelist : on n'accepte qu'un chemin interne relatif
         const rawNext = url.searchParams.get("next") || "";
         const next =
           rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
@@ -33,3 +48,4 @@ export const Route = createFileRoute("/api/auth/login")({
     },
   },
 });
+

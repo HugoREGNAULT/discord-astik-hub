@@ -24,6 +24,7 @@ import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authenticated/objectives'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDonationsRouteImport } from './routes/_authenticated/donations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -111,6 +112,11 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedEffectifRoute = AuthenticatedEffectifRouteImport.update({
   id: '/effectif',
   path: '/effectif',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
+  '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
+  '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/donations': typeof AuthenticatedDonationsRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
+  '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/objectives': typeof AuthenticatedObjectivesRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/donations'
     | '/effectif'
+    | '/logs'
     | '/me'
     | '/members'
     | '/objectives'
@@ -290,6 +300,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/donations'
     | '/effectif'
+    | '/logs'
     | '/me'
     | '/members'
     | '/objectives'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/donations'
     | '/_authenticated/effectif'
+    | '/_authenticated/logs'
     | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/objectives'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/logs': {
+      id: '/_authenticated/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof AuthenticatedLogsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/effectif': {
       id: '/_authenticated/effectif'
       path: '/effectif'
@@ -564,6 +583,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDonationsRoute: typeof AuthenticatedDonationsRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
+  AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedObjectivesRoute: typeof AuthenticatedObjectivesRoute
@@ -580,6 +600,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDonationsRoute: AuthenticatedDonationsRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
+  AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedObjectivesRoute: AuthenticatedObjectivesRoute,

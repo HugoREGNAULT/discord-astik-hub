@@ -2,31 +2,41 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listMembers } from "@/lib/data/members.functions";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Paginator, usePagedSlice } from "@/components/Paginator";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
   component: () => (<Guard perm="members.view"><MembersPage /></Guard>),
 });
 
+const PER_PAGE = 30;
+
 function MembersPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"active" | "former" | "all">("active");
+  const [page, setPage] = useState(1);
   const fn = useServerFn(listMembers);
   const { data, isLoading } = useQuery({
     queryKey: ["members", q, status],
     queryFn: () => fn({ data: { q, status } }),
   });
 
+  useEffect(() => { setPage(1); }, [q, status]);
+
+  const members = data?.members ?? [];
+  const pageCount = Math.max(1, Math.ceil(members.length / PER_PAGE));
+  const paged = useMemo(() => usePagedSlice(members, page, PER_PAGE), [members, page]);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">Membres</h1>
-        <Badge variant="secondary">{data?.members.length ?? 0}</Badge>
+        <Badge variant="secondary">{members.length}</Badge>
       </div>
       <div className="flex flex-wrap gap-2">
         <Input placeholder="Rechercher (pseudo, IG, ID)…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
@@ -46,7 +56,7 @@ function MembersPage() {
       {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
 
       <div className="grid gap-2">
-        {data?.members.map((m) => (
+        {paged.map((m) => (
           <Link key={m.discord_id} to="/members/$id" params={{ id: m.discord_id }}>
             <Card className="p-3 flex items-center gap-3 hover:border-primary/60 transition">
               {m.avatar_url ? (
@@ -65,8 +75,11 @@ function MembersPage() {
             </Card>
           </Link>
         ))}
-        {data && data.members.length === 0 && <p className="text-sm text-muted-foreground">Aucun membre.</p>}
+        {members.length === 0 && !isLoading && <p className="text-sm text-muted-foreground">Aucun membre.</p>}
       </div>
+
+      <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
     </div>
   );
 }
+

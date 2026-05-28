@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import {
   Coins,
   Calendar,
@@ -11,12 +11,28 @@ import {
   AlertTriangle,
   UserPlus,
   TrendingUp,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { getMyOverview } from "@/lib/data/me.functions";
+import { deleteMyAccount } from "@/lib/data/account.functions";
 
 export const Route = createFileRoute("/_authenticated/me")({
   head: () => ({
@@ -231,7 +247,78 @@ function MePage() {
           )}
         </div>
       </div>
+
+      <DangerZone />
     </div>
+  );
+}
+
+function DangerZone() {
+  const qc = useQueryClient();
+  const delFn = useServerFn(deleteMyAccount);
+  const [confirm, setConfirm] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const mDel = useMutation({
+    mutationFn: () => delFn({ data: { confirm: "SUPPRIMER" as const } }),
+    onSuccess: () => {
+      toast.success("Compte supprimé. Au revoir.");
+      qc.clear();
+      window.location.href = "/";
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Card className="border-destructive/40">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2 text-destructive">
+          <Trash2 className="size-4" /> Supprimer mon compte (RGPD)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <p className="text-muted-foreground">
+          Cette action efface tes alts, notes, warnings, candidatures et historique
+          de points. Ta fiche membre est anonymisée et passée en « ancien ».
+          <strong className="text-foreground"> Action irréversible.</strong>
+        </p>
+        <AlertDialog open={open} onOpenChange={setOpen}>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="sm">
+              <Trash2 className="size-4 mr-1" /> Supprimer mes données
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tape <code className="font-mono font-bold">SUPPRIMER</code> ci-dessous
+                pour confirmer définitivement.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-del">Confirmation</Label>
+              <Input
+                id="confirm-del"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="SUPPRIMER"
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={mDel.isPending}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={confirm !== "SUPPRIMER" || mDel.isPending}
+                onClick={(e) => { e.preventDefault(); mDel.mutate(); }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Supprimer définitivement
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </CardContent>
+    </Card>
   );
 }
 
