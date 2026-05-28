@@ -2,6 +2,8 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { NotificationBell } from "@/components/NotificationBell";
+import { CommandPalette } from "@/components/CommandPalette";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -62,15 +64,18 @@ function AuthLayout() {
             >
               // punkastik / hub
             </div>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-1.5">
+              <CommandPalette />
+              <NotificationBell />
               <span
-                className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] hidden sm:inline"
+                className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] hidden sm:inline ml-1"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 SYS_HUB_V2
               </span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
             </div>
+
           </header>
           <main
             className="flex-1 p-4 md:p-6 overflow-x-hidden relative"
