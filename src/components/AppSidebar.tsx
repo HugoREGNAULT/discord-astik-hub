@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
+  Trophy,
   UserCircle2,
   Users,
   Coins,
