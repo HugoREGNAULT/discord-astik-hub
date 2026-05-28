@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useId } from "react";
+
 import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,7 @@ function MemberDetail() {
 
       {data.canEdit && (
         <Card>
-          <CardHeader><CardTitle>Éditer</CardTitle></CardHeader>
+          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Éditer</h2></CardTitle></CardHeader>
           <CardContent>
             <EditForm member={m} onSave={async (patch) => {
               await update({ data: { discordId: id, patch } });
@@ -84,7 +85,7 @@ function MemberDetail() {
       )}
 
       <Card>
-        <CardHeader><CardTitle>Comptes alts</CardTitle></CardHeader>
+        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Comptes alts</h2></CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-1">
             {data.alts.map((a: any) => (
@@ -107,7 +108,7 @@ function MemberDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Notes staff</CardTitle></CardHeader>
+        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Notes staff</h2></CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-2">
             {data.notes.map((n: any) => (
@@ -126,7 +127,7 @@ function MemberDetail() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Avertissements</CardTitle></CardHeader>
+        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Avertissements</h2></CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-2">
             {data.warnings.map((w: any) => (
@@ -147,6 +148,8 @@ function MemberDetail() {
   );
 }
 
+
+
 function Stat({ label, value, accent }: { label: string; value: any; accent?: boolean }) {
   return (
     <Card>
@@ -157,6 +160,7 @@ function Stat({ label, value, accent }: { label: string; value: any; accent?: bo
 }
 
 function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void }) {
+  const reactId = useId();
   const [p, setP] = useState({
     ig_name: member.ig_name ?? "",
     arrival_date: member.arrival_date ?? "",
@@ -167,15 +171,18 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
   });
   return (
     <div className="grid sm:grid-cols-2 gap-3">
-      {(["ig_name", "current_grade", "arrival_date", "last_rankup", "recruiter_discord_id"] as const).map((k) => (
-        <div key={k}>
-          <label className="text-xs text-muted-foreground">{k}</label>
-          <Input value={(p as any)[k] ?? ""} onChange={(e) => setP({ ...p, [k]: e.target.value })} />
-        </div>
-      ))}
+      {(["ig_name", "current_grade", "arrival_date", "last_rankup", "recruiter_discord_id"] as const).map((k) => {
+        const fid = `${reactId}-${k}`;
+        return (
+          <div key={k}>
+            <label htmlFor={fid} className="text-xs text-muted-foreground">{k}</label>
+            <Input id={fid} value={(p as any)[k] ?? ""} onChange={(e) => setP({ ...p, [k]: e.target.value })} />
+          </div>
+        );
+      })}
       <div>
-        <label className="text-xs text-muted-foreground">status</label>
-        <select className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" value={p.status} onChange={(e) => setP({ ...p, status: e.target.value })}>
+        <label htmlFor={`${reactId}-status`} className="text-xs text-muted-foreground">status</label>
+        <select id={`${reactId}-status`} className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" value={p.status} onChange={(e) => setP({ ...p, status: e.target.value })}>
           <option value="active">active</option>
           <option value="former">former</option>
         </select>
@@ -186,3 +193,4 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
     </div>
   );
 }
+

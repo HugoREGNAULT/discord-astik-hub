@@ -24,10 +24,11 @@ function LoginPage() {
             P
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">PunkAstik</h1>
+            <h1 className="text-2xl font-bold tracking-tight">PunkAstik — Connexion</h1>
             <p className="text-xs text-muted-foreground">Dashboard Paladium</p>
           </div>
         </div>
+
         <p className="text-sm text-muted-foreground mb-6">
           Connecte-toi avec Discord. Les accès dépendent de tes rôles sur les serveurs PunkAstik.
         </p>

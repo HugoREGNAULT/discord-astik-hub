@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useState, useId } from "react";
+
 import { listMembers } from "@/lib/data/members.functions";
 import { addPoints, removePoints, setPoints, getPointsHistory } from "@/lib/data/points.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,12 +22,14 @@ function PointsPage() {
   const rmFn = useServerFn(removePoints);
   const setFn = useServerFn(setPoints);
   const histFn = useServerFn(getPointsHistory);
+  const fid = useId();
 
   const members = useQuery({ queryKey: ["members", "", "active"], queryFn: () => listFn({ data: {} }) });
 
   const [target, setTarget] = useState<string>("");
   const [amount, setAmount] = useState<number>(0);
   const [reason, setReason] = useState("");
+
 
   const history = useQuery({
     queryKey: ["history", target],
@@ -57,8 +60,8 @@ function PointsPage() {
         <CardHeader><CardTitle>Action manuelle</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="text-xs text-muted-foreground">Membre</label>
-            <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm">
+            <label htmlFor={`${fid}-member`} className="text-xs text-muted-foreground">Membre</label>
+            <select id={`${fid}-member`} value={target} onChange={(e) => setTarget(e.target.value)} className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm">
               <option value="">— Choisir —</option>
               {members.data?.members.map((m) => (
                 <option key={m.discord_id} value={m.discord_id}>{m.ig_name ?? m.discord_username} ({m.astik_points} pts)</option>
@@ -67,14 +70,15 @@ function PointsPage() {
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-muted-foreground">Montant</label>
-              <Input type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} />
+              <label htmlFor={`${fid}-amount`} className="text-xs text-muted-foreground">Montant</label>
+              <Input id={`${fid}-amount`} type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Raison</label>
-              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: don raid base ennemie" />
+              <label htmlFor={`${fid}-reason`} className="text-xs text-muted-foreground">Raison</label>
+              <Input id={`${fid}-reason`} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="ex: don raid base ennemie" />
             </div>
           </div>
+
           <div className="flex gap-2">
             <Button onClick={() => run("add")} className="bg-success text-success-foreground hover:opacity-90">+ Ajouter</Button>
             <Button onClick={() => run("remove")} variant="destructive">− Retirer</Button>
