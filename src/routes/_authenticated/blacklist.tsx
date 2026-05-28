@@ -103,7 +103,6 @@ function BlacklistPage() {
 function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
   const qc = useQueryClient();
   const removeFn = useServerFn(removeBlacklistEntry);
-  const [confirmOpen, setConfirmOpen] = useState(false);
   const remove = useMutation({
     mutationFn: () => removeFn({ data: { id: entry.id } }),
     onSuccess: () => {
@@ -112,17 +111,8 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
       qc.invalidateQueries({ queryKey: ["applications"] });
     },
     onError: (e: Error) => toast.error(e.message),
-function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
-  const qc = useQueryClient();
-  const removeFn = useServerFn(removeBlacklistEntry);
-  const remove = useMutation({
-    mutationFn: () => removeFn({ data: { id: entry.id } }),
-    onSuccess: () => {
-      toast.success("Entrée supprimée.");
-      qc.invalidateQueries({ queryKey: ["blacklist"] });
-      qc.invalidateQueries({ queryKey: ["applications"] });
-    },
-    onError: (e: Error) => toast.error(e.message),
+  });
+
   });
 
   return (
