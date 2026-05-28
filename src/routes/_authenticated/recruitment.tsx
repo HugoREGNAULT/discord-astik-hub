@@ -78,6 +78,16 @@ function RecruitmentPage() {
   );
 }
 
+type BlacklistMatch = {
+  id: string;
+  matched_on: ("discord_id" | "mc_name" | "mc_uuid")[];
+  discord_id: string | null;
+  mc_name: string | null;
+  reason: string;
+  added_by_username: string | null;
+  created_at: string;
+};
+
 type Application = {
   id: string;
   discord_id: string;
@@ -99,6 +109,7 @@ type Application = {
   decided_at: string | null;
   decision_reason: string | null;
   created_at: string;
+  blacklist_matches?: BlacklistMatch[];
 };
 
 function ApplicationsList({ status }: { status: AppStatus }) {
