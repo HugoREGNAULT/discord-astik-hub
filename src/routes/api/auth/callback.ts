@@ -12,6 +12,8 @@ import {
 import { setSessionData } from "@/lib/auth/session.server";
 import { db } from "@/lib/db.server";
 import { ROLES } from "@/lib/discord/constants";
+import { logToDiscord, COLORS } from "@/lib/discord/log.server";
+
 
 export const Route = createFileRoute("/api/auth/callback")({
   server: {
