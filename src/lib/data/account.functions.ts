@@ -1,8 +1,5 @@
 /**
  * RGPD : permet à un membre de demander la suppression de ses données.
- * - Supprime les alts, notes, warnings, points_ledger, applications
- * - Anonymise la fiche `members` (statut former, pseudo/avatar effacés)
- * - Détruit la session
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -28,7 +25,6 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       db.from("applications").delete().eq("discord_id", id),
     ]);
 
-    // Anonymise la fiche membre (on garde l'enregistrement pour cohérence des dons/logs)
     await db
       .from("members")
       .update({
@@ -42,11 +38,11 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
         messages_total: 0,
         voice_7d_seconds: 0,
         voice_total_seconds: 0,
-    await clearSessionData();
+        recruiter_discord_id: null,
       })
       .eq("discord_id", id);
 
     await logAction("account_deleted_self", id, {}, "warn");
-    await clearSession();
+    await clearSessionData();
     return { ok: true };
   });
