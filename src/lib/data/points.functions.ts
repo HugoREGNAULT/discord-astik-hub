@@ -83,7 +83,7 @@ export const setPoints = createServerFn({ method: "POST" })
     z
       .object({
         memberDiscordId: z.string().min(1),
-        total: z.number().int().min(0),
+        total: z.number().int().min(0).max(MAX_TOTAL_POINTS),
         reason: z.string().max(500).optional(),
       })
       .parse(input),
