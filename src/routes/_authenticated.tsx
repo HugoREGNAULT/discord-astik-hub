@@ -65,9 +65,10 @@ function AuthLayout() {
               style={{ fontFamily: "'Space Mono'" }}
             >
               // punkastik / hub
-            </div>
-            <div className="ml-auto flex items-center gap-1.5">
               <CommandPalette />
+              <NotificationBell />
+              <ThemeToggle />
+
               <NotificationBell />
               <span
                 className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] hidden sm:inline ml-1"
