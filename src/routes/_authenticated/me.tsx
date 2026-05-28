@@ -344,6 +344,17 @@ type Gain = {
   created_at: string;
 };
 
+function actionIcon(type: string) {
+  const t = type.toLowerCase();
+  if (t.includes("donation")) return Gift;
+  if (t.includes("reward")) return ArrowUpCircle;
+  if (t.includes("penalty") || t.includes("punish")) return Gavel;
+  if (t.includes("manual") || t.includes("adjust")) return UserCog;
+  if (t.includes("purchase") || t.includes("shop")) return HandCoins;
+  if (t.includes("note")) return FileText;
+  return MinusCircle;
+}
+
 function PointsTimeline({ gains }: { gains: Gain[] }) {
   const [page, setPage] = useState(1);
   const perPage = 10;
@@ -355,29 +366,75 @@ function PointsTimeline({ gains }: { gains: Gain[] }) {
   }
 
   return (
-    <div className="space-y-3">
-      <ul className="divide-y divide-border">
-        {slice.map((g) => (
-          <li key={g.id} className="py-2.5 flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="text-sm font-medium truncate">{g.reason ?? g.action_type}</div>
-              <div className="text-xs text-muted-foreground">
-                {new Date(g.created_at).toLocaleString("fr-FR")}
-                {g.staff_username && ` · par ${g.staff_username}`}
-              </div>
-            </div>
-            <div
-              className={`text-sm font-mono font-semibold ${
-                g.amount >= 0 ? "text-green-500" : "text-destructive"
-              }`}
-            >
-              {g.amount >= 0 ? "+" : ""}
-              {g.amount.toLocaleString("fr-FR")}
-            </div>
-          </li>
-        ))}
-      </ul>
-      <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+    <div className="space-y-4">
+      <div className="relative pl-6">
+        {/* Ligne verticale */}
+        <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border" />
+
+        <ul className="space-y-5">
+          {slice.map((g, i) => {
+            const Icon = actionIcon(g.action_type);
+            const isPositive = g.amount > 0;
+            const isNegative = g.amount < 0;
+            const dateStr = new Date(g.created_at).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "short",
+            });
+            const timeStr = new Date(g.created_at).toLocaleTimeString("fr-FR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            return (
+              <li key={g.id} className="relative">
+                {/* Point sur la timeline */}
+                <div
+                  className={`absolute -left-[17px] top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 bg-background ${
+                    isPositive
+                      ? "border-green-500 text-green-500"
+                      : isNegative
+                        ? "border-destructive text-destructive"
+                        : "border-muted-foreground text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="size-3" />
+                </div>
+
+                {/* Contenu */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium leading-snug">
+                      {g.reason ?? g.action_type}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      <span className="font-medium text-foreground/80">{dateStr}</span>
+                      {" · "}
+                      {timeStr}
+                      {g.staff_username && (
+                        <span className="ml-1">· par {g.staff_username}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    className={`text-sm font-mono font-semibold whitespace-nowrap ${
+                      isPositive ? "text-green-500" : isNegative ? "text-destructive" : "text-muted-foreground"
+                    }`}
+                  >
+                    {g.amount >= 0 ? "+" : ""}
+                    {g.amount.toLocaleString("fr-FR")} pts
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {pageCount > 1 && (
+        <div className="pt-2">
+          <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+        </div>
+      )}
     </div>
   );
 }
