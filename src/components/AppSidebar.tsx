@@ -37,7 +37,7 @@ type Item = { title: string; url: string; icon: any; perm: Permission; accent?: 
 
 const ITEMS: Item[] = [
   { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, perm: "profile.self", accent: "blurple" },
+  { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self", accent: "blurple" },
   { title: "Sondages", url: "/polls", icon: CalendarCheck, perm: "profile.self", accent: "blurple" },
 
   { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
