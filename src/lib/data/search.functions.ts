@@ -38,7 +38,8 @@ export type SearchHit =
       sub?: string;
       total: number;
       status: string;
-      to: "/donations";
+      to: "/members/$id";
+      params: { id: string };
     }
   | {
       kind: "points";
@@ -46,7 +47,8 @@ export type SearchHit =
       label: string;
       sub?: string;
       amount: number;
-      to: "/points";
+      to: "/members/$id";
+      params: { id: string };
     };
 
 export const globalSearch = createServerFn({ method: "GET" })
@@ -161,7 +163,8 @@ export const globalSearch = createServerFn({ method: "GET" })
           sub: `${d.member_discord_id ?? "—"} · ${d.staff_username ?? "—"} · ${d.status}`,
           total: d.total_final,
           status: d.status,
-          to: "/donations",
+          to: "/members/$id",
+          params: { id: d.member_discord_id ?? d.id },
         });
       }
     }
@@ -186,7 +189,8 @@ export const globalSearch = createServerFn({ method: "GET" })
           label: `${p.amount >= 0 ? "+" : ""}${p.amount} — ${p.reason ?? p.action_type}`,
           sub: `${p.member_discord_id} · ${new Date(p.created_at).toLocaleDateString("fr-FR")}`,
           amount: p.amount,
-          to: "/points",
+          to: "/members/$id",
+          params: { id: p.member_discord_id ?? p.id },
         });
       }
     }

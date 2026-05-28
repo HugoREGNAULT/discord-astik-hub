@@ -121,7 +121,10 @@ export function CommandPalette() {
         <CommandGroup heading={heading}>
           {items.map((h) => {
             const Icon = iconFor(h.kind);
-            const params = h.kind === "member" ? h.params : undefined;
+            const params =
+              h.kind === "member" || h.kind === "donation" || h.kind === "points"
+                ? (h as { params: { id: string } }).params
+                : undefined;
             return (
               <CommandItem
                 key={`${h.kind}-${h.id}`}
