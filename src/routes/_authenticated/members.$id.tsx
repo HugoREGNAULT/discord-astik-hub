@@ -180,7 +180,13 @@ function MemberDetail() {
                 <Button variant="destructive" onClick={() => mWarn.mutate()} disabled={!warn} className="self-end">Avertir</Button>
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
       {data.canViewStaffData && data.recruiter && (
+        <Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
