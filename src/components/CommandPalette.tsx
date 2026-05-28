@@ -92,8 +92,8 @@ export function CommandPalette() {
 
   const searchFn = useServerFn(globalSearch);
   const { data, isFetching } = useQuery({
-    queryKey: ["global-search", debounced],
-    queryFn: () => searchFn({ data: { q: debounced } }),
+    queryKey: ["global-search", debounced, filter],
+    queryFn: () => searchFn({ data: { q: debounced, filter: filter ?? undefined } }),
     enabled: open && debounced.trim().length >= 1,
     staleTime: 15_000,
   });
