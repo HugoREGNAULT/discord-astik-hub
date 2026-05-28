@@ -103,15 +103,20 @@ type Application = {
 
 function ApplicationsList({ status }: { status: AppStatus }) {
   const listFn = useServerFn(listApplications);
+  const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({
     queryKey: ["applications", status],
     queryFn: () => listFn({ data: { status } }) as Promise<Application[]>,
   });
 
+  const items = data ?? [];
+  const pageCount = Math.max(1, Math.ceil(items.length / PER_PAGE));
+  const paged = useMemo(() => usePagedSlice(items, page, PER_PAGE), [items, page]);
+
   if (isLoading) {
     return <p className="text-muted-foreground text-sm">Chargement…</p>;
   }
-  if (!data || data.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="text-center text-muted-foreground text-sm py-12 border border-dashed rounded-lg">
         Aucune candidature {status === "pending" ? "en attente" : status}.
@@ -120,46 +125,50 @@ function ApplicationsList({ status }: { status: AppStatus }) {
   }
 
   return (
-    <Accordion type="single" collapsible className="space-y-2">
-      {data.map((app) => (
-        <AccordionItem
-          key={app.id}
-          value={app.id}
-          className="border rounded-lg bg-card px-4"
-        >
-          <AccordionTrigger className="hover:no-underline">
-            <div className="flex items-center gap-3 flex-1 text-left">
-              <img
-                src={`https://mc-heads.net/avatar/${encodeURIComponent(app.mc_name)}/32`}
-                alt=""
-                className="w-8 h-8 rounded-sm"
-                loading="lazy"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">
-                  {app.mc_name}{" "}
-                  <span className="text-muted-foreground text-xs">
-                    · @{app.discord_username}
-                  </span>
+    <div className="space-y-4">
+      <Accordion type="single" collapsible className="space-y-2">
+        {paged.map((app) => (
+          <AccordionItem
+            key={app.id}
+            value={app.id}
+            className="border rounded-lg bg-card px-4"
+          >
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center gap-3 flex-1 text-left">
+                <img
+                  src={`https://mc-heads.net/avatar/${encodeURIComponent(app.mc_name)}/32`}
+                  alt=""
+                  className="w-8 h-8 rounded-sm"
+                  loading="lazy"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">
+                    {app.mc_name}{" "}
+                    <span className="text-muted-foreground text-xs">
+                      · @{app.discord_username}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {app.country} · {app.age} ans · {app.ig_grade} ·{" "}
+                    {new Date(app.created_at).toLocaleDateString("fr-FR")}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {app.country} · {app.age} ans · {app.ig_grade} ·{" "}
-                  {new Date(app.created_at).toLocaleDateString("fr-FR")}
-                </div>
+                <Badge variant="outline" className="ml-2">
+                  {app.knowledge_level}/10
+                </Badge>
               </div>
-              <Badge variant="outline" className="ml-2">
-                {app.knowledge_level}/10
-              </Badge>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <ApplicationDetail app={app} />
-          </AccordionContent>
-        </AccordionItem>
-      ))}
-    </Accordion>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ApplicationDetail app={app} />
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+      <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+    </div>
   );
 }
+
 
 function ApplicationDetail({ app }: { app: Application }) {
   const qc = useQueryClient();
