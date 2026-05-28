@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          age: number
+          country: string
+          created_at: string
+          decided_at: string | null
+          decided_by_discord_id: string | null
+          decided_by_username: string | null
+          decision_reason: string | null
+          discord_id: string
+          discord_username: string
+          first_version: string
+          heard_from: string
+          id: string
+          ig_grade: string
+          knowledge_level: number
+          mc_name: string
+          presentation: string
+          previous_factions: string | null
+          schedule: string
+          skills: string
+          status: string
+          updated_at: string
+          weekly_playtime: string
+        }
+        Insert: {
+          age: number
+          country: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          decision_reason?: string | null
+          discord_id: string
+          discord_username: string
+          first_version: string
+          heard_from: string
+          id?: string
+          ig_grade: string
+          knowledge_level: number
+          mc_name: string
+          presentation: string
+          previous_factions?: string | null
+          schedule: string
+          skills: string
+          status?: string
+          updated_at?: string
+          weekly_playtime: string
+        }
+        Update: {
+          age?: number
+          country?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          decision_reason?: string | null
+          discord_id?: string
+          discord_username?: string
+          first_version?: string
+          heard_from?: string
+          id?: string
+          ig_grade?: string
+          knowledge_level?: number
+          mc_name?: string
+          presentation?: string
+          previous_factions?: string | null
+          schedule?: string
+          skills?: string
+          status?: string
+          updated_at?: string
+          weekly_playtime?: string
+        }
+        Relationships: []
+      }
       config_values: {
         Row: {
           active: boolean
