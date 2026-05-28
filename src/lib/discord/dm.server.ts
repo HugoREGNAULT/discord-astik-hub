@@ -4,6 +4,7 @@
  * 2) POST /channels/{id}/messages { content }
  */
 import { DISCORD_API } from "./constants";
+import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const BOT_TOKEN = () => process.env.DISCORD_BOT_TOKEN!;
 
@@ -12,7 +13,7 @@ export async function sendDiscordDM(
   content: string,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    const dmRes = await fetch(`${DISCORD_API}/users/@me/channels`, {
+    const dmRes = await fetchWithRetry(`${DISCORD_API}/users/@me/channels`, {
       method: "POST",
       headers: {
         Authorization: `Bot ${BOT_TOKEN()}`,
@@ -25,7 +26,7 @@ export async function sendDiscordDM(
     }
     const dm = (await dmRes.json()) as { id: string };
 
-    const msgRes = await fetch(`${DISCORD_API}/channels/${dm.id}/messages`, {
+    const msgRes = await fetchWithRetry(`${DISCORD_API}/channels/${dm.id}/messages`, {
       method: "POST",
       headers: {
         Authorization: `Bot ${BOT_TOKEN()}`,

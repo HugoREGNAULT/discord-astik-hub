@@ -11,7 +11,7 @@ import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
-
+import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
 const GRADES = ["Aucun", "Héros", "Légende", "Divinité", "Staff", "Affilié"] as const;
@@ -37,15 +37,19 @@ const applicationSchema = z.object({
 });
 
 async function fetchMojang(name: string): Promise<{ id: string; name: string }> {
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
+    {},
+    { retries: 3, timeoutMs: 8000 },
   );
   if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
-  if (!res.ok) throw new Error("Impossible de vérifier le pseudo (API Mojang).");
+  if (!res.ok) throw new Error("Impossible de vérifier le pseudo (API Mojang temporairement indisponible, réessaie dans un instant).");
   const body = (await res.json()) as { id?: string; name?: string };
   if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
   return { id: body.id, name: body.name };
 }
+
+const RATE_LIMIT_HOURS = 6;
 
 export const submitApplication = createServerFn({ method: "POST" })
   .inputValidator((input) => applicationSchema.parse(input))
@@ -61,6 +65,21 @@ export const submitApplication = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing.data) {
       throw new Error("Tu as déjà une candidature en attente.");
+    }
+
+    // Rate-limit : pas plus d'une candidature toutes les RATE_LIMIT_HOURS heures
+    // (empêche le spam après refus).
+    const since = new Date(Date.now() - RATE_LIMIT_HOURS * 3600 * 1000).toISOString();
+    const recent = await db
+      .from("applications")
+      .select("id, created_at")
+      .eq("discord_id", user.discordId)
+      .gte("created_at", since)
+      .limit(1);
+    if (recent.data && recent.data.length > 0) {
+      throw new Error(
+        `Tu dois attendre ${RATE_LIMIT_HOURS}h entre deux candidatures. Reviens plus tard.`,
+      );
     }
 
     // Si déjà membre, pas besoin de candidater

@@ -3,6 +3,7 @@
  * Utilise le bot token. Silencieux en cas d'erreur (ne casse jamais l'appelant).
  */
 import { DISCORD_API, LOG_CHANNELS } from "./constants";
+import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const BOT_TOKEN = () => process.env.DISCORD_BOT_TOKEN!;
 
@@ -21,7 +22,7 @@ async function postToChannel(
 ): Promise<void> {
   try {
     if (!process.env.DISCORD_BOT_TOKEN) return;
-    const res = await fetch(`${DISCORD_API}/channels/${channelId}/messages`, {
+    const res = await fetchWithRetry(`${DISCORD_API}/channels/${channelId}/messages`, {
       method: "POST",
       headers: {
         Authorization: `Bot ${BOT_TOKEN()}`,
