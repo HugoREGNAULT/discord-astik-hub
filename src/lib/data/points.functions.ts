@@ -56,7 +56,7 @@ export const removePoints = createServerFn({ method: "POST" })
     z
       .object({
         memberDiscordId: z.string().min(1),
-        amount: z.number().int().positive(),
+        amount: z.number().int().positive().max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
       })
       .parse(input),
