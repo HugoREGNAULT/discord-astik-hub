@@ -164,6 +164,11 @@ function ApplicationsList({ status }: { status: AppStatus }) {
                     {new Date(app.created_at).toLocaleDateString("fr-FR")}
                   </div>
                 </div>
+                {app.blacklist_matches && app.blacklist_matches.length > 0 && (
+                  <Badge variant="outline" className="ml-2 bg-destructive/15 text-destructive border-destructive/40">
+                    🚫 Blacklist
+                  </Badge>
+                )}
                 <Badge variant="outline" className="ml-2">
                   {app.knowledge_level}/10
                 </Badge>
