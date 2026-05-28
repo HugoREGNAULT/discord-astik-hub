@@ -14,7 +14,9 @@ import {
   CalendarCheck,
   FileText,
   Ban,
+  LayoutDashboard,
 } from "lucide-react";
+
 
 import {
   Sidebar,
@@ -40,7 +42,9 @@ const ITEMS: Item[] = [
   { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self", accent: "blurple" },
   { title: "Sondages", url: "/polls", icon: CalendarCheck, perm: "profile.self", accent: "blurple" },
 
+  { title: "Dashboard staff", url: "/staff", icon: LayoutDashboard, perm: "members.view", accent: "blurple" },
   { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
+
   { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access", accent: "pink" },
   { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
   { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage", accent: "pink" },

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
-import { ShieldX } from "lucide-react";
+import { ShieldX, Coins, ShoppingCart, Activity, UserCheck } from "lucide-react";
 
 import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
   head: () => ({ meta: [{ title: "Profil membre · PunkAstik" }] }),
@@ -183,9 +184,161 @@ function MemberDetail() {
         </Card>
       )}
 
+      {data.canViewStaffData && data.recruiter && (
+        <Card>
+
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <UserCheck className="size-4 text-primary" /> Recruteur
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link
+              to="/members/$id"
+              params={{ id: data.recruiter.discord_id }}
+              className="text-sm hover:text-primary"
+            >
+              {data.recruiter.ig_name ?? data.recruiter.discord_username ?? data.recruiter.discord_id}
+              <span className="text-xs text-muted-foreground ml-2">
+                @{data.recruiter.discord_username ?? "—"}
+              </span>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {data.canViewStaffData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-base">
+              <span className="flex items-center gap-2">
+                <Coins className="size-4 text-primary" /> Historique points
+              </span>
+              <Badge variant="outline">{data.pointsLedger.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {data.pointsLedger.length === 0 ? (
+              <p className="text-sm text-muted-foreground p-4">Aucun mouvement.</p>
+            ) : (
+              <ul className="divide-y divide-border max-h-80 overflow-y-auto">
+                {data.pointsLedger.map((p: any) => (
+                  <li key={p.id} className="px-4 py-2 text-sm flex items-center gap-3">
+                    <span
+                      className={`font-mono font-semibold w-16 text-right ${
+                        p.amount >= 0 ? "text-primary" : "text-destructive"
+                      }`}
+                    >
+                      {p.amount >= 0 ? "+" : ""}
+                      {p.amount}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs">{p.action_type}{p.reason ? ` · ${p.reason}` : ""}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        Par {p.staff_username ?? p.staff_discord_id} · {new Date(p.created_at).toLocaleString("fr-FR")}
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      → {p.total_after}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {data.canViewStaffData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-base">
+              <span className="flex items-center gap-2">
+                <ShoppingCart className="size-4 text-primary" /> Donations
+              </span>
+              <Badge variant="outline">{data.donations.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {data.donations.length === 0 ? (
+              <p className="text-sm text-muted-foreground p-4">Aucune donation.</p>
+            ) : (
+              <ul className="divide-y divide-border max-h-80 overflow-y-auto">
+                {data.donations.map((d: any) => (
+                  <li key={d.id} className="px-4 py-2 text-sm flex items-center gap-3">
+                    <Badge
+                      variant={
+                        d.status === "validated"
+                          ? "secondary"
+                          : d.status === "active"
+                            ? "default"
+                            : "outline"
+                      }
+                    >
+                      {d.status}
+                    </Badge>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs">
+                        Brut {d.total_brut} · Bonus {Number(d.bonus_pct ?? 0)}% → final{" "}
+                        <span className="font-semibold text-primary">{d.total_final}</span>
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {d.staff_username ?? "?"} · {new Date(d.created_at).toLocaleString("fr-FR")}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {data.canViewStaffData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-base">
+              <span className="flex items-center gap-2">
+                <Activity className="size-4 text-primary" /> Activité staff sur ce membre
+              </span>
+              <Badge variant="outline">{data.staffActivity.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {data.staffActivity.length === 0 ? (
+              <p className="text-sm text-muted-foreground p-4">Aucune action enregistrée.</p>
+            ) : (
+              <ul className="divide-y divide-border max-h-80 overflow-y-auto">
+                {data.staffActivity.map((l: any) => (
+                  <li key={l.id} className="px-4 py-2 text-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <code className="text-xs font-mono">{l.action}</code>
+                      {l.actor_discord_id && (
+                        <span className="text-[11px] text-muted-foreground font-mono">
+                          par {l.actor_discord_id}
+                        </span>
+                      )}
+                      <span className="text-[11px] text-muted-foreground ml-auto">
+                        {new Date(l.created_at).toLocaleString("fr-FR")}
+                      </span>
+                    </div>
+                    {l.payload && Object.keys(l.payload).length > 0 && (
+                      <div className="text-[11px] text-muted-foreground font-mono truncate mt-0.5">
+                        {JSON.stringify(l.payload)}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
+
 
 
 
