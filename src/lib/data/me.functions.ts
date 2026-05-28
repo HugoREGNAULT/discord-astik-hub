@@ -48,13 +48,14 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
       .select("*")
       .eq("member_discord_id", user.discordId)
       .order("created_at", { ascending: false })
-      .limit(5),
+      .limit(50),
     db
       .from("warnings")
       .select("id, created_at, body")
       .eq("member_discord_id", user.discordId)
       .order("created_at", { ascending: false })
       .limit(3),
+
   ]);
 
   // Recruteur (lookup léger)

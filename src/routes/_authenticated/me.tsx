@@ -31,8 +31,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
+import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
+
 
 export const Route = createFileRoute("/_authenticated/me")({
   head: () => ({
@@ -161,39 +163,15 @@ function MePage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Derniers gains */}
+        {/* Timeline AstikPoints (paginée) */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Coins className="size-4" /> Derniers mouvements AstikPoints
+              <Coins className="size-4" /> Historique AstikPoints
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {data.recentGains.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Aucun mouvement récent.</p>
-            ) : (
-              <ul className="divide-y divide-border">
-                {data.recentGains.map((g) => (
-                  <li key={g.id} className="py-2.5 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{g.reason ?? g.action_type}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(g.created_at).toLocaleString("fr-FR")}
-                        {g.staff_username && ` · par ${g.staff_username}`}
-                      </div>
-                    </div>
-                    <div
-                      className={`text-sm font-mono font-semibold ${
-                        g.amount >= 0 ? "text-green-500" : "text-destructive"
-                      }`}
-                    >
-                      {g.amount >= 0 ? "+" : ""}
-                      {g.amount.toLocaleString("fr-FR")}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <PointsTimeline gains={data.recentGains} />
           </CardContent>
         </Card>
 
@@ -348,3 +326,51 @@ function StatCard({
     </Card>
   );
 }
+
+type Gain = {
+  id: string;
+  amount: number;
+  reason: string | null;
+  action_type: string;
+  staff_username: string | null;
+  created_at: string;
+};
+
+function PointsTimeline({ gains }: { gains: Gain[] }) {
+  const [page, setPage] = useState(1);
+  const perPage = 10;
+  const slice = usePagedSlice(gains, page, perPage);
+  const pageCount = Math.ceil(gains.length / perPage);
+
+  if (gains.length === 0) {
+    return <p className="text-sm text-muted-foreground">Aucun mouvement récent.</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <ul className="divide-y divide-border">
+        {slice.map((g) => (
+          <li key={g.id} className="py-2.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate">{g.reason ?? g.action_type}</div>
+              <div className="text-xs text-muted-foreground">
+                {new Date(g.created_at).toLocaleString("fr-FR")}
+                {g.staff_username && ` · par ${g.staff_username}`}
+              </div>
+            </div>
+            <div
+              className={`text-sm font-mono font-semibold ${
+                g.amount >= 0 ? "text-green-500" : "text-destructive"
+              }`}
+            >
+              {g.amount >= 0 ? "+" : ""}
+              {g.amount.toLocaleString("fr-FR")}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+    </div>
+  );
+}
+
