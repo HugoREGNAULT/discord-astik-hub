@@ -163,7 +163,8 @@ export const globalSearch = createServerFn({ method: "GET" })
           sub: `${d.member_discord_id ?? "—"} · ${d.staff_username ?? "—"} · ${d.status}`,
           total: d.total_final,
           status: d.status,
-          to: "/donations",
+          to: "/members/$id",
+          params: { id: d.member_discord_id ?? d.id },
         });
       }
     }
