@@ -128,8 +128,8 @@ export const globalSearch = createServerFn({ method: "GET" })
     }
 
     /* AstikPoints — staff voit tout, sinon ses propres mouvements */
-    const canManagePoints = canAccess(user, "points.manage");
-    {
+    if (!filter || filter === "points") {
+      const canManagePoints = canAccess(user, "points.manage");
       let q = db
         .from("points_ledger")
         .select("id, member_discord_id, amount, reason, action_type, created_at")
