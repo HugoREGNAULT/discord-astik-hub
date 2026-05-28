@@ -83,10 +83,11 @@ export const addCartLine = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const user = await requirePermission("donations.manage");
     const subtotal = data.unit_points * data.quantity;
-    const { error } = await db.from("donation_lines").insert({ ...data, subtotal, donation_id: data.cartId });
+    const { cartId, ...rest } = data;
+    const { error } = await db.from("donation_lines").insert({ ...rest, subtotal, donation_id: cartId });
     if (error) throw new Error(error.message);
-    const totals = await recomputeCart(data.cartId);
-    await logAction("cart_line_add", user.discordId, { cartId: data.cartId, ...totals });
+    const totals = await recomputeCart(cartId);
+    await logAction("cart_line_add", user.discordId, { cartId, ...totals });
     return { ok: true, ...totals };
   });
 
