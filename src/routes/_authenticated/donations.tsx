@@ -35,6 +35,7 @@ function DonationsPage() {
 
   const [target, setTarget] = useState("");
   const [bonus, setBonus] = useState(0);
+  const newCartId = useId();
   const refresh = () => qc.invalidateQueries({ queryKey: ["carts"] });
 
   const mkCart = useMutation({
@@ -48,7 +49,26 @@ function DonationsPage() {
         <h1 className="text-2xl font-bold">Dons</h1>
       </div>
 
-      <NewCart members={members.data?.members ?? []} target={target} setTarget={setTarget} bonus={bonus} setBonus={setBonus} onCreate={() => mkCart.mutate()} />
+      <Card>
+        <CardHeader><CardTitle>Nouveau panier</CardTitle></CardHeader>
+        <CardContent className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[200px]">
+            <label htmlFor={`${newCartId}-member`} className="text-xs text-muted-foreground">Membre (optionnel)</label>
+            <select id={`${newCartId}-member`} value={target} onChange={(e) => setTarget(e.target.value)} className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm">
+              <option value="">— Aucun —</option>
+              {members.data?.members.map((m) => (
+                <option key={m.discord_id} value={m.discord_id}>{m.ig_name ?? m.discord_username}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-32">
+            <label htmlFor={`${newCartId}-bonus`} className="text-xs text-muted-foreground">Bonus %</label>
+            <Input id={`${newCartId}-bonus`} type="number" value={bonus} onChange={(e) => setBonus(Number(e.target.value))} />
+          </div>
+          <Button onClick={() => mkCart.mutate()}>Créer</Button>
+        </CardContent>
+      </Card>
+
 
 
       {carts.data?.carts.map((c: any) => (
