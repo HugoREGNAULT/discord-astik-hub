@@ -112,6 +112,17 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
       qc.invalidateQueries({ queryKey: ["applications"] });
     },
     onError: (e: Error) => toast.error(e.message),
+function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
+  const qc = useQueryClient();
+  const removeFn = useServerFn(removeBlacklistEntry);
+  const remove = useMutation({
+    mutationFn: () => removeFn({ data: { id: entry.id } }),
+    onSuccess: () => {
+      toast.success("Entrée supprimée.");
+      qc.invalidateQueries({ queryKey: ["blacklist"] });
+      qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -137,27 +148,26 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
           {new Date(entry.created_at).toLocaleDateString("fr-FR")}
         </p>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setConfirmOpen(true)}
-        className="text-destructive hover:text-destructive"
-        aria-label="Supprimer"
-      >
-        <Trash2 className="size-4" />
-      </Button>
       <ConfirmDialog
-        open={confirmOpen}
-        onOpenChange={setConfirmOpen}
         title="Supprimer cette entrée ?"
         description="Cette personne ne sera plus détectée comme blacklistée à la candidature."
         confirmLabel="Supprimer"
-        variant="destructive"
-        loading={remove.isPending}
-        onConfirm={() => remove.mutate()}
+        onConfirm={() => remove.mutateAsync()}
+        trigger={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            aria-label="Supprimer"
+          >
+            <Trash2 className="size-4" />
+          </Button>
+        }
       />
     </li>
   );
+}
+
 }
 
 function AddEntryDialog() {
