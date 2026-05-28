@@ -326,3 +326,51 @@ function StatCard({
     </Card>
   );
 }
+
+type Gain = {
+  id: string;
+  amount: number;
+  reason: string | null;
+  action_type: string;
+  staff_username: string | null;
+  created_at: string;
+};
+
+function PointsTimeline({ gains }: { gains: Gain[] }) {
+  const [page, setPage] = useState(1);
+  const perPage = 10;
+  const slice = usePagedSlice(gains, page, perPage);
+  const pageCount = Math.ceil(gains.length / perPage);
+
+  if (gains.length === 0) {
+    return <p className="text-sm text-muted-foreground">Aucun mouvement récent.</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      <ul className="divide-y divide-border">
+        {slice.map((g) => (
+          <li key={g.id} className="py-2.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate">{g.reason ?? g.action_type}</div>
+              <div className="text-xs text-muted-foreground">
+                {new Date(g.created_at).toLocaleString("fr-FR")}
+                {g.staff_username && ` · par ${g.staff_username}`}
+              </div>
+            </div>
+            <div
+              className={`text-sm font-mono font-semibold ${
+                g.amount >= 0 ? "text-green-500" : "text-destructive"
+              }`}
+            >
+              {g.amount >= 0 ? "+" : ""}
+              {g.amount.toLocaleString("fr-FR")}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+    </div>
+  );
+}
+
