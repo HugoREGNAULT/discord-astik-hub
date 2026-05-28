@@ -321,7 +321,9 @@ function EditMemberDialog({
               <option value="former">Ancien</option>
             </select>
           </div>
+          </div>
         </div>
+
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
