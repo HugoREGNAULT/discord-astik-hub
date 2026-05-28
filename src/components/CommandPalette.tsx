@@ -74,6 +74,7 @@ const iconFor = (k: SearchHit["kind"]) => {
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<SearchHit["kind"] | null>(null);
   const debounced = useDebounced(q, 220);
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
