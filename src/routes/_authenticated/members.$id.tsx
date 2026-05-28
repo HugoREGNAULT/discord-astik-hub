@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
-import { ShieldX } from "lucide-react";
+import { ShieldX, Coins, ShoppingCart, Activity, UserCheck } from "lucide-react";
 
 import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
   head: () => ({ meta: [{ title: "Profil membre · PunkAstik" }] }),
