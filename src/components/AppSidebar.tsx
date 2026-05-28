@@ -12,6 +12,7 @@ import {
   LogOut,
   UserPlus,
   CalendarCheck,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -45,6 +46,7 @@ const ITEMS: Item[] = [
   { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage", accent: "blurple" },
   { title: "Effectif", url: "/effectif", icon: ListTree, perm: "members.view", accent: "blurple" },
   { title: "Objectifs", url: "/objectives", icon: Target, perm: "objectives.edit", accent: "pink" },
+  { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
   { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
 ];
 

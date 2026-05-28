@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   Dialog,
   DialogContent,
@@ -102,15 +103,17 @@ function PollsPage() {
                   </Link>
                 </Button>
                 {canManage && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      if (confirm(`Supprimer "${p.title}" ?`)) mDel.mutate(p.id);
-                    }}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
+                  <ConfirmDialog
+                    trigger={
+                      <Button variant="ghost" size="sm" aria-label="Supprimer">
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    }
+                    title={`Supprimer "${p.title}" ?`}
+                    description="Ce sondage et tous les votes associés seront définitivement effacés."
+                    confirmLabel="Supprimer"
+                    onConfirm={() => mDel.mutateAsync(p.id)}
+                  />
                 )}
               </CardContent>
             </Card>
