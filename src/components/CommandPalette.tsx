@@ -157,10 +157,10 @@ export function CommandPalette() {
                   <Icon className="size-4 mr-2 opacity-60" />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="truncate">{h.label}</div>
+                  <div className="truncate">{highlightText(h.label, q)}</div>
                   {h.sub && (
                     <div className="text-[11px] text-muted-foreground truncate">
-                      {h.sub}
+                      {highlightText(h.sub, q)}
                     </div>
                   )}
                 </div>
