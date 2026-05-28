@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
+import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -54,11 +55,13 @@ function LoginPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div className="flex items-center gap-4">
-              <div
-                className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center font-bold text-white text-2xl rounded-sm rotate-3 shadow-lg shadow-pink-500/20"
-                style={{ fontFamily: "'Space Grotesk'" }}
-              >
-                P
+              <div className="relative">
+                <div className="absolute inset-0 bg-pink-500/30 blur-md" />
+                <img
+                  src={logo}
+                  alt="PunkAstik"
+                  className="relative w-12 h-12 object-cover rounded-sm border border-pink-500/40 shadow-lg shadow-pink-500/20"
+                />
               </div>
               <div>
                 <h1
