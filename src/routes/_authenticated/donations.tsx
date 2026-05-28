@@ -69,8 +69,9 @@ function DonationsPage() {
 
       {carts.data?.carts.map((c: any) => (
         <Cart key={c.id} cart={c} values={values.data?.values ?? []}
-          onAdd={(payload) => addLine({ data: { ...payload, cartId: c.id } }).then(refresh)}
-          onRemove={(lineId) => rmLine({ data: { lineId, cartId: c.id } }).then(refresh)}
+          onAdd={(payload: any) => addLine({ data: { ...payload, cartId: c.id } }).then(refresh)}
+          onRemove={(lineId: string) => rmLine({ data: { lineId, cartId: c.id } }).then(refresh)}
+
           onValidate={() => validate({ data: { cartId: c.id } }).then(() => { toast.success("Validé"); refresh(); })}
           onCancel={() => cancel({ data: { cartId: c.id } }).then(() => { toast.info("Annulé"); refresh(); })}
         />

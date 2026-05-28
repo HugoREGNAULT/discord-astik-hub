@@ -58,7 +58,8 @@ function Profile() {
       <Card>
         <CardHeader><CardTitle>Historique récent</CardTitle></CardHeader>
         <CardContent>
-          {history.data?.entries?.length ? (
+          {history.data?.history?.length ? (
+
             <ul className="divide-y divide-border">
               {history.data.history.map((e: any) => (
                 <li key={e.id} className="py-2 flex justify-between text-sm">
