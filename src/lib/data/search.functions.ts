@@ -50,8 +50,8 @@ export type SearchHit =
     };
 
 export const globalSearch = createServerFn({ method: "GET" })
-  .inputValidator((input: { q: string }) =>
-    z.object({ q: z.string().max(100) }).parse(input),
+  .inputValidator((input: { q: string; filter?: "member" | "application" | "donation" | "points" }) =>
+    z.object({ q: z.string().max(100), filter: z.enum(["member", "application", "donation", "points"]).optional() }).parse(input),
   )
   .handler(async ({ data }): Promise<{ hits: SearchHit[] }> => {
     const user = await requireSession();
