@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Guard } from "@/components/Guard";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -32,7 +32,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Paginator, usePagedSlice } from "@/components/Paginator";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
+const PER_PAGE = 15;
 export const Route = createFileRoute("/_authenticated/recruitment")({
   component: () => (<Guard perm="recruit.access"><RecruitmentPage /></Guard>),
 });
