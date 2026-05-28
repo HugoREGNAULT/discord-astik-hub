@@ -8,6 +8,7 @@
  */
 
 import { DISCORD_API, DISCORD_OAUTH_SCOPES, GUILDS } from "./constants";
+import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const CLIENT_ID = () => process.env.DISCORD_CLIENT_ID!;
 const CLIENT_SECRET = () => process.env.DISCORD_CLIENT_SECRET!;
