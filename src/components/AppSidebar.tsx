@@ -32,9 +32,9 @@ import type { Permission } from "@/lib/auth/permissions";
 type Item = { title: string; url: string; icon: any; perm: Permission };
 
 const ITEMS: Item[] = [
-  { title: "Mon espace", url: "/me", icon: Home, perm: "profile.self" },
+  { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self" },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
-  { title: "Mon profil", url: "/profile", icon: UserCircle2, perm: "profile.self" },
+
   { title: "Membres", url: "/members", icon: Users, perm: "members.view" },
   { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access" },
   { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage" },
