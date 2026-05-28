@@ -13,6 +13,7 @@ import {
   UserPlus,
   CalendarCheck,
   FileText,
+  Ban,
 } from "lucide-react";
 
 import {
