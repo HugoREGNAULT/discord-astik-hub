@@ -25,6 +25,7 @@ import {
   CalendarCheck,
   FileText,
   Search,
+  X,
 } from "lucide-react";
 import { globalSearch, type SearchHit } from "@/lib/data/search.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
