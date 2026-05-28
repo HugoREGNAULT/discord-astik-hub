@@ -493,6 +493,131 @@ export type Database = {
           },
         ]
       }
+      poll_options: {
+        Row: {
+          created_at: string
+          display_order: number
+          duration_minutes: number
+          id: string
+          poll_id: string
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          duration_minutes?: number
+          id?: string
+          poll_id: string
+          starts_at: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          duration_minutes?: number
+          id?: string
+          poll_id?: string
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_votes: {
+        Row: {
+          choice: string
+          created_at: string
+          id: string
+          option_id: string
+          poll_id: string
+          updated_at: string
+          voter_discord_id: string
+          voter_username: string | null
+        }
+        Insert: {
+          choice: string
+          created_at?: string
+          id?: string
+          option_id: string
+          poll_id: string
+          updated_at?: string
+          voter_discord_id: string
+          voter_username?: string | null
+        }
+        Update: {
+          choice?: string
+          created_at?: string
+          id?: string
+          option_id?: string
+          poll_id?: string
+          updated_at?: string
+          voter_discord_id?: string
+          voter_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          description: string | null
+          id: string
+          location: string | null
+          status: string
+          title: string
+          updated_at: string
+          winning_option_id: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          winning_option_id?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          winning_option_id?: string | null
+        }
+        Relationships: []
+      }
       warnings: {
         Row: {
           body: string
