@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -75,6 +76,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRecruitmentRoute =
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/staff': typeof AuthenticatedStaffRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/staff': typeof AuthenticatedStaffRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
@@ -259,6 +267,7 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
@@ -290,6 +299,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/profile'
     | '/recruitment'
+    | '/staff'
     | '/welcome'
     | '/api/health'
     | '/members/$id'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/profile'
     | '/recruitment'
+    | '/staff'
     | '/welcome'
     | '/api/health'
     | '/members/$id'
@@ -349,6 +360,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
+    | '/_authenticated/staff'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/members/$id'
@@ -429,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/staff': {
+      id: '/_authenticated/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof AuthenticatedStaffRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/recruitment': {
@@ -611,6 +630,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
+  AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -629,6 +649,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
+  AuthenticatedStaffRoute: AuthenticatedStaffRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
@@ -652,3 +673,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
