@@ -187,7 +187,6 @@ function MemberDetail() {
       {data.canViewStaffData && data.recruiter && (
         <Card>
 
-        <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
               <UserCheck className="size-4 text-primary" /> Recruteur
