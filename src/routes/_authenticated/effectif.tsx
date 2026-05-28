@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getEffectif } from "@/lib/data/effectif.functions";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/effectif")({
   head: () => ({ meta: [{ title: "Effectif · PunkAstik" }] }),
-  component: EffectifPage,
+  component: () => (<Guard perm="members.view"><EffectifPage /></Guard>),
 });
 
 function EffectifPage() {

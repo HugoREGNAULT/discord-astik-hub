@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getAdminOverview } from "@/lib/data/admin.functions";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin · PunkAstik" }] }),
-  component: AdminPage,
+  component: () => (<Guard perm="admin.access"><AdminPage /></Guard>),
 });
 
 function AdminPage() {

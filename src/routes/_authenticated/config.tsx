@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -12,7 +13,7 @@ import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/config")({
   head: () => ({ meta: [{ title: "Config valeurs · PunkAstik" }] }),
-  component: ConfigPage,
+  component: () => (<Guard perm="config.manage"><ConfigPage /></Guard>),
 });
 
 const CATS = ["item", "action", "other", "money"] as const;

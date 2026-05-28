@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Guard } from "@/components/Guard";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -33,7 +34,7 @@ import {
 } from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/_authenticated/recruitment")({
-  component: RecruitmentPage,
+  component: () => (<Guard perm="recruit.access"><RecruitmentPage /></Guard>),
 });
 
 type AppStatus = "pending" | "accepted" | "rejected";
