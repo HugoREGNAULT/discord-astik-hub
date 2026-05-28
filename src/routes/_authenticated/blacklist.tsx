@@ -141,7 +141,7 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
         title="Supprimer cette entrée ?"
         description="Cette personne ne sera plus détectée comme blacklistée à la candidature."
         confirmLabel="Supprimer"
-        onConfirm={() => remove.mutateAsync()}
+        onConfirm={async () => { await remove.mutateAsync(); }}
         trigger={
           <Button
             variant="ghost"
