@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CandidatureRouteImport } from './routes/candidature'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authenticated/objectives'
@@ -33,6 +35,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CandidatureRoute = CandidatureRouteImport.update({
+  id: '/candidature',
+  path: '/candidature',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -47,6 +54,12 @@ const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRecruitmentRoute =
+  AuthenticatedRecruitmentRouteImport.update({
+    id: '/recruitment',
+    path: '/recruitment',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -120,6 +133,7 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/candidature': typeof CandidatureRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -131,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -139,6 +154,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/candidature': typeof CandidatureRoute
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -150,6 +166,7 @@ export interface FileRoutesByTo {
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -160,6 +177,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/candidature': typeof CandidatureRoute
   '/login': typeof LoginRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
@@ -171,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated/objectives': typeof AuthenticatedObjectivesRoute
   '/_authenticated/points': typeof AuthenticatedPointsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
@@ -181,6 +200,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/candidature'
     | '/login'
     | '/admin'
     | '/config'
@@ -192,6 +212,7 @@ export interface FileRouteTypes {
     | '/objectives'
     | '/points'
     | '/profile'
+    | '/recruitment'
     | '/welcome'
     | '/members/$id'
     | '/api/auth/callback'
@@ -200,6 +221,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/candidature'
     | '/login'
     | '/admin'
     | '/config'
@@ -211,6 +233,7 @@ export interface FileRouteTypes {
     | '/objectives'
     | '/points'
     | '/profile'
+    | '/recruitment'
     | '/welcome'
     | '/members/$id'
     | '/api/auth/callback'
@@ -220,6 +243,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/candidature'
     | '/login'
     | '/_authenticated/admin'
     | '/_authenticated/config'
@@ -231,6 +255,7 @@ export interface FileRouteTypes {
     | '/_authenticated/objectives'
     | '/_authenticated/points'
     | '/_authenticated/profile'
+    | '/_authenticated/recruitment'
     | '/_authenticated/welcome'
     | '/_authenticated/members/$id'
     | '/api/auth/callback'
@@ -241,6 +266,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CandidatureRoute: typeof CandidatureRoute
   LoginRoute: typeof LoginRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
@@ -254,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/candidature': {
+      id: '/candidature'
+      path: '/candidature'
+      fullPath: '/candidature'
+      preLoaderRoute: typeof CandidatureRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -275,6 +308,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/recruitment': {
+      id: '/_authenticated/recruitment'
+      path: '/recruitment'
+      fullPath: '/recruitment'
+      preLoaderRoute: typeof AuthenticatedRecruitmentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/profile': {
@@ -400,6 +440,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedObjectivesRoute: typeof AuthenticatedObjectivesRoute
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -414,6 +455,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedObjectivesRoute: AuthenticatedObjectivesRoute,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
@@ -424,6 +466,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CandidatureRoute: CandidatureRoute,
   LoginRoute: LoginRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
