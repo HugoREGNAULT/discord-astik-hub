@@ -26,7 +26,7 @@ import {
   FileText,
   Search,
 } from "lucide-react";
-import { listMembers } from "@/lib/data/members.functions";
+import { globalSearch, type SearchHit } from "@/lib/data/search.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import type { Permission } from "@/lib/auth/permissions";
 import { Button } from "@/components/ui/button";
@@ -48,13 +48,35 @@ const NAVS: Nav[] = [
   { label: "Admin", to: "/admin", icon: ShieldAlert, perm: "admin.access" },
 ];
 
+function useDebounced<T>(value: T, ms = 200): T {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return v;
+}
+
+const iconFor = (k: SearchHit["kind"]) => {
+  switch (k) {
+    case "member":
+      return Users;
+    case "application":
+      return UserPlus;
+    case "donation":
+      return ShoppingCart;
+    case "points":
+      return Coins;
+  }
+};
+
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
+  const debounced = useDebounced(q, 220);
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
 
-  // Raccourci global Cmd/Ctrl + K
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -66,22 +88,64 @@ export function CommandPalette() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const canSearchMembers = hasPerm(user, "members.view");
-  const membersFn = useServerFn(listMembers);
-  const { data: membersData } = useQuery({
-    queryKey: ["palette-members", q],
-    queryFn: () => membersFn({ data: { q, status: "all" } }),
-    enabled: open && canSearchMembers && q.length >= 1,
-    staleTime: 30_000,
+  const searchFn = useServerFn(globalSearch);
+  const { data, isFetching } = useQuery({
+    queryKey: ["global-search", debounced],
+    queryFn: () => searchFn({ data: { q: debounced } }),
+    enabled: open && debounced.trim().length >= 1,
+    staleTime: 15_000,
   });
 
+  const hits = data?.hits ?? [];
   const navs = NAVS.filter((n) => hasPerm(user, n.perm));
-  const members = (membersData?.members ?? []).slice(0, 8);
+
+  const groups = {
+    member: hits.filter((h) => h.kind === "member"),
+    application: hits.filter((h) => h.kind === "application"),
+    donation: hits.filter((h) => h.kind === "donation"),
+    points: hits.filter((h) => h.kind === "points"),
+  };
 
   const go = (to: string, params?: any) => {
     setOpen(false);
     setQ("");
     navigate({ to, params });
+  };
+
+  const renderGroup = (heading: string, items: SearchHit[]) => {
+    if (items.length === 0) return null;
+    return (
+      <>
+        <CommandGroup heading={heading}>
+          {items.map((h) => {
+            const Icon = iconFor(h.kind);
+            const params = h.kind === "member" ? h.params : undefined;
+            return (
+              <CommandItem
+                key={`${h.kind}-${h.id}`}
+                value={`${h.kind} ${h.label} ${h.sub ?? ""} ${h.id}`}
+                onSelect={() => go(h.to, params)}
+              >
+                {h.kind === "member" && h.avatarUrl ? (
+                  <img src={h.avatarUrl} alt="" className="size-5 rounded-full mr-2" />
+                ) : (
+                  <Icon className="size-4 mr-2 opacity-60" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="truncate">{h.label}</div>
+                  {h.sub && (
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {h.sub}
+                    </div>
+                  )}
+                </div>
+              </CommandItem>
+            );
+          })}
+        </CommandGroup>
+        <CommandSeparator />
+      </>
+    );
   };
 
   return (
@@ -112,43 +176,29 @@ export function CommandPalette() {
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder="Rechercher membres, pages…"
+          placeholder="Rechercher membres, dons, candidatures, points…"
           value={q}
           onValueChange={setQ}
         />
         <CommandList>
-          <CommandEmpty>Aucun résultat.</CommandEmpty>
+          <CommandEmpty>
+            {isFetching
+              ? "Recherche…"
+              : q.length === 0
+                ? "Tape pour rechercher."
+                : "Aucun résultat."}
+          </CommandEmpty>
 
-          {canSearchMembers && members.length > 0 && (
-            <>
-              <CommandGroup heading="Membres">
-                {members.map((m) => (
-                  <CommandItem
-                    key={m.discord_id}
-                    value={`${m.ig_name ?? ""} ${m.discord_username ?? ""} ${m.discord_id}`}
-                    onSelect={() => go("/members/$id", { id: m.discord_id })}
-                  >
-                    {m.avatar_url ? (
-                      <img src={m.avatar_url} alt="" className="size-5 rounded-full mr-2" />
-                    ) : (
-                      <Users className="size-4 mr-2 opacity-50" />
-                    )}
-                    <span>{m.ig_name ?? m.discord_username ?? m.discord_id}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      {m.current_grade ?? "—"}
-                    </span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-              <CommandSeparator />
-            </>
-          )}
+          {renderGroup("Membres", groups.member)}
+          {renderGroup("Candidatures", groups.application)}
+          {renderGroup("Dons", groups.donation)}
+          {renderGroup("AstikPoints", groups.points)}
 
           <CommandGroup heading="Navigation">
             {navs.map((n) => (
               <CommandItem
                 key={n.to}
-                value={n.label}
+                value={`nav ${n.label}`}
                 onSelect={() => go(n.to)}
               >
                 <n.icon className="size-4 mr-2 opacity-70" />
