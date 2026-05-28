@@ -4,6 +4,7 @@
  * 2) POST /channels/{id}/messages { content }
  */
 import { DISCORD_API } from "./constants";
+import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const BOT_TOKEN = () => process.env.DISCORD_BOT_TOKEN!;
 
