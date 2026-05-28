@@ -21,30 +21,29 @@ export interface DiscordSessionData {
   rolesRefreshedAt: number;
 }
 
-const SECRET = process.env.SESSION_SECRET || "";
-if (SECRET.length < 32) {
-  // Padded fallback so dev doesn't crash, but warn loudly in logs.
-  // eslint-disable-next-line no-console
-  console.warn(
-    "[session] SESSION_SECRET is shorter than 32 chars — padding for dev. Set a 32+ char secret in production.",
-  );
+function getSessionConfig() {
+  const secret = process.env.SESSION_SECRET || "";
+  if (secret.length < 32) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[session] SESSION_SECRET is shorter than 32 chars — padding for dev. Set a 32+ char secret in production.",
+    );
+  }
+  return {
+    password: secret.padEnd(32, "_"),
+    name: "punkastik_session",
+    maxAge: 60 * 60 * 24 * 7,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax" as const,
+      secure: true,
+      path: "/",
+    },
+  };
 }
-const SESSION_PASSWORD = SECRET.padEnd(32, "_");
-
-const SESSION_CONFIG = {
-  password: SESSION_PASSWORD,
-  name: "punkastik_session",
-  maxAge: 60 * 60 * 24 * 7, // 7 days
-  cookie: {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: true,
-    path: "/",
-  },
-};
 
 export async function getSessionManager() {
-  return useSession<DiscordSessionData>(SESSION_CONFIG);
+  return useSession<DiscordSessionData>(getSessionConfig());
 }
 
 export async function getSessionData(): Promise<DiscordSessionData | null> {
