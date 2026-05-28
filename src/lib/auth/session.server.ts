@@ -49,8 +49,6 @@ export async function getSessionManager() {
 
 export async function getSessionData(): Promise<DiscordSessionData | null> {
   const s = await getSessionManager();
-export async function getSessionData(): Promise<DiscordSessionData | null> {
-  const s = await getSessionManager();
   const d = s.data as Partial<DiscordSessionData> | undefined;
   return d && d.discordId ? (d as DiscordSessionData) : null;
 }
