@@ -169,7 +169,8 @@ function LandingPage() {
         className="relative max-w-6xl mx-auto px-6 pb-8 text-center text-[10px] text-zinc-600 font-mono uppercase tracking-widest"
         style={{ fontFamily: "'Space Mono'" }}
       >
-        ENCRYPTED_HUB · PUNKASTIK © {new Date().getFullYear()}
+        ENCRYPTED_HUB · PUNKASTIK © {new Date().getFullYear()} ·{" "}
+        <Link to="/legal" className="hover:text-zinc-400 underline">Mentions légales</Link>
       </footer>
     </div>
   );
