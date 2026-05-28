@@ -85,7 +85,6 @@ export const Route = createFileRoute("/api/auth/callback")({
             ],
           });
 
-          });
 
           const headers = new Headers({ Location: nextPath });
           headers.append("Set-Cookie", "oauth_state=; Path=/; Max-Age=0");
