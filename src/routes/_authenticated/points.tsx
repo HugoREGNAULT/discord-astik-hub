@@ -44,14 +44,19 @@ function PointsPage() {
   };
 
   const run = async (action: "add" | "remove" | "set") => {
-    if (!target || !amount) return;
+    if (!target) { toast.error("Sélectionne un membre."); return; }
+    if (action !== "set" && amount <= 0) { toast.error("Montant > 0 requis."); return; }
+    if (action === "set" && amount < 0) { toast.error("Le solde ne peut pas être négatif."); return; }
     try {
-      if (action === "add") await addFn({ data: { memberDiscordId: target, amount, reason } });
-      else if (action === "remove") await rmFn({ data: { memberDiscordId: target, amount, reason } });
-      else await setFn({ data: { memberDiscordId: target, amount, reason } });
-      toast.success("OK"); setAmount(0); setReason(""); refresh();
-    } catch (e: any) { toast.error(e.message); }
+      let res: { total: number };
+      if (action === "add") res = await addFn({ data: { memberDiscordId: target, amount, reason } });
+      else if (action === "remove") res = await rmFn({ data: { memberDiscordId: target, amount, reason } });
+      else res = await setFn({ data: { memberDiscordId: target, total: amount, reason } });
+      toast.success(`OK — nouveau solde : ${res.total} pts`);
+      setAmount(0); setReason(""); refresh();
+    } catch (e: any) { toast.error(e.message ?? "Erreur"); }
   };
+
 
   return (
     <div className="space-y-6 max-w-4xl">
