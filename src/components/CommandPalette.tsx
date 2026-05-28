@@ -71,6 +71,26 @@ const iconFor = (k: SearchHit["kind"]) => {
   }
 };
 
+function highlightText(text: string, query: string): React.ReactNode {
+  if (!query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+  const parts = text.split(regex);
+  return parts.map((part, i) => {
+    if (part.toLowerCase() === query.toLowerCase()) {
+      return (
+        <mark
+          key={i}
+          className="bg-primary/30 text-primary rounded px-0.5 font-semibold"
+        >
+          {part}
+        </mark>
+      );
+    }
+    return part;
+  });
+}
+
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
