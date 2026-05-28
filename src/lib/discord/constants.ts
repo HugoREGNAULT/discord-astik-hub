@@ -45,3 +45,10 @@ export const EFFECTIF_GRADES: { label: string; matchNames: string[] }[] = [
 
 export const DISCORD_API = "https://discord.com/api/v10";
 export const DISCORD_OAUTH_SCOPES = ["identify", "guilds", "guilds.members.read"];
+
+/** Salons de logs sur le serveur faction */
+export const LOG_CHANNELS = {
+  AUTH: "1509547507640701081",
+  SITE: "1509547529384235178",
+} as const;
+
