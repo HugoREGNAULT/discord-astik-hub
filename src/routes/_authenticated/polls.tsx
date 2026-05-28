@@ -111,8 +111,8 @@ function PollsPage() {
                     }
                     title={`Supprimer "${p.title}" ?`}
                     description="Ce sondage et tous les votes associés seront définitivement effacés."
+                    confirmLabel="Supprimer"
                     onConfirm={async () => { await mDel.mutateAsync(p.id); }}
-                    onConfirm={() => mDel.mutateAsync(p.id)}
                   />
                 )}
               </CardContent>
