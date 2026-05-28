@@ -111,7 +111,11 @@ export const setPoints = createServerFn({ method: "POST" })
 export const getPointsHistory = createServerFn({ method: "GET" })
   .inputValidator((input: { memberDiscordId: string; limit?: number }) => input)
   .handler(async ({ data }) => {
-    await requirePermission("points.manage");
+    const { requireSession } = await import("@/lib/auth/require.server");
+    const { canAccess } = await import("@/lib/auth/permissions");
+    const user = await requireSession();
+    const isSelf = user.discordId === data.memberDiscordId;
+    if (!isSelf && !canAccess(user, "points.manage")) throw new Error("FORBIDDEN");
     const { data: rows, error } = await db
       .from("points_ledger")
       .select("*")
@@ -121,3 +125,4 @@ export const getPointsHistory = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { history: rows ?? [] };
   });
+
