@@ -113,7 +113,6 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  });
 
   return (
     <li className="p-4 flex items-start gap-3 flex-wrap">
