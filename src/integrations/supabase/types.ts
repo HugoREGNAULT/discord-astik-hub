@@ -486,6 +486,30 @@ export type Database = {
         }
         Relationships: []
       }
+      minecraft_uuid_cache: {
+        Row: {
+          first_seen_at: string
+          updated_at: string
+          username: string
+          username_lower: string | null
+          uuid: string
+        }
+        Insert: {
+          first_seen_at?: string
+          updated_at?: string
+          username: string
+          username_lower?: string | null
+          uuid: string
+        }
+        Update: {
+          first_seen_at?: string
+          updated_at?: string
+          username?: string
+          username_lower?: string | null
+          uuid?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           body: string
