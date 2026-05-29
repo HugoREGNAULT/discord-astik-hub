@@ -260,17 +260,17 @@ function MemberDetail() {
               <span className="flex items-center gap-2">
                 <Coins className="size-4 text-primary" /> Historique points
               </span>
-              <Badge variant="outline">{data.pointsLedger.length}</Badge>
+              <Badge variant="outline">{ledger.length}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {data.pointsLedger.length === 0 ? (
+            {ledger.length === 0 ? (
               <div className="p-4">
                 <EmptyState icon={Coins} title="Aucun mouvement" description="L'historique de points apparaîtra ici." variant="compact" />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {data.pointsLedger.map((p: any) => (
+                {ledger.map((p: any) => (
                   <li key={p.id} className="px-4 py-2 text-sm flex items-center gap-3">
                     <span
                       className={`font-mono font-semibold w-16 text-right ${
@@ -292,6 +292,20 @@ function MemberDetail() {
                   </li>
                 ))}
               </ul>
+            )}
+            {ledgerHasMore && (
+              <div className="p-2 border-t border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => loadMorePoints.mutate()}
+                  disabled={loadMorePoints.isPending}
+                >
+                  <ChevronDown className="size-4 mr-1" />
+                  {loadMorePoints.isPending ? "Chargement…" : "Charger plus"}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
