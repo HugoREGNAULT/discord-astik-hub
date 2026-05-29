@@ -206,7 +206,6 @@ function ConfigPage() {
           </div>
         </CardContent>
       </Card>
-      </Card>
 
       {grouped.map((g) => (
         <Card key={g.cat}>
