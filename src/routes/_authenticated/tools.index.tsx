@@ -10,7 +10,9 @@ import {
 } from "lucide-react";
 import { ToolCard } from "@/components/tools/ToolCard";
 import { ToolHeader, MissingKeyBanner } from "@/components/tools/ToolsUi";
+import { PaladiumRateLimits } from "@/components/tools/PaladiumRateLimits";
 import { hasPaladiumKey } from "@/lib/paladium/api";
+
 
 export const Route = createFileRoute("/_authenticated/tools/")({
   head: () => ({
