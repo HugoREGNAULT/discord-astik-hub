@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Paginator, usePagedSlice } from "@/components/Paginator";
+import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { listLogs, listLogActions } from "@/lib/data/logs.functions";
 import { Download, FileText, RotateCw } from "lucide-react";
 import { RowListSkeleton } from "@/components/Skeletons";
@@ -99,7 +99,7 @@ function LogsPage() {
 
   const logs = data?.logs ?? [];
   const pageCount = Math.max(1, Math.ceil(logs.length / PER_PAGE));
-  const paged = usePagedSlice(logs, page, PER_PAGE);
+  const paged = getPagedSlice(logs, page, PER_PAGE);
 
   const resetFilters = () => {
     setAction("all");
