@@ -148,6 +148,12 @@ function StaffPage() {
         />
       </div>
 
+      {/* Santé faction */}
+      <FactionHealthSection />
+
+      {/* Digest IA hebdo */}
+      <WeeklyDigestSection />
+
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
         timeline={data.applicationsTimeline ?? []}
