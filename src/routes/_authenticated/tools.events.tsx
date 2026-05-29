@@ -195,10 +195,7 @@ function EventsPage() {
           {sorted.length > 0 && (
             <ul className="divide-y divide-zinc-800 max-h-[640px] overflow-y-auto">
               {sorted.map((e, i) => (
-                <li
-                  key={i}
-                  className="py-3 flex flex-wrap items-baseline justify-between gap-2"
-                >
+                <li key={i} className="py-3 flex flex-wrap items-baseline justify-between gap-2">
                   <div>
                     <div className="text-sm text-white font-medium">{e.name}</div>
                     {e.type && (
@@ -235,9 +232,7 @@ function EventsPage() {
               // à vos marques
             </div>
             {onYourMark.isLoading && <LoadingBlock />}
-            {onYourMark.error && (
-              <ErrorBlock message={(onYourMark.error as Error).message} />
-            )}
+            {onYourMark.error && <ErrorBlock message={(onYourMark.error as Error).message} />}
             {onYourMark.data && (
               <div className="space-y-3">
                 <div className="flex items-baseline justify-between">
@@ -272,9 +267,7 @@ function EventsPage() {
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <div className="text-zinc-500">Début</div>
-                    <div className="text-zinc-200">
-                      {oymStart ? fmtDate(oymStart) : "—"}
-                    </div>
+                    <div className="text-zinc-200">{oymStart ? fmtDate(oymStart) : "—"}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-zinc-500">
@@ -325,10 +318,7 @@ function EventsPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-center">
-                  <Stat
-                    label="xp"
-                    value={quest.data.earningXp?.toLocaleString("fr-FR")}
-                  />
+                  <Stat label="xp" value={quest.data.earningXp?.toLocaleString("fr-FR")} />
                   <Stat
                     label="money"
                     value={
@@ -341,15 +331,11 @@ function EventsPage() {
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <div className="text-zinc-500">Début</div>
-                    <div className="text-zinc-200">
-                      {questStart ? fmtDate(questStart) : "—"}
-                    </div>
+                    <div className="text-zinc-200">{questStart ? fmtDate(questStart) : "—"}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-zinc-500">Fin</div>
-                    <div className="text-zinc-200">
-                      {questEnd ? fmtDate(questEnd) : "—"}
-                    </div>
+                    <div className="text-zinc-200">{questEnd ? fmtDate(questEnd) : "—"}</div>
                     {questEnd && questEnd > now && (
                       <div className="text-pink-400 font-mono mt-0.5">
                         {fmtCountdown(questEnd - now)}
@@ -366,13 +352,7 @@ function EventsPage() {
   );
 }
 
-function Stat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | null | undefined;
-}) {
+function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
     <div className="bg-zinc-900/60 border border-zinc-800 rounded px-2 py-2">
       <div
