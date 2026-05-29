@@ -227,7 +227,49 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Créneaux proposés</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label>Créneaux proposés</Label>
+              <div>
+                <input
+                  id="poll-csv"
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const text = String(reader.result ?? "");
+                      const parsed = parseCsvSlots(text);
+                      if (!parsed.length) {
+                        toast.error("Aucun créneau valide trouvé dans le CSV");
+                        return;
+                      }
+                      if (parsed.length > 20) {
+                        toast.error("Maximum 20 créneaux — seuls les 20 premiers ont été gardés");
+                      }
+                      setSlots(parsed.slice(0, 20));
+                      toast.success(`${Math.min(parsed.length, 20)} créneaux importés`);
+                    };
+                    reader.readAsText(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById("poll-csv")?.click()}
+                >
+                  <Upload className="size-3" /> Importer CSV
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Format CSV: <code>date,durée</code> — ex.{" "}
+              <code>2026-06-15 20:00,90</code> (durée en minutes, optionnelle).
+            </p>
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <Input
