@@ -96,6 +96,9 @@ function ToolsIndex() {
           accent="pink"
         />
       </div>
+      <div className="mt-8">
+        <PaladiumRateLimits />
+      </div>
     </div>
   );
 }
