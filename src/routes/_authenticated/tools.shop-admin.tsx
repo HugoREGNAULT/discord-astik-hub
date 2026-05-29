@@ -38,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
 function ShopAdminPage() {
   const fetchLatest = useServerFn(getAdminShopLatest);
   const fetchHistory = useServerFn(getAdminShopHistory);
+  const fetchMovers = useServerFn(getAdminShopTopMovers);
   const [q, setQ] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
@@ -45,6 +46,13 @@ function ShopAdminPage() {
   const latest = useQuery({
     queryKey: ["admin-shop-latest"],
     queryFn: () => fetchLatest(),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+
+  const movers = useQuery({
+    queryKey: ["admin-shop-movers"],
+    queryFn: () => fetchMovers(),
     staleTime: 5 * 60_000,
     retry: false,
   });
