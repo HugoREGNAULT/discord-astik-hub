@@ -29,7 +29,9 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
       .limit(200_000),
     db
       .from("members")
-      .select("discord_id, ig_name, discord_username, avatar_url, arrival_date, recruiter_discord_id")
+      .select(
+        "discord_id, ig_name, discord_username, avatar_url, arrival_date, recruiter_discord_id",
+      )
       .gte("arrival_date", since30dDate)
       .order("arrival_date", { ascending: false }),
     db
@@ -69,24 +71,19 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   // recentArrivals : 30j seulement, on relance pour 90j via filter sur active
   for (const m of (recentArrivals.data ?? []) as any[]) {
     if (m.recruiter_discord_id) {
-      recruiters30.set(
-        m.recruiter_discord_id,
-        (recruiters30.get(m.recruiter_discord_id) ?? 0) + 1,
-      );
+      recruiters30.set(m.recruiter_discord_id, (recruiters30.get(m.recruiter_discord_id) ?? 0) + 1);
     }
   }
   for (const m of active as any[]) {
     if (m.recruiter_discord_id && m.arrival_date && m.arrival_date >= since90dDate) {
-      recruiters90.set(
-        m.recruiter_discord_id,
-        (recruiters90.get(m.recruiter_discord_id) ?? 0) + 1,
-      );
+      recruiters90.set(m.recruiter_discord_id, (recruiters90.get(m.recruiter_discord_id) ?? 0) + 1);
     }
   }
-  const topRecruiterIds = Array.from(
-    new Set([...recruiters30.keys(), ...recruiters90.keys()]),
-  );
-  let recruiterMap = new Map<string, { ig_name: string | null; discord_username: string | null; avatar_url: string | null }>();
+  const topRecruiterIds = Array.from(new Set([...recruiters30.keys(), ...recruiters90.keys()]));
+  let recruiterMap = new Map<
+    string,
+    { ig_name: string | null; discord_username: string | null; avatar_url: string | null }
+  >();
   if (topRecruiterIds.length > 0) {
     const { data: recs } = await db
       .from("members")
@@ -111,8 +108,7 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
 
   const arrivals30 = (recentArrivals.data ?? []).length;
   const departures30 = (recentDepartures.data ?? []).length;
-  const turnoverRate =
-    total > 0 ? Math.round(((arrivals30 + departures30) / total) * 100) : 0;
+  const turnoverRate = total > 0 ? Math.round(((arrivals30 + departures30) / total) * 100) : 0;
   const netGrowth30 = arrivals30 - departures30;
 
   return {

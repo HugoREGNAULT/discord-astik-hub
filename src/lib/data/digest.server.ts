@@ -40,9 +40,7 @@ interface GenerateOptions {
   force?: boolean;
 }
 
-export async function generateWeeklyDigest(
-  opts: GenerateOptions = {},
-): Promise<DigestResult> {
+export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<DigestResult> {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) {
     return {
@@ -59,9 +57,7 @@ export async function generateWeeklyDigest(
   const lastWeekRef = new Date(now.getTime() - 7 * 86_400_000);
   const weekStart = mondayOf(lastWeekRef);
   const weekStartIso = `${weekStart}T00:00:00Z`;
-  const weekEndIso = new Date(
-    new Date(weekStartIso).getTime() + 7 * 86_400_000,
-  ).toISOString();
+  const weekEndIso = new Date(new Date(weekStartIso).getTime() + 7 * 86_400_000).toISOString();
 
   // Idempotence
   if (!opts.force) {
@@ -159,7 +155,10 @@ export async function generateWeeklyDigest(
     const { data: m } = await db
       .from("members")
       .select("discord_id, ig_name, discord_username")
-      .in("discord_id", topIds.map(([id]) => id));
+      .in(
+        "discord_id",
+        topIds.map(([id]) => id),
+      );
     const byId = new Map((m ?? []).map((x: any) => [x.discord_id, x]));
     topContribs = topIds.map(([id, points]) => ({
       name: (byId.get(id) as any)?.ig_name ?? (byId.get(id) as any)?.discord_username ?? id,
@@ -269,7 +268,14 @@ ${JSON.stringify(stats, null, 2)}
 
   // 3. Extraction d'un résumé court (1ʳᵉ ligne après TL;DR ou 1ʳᵉ phrase)
   const tldrMatch = content.match(/\*\*TL;DR\*\*\s*[:\-–]\s*([^\n]+)/i);
-  const summary = (tldrMatch?.[1] ?? content.split("\n").find((l) => l.trim())?.slice(0, 240) ?? "")
+  const summary = (
+    tldrMatch?.[1] ??
+    content
+      .split("\n")
+      .find((l) => l.trim())
+      ?.slice(0, 240) ??
+    ""
+  )
     .trim()
     .slice(0, 280);
 

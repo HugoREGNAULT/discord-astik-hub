@@ -148,7 +148,7 @@ function UptimePage() {
                   dataKey="t"
                   tickFormatter={(t) => formatTick(t, days)}
                   stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
+                  tick={{ fill: "#e4e4e7", fontSize: 10 }}
                 />
                 <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
                 <Tooltip
@@ -285,7 +285,7 @@ function UptimePage() {
                           dataKey="t"
                           tickFormatter={(t) => formatTick(t, days)}
                           stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
+                          tick={{ fill: "#e4e4e7", fontSize: 10 }}
                         />
                         <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
                         <Tooltip
