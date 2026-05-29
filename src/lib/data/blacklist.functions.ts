@@ -93,6 +93,8 @@ const updateSchema = z
 export const updateBlacklistEntry = createServerFn({ method: "POST" })
   .inputValidator((input) => updateSchema.parse(input))
   .handler(async ({ data }) => {
+    const staff = await requirePermission("recruit.access");
+
     const patch: {
       updated_at: string;
       discord_id?: string | null;
