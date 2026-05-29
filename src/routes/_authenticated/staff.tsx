@@ -627,3 +627,362 @@ function MiniStat({
     </div>
   );
 }
+
+// ----------------- Santé faction -----------------
+
+function FactionHealthSection() {
+  const fn = useServerFn(getFactionHealth);
+  const { data, isLoading } = useQuery({
+    queryKey: ["faction-health"],
+    queryFn: () => fn(),
+    refetchInterval: 5 * 60_000,
+  });
+
+  if (isLoading || !data) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HeartPulse className="size-4 text-pink-500" /> Santé faction
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-40 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const s = data.summary;
+  const netPositive = s.netGrowth30 >= 0;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <HeartPulse className="size-4 text-pink-500" />
+          Santé faction
+          <span className="text-[11px] text-muted-foreground font-normal ml-auto">
+            30/90 derniers jours
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HealthStat
+            label="Taux d'activité 7j"
+            value={`${s.activityRate}%`}
+            sub={`${s.activeMembers} actifs`}
+            tone={s.activityRate >= 70 ? "green" : s.activityRate >= 40 ? "amber" : "red"}
+          />
+          <HealthStat
+            label="Arrivées 30j"
+            value={`+${s.arrivals30}`}
+            tone="green"
+            icon={<ArrowUpRight className="size-3.5" />}
+          />
+          <HealthStat
+            label="Départs 30j"
+            value={`-${s.departures30}`}
+            tone={s.departures30 > s.arrivals30 ? "red" : undefined}
+            icon={<ArrowDownRight className="size-3.5" />}
+          />
+          <HealthStat
+            label="Solde net"
+            value={`${netPositive ? "+" : ""}${s.netGrowth30}`}
+            sub={`Turnover ${s.turnoverRate}%`}
+            tone={netPositive ? "green" : "red"}
+          />
+        </div>
+
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+            Évolution effectif (90 jours)
+          </div>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={data.evolution}
+                margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
+                    <stop offset="100%" stopColor="#ec4899" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <RGrid strokeDasharray="3 3" stroke="#27272a" />
+                <RXAxis
+                  dataKey="date"
+                  stroke="#52525b"
+                  tick={{ fill: "#e4e4e7", fontSize: 11 }}
+                  tickFormatter={(d: string) =>
+                    new Date(d).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "short",
+                    })
+                  }
+                  minTickGap={30}
+                />
+                <RYAxis
+                  stroke="#52525b"
+                  tick={{ fill: "#e4e4e7", fontSize: 11 }}
+                  width={32}
+                  allowDecimals={false}
+                />
+                <RTooltip
+                  contentStyle={{
+                    background: "#18181b",
+                    border: "1px solid #3f3f46",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    color: "#e4e4e7",
+                  }}
+                  labelStyle={{ color: "#fafafa" }}
+                  labelFormatter={(l: string) => new Date(l).toLocaleDateString("fr-FR")}
+                  formatter={(v: number) => [`${v} membres`, "Effectif"]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#ec4899"
+                  strokeWidth={2}
+                  fill="url(#healthGrad)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {data.topRecruiters.length > 0 && (
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+              Top recruteurs (90j)
+            </div>
+            <ul className="grid sm:grid-cols-2 gap-2">
+              {data.topRecruiters.map((r: any, i: number) => (
+                <Link
+                  key={r.discord_id}
+                  to="/members/$id"
+                  params={{ id: r.discord_id }}
+                  className="flex items-center gap-3 border border-border rounded p-2 text-sm hover:border-primary/40 transition"
+                >
+                  <span className="text-xs font-mono text-muted-foreground w-5">
+                    #{i + 1}
+                  </span>
+                  {r.avatar_url ? (
+                    <img src={r.avatar_url} alt="" className="size-7 rounded-full" />
+                  ) : (
+                    <div className="size-7 rounded-full bg-muted" />
+                  )}
+                  <div className="flex-1 min-w-0 truncate">
+                    {r.ig_name ?? r.discord_username ?? r.discord_id}
+                  </div>
+                  <Badge variant="secondary">{r.count_90d} recrut.</Badge>
+                  {r.count_30d > 0 && (
+                    <Badge variant="outline" className="text-[10px]">
+                      +{r.count_30d} 30j
+                    </Badge>
+                  )}
+                </Link>
+              ))}
+            </ul>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function HealthStat({
+  label,
+  value,
+  sub,
+  tone,
+  icon,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  tone?: "green" | "red" | "amber";
+  icon?: React.ReactNode;
+}) {
+  const color =
+    tone === "green"
+      ? "text-emerald-400"
+      : tone === "red"
+        ? "text-red-400"
+        : tone === "amber"
+          ? "text-amber-400"
+          : "text-foreground";
+  return (
+    <div className="rounded-md border border-border bg-card/40 p-3">
+      <div className="text-[11px] text-muted-foreground flex items-center gap-1">
+        {icon} {label}
+      </div>
+      <div className={`text-xl font-bold tabular-nums ${color}`}>{value}</div>
+      {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+// ----------------- Digest IA hebdo -----------------
+
+function WeeklyDigestSection() {
+  const fn = useServerFn(getLatestDigest);
+  const genFn = useServerFn(generateDigestManually);
+  const qc = useQueryClient();
+  const { data: me } = useCurrentUser();
+  const canGenerate = hasPerm(me, "admin.access");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["latest-digest"],
+    queryFn: () => fn(),
+    refetchInterval: 10 * 60_000,
+  });
+
+  const genMut = useMutation({
+    mutationFn: () => genFn(),
+    onSuccess: (res: any) => {
+      if (res?.ok) {
+        toast.success(res.reused ? "Digest déjà à jour" : "Digest généré ✨");
+        qc.invalidateQueries({ queryKey: ["latest-digest"] });
+      } else {
+        toast.error(res?.error ?? "Échec de la génération");
+      }
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const digest = data?.digest;
+
+  return (
+    <Card className="border-pink-500/30 bg-gradient-to-br from-pink-500/5 to-transparent">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="size-4 text-pink-500" />
+          Digest IA hebdomadaire
+          <span className="text-[11px] text-muted-foreground font-normal ml-2">
+            Généré chaque lundi 10h
+          </span>
+          {canGenerate && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="ml-auto gap-1.5"
+              disabled={genMut.isPending}
+              onClick={() => genMut.mutate()}
+              title="Régénérer le digest de la semaine en cours"
+            >
+              <RefreshCw className={`size-3.5 ${genMut.isPending ? "animate-spin" : ""}`} />
+              {genMut.isPending ? "Génération…" : "Regénérer"}
+            </Button>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-32 w-full" />
+        ) : !digest ? (
+          <EmptyState
+            icon={Sparkles}
+            title="Aucun digest pour l'instant"
+            description={
+              canGenerate
+                ? "Clique sur Regénérer pour produire le premier résumé IA."
+                : "Le premier résumé sera généré automatiquement lundi prochain à 10h."
+            }
+            variant="compact"
+          />
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <Badge variant="outline">
+                Semaine du{" "}
+                {new Date(digest.week_start).toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </Badge>
+              <span>
+                · Généré {new Date(digest.generated_at).toLocaleString("fr-FR")} ·{" "}
+                {digest.model ?? "IA"}
+              </span>
+            </div>
+            <DigestMarkdown content={digest.content} />
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Mini renderer markdown (titres, listes, gras) — suffit pour les digests.
+ * Évite d'ajouter une dépendance lourde juste pour ça.
+ */
+function DigestMarkdown({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const out: React.ReactNode[] = [];
+  let listBuf: string[] = [];
+  const flushList = () => {
+    if (listBuf.length > 0) {
+      out.push(
+        <ul key={`ul-${out.length}`} className="list-disc pl-5 space-y-1 text-sm">
+          {listBuf.map((l, i) => (
+            <li key={i} dangerouslySetInnerHTML={{ __html: renderInline(l) }} />
+          ))}
+        </ul>,
+      );
+      listBuf = [];
+    }
+  };
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (/^\s*[-*]\s+/.test(line)) {
+      listBuf.push(line.replace(/^\s*[-*]\s+/, ""));
+      continue;
+    }
+    flushList();
+    if (line.startsWith("# ")) {
+      out.push(
+        <h3 key={out.length} className="text-lg font-bold tracking-tight">
+          {line.slice(2)}
+        </h3>,
+      );
+    } else if (line.startsWith("## ")) {
+      out.push(
+        <h4
+          key={out.length}
+          className="text-sm font-semibold uppercase tracking-wider text-pink-400 mt-3"
+        >
+          {line.slice(3)}
+        </h4>,
+      );
+    } else if (line.trim() === "") {
+      // skip
+    } else {
+      out.push(
+        <p
+          key={out.length}
+          className="text-sm leading-relaxed text-foreground/90"
+          dangerouslySetInnerHTML={{ __html: renderInline(line) }}
+        />,
+      );
+    }
+  }
+  flushList();
+  return <div className="space-y-2">{out}</div>;
+}
+
+function renderInline(text: string): string {
+  // Escape HTML d'abord
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
+    .replace(/`([^`]+)`/g, '<code class="font-mono text-xs bg-muted px-1 py-0.5 rounded">$1</code>');
+}
