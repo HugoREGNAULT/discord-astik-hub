@@ -44,6 +44,7 @@ function MembersPage() {
       </div>
       <div className="flex flex-wrap gap-2">
         <Input placeholder="Rechercher (pseudo, IG, ID)…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <div className="flex gap-1">
           {(["active", "away", "former", "all"] as const).map((s) => (
             <button
               key={s}
@@ -53,10 +54,9 @@ function MembersPage() {
               {s === "active" ? "Actifs" : s === "away" ? "Absents" : s === "former" ? "Anciens" : "Tous"}
             </button>
           ))}
-
-          ))}
         </div>
       </div>
+
 
       {isLoading && <MemberRowsSkeleton count={8} />}
 
