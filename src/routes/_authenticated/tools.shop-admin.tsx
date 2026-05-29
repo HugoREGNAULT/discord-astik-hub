@@ -42,7 +42,6 @@ export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
   component: ShopAdminPage,
 });
 
-
 function ShopAdminPage() {
   const fetchLatest = useServerFn(getAdminShopLatest);
   const fetchHistory = useServerFn(getAdminShopHistory);
@@ -202,7 +201,6 @@ function ShopAdminPage() {
             <MyAlertsPanel />
           </ToolCard>
 
-
           <ToolCard className="lg:col-span-2">
             <div
               className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
@@ -311,10 +309,7 @@ function AlertForm({ itemName }: { itemName: string }) {
   };
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mt-4 border-t border-zinc-800 pt-4 space-y-3"
-    >
+    <form onSubmit={onSubmit} className="mt-4 border-t border-zinc-800 pt-4 space-y-3">
       <div
         className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-2"
         style={{ fontFamily: "'Space Mono'" }}
@@ -405,9 +400,7 @@ function MyAlertsPanel() {
                 <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
                   {a.price_type === "sell" ? "vente" : "achat"} ·{" "}
                   {a.direction === "below" ? "≤" : "≥"} {a.threshold.toLocaleString("fr-FR")}
-                  {a.is_triggered && (
-                    <span className="ml-2 text-amber-400">· déclenchée</span>
-                  )}
+                  {a.is_triggered && <span className="ml-2 text-amber-400">· déclenchée</span>}
                 </div>
               </div>
               <button
@@ -425,4 +418,3 @@ function MyAlertsPanel() {
     </div>
   );
 }
-
