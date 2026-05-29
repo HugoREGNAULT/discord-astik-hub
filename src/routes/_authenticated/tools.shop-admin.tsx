@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Bell, Trash2 } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -24,6 +26,11 @@ import {
   getAdminShopHistory,
   getAdminShopTopMovers,
 } from "@/lib/paladium/history.functions";
+import {
+  listMyShopAlerts,
+  createShopAlert,
+  deleteShopAlert,
+} from "@/lib/data/shop-alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
   head: () => ({
@@ -34,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
   }),
   component: ShopAdminPage,
 });
+
 
 function ShopAdminPage() {
   const fetchLatest = useServerFn(getAdminShopLatest);
@@ -187,7 +195,13 @@ function ShopAdminPage() {
                 </ResponsiveContainer>
               </div>
             )}
+            {selected && <AlertForm itemName={selected} />}
           </ToolCard>
+
+          <ToolCard className="lg:col-span-2">
+            <MyAlertsPanel />
+          </ToolCard>
+
 
           <ToolCard className="lg:col-span-2">
             <div
@@ -263,3 +277,152 @@ function MoversList({
     </div>
   );
 }
+
+function AlertForm({ itemName }: { itemName: string }) {
+  const qc = useQueryClient();
+  const createFn = useServerFn(createShopAlert);
+  const [priceType, setPriceType] = useState<"buy" | "sell">("sell");
+  const [direction, setDirection] = useState<"above" | "below">("below");
+  const [threshold, setThreshold] = useState("");
+
+  const mut = useMutation({
+    mutationFn: (vars: {
+      item_name: string;
+      price_type: "buy" | "sell";
+      direction: "above" | "below";
+      threshold: number;
+    }) => createFn({ data: vars }),
+    onSuccess: () => {
+      toast.success("Alerte créée");
+      setThreshold("");
+      qc.invalidateQueries({ queryKey: ["my-shop-alerts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const n = Number(threshold);
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error("Seuil invalide");
+      return;
+    }
+    mut.mutate({ item_name: itemName, price_type: priceType, direction, threshold: n });
+  };
+
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="mt-4 border-t border-zinc-800 pt-4 space-y-3"
+    >
+      <div
+        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-2"
+        style={{ fontFamily: "'Space Mono'" }}
+      >
+        <Bell className="size-3" /> // créer une alerte
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-xs">
+        <select
+          value={priceType}
+          onChange={(e) => setPriceType(e.target.value as "buy" | "sell")}
+          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+        >
+          <option value="sell">Prix vente</option>
+          <option value="buy">Prix achat</option>
+        </select>
+        <select
+          value={direction}
+          onChange={(e) => setDirection(e.target.value as "above" | "below")}
+          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+        >
+          <option value="below">passe en dessous de</option>
+          <option value="above">passe au-dessus de</option>
+        </select>
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="number"
+          step="any"
+          min="0"
+          value={threshold}
+          onChange={(e) => setThreshold(e.target.value)}
+          placeholder="Seuil ($)"
+          className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-sm text-zinc-200"
+        />
+        <button
+          type="submit"
+          disabled={mut.isPending}
+          className="px-3 py-1.5 bg-pink-500 text-white text-xs uppercase tracking-wider rounded hover:bg-pink-600 disabled:opacity-50"
+          style={{ fontFamily: "'Space Grotesk'" }}
+        >
+          {mut.isPending ? "…" : "Créer"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function MyAlertsPanel() {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listMyShopAlerts);
+  const deleteFn = useServerFn(deleteShopAlert);
+  const q = useQuery({
+    queryKey: ["my-shop-alerts"],
+    queryFn: () => listFn(),
+    staleTime: 30_000,
+  });
+
+  const del = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Alerte supprimée");
+      qc.invalidateQueries({ queryKey: ["my-shop-alerts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div>
+      <div
+        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3 flex items-center gap-2"
+        style={{ fontFamily: "'Space Mono'" }}
+      >
+        <Bell className="size-3" /> // mes alertes prix
+      </div>
+      {q.isLoading && <LoadingBlock />}
+      {q.data && q.data.alerts.length === 0 && (
+        <EmptyBlock label="Aucune alerte. Sélectionne un item et crée-en une." />
+      )}
+      {q.data && q.data.alerts.length > 0 && (
+        <ul className="space-y-2">
+          {q.data.alerts.map((a) => (
+            <li
+              key={a.id}
+              className="flex items-center justify-between gap-3 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="font-mono text-xs text-zinc-200 truncate">{a.item_name}</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+                  {a.price_type === "sell" ? "vente" : "achat"} ·{" "}
+                  {a.direction === "below" ? "≤" : "≥"} {a.threshold.toLocaleString("fr-FR")}
+                  {a.is_triggered && (
+                    <span className="ml-2 text-amber-400">· déclenchée</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => del.mutate(a.id)}
+                disabled={del.isPending}
+                className="text-zinc-500 hover:text-red-400 disabled:opacity-50"
+                title="Supprimer"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+

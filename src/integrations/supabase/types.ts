@@ -1032,6 +1032,48 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_admin_price_alerts: {
+        Row: {
+          created_at: string
+          direction: string
+          id: string
+          is_triggered: boolean
+          item_name: string
+          last_triggered_at: string | null
+          price_type: string
+          threshold: number
+          updated_at: string
+          user_discord_id: string
+          user_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          id?: string
+          is_triggered?: boolean
+          item_name: string
+          last_triggered_at?: string | null
+          price_type?: string
+          threshold: number
+          updated_at?: string
+          user_discord_id: string
+          user_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          id?: string
+          is_triggered?: boolean
+          item_name?: string
+          last_triggered_at?: string | null
+          price_type?: string
+          threshold?: number
+          updated_at?: string
+          user_discord_id?: string
+          user_username?: string | null
+        }
+        Relationships: []
+      }
       warnings: {
         Row: {
           body: string
