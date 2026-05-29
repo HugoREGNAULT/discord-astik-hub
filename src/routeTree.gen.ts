@@ -35,6 +35,7 @@ import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
+import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
@@ -179,6 +180,11 @@ const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedPollsRoute,
 } as any)
+const ApiTestSeedPollRoute = ApiTestSeedPollRouteImport.update({
+  id: '/api/test/seed-poll',
+  path: '/api/test/seed-poll',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTestLoginRoute = ApiTestLoginRouteImport.update({
   id: '/api/test/login',
   path: '/api/test/login',
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
+  '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
+  '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
+  '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -401,6 +410,7 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/whoami'
     | '/api/test/login'
+    | '/api/test/seed-poll'
     | '/polls/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
@@ -440,6 +450,7 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/whoami'
     | '/api/test/login'
+    | '/api/test/seed-poll'
     | '/polls'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/whoami'
     | '/api/test/login'
+    | '/api/test/seed-poll'
     | '/_authenticated/polls/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
@@ -503,6 +515,7 @@ export interface RootRouteChildren {
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthWhoamiRoute: typeof ApiAuthWhoamiRoute
   ApiTestLoginRoute: typeof ApiTestLoginRoute
+  ApiTestSeedPollRoute: typeof ApiTestSeedPollRoute
   ApiPublicBotImportRoute: typeof ApiPublicBotImportRoute
   ApiPublicBotMemberRoute: typeof ApiPublicBotMemberRoute
   ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
@@ -695,6 +708,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPollsIndexRouteImport
       parentRoute: typeof AuthenticatedPollsRoute
     }
+    '/api/test/seed-poll': {
+      id: '/api/test/seed-poll'
+      path: '/api/test/seed-poll'
+      fullPath: '/api/test/seed-poll'
+      preLoaderRoute: typeof ApiTestSeedPollRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/test/login': {
       id: '/api/test/login'
       path: '/api/test/login'
@@ -872,6 +892,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthWhoamiRoute: ApiAuthWhoamiRoute,
   ApiTestLoginRoute: ApiTestLoginRoute,
+  ApiTestSeedPollRoute: ApiTestSeedPollRoute,
   ApiPublicBotImportRoute: ApiPublicBotImportRoute,
   ApiPublicBotMemberRoute: ApiPublicBotMemberRoute,
   ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
@@ -883,3 +904,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
