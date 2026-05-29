@@ -23,6 +23,13 @@ export async function requireSession(): Promise<SessionUser> {
       // ignore refresh failure, use cached
     }
   }
+  // Si l'utilisateur figure dans members et est marqué "left", bloquer l'accès.
+  const { data: m } = await db
+    .from("members")
+    .select("status")
+    .eq("discord_id", data.discordId)
+    .maybeSingle();
+  if (m?.status === "left") throw new Error("FORBIDDEN_LEFT_GUILD");
   return toSessionUser(data);
 }
 
