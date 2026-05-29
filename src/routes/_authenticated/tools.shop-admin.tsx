@@ -72,7 +72,7 @@ function ShopAdminPage() {
       <ToolHeader
         code="// tools.shop-admin"
         title="Shop admin"
-        description="Prix actuels du shop admin Paladium et historique quotidien (snapshot 1×/jour)."
+        description="Prix d'achat / vente du shop admin Paladium et évolution (snapshot toutes les 5 min, 30j)."
       />
 
       <ToolCard>
