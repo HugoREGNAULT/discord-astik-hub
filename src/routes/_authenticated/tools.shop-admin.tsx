@@ -289,7 +289,7 @@ function AlertForm({ itemName }: { itemName: string }) {
       price_type: "buy" | "sell";
       direction: "above" | "below";
       threshold: number;
-    }) => createFn({ data: vars }),
+    }) => createFn({ data: { ...vars, source: "shop_admin" as const } }),
     onSuccess: () => {
       toast.success("Alerte créée");
       setThreshold("");
