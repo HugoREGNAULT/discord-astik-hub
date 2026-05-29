@@ -12,10 +12,11 @@ export const callPaladium = createServerFn({ method: "POST" })
           .string()
           .min(1)
           .max(512)
-          // Only allow whitelisted Paladium API paths
-          .regex(/^\/v1\/[A-Za-z0-9\-_./%]+$/),
+          // Allow Paladium API paths with optional query strings.
+          .regex(/^\/v1\/[A-Za-z0-9\-_./%]+(\?[A-Za-z0-9\-_./%=&]+)?$/),
       })
       .parse(input),
+  )
   )
   .handler(async ({ data }) => {
     const result = await fetchPaladium(data.path);
