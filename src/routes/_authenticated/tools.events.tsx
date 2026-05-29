@@ -189,11 +189,12 @@ function EventsPage() {
         >
           // à vos marques
         </div>
-        {onYourMark.isLoading && <LoadingBlock />}
-        {onYourMark.error && <ErrorBlock message={(onYourMark.error as Error).message} />}
-        {onYourMark.data && (
+        {onYourMark.data ? (
           <pre className="text-[11px] text-zinc-400 font-mono overflow-x-auto max-h-96">
             {JSON.stringify(onYourMark.data, null, 2)}
+          </pre>
+        ) : null}
+
           </pre>
         )}
       </ToolCard>
