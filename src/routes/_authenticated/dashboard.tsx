@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberRowsSkeleton as LeaderboardRowsSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
+import { Search as SearchIcon } from "lucide-react";
 import {
   getLeaderboard,
   type LeaderboardEntry,
@@ -104,7 +106,11 @@ function LeaderboardList({
         );
       })}
       {sorted.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">Aucun résultat.</p>
+        <EmptyState
+          icon={SearchIcon}
+          title="Aucun résultat"
+          description="Essaie d'ajuster la recherche ou les filtres."
+        />
       )}
     </div>
   );

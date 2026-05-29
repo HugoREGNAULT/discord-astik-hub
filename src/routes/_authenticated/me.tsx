@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { EmptyState } from "@/components/EmptyState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -218,7 +219,11 @@ function MePage() {
             </CardHeader>
             <CardContent>
               {data.alts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun alt enregistré.</p>
+                <EmptyState
+                  title="Aucun alt enregistré"
+                  description="Ajoute tes comptes secondaires depuis l'onboarding."
+                  variant="compact"
+                />
               ) : (
                 <ul className="space-y-1.5 text-sm">
                   {data.alts.map((a) => (
@@ -389,7 +394,13 @@ function PointsTimeline({ gains }: { gains: Gain[] }) {
   const pageCount = Math.ceil(gains.length / perPage);
 
   if (gains.length === 0) {
-    return <p className="text-sm text-muted-foreground">Aucun mouvement récent.</p>;
+    return (
+      <EmptyState
+        title="Aucun mouvement récent"
+        description="Ton historique de points apparaîtra ici."
+        variant="compact"
+      />
+    );
   }
 
   return (

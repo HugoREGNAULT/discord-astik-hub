@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, ShoppingCart as ShoppingCartIcon } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/donations")({
   head: () => ({ meta: [{ title: "Dons · PunkAstik" }] }),
@@ -81,7 +82,13 @@ function DonationsPage() {
           onCancel={() => cancel({ data: { cartId: c.id } }).then(() => { toast.info("Annulé"); refresh(); })}
         />
       ))}
-      {carts.data?.carts.length === 0 && <p className="text-sm text-muted-foreground">Aucun panier actif.</p>}
+      {carts.data?.carts.length === 0 && (
+        <EmptyState
+          icon={ShoppingCartIcon}
+          title="Aucun panier actif"
+          description="Crée un nouveau panier pour enregistrer une donation."
+        />
+      )}
     </div>
   );
 }
@@ -116,7 +123,11 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
               <button onClick={() => onRemove(l.id)} aria-label={`Supprimer ${l.label}`} className="text-destructive"><Trash2 className="size-4" /></button>
             </li>
           ))}
-          {(!cart.donation_lines || cart.donation_lines.length === 0) && <li className="text-sm text-muted-foreground py-2">Panier vide.</li>}
+          {(!cart.donation_lines || cart.donation_lines.length === 0) && (
+            <li className="py-2">
+              <EmptyState title="Panier vide" description="Ajoute un item ci-dessous." variant="compact" />
+            </li>
+          )}
         </ul>
 
         <div className="flex flex-wrap gap-2 items-end border-t border-border pt-3">

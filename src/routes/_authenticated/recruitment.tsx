@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Clock, UserPlus, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 import {
   listApplications,
   decideApplication,
@@ -130,9 +131,11 @@ function ApplicationsList({ status }: { status: AppStatus }) {
   }
   if (items.length === 0) {
     return (
-      <div className="text-center text-muted-foreground text-sm py-12 border border-dashed rounded-lg">
-        Aucune candidature {status === "pending" ? "en attente" : status}.
-      </div>
+      <EmptyState
+        icon={UserPlus}
+        title={`Aucune candidature ${status === "pending" ? "en attente" : status}`}
+        description="Les nouvelles candidatures s'afficheront ici dès leur réception."
+      />
     );
   }
 

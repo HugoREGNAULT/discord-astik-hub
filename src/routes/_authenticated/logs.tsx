@@ -18,6 +18,7 @@ import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { listLogs, listLogActions } from "@/lib/data/logs.functions";
 import { FileText, RotateCw } from "lucide-react";
 import { RowListSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/logs")({
   head: () => ({ meta: [{ title: "Logs · PunkAstik" }] }),
@@ -138,9 +139,13 @@ function LogsPage() {
           {isFetching && logs.length === 0 ? (
             <RowListSkeleton count={10} />
           ) : logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-6 text-center">
-              Aucun log pour ces filtres.
-            </p>
+            <div className="p-4">
+              <EmptyState
+                icon={FileText}
+                title="Aucun log"
+                description="Aucune entrée ne correspond à ces filtres."
+              />
+            </div>
           ) : (
             <ul className="divide-y divide-border">
               {paged.map((l) => (

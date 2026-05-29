@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { MemberRowsSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
+import { Users as UsersIcon, FileText as FileTextIcon } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -189,7 +191,12 @@ function MembersAdminSection() {
             </div>
           ))}
           {data && data.members.length === 0 && (
-            <p className="text-sm text-muted-foreground">Aucun membre.</p>
+            <EmptyState
+              icon={UsersIcon}
+              title="Aucun membre"
+              description="Aucun membre ne correspond à ta recherche."
+              variant="compact"
+            />
           )}
         </div>
       </CardContent>
@@ -401,7 +408,14 @@ function Stat({
 
 function LogList({ items }: { items: any[] }) {
   if (!items.length)
-    return <p className="text-sm text-muted-foreground">Aucun log.</p>;
+    return (
+      <EmptyState
+        icon={FileTextIcon}
+        title="Aucun log"
+        description="Aucune entrée pour ce filtre."
+        variant="compact"
+      />
+    );
   return (
     <ul className="divide-y divide-border text-sm">
       {items.map((l) => (

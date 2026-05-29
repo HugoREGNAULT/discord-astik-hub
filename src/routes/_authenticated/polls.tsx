@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { listPolls, createPoll, deletePoll } from "@/lib/data/polls.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { CardListSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/polls")({
   head: () => ({ meta: [{ title: "Sondages · PunkAstik" }] }),
@@ -64,11 +65,11 @@ function PollsPage() {
       {isLoading ? (
         <CardListSkeleton count={4} />
       ) : !data?.polls.length ? (
-        <Card>
-          <CardContent className="py-12 text-center text-sm text-muted-foreground">
-            Aucun sondage pour le moment.
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Calendar}
+          title="Aucun sondage pour le moment"
+          description={canManage ? "Crée le premier sondage avec le bouton ci-dessus." : "Reviens plus tard, les sondages apparaîtront ici."}
+        />
       ) : (
         <div className="grid gap-3">
           {data.polls.map((p: any) => (

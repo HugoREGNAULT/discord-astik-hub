@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { MemberRowsSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
+import { Users as UsersIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
@@ -76,7 +78,15 @@ function MembersPage() {
             </Card>
           </Link>
         ))}
-        {members.length === 0 && !isLoading && <p className="text-sm text-muted-foreground">Aucun membre.</p>}
+        {members.length === 0 && !isLoading && (
+          <div className="col-span-full">
+            <EmptyState
+              icon={UsersIcon}
+              title="Aucun membre"
+              description="Essaie d'ajuster ta recherche ou tes filtres."
+            />
+          </div>
+        )}
       </div>
 
       <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
