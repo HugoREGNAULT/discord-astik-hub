@@ -139,7 +139,3 @@ export const getPointsHistory = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { history: rows ?? [] };
   });
-
-    if (error) throw new Error(error.message);
-    return { history: rows ?? [] };
-  });
