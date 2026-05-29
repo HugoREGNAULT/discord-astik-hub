@@ -111,9 +111,7 @@ function PlayerLookup() {
             <ToolCard>
               <SectionTitle>Identité</SectionTitle>
               {profileQ.isLoading && <LoadingBlock />}
-              {profileQ.error && (
-                <ErrorBlock message={(profileQ.error as Error).message} />
-              )}
+              {profileQ.error && <ErrorBlock message={(profileQ.error as Error).message} />}
               {profileQ.data && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
                   <StatTile
@@ -177,9 +175,7 @@ function PlayerLookup() {
                       <tr key={i} className="border-b border-zinc-900 last:border-0">
                         <td className="py-2 text-zinc-300 capitalize">{j.name}</td>
                         <td className="py-2 text-white font-bold">{j.level}</td>
-                        <td className="py-2 text-zinc-400">
-                          {fmtNum(j.experience ?? j.xp)}
-                        </td>
+                        <td className="py-2 text-zinc-400">{fmtNum(j.experience ?? j.xp)}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -96,18 +96,10 @@ function MarketPage() {
             <tbody>
               {items.map((it, i) => (
                 <tr key={i} className="border-b border-zinc-900 last:border-0 hover:bg-zinc-900/50">
-                  <td className="py-2 px-4 text-zinc-200">
-                    {it.name ?? it.item ?? it.id ?? "—"}
-                  </td>
-                  <td className="py-2 px-4 text-pink-400 font-bold">
-                    {fmtNum(it.price)}
-                  </td>
-                  <td className="py-2 px-4 text-zinc-300">
-                    {fmtNum(it.amount ?? it.quantity)}
-                  </td>
-                  <td className="py-2 px-4 text-zinc-400">
-                    {it.sellerName ?? it.seller ?? "—"}
-                  </td>
+                  <td className="py-2 px-4 text-zinc-200">{it.name ?? it.item ?? it.id ?? "—"}</td>
+                  <td className="py-2 px-4 text-pink-400 font-bold">{fmtNum(it.price)}</td>
+                  <td className="py-2 px-4 text-zinc-300">{fmtNum(it.amount ?? it.quantity)}</td>
+                  <td className="py-2 px-4 text-zinc-400">{it.sellerName ?? it.seller ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
