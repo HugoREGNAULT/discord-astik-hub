@@ -14,13 +14,18 @@ import {
 } from "@/lib/data/donations.functions";
 import { listValues } from "@/lib/data/values.functions";
 import { listMembers } from "@/lib/data/members.functions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Trash2, ShoppingCart as ShoppingCartIcon } from "lucide-react";
-import { EmptyState } from "@/components/EmptyState";
+import { Trash2 } from "lucide-react";
+import {
+  PageHeader,
+  PageCard,
+  SectionLabel,
+  DaButton,
+  DaInput,
+  DaSelect,
+  DaChip,
+  EmptyBlock,
+} from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/donations")({
   head: () => ({ meta: [{ title: "Dons · PunkAstik" }] }),
@@ -60,25 +65,29 @@ function DonationsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold">Dons</h1>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        code="// donations.carts"
+        title="Dons"
+        description="Création et validation des paniers de donations. 1h pour valider avant expiration."
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Nouveau panier</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3 items-end">
+      <PageCard>
+        <SectionLabel>nouveau panier</SectionLabel>
+        <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[200px]">
-            <label htmlFor={`${newCartId}-member`} className="text-xs text-muted-foreground">
+            <label
+              htmlFor={`${newCartId}-member`}
+              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
               Membre (optionnel)
             </label>
-            <select
+            <DaSelect
               id={`${newCartId}-member`}
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm"
+              className="w-full mt-1"
             >
               <option value="">— Aucun —</option>
               {members.data?.members.map((m) => (
@@ -86,22 +95,27 @@ function DonationsPage() {
                   {m.ig_name ?? m.discord_username}
                 </option>
               ))}
-            </select>
+            </DaSelect>
           </div>
           <div className="w-32">
-            <label htmlFor={`${newCartId}-bonus`} className="text-xs text-muted-foreground">
+            <label
+              htmlFor={`${newCartId}-bonus`}
+              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
               Bonus %
             </label>
-            <Input
+            <DaInput
               id={`${newCartId}-bonus`}
               type="number"
               value={bonus}
               onChange={(e) => setBonus(Number(e.target.value))}
+              className="w-full mt-1"
             />
           </div>
-          <Button onClick={() => mkCart.mutate()}>Créer</Button>
-        </CardContent>
-      </Card>
+          <DaButton onClick={() => mkCart.mutate()}>Créer</DaButton>
+        </div>
+      </PageCard>
 
       {carts.data?.carts.map((c: any) => (
         <Cart
@@ -125,11 +139,9 @@ function DonationsPage() {
         />
       ))}
       {carts.data?.carts.length === 0 && (
-        <EmptyState
-          icon={ShoppingCartIcon}
-          title="Aucun panier actif"
-          description="Crée un nouveau panier pour enregistrer une donation."
-        />
+        <PageCard>
+          <EmptyBlock label="Aucun panier actif — crée-en un" />
+        </PageCard>
       )}
     </div>
   );
@@ -142,117 +154,127 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
   const v = values.find((x: any) => x.id === picked);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-base">
-            Panier #{cart.id.slice(0, 6)}{" "}
-            {cart.member_discord_id && (
-              <span className="text-xs text-muted-foreground">→ {cart.member_discord_id}</span>
-            )}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary">+{cart.bonus_pct}%</Badge>
-            <Badge>{cart.total_final} pts</Badge>
-            <span className="text-[10px] text-muted-foreground">
-              expire {new Date(cart.expires_at).toLocaleTimeString()}
-            </span>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <ul className="divide-y divide-border">
-          {cart.donation_lines?.map((l: any) => (
-            <li key={l.id} className="py-2 flex items-center gap-2 text-sm">
-              <span className="text-[10px] text-muted-foreground uppercase">{l.line_type}</span>
-              <span className="flex-1">
-                {l.label} × {l.quantity}
-              </span>
-              <span className="font-mono">{l.subtotal} pts</span>
-              <button
-                onClick={() => onRemove(l.id)}
-                aria-label={`Supprimer ${l.label}`}
-                className="text-destructive"
-              >
-                <Trash2 className="size-4" />
-              </button>
-            </li>
-          ))}
-          {(!cart.donation_lines || cart.donation_lines.length === 0) && (
-            <li className="py-2">
-              <EmptyState
-                title="Panier vide"
-                description="Ajoute un item ci-dessous."
-                variant="compact"
-              />
-            </li>
+    <PageCard>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <div
+          className="text-[10px] uppercase tracking-[0.3em] text-pink-500"
+          style={{ fontFamily: "'Space Mono'" }}
+        >
+          // panier #{cart.id.slice(0, 6)}
+          {cart.member_discord_id && (
+            <span className="ml-2 text-zinc-500">→ {cart.member_discord_id}</span>
           )}
-        </ul>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <DaChip accent="blurple">+{cart.bonus_pct}%</DaChip>
+          <DaChip accent="pink">{cart.total_final} pts</DaChip>
+          <span
+            className="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
+            expire {new Date(cart.expires_at).toLocaleTimeString("fr-FR")}
+          </span>
+        </div>
+      </div>
 
-        <div className="flex flex-wrap gap-2 items-end border-t border-border pt-3">
-          <div className="flex-1 min-w-[200px]">
-            <label htmlFor={`${cartId}-item`} className="text-xs text-muted-foreground">
-              Item / action
-            </label>
-            <select
-              id={`${cartId}-item`}
-              value={picked}
-              onChange={(e) => setPicked(e.target.value)}
-              className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm"
+      <ul className="divide-y divide-zinc-800">
+        {cart.donation_lines?.map((l: any) => (
+          <li key={l.id} className="py-2 flex items-center gap-2 text-sm">
+            <span
+              className="text-[9px] uppercase tracking-[0.2em] text-zinc-500"
+              style={{ fontFamily: "'Space Mono'" }}
             >
-              <option value="">—</option>
-              {values
-                .filter((x: any) => x.active)
-                .map((x: any) => (
-                  <option key={x.id} value={x.id}>
-                    [{x.category}] {x.name} ({x.points} pts)
-                  </option>
-                ))}
-            </select>
-          </div>
-          <div className="w-20">
-            <label htmlFor={`${cartId}-qty`} className="text-xs text-muted-foreground">
-              Qté
-            </label>
-            <Input
-              id={`${cartId}-qty`}
-              type="number"
-              value={qty}
-              min={1}
-              onChange={(e) => setQty(Number(e.target.value))}
-            />
-          </div>
-          <Button
-            disabled={!v}
-            onClick={() => {
-              if (!v) return;
-              onAdd({
-                line_type: v.category,
-                config_value_id: v.id,
-                label: v.name,
-                unit_points: v.points,
-                quantity: qty,
-              });
-              setQty(1);
-              setPicked("");
-            }}
-          >
-            Ajouter
-          </Button>
-        </div>
+              {l.line_type}
+            </span>
+            <span className="flex-1 text-zinc-200">
+              {l.label} × {l.quantity}
+            </span>
+            <span className="font-mono text-pink-400 font-bold">{l.subtotal} pts</span>
+            <button
+              onClick={() => onRemove(l.id)}
+              aria-label={`Supprimer ${l.label}`}
+              className="text-red-400 hover:text-red-300"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </li>
+        ))}
+        {(!cart.donation_lines || cart.donation_lines.length === 0) && (
+          <li>
+            <EmptyBlock label="Panier vide — ajoute un item ci-dessous" />
+          </li>
+        )}
+      </ul>
 
-        <div className="flex gap-2 justify-end">
-          <Button variant="ghost" onClick={onCancel}>
-            Annuler
-          </Button>
-          <Button
-            onClick={onValidate}
-            className="bg-success text-success-foreground hover:opacity-90"
+      <div className="flex flex-wrap gap-2 items-end border-t border-zinc-800 pt-3 mt-3">
+        <div className="flex-1 min-w-[200px]">
+          <label
+            htmlFor={`${cartId}-item`}
+            className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+            style={{ fontFamily: "'Space Mono'" }}
           >
-            Valider don
-          </Button>
+            Item / action
+          </label>
+          <DaSelect
+            id={`${cartId}-item`}
+            value={picked}
+            onChange={(e) => setPicked(e.target.value)}
+            className="w-full mt-1"
+          >
+            <option value="">—</option>
+            {values
+              .filter((x: any) => x.active)
+              .map((x: any) => (
+                <option key={x.id} value={x.id}>
+                  [{x.category}] {x.name} ({x.points} pts)
+                </option>
+              ))}
+          </DaSelect>
         </div>
-      </CardContent>
-    </Card>
+        <div className="w-20">
+          <label
+            htmlFor={`${cartId}-qty`}
+            className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
+            Qté
+          </label>
+          <DaInput
+            id={`${cartId}-qty`}
+            type="number"
+            value={qty}
+            min={1}
+            onChange={(e) => setQty(Number(e.target.value))}
+            className="w-full mt-1"
+          />
+        </div>
+        <DaButton
+          disabled={!v}
+          onClick={() => {
+            if (!v) return;
+            onAdd({
+              line_type: v.category,
+              config_value_id: v.id,
+              label: v.name,
+              unit_points: v.points,
+              quantity: qty,
+            });
+            setQty(1);
+            setPicked("");
+          }}
+        >
+          Ajouter
+        </DaButton>
+      </div>
+
+      <div className="flex gap-2 justify-end mt-3 pt-3 border-t border-zinc-800">
+        <DaButton variant="ghost" onClick={onCancel}>
+          Annuler
+        </DaButton>
+        <DaButton variant="success" onClick={onValidate}>
+          Valider don
+        </DaButton>
+      </div>
+    </PageCard>
   );
 }
