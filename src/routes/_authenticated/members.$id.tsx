@@ -2,9 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
-import { ShieldX, Coins, ShoppingCart, Activity, UserCheck } from "lucide-react";
+import { ShieldX, Coins, ShoppingCart, Activity, UserCheck, ChevronDown } from "lucide-react";
 
-import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt } from "@/lib/data/members.functions";
+import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt, getMemberPointsHistory, getMemberDonations } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
