@@ -331,3 +331,108 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
     </div>
   );
 }
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: number;
+  tone?: string;
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-4 flex items-center gap-3">
+      <div className={`p-2 rounded-md ${tone ?? "bg-primary/10 text-primary"}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div>
+        <div className="text-2xl font-bold leading-none">{value}</div>
+        <div className="text-xs text-muted-foreground mt-1">{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function ApplicationStats() {
+  const statsFn = useServerFn(getApplicationStats);
+  const { data } = useQuery({
+    queryKey: ["applications", "stats"],
+    queryFn: () => statsFn(),
+  });
+
+  if (!data) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard icon={Users} label="Candidatures uniques" value={data.unique} />
+        <StatCard
+          icon={CheckCircle2}
+          label="Acceptées"
+          value={data.accepted}
+          tone="bg-emerald-500/10 text-emerald-600"
+        />
+        <StatCard
+          icon={XCircle}
+          label="Refusées"
+          value={data.rejected}
+          tone="bg-red-500/10 text-red-600"
+        />
+        <StatCard
+          icon={Ban}
+          label="Blacklistées"
+          value={data.blacklisted}
+          tone="bg-destructive/10 text-destructive"
+        />
+      </div>
+      {data.timeline.length > 1 && (
+        <div className="rounded-lg border bg-card p-4">
+          <div className="text-sm font-medium mb-3">Évolution mensuelle</div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data.timeline}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(var(--popover))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  name="Total"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="accepted"
+                  name="Acceptées"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="rejected"
+                  name="Refusées"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
