@@ -171,7 +171,7 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
                       tooltip={item.title}
                       className={`relative rounded-none border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-900/80 hover:border-zinc-800 data-[active=true]:bg-zinc-900 data-[active=true]:text-white data-[active=true]:border-zinc-800 transition-colors`}
                     >
-                      <Link to={item.url} className="flex items-center gap-3">
+                      <Link to={item.url} className="flex items-center gap-3" onClick={handleNavClick}>
                         <span
                           className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] ${accentBar} ${
                             active ? "opacity-100" : "opacity-0 group-hover/menu-item:opacity-60"
