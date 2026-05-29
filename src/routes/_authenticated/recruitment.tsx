@@ -4,9 +4,24 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Clock, UserPlus, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, UserPlus, Loader2, Users, Ban } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import { EmptyState } from "@/components/EmptyState";
-import { listApplications, decideApplication } from "@/lib/data/applications.functions";
+import {
+  listApplications,
+  decideApplication,
+  getApplicationStats,
+} from "@/lib/data/applications.functions";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
