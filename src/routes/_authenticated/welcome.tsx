@@ -15,7 +15,8 @@ export const Route = createFileRoute("/_authenticated/welcome")({
       { title: "Bienvenue · PunkAstik" },
       {
         name: "description",
-        content: "Configure ton pseudo Minecraft et tes comptes alts pour rejoindre la faction PunkAstik.",
+        content:
+          "Configure ton pseudo Minecraft et tes comptes alts pour rejoindre la faction PunkAstik.",
       },
     ],
   }),
@@ -70,7 +71,8 @@ function WelcomePage() {
         </div>
         <h1 className="text-3xl font-bold tracking-tight">Bienvenue sur PunkAstik</h1>
         <p className="text-muted-foreground mt-2">
-          Renseigne ton pseudo Minecraft pour qu'on puisse afficher ton skin et te lier à la faction.
+          Renseigne ton pseudo Minecraft pour qu'on puisse afficher ton skin et te lier à la
+          faction.
         </p>
       </div>
 
@@ -127,7 +129,9 @@ function WelcomePage() {
                 <Input
                   value={alt.altName}
                   onChange={(e) =>
-                    setAlts((arr) => arr.map((x, j) => (i === j ? { ...x, altName: e.target.value } : x)))
+                    setAlts((arr) =>
+                      arr.map((x, j) => (i === j ? { ...x, altName: e.target.value } : x)),
+                    )
                   }
                   placeholder="Pseudo alt"
                   maxLength={16}

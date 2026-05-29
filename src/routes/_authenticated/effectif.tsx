@@ -11,7 +11,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/effectif")({
   head: () => ({ meta: [{ title: "Effectif · PunkAstik" }] }),
-  component: () => (<Guard perm="members.view"><EffectifPage /></Guard>),
+  component: () => (
+    <Guard perm="members.view">
+      <EffectifPage />
+    </Guard>
+  ),
 });
 
 interface EMember {
@@ -65,16 +69,13 @@ function MemberChip({ m }: { m: EMember }) {
       params={{ id: m.discord_id }}
       className={cn(
         "inline-flex items-center gap-1.5 max-w-full rounded-full border border-border bg-muted/40 pl-0.5 pr-2.5 py-0.5 text-xs hover:border-primary/50 hover:bg-muted/60 transition",
-        m.blacklisted && "border-destructive/50 bg-destructive/10 text-destructive hover:border-destructive",
+        m.blacklisted &&
+          "border-destructive/50 bg-destructive/10 text-destructive hover:border-destructive",
       )}
       title={m.blacklisted ? `${m.name} — blacklist` : m.name}
     >
       {m.avatarUrl ? (
-        <img
-          src={m.avatarUrl}
-          alt=""
-          className="size-5 rounded-full shrink-0"
-        />
+        <img src={m.avatarUrl} alt="" className="size-5 rounded-full shrink-0" />
       ) : (
         <span className="size-5 rounded-full bg-muted shrink-0" aria-hidden />
       )}

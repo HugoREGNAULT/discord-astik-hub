@@ -71,8 +71,7 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
         seen.add(uid);
         const igName = igByDiscord.get(uid) ?? null;
         // Priorité : IG name (DB) → nick Discord → global_name → username
-        const displayName =
-          igName || m.nick || m.user?.global_name || m.user?.username || uid;
+        const displayName = igName || m.nick || m.user?.global_name || m.user?.username || uid;
         list.push({
           discord_id: uid,
           name: displayName,

@@ -20,7 +20,12 @@ const createSchema = z.object({
     .array(
       z.object({
         startsAt: z.string().min(1),
-        durationMinutes: z.number().int().min(15).max(24 * 60).default(60),
+        durationMinutes: z
+          .number()
+          .int()
+          .min(15)
+          .max(24 * 60)
+          .default(60),
       }),
     )
     .min(2)

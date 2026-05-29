@@ -36,7 +36,13 @@ import {
 import { KpiGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/EmptyState";
-import { TrendingUp as TrendingUpIcon, UserPlus as UserPlusIcon, ShieldAlert as ShieldAlertIcon, Activity as ActivityIcon, ShoppingCart as ShoppingCartIcon } from "lucide-react";
+import {
+  TrendingUp as TrendingUpIcon,
+  UserPlus as UserPlusIcon,
+  ShieldAlert as ShieldAlertIcon,
+  Activity as ActivityIcon,
+  ShoppingCart as ShoppingCartIcon,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
@@ -80,7 +86,6 @@ function StaffPage() {
   }
 
   const k = data.kpis;
-
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -179,9 +184,7 @@ function StaffPage() {
                   params={{ id: m.discord_id }}
                   className="flex items-center gap-3 border border-border rounded p-2 hover:border-primary/40 transition"
                 >
-                  <span className="text-xs font-mono text-muted-foreground w-5">
-                    #{i + 1}
-                  </span>
+                  <span className="text-xs font-mono text-muted-foreground w-5">#{i + 1}</span>
                   {m.avatar_url ? (
                     <img src={m.avatar_url} alt="" className="size-8 rounded-full" />
                   ) : (
@@ -231,8 +234,7 @@ function StaffPage() {
                   <div className="min-w-0">
                     <div className="font-medium truncate">{a.mc_name}</div>
                     <div className="text-[11px] text-muted-foreground truncate">
-                      @{a.discord_username} ·{" "}
-                      {new Date(a.created_at).toLocaleDateString("fr-FR")}
+                      @{a.discord_username} · {new Date(a.created_at).toLocaleDateString("fr-FR")}
                     </div>
                   </div>
                   <Badge variant="outline">{a.status}</Badge>
@@ -267,8 +269,8 @@ function StaffPage() {
                   className="block border border-destructive/40 bg-destructive/5 rounded p-2 text-sm hover:bg-destructive/10 transition"
                 >
                   <div className="text-[11px] text-muted-foreground">
-                    {new Date(w.created_at).toLocaleString("fr-FR")} ·{" "}
-                    {w.staff_username ?? "?"} → {w.member_discord_id}
+                    {new Date(w.created_at).toLocaleString("fr-FR")} · {w.staff_username ?? "?"} →{" "}
+                    {w.member_discord_id}
                   </div>
                   <div className="line-clamp-2 mt-0.5">{w.body}</div>
                 </Link>
@@ -452,8 +454,7 @@ function InactiveMemberRow({
   });
 
   const dmMut = useMutation({
-    mutationFn: () =>
-      dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
+    mutationFn: () => dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
     onSuccess: () => {
       toast.success("DM envoyé");
       setDmOpen(false);
@@ -509,9 +510,7 @@ function InactiveMemberRow({
       <Dialog open={dmOpen} onOpenChange={setDmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Contacter {member.ig_name ?? member.discord_username}
-            </DialogTitle>
+            <DialogTitle>Contacter {member.ig_name ?? member.discord_username}</DialogTitle>
             <DialogDescription>
               Le message sera envoyé en DM Discord depuis le bot de la faction.
             </DialogDescription>

@@ -14,7 +14,11 @@ import { Users as UsersIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
-  component: () => (<Guard perm="members.view"><MembersPage /></Guard>),
+  component: () => (
+    <Guard perm="members.view">
+      <MembersPage />
+    </Guard>
+  ),
 });
 
 const PER_PAGE = 30;
@@ -30,7 +34,9 @@ function MembersPage() {
     queryFn: () => fn({ data: { q, status } }),
   });
 
-  useEffect(() => { setPage(1); }, [q, status]);
+  useEffect(() => {
+    setPage(1);
+  }, [q, status]);
 
   const members = data?.members ?? [];
   const pageCount = Math.max(1, Math.ceil(members.length / PER_PAGE));
@@ -43,7 +49,12 @@ function MembersPage() {
         <Badge variant="secondary">{members.length}</Badge>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Input placeholder="Rechercher (pseudo, IG, ID)…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <Input
+          placeholder="Rechercher (pseudo, IG, ID)…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-xs"
+        />
         <div className="flex gap-1">
           {(["active", "away", "former", "all"] as const).map((s) => (
             <button
@@ -51,12 +62,17 @@ function MembersPage() {
               onClick={() => setStatus(s)}
               className={`px-3 py-1.5 rounded-md text-xs border ${status === s ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
             >
-              {s === "active" ? "Actifs" : s === "away" ? "Absents" : s === "former" ? "Anciens" : "Tous"}
+              {s === "active"
+                ? "Actifs"
+                : s === "away"
+                  ? "Absents"
+                  : s === "former"
+                    ? "Anciens"
+                    : "Tous"}
             </button>
           ))}
         </div>
       </div>
-
 
       {isLoading && <MemberRowsSkeleton count={8} />}
 
@@ -70,8 +86,12 @@ function MembersPage() {
                 <div className="size-10 rounded-full bg-muted" />
               )}
               <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{m.ig_name ?? m.discord_username ?? m.discord_id}</div>
-                <div className="text-xs text-muted-foreground truncate">@{m.discord_username} · {m.current_grade ?? "—"}</div>
+                <div className="font-medium truncate">
+                  {m.ig_name ?? m.discord_username ?? m.discord_id}
+                </div>
+                <div className="text-xs text-muted-foreground truncate">
+                  @{m.discord_username} · {m.current_grade ?? "—"}
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-primary font-bold">{m.astik_points}</div>
@@ -95,4 +115,3 @@ function MembersPage() {
     </div>
   );
 }
-

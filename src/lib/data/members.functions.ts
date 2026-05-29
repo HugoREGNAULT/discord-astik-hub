@@ -7,7 +7,9 @@ import { canAccess } from "@/lib/auth/permissions";
 /* ---------- Lecture ---------- */
 
 export const listMembers = createServerFn({ method: "GET" })
-  .inputValidator((input: { q?: string; status?: "active" | "former" | "away" | "all" } = {}) => input)
+  .inputValidator(
+    (input: { q?: string; status?: "active" | "former" | "away" | "all" } = {}) => input,
+  )
   .handler(async ({ data }) => {
     await requirePermission("members.view");
     let q = db.from("members").select("*").order("ig_name", { ascending: true, nullsFirst: false });
@@ -16,7 +18,6 @@ export const listMembers = createServerFn({ method: "GET" })
     else if (data.status === "away") q = q.eq("status", "away");
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-
 
     const needle = data.q?.trim().toLowerCase();
     const filtered = needle
@@ -31,7 +32,9 @@ export const listMembers = createServerFn({ method: "GET" })
   });
 
 export const getMemberDetail = createServerFn({ method: "GET" })
-  .inputValidator((input: { discordId: string }) => z.object({ discordId: z.string().min(1) }).parse(input))
+  .inputValidator((input: { discordId: string }) =>
+    z.object({ discordId: z.string().min(1) }).parse(input),
+  )
   .handler(async ({ data }) => {
     const user = await requireSession();
     const isSelf = user.discordId === data.discordId;
@@ -39,47 +42,50 @@ export const getMemberDetail = createServerFn({ method: "GET" })
 
     const canViewStaffData = canAccess(user, "members.view");
 
-    const [member, alts, recent, notes, warnings, pointsLedger, donations, recruiter] = await Promise.all([
-      db.from("members").select("*").eq("discord_id", data.discordId).maybeSingle(),
-      db.from("member_alts").select("*").eq("member_discord_id", data.discordId),
-      db
-        .from("points_ledger")
-        .select("*")
-        .eq("member_discord_id", data.discordId)
-        .order("created_at", { ascending: false })
-        .limit(3),
-      canAccess(user, "notes.view")
-        ? db
-            .from("notes")
-            .select("*")
-            .eq("member_discord_id", data.discordId)
-            .order("created_at", { ascending: false })
-        : Promise.resolve({ data: [] as never[], error: null }),
-      canAccess(user, "warnings.view")
-        ? db
-            .from("warnings")
-            .select("*")
-            .eq("member_discord_id", data.discordId)
-            .order("created_at", { ascending: false })
-        : Promise.resolve({ data: [] as never[], error: null }),
-      canViewStaffData
-        ? db
-            .from("points_ledger")
-            .select("*")
-            .eq("member_discord_id", data.discordId)
-            .order("created_at", { ascending: false })
-            .limit(10)
-        : Promise.resolve({ data: [] as never[], error: null }),
-      canViewStaffData
-        ? db
-            .from("donations")
-            .select("id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at")
-            .eq("member_discord_id", data.discordId)
-            .order("created_at", { ascending: false })
-            .limit(10)
-        : Promise.resolve({ data: [] as never[], error: null }),
-      Promise.resolve(null),
-    ]);
+    const [member, alts, recent, notes, warnings, pointsLedger, donations, recruiter] =
+      await Promise.all([
+        db.from("members").select("*").eq("discord_id", data.discordId).maybeSingle(),
+        db.from("member_alts").select("*").eq("member_discord_id", data.discordId),
+        db
+          .from("points_ledger")
+          .select("*")
+          .eq("member_discord_id", data.discordId)
+          .order("created_at", { ascending: false })
+          .limit(3),
+        canAccess(user, "notes.view")
+          ? db
+              .from("notes")
+              .select("*")
+              .eq("member_discord_id", data.discordId)
+              .order("created_at", { ascending: false })
+          : Promise.resolve({ data: [] as never[], error: null }),
+        canAccess(user, "warnings.view")
+          ? db
+              .from("warnings")
+              .select("*")
+              .eq("member_discord_id", data.discordId)
+              .order("created_at", { ascending: false })
+          : Promise.resolve({ data: [] as never[], error: null }),
+        canViewStaffData
+          ? db
+              .from("points_ledger")
+              .select("*")
+              .eq("member_discord_id", data.discordId)
+              .order("created_at", { ascending: false })
+              .limit(10)
+          : Promise.resolve({ data: [] as never[], error: null }),
+        canViewStaffData
+          ? db
+              .from("donations")
+              .select(
+                "id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at",
+              )
+              .eq("member_discord_id", data.discordId)
+              .order("created_at", { ascending: false })
+              .limit(10)
+          : Promise.resolve({ data: [] as never[], error: null }),
+        Promise.resolve(null),
+      ]);
     if (member.error) throw new Error(member.error.message);
 
     // Staff activity on this member (logs whose payload.target === discordId)
@@ -95,7 +101,11 @@ export const getMemberDetail = createServerFn({ method: "GET" })
     }
 
     // Recruiter info
-    let recruiterInfo: { discord_id: string; ig_name: string | null; discord_username: string | null } | null = null;
+    let recruiterInfo: {
+      discord_id: string;
+      ig_name: string | null;
+      discord_username: string | null;
+    } | null = null;
     const recruiterId = (member.data as any)?.recruiter_discord_id;
     if (canViewStaffData && recruiterId) {
       const { data: r } = await db
@@ -150,16 +160,15 @@ export const getMemberDonations = createServerFn({ method: "GET" })
     if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
     const { data: rows, error } = await db
       .from("donations")
-      .select("id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at")
+      .select(
+        "id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at",
+      )
       .eq("member_discord_id", data.discordId)
       .order("created_at", { ascending: false })
       .range(data.offset, data.offset + 19);
     if (error) throw new Error(error.message);
     return { items: rows ?? [], hasMore: (rows ?? []).length === 20 };
   });
-
-
-
 
 /* ---------- Édition (staff faction) ---------- */
 
@@ -304,4 +313,3 @@ export const dmMember = createServerFn({ method: "POST" })
     if (!res.ok) throw new Error(res.error ?? "Échec de l'envoi du DM");
     return { ok: true };
   });
-

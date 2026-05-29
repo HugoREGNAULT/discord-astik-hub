@@ -80,7 +80,8 @@ function PollDetail() {
   });
 
   const tallies = useMemo(() => {
-    if (!data) return {} as Record<string, { yes: number; maybe: number; no: number; score: number }>;
+    if (!data)
+      return {} as Record<string, { yes: number; maybe: number; no: number; score: number }>;
     const t: Record<string, { yes: number; maybe: number; no: number; score: number }> = {};
     for (const o of data.options) t[o.id] = { yes: 0, maybe: 0, no: 0, score: 0 };
     for (const v of data.votes as any[]) {
@@ -115,7 +116,9 @@ function PollDetail() {
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-start gap-3">
         <Button asChild variant="ghost" size="sm">
-          <Link to="/polls"><ArrowLeft className="size-4" /></Link>
+          <Link to="/polls">
+            <ArrowLeft className="size-4" />
+          </Link>
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -123,17 +126,24 @@ function PollDetail() {
             {isOpen ? (
               <Badge variant="secondary">Ouvert</Badge>
             ) : (
-              <Badge variant="outline" className="gap-1"><Lock className="size-3" /> Clos</Badge>
+              <Badge variant="outline" className="gap-1">
+                <Lock className="size-3" /> Clos
+              </Badge>
             )}
           </div>
-          {p.description && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{p.description}</p>}
+          {p.description && (
+            <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
+              {p.description}
+            </p>
+          )}
           <div className="text-xs text-muted-foreground mt-1">
-            Créé par {p.created_by_username ?? "—"} · {new Date(p.created_at).toLocaleString("fr-FR")}
+            Créé par {p.created_by_username ?? "—"} ·{" "}
+            {new Date(p.created_at).toLocaleString("fr-FR")}
             {p.location && ` · 📍 ${p.location}`}
           </div>
         </div>
-        {canManage && (
-          isOpen ? (
+        {canManage &&
+          (isOpen ? (
             <Button variant="outline" size="sm" onClick={() => mClose.mutate(null)}>
               <Lock className="size-4" /> Clôturer
             </Button>
@@ -141,8 +151,7 @@ function PollDetail() {
             <Button variant="outline" size="sm" onClick={() => mReopen.mutate()}>
               <RefreshCw className="size-4" /> Rouvrir
             </Button>
-          )
-        )}
+          ))}
       </div>
 
       <Card>
@@ -169,7 +178,10 @@ function PollDetail() {
                   const isWinner = winnerId === o.id;
                   const isBest = !winnerId && t.score === bestScore && bestScore > 0;
                   return (
-                    <tr key={o.id} className={`border-b border-border/50 ${isWinner ? "bg-primary/10" : ""}`}>
+                    <tr
+                      key={o.id}
+                      className={`border-b border-border/50 ${isWinner ? "bg-primary/10" : ""}`}
+                    >
                       <td className="py-3 pr-3">
                         <div className="flex items-center gap-2">
                           {isWinner && <Crown className="size-4 text-primary" />}
@@ -197,9 +209,21 @@ function PollDetail() {
                       {isOpen && (
                         <td className="py-2 pl-3">
                           <div className="flex gap-1 justify-end">
-                            <ChoiceBtn current={myVotes[o.id]} value="yes" onClick={() => setMyVotes({ ...myVotes, [o.id]: "yes" })} />
-                            <ChoiceBtn current={myVotes[o.id]} value="maybe" onClick={() => setMyVotes({ ...myVotes, [o.id]: "maybe" })} />
-                            <ChoiceBtn current={myVotes[o.id]} value="no" onClick={() => setMyVotes({ ...myVotes, [o.id]: "no" })} />
+                            <ChoiceBtn
+                              current={myVotes[o.id]}
+                              value="yes"
+                              onClick={() => setMyVotes({ ...myVotes, [o.id]: "yes" })}
+                            />
+                            <ChoiceBtn
+                              current={myVotes[o.id]}
+                              value="maybe"
+                              onClick={() => setMyVotes({ ...myVotes, [o.id]: "maybe" })}
+                            />
+                            <ChoiceBtn
+                              current={myVotes[o.id]}
+                              value="no"
+                              onClick={() => setMyVotes({ ...myVotes, [o.id]: "no" })}
+                            />
                           </div>
                         </td>
                       )}
@@ -220,7 +244,10 @@ function PollDetail() {
           </div>
           {isOpen && (
             <div className="mt-4 flex justify-end">
-              <Button onClick={() => mVote.mutate()} disabled={Object.keys(myVotes).length === 0 || mVote.isPending}>
+              <Button
+                onClick={() => mVote.mutate()}
+                disabled={Object.keys(myVotes).length === 0 || mVote.isPending}
+              >
                 Enregistrer mon vote
               </Button>
             </div>
@@ -236,7 +263,9 @@ function PollDetail() {
           <CardContent>
             <div className="flex flex-wrap gap-1.5">
               {voters.map((v) => (
-                <Badge key={v.id} variant="secondary" className="text-xs">{v.name}</Badge>
+                <Badge key={v.id} variant="secondary" className="text-xs">
+                  {v.name}
+                </Badge>
               ))}
             </div>
           </CardContent>

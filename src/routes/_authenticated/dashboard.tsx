@@ -65,7 +65,9 @@ function LeaderboardList({
   rankOffset?: number;
 }) {
   const sorted = useMemo(() => {
-    const arr = [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period));
+    const arr = [...entries].sort(
+      (a, b) => getValue(b, metric, period) - getValue(a, metric, period),
+    );
     const needle = query.trim().toLowerCase();
     if (!needle) return arr;
     return arr.filter(
@@ -81,14 +83,15 @@ function LeaderboardList({
         const rank = i + 1 + rankOffset;
         const value = getValue(e, metric, period);
 
-
         return (
           <div
             key={e.discord_id}
             className="flex items-center gap-3 rounded-md border border-border/50 bg-card/40 px-3 py-2 hover:border-primary/40 transition"
           >
             <div className="flex items-center gap-2 w-12 shrink-0">
-              <span className="font-mono text-sm text-muted-foreground w-6 text-right">#{rank}</span>
+              <span className="font-mono text-sm text-muted-foreground w-6 text-right">
+                #{rank}
+              </span>
               {rankIcon(rank)}
             </div>
             <Avatar className="size-8">
@@ -214,7 +217,9 @@ function LeaderboardPage() {
                       <div className="text-sm font-medium truncate">
                         {e.ig_name ?? e.discord_username ?? e.discord_id}
                       </div>
-                      <div className="font-mono text-xs text-primary">{formatValue(value, metric)}</div>
+                      <div className="font-mono text-xs text-primary">
+                        {formatValue(value, metric)}
+                      </div>
                     </div>
                   </div>
                 );

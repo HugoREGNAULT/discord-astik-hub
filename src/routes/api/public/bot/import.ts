@@ -13,7 +13,7 @@ const schema = z.object({
         discord_id: z.string().min(1).max(64),
         // Optional timestamp — currently unused server-side but accepted for forward-compat.
         timestamp: z.string().datetime().optional(),
-      })
+      }),
     )
     .min(1)
     .max(50_000),
@@ -28,9 +28,14 @@ export const Route = createFileRoute("/api/public/bot/import")({
         if (unauth) return unauth;
 
         let body: unknown;
-        try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
         const parsed = schema.safeParse(body);
-        if (!parsed.success) return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
+        if (!parsed.success)
+          return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
 
         // Count messages per discord_id
         const counts = new Map<string, number>();
@@ -52,7 +57,10 @@ export const Route = createFileRoute("/api/public/bot/import")({
         let updated = 0;
         let skipped = 0;
         for (const [discord_id, inc] of counts) {
-          if (!totals.has(discord_id)) { skipped++; continue; }
+          if (!totals.has(discord_id)) {
+            skipped++;
+            continue;
+          }
           const next = (totals.get(discord_id) ?? 0) + inc;
           const { error } = await db
             .from("members")
@@ -61,7 +69,13 @@ export const Route = createFileRoute("/api/public/bot/import")({
           if (!error) updated++;
         }
 
-        return json({ ok: true, updated, skipped, distinct_members: counts.size, total_entries: parsed.data.entries.length });
+        return json({
+          ok: true,
+          updated,
+          skipped,
+          distinct_members: counts.size,
+          total_entries: parsed.data.entries.length,
+        });
       },
     },
   },

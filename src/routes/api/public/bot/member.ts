@@ -22,14 +22,17 @@ export const Route = createFileRoute("/api/public/bot/member")({
         if (unauth) return unauth;
 
         let body: unknown;
-        try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
         const parsed = schema.safeParse(body);
-        if (!parsed.success) return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
+        if (!parsed.success)
+          return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
 
         const payload = parsed.data;
-        const { error } = await db
-          .from("members")
-          .upsert(payload, { onConflict: "discord_id" });
+        const { error } = await db.from("members").upsert(payload, { onConflict: "discord_id" });
         if (error) return json({ error: error.message }, 500);
 
         return json({ ok: true });

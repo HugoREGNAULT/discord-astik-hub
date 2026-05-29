@@ -16,9 +16,29 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Trash2, Save, Plus, Brush, Eraser, Square, Pipette, ZoomIn, ZoomOut, Layers, FolderOpen, FilePlus2, Droplet } from "lucide-react";
+import {
+  Trash2,
+  Save,
+  Plus,
+  Brush,
+  Eraser,
+  Square,
+  Pipette,
+  ZoomIn,
+  ZoomOut,
+  Layers,
+  FolderOpen,
+  FilePlus2,
+  Droplet,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/pdc")({
@@ -158,7 +178,13 @@ function PdcPage() {
     ctx.strokeRect(0, 0, wCells * zoom, hCells * zoom);
 
     // hover cursor
-    if (hoverCell && hoverCell.x >= 0 && hoverCell.x < wCells && hoverCell.y >= 0 && hoverCell.y < hCells) {
+    if (
+      hoverCell &&
+      hoverCell.x >= 0 &&
+      hoverCell.x < wCells &&
+      hoverCell.y >= 0 &&
+      hoverCell.y < hCells
+    ) {
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 1.5;
       ctx.strokeRect(hoverCell.x * zoom, hoverCell.y * zoom, zoom, zoom);
@@ -175,7 +201,20 @@ function PdcPage() {
     }
 
     ctx.restore();
-  }, [layers, currentLayer, pan, zoom, wCells, hCells, widthChunks, heightChunks, blockMap, hoverCell, tool, rectStart]);
+  }, [
+    layers,
+    currentLayer,
+    pan,
+    zoom,
+    wCells,
+    hCells,
+    widthChunks,
+    heightChunks,
+    blockMap,
+    hoverCell,
+    tool,
+    rectStart,
+  ]);
 
   useEffect(() => {
     draw();
@@ -415,14 +454,19 @@ function PdcPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold">Plan de coupe (PDC)</h1>
-          <p className="text-xs text-muted-foreground">Éditeur de base claim · 1 chunk = 16×16 blocs</p>
+          <p className="text-xs text-muted-foreground">
+            Éditeur de base claim · 1 chunk = 16×16 blocs
+          </p>
         </div>
         <div className="flex items-center gap-2">
           {planId && (
             <>
               <Input
                 value={planName}
-                onChange={(e) => { setPlanName(e.target.value); setDirty(true); }}
+                onChange={(e) => {
+                  setPlanName(e.target.value);
+                  setDirty(true);
+                }}
                 className="w-56 h-8"
               />
               <Button size="sm" onClick={() => save.mutate()} disabled={save.isPending || !dirty}>
@@ -435,10 +479,22 @@ function PdcPage() {
 
       <Tabs defaultValue="editor" className="w-full">
         <TabsList>
-          <TabsTrigger value="editor"><Brush className="size-4 mr-1" />Éditeur</TabsTrigger>
-          <TabsTrigger value="plans"><FolderOpen className="size-4 mr-1" />Mes plans</TabsTrigger>
-          <TabsTrigger value="palette"><Droplet className="size-4 mr-1" />Palette</TabsTrigger>
-          <TabsTrigger value="new"><FilePlus2 className="size-4 mr-1" />Nouveau</TabsTrigger>
+          <TabsTrigger value="editor">
+            <Brush className="size-4 mr-1" />
+            Éditeur
+          </TabsTrigger>
+          <TabsTrigger value="plans">
+            <FolderOpen className="size-4 mr-1" />
+            Mes plans
+          </TabsTrigger>
+          <TabsTrigger value="palette">
+            <Droplet className="size-4 mr-1" />
+            Palette
+          </TabsTrigger>
+          <TabsTrigger value="new">
+            <FilePlus2 className="size-4 mr-1" />
+            Nouveau
+          </TabsTrigger>
         </TabsList>
 
         {/* ----- Editor ----- */}
@@ -454,56 +510,137 @@ function PdcPage() {
               {/* Left: tools + palette */}
               <div className="space-y-3">
                 <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm">Outils</CardTitle></CardHeader>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Outils</CardTitle>
+                  </CardHeader>
                   <CardContent className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant={tool === "paint" ? "default" : "outline"} onClick={() => setTool("paint")}><Brush className="size-4" />Pinceau</Button>
-                    <Button size="sm" variant={tool === "rect" ? "default" : "outline"} onClick={() => setTool("rect")}><Square className="size-4" />Rect</Button>
-                    <Button size="sm" variant={tool === "erase" ? "default" : "outline"} onClick={() => setTool("erase")}><Eraser className="size-4" />Gomme</Button>
-                    <Button size="sm" variant={tool === "pick" ? "default" : "outline"} onClick={() => setTool("pick")}><Pipette className="size-4" />Pioche</Button>
-                    <Button size="sm" variant="outline" onClick={() => setZoom((z) => Math.min(40, z * 1.25))}><ZoomIn className="size-4" /></Button>
-                    <Button size="sm" variant="outline" onClick={() => setZoom((z) => Math.max(2, z / 1.25))}><ZoomOut className="size-4" /></Button>
+                    <Button
+                      size="sm"
+                      variant={tool === "paint" ? "default" : "outline"}
+                      onClick={() => setTool("paint")}
+                    >
+                      <Brush className="size-4" />
+                      Pinceau
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={tool === "rect" ? "default" : "outline"}
+                      onClick={() => setTool("rect")}
+                    >
+                      <Square className="size-4" />
+                      Rect
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={tool === "erase" ? "default" : "outline"}
+                      onClick={() => setTool("erase")}
+                    >
+                      <Eraser className="size-4" />
+                      Gomme
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={tool === "pick" ? "default" : "outline"}
+                      onClick={() => setTool("pick")}
+                    >
+                      <Pipette className="size-4" />
+                      Pioche
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setZoom((z) => Math.min(40, z * 1.25))}
+                    >
+                      <ZoomIn className="size-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setZoom((z) => Math.max(2, z / 1.25))}
+                    >
+                      <ZoomOut className="size-4" />
+                    </Button>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-1"><Layers className="size-4" />Couches</CardTitle>
+                    <CardTitle className="text-sm flex items-center gap-1">
+                      <Layers className="size-4" />
+                      Couches
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Label className="text-xs shrink-0">Total</Label>
-                      <Input type="number" min={1} max={256} value={layersCount} onChange={(e) => setLayerCountSafe(Number(e.target.value))} className="h-7" />
+                      <Input
+                        type="number"
+                        min={1}
+                        max={256}
+                        value={layersCount}
+                        onChange={(e) => setLayerCountSafe(Number(e.target.value))}
+                        className="h-7"
+                      />
                     </div>
                     <div className="flex items-center gap-2">
                       <Label className="text-xs shrink-0">Active</Label>
-                      <Select value={String(currentLayer)} onValueChange={(v) => setCurrentLayer(Number(v))}>
-                        <SelectTrigger className="h-7"><SelectValue /></SelectTrigger>
+                      <Select
+                        value={String(currentLayer)}
+                        onValueChange={(v) => setCurrentLayer(Number(v))}
+                      >
+                        <SelectTrigger className="h-7">
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           {Array.from({ length: layersCount }).map((_, i) => (
-                            <SelectItem key={i} value={String(i)}>Couche {i + 1}{layers[String(i)] && Object.keys(layers[String(i)]).length > 0 ? " ●" : ""}</SelectItem>
+                            <SelectItem key={i} value={String(i)}>
+                              Couche {i + 1}
+                              {layers[String(i)] && Object.keys(layers[String(i)]).length > 0
+                                ? " ●"
+                                : ""}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button size="sm" variant="outline" className="w-full" onClick={() => {
-                      if (!confirm(`Vider la couche ${currentLayer + 1} ?`)) return;
-                      setLayers((p) => ({ ...p, [String(currentLayer)]: {} }));
-                      setDirty(true);
-                    }}>Vider cette couche</Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        if (!confirm(`Vider la couche ${currentLayer + 1} ?`)) return;
+                        setLayers((p) => ({ ...p, [String(currentLayer)]: {} }));
+                        setDirty(true);
+                      }}
+                    >
+                      Vider cette couche
+                    </Button>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm">Palette</CardTitle></CardHeader>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Palette</CardTitle>
+                  </CardHeader>
                   <CardContent className="space-y-1 max-h-[40vh] overflow-y-auto">
-                    {blocks.length === 0 && <p className="text-xs text-muted-foreground">Aucun bloc. Ajoute-en via l'onglet Palette.</p>}
+                    {blocks.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Aucun bloc. Ajoute-en via l'onglet Palette.
+                      </p>
+                    )}
                     {blocks.map((b) => (
                       <button
                         key={b.id}
-                        onClick={() => { setSelectedBlockId(b.id); setTool("paint"); }}
+                        onClick={() => {
+                          setSelectedBlockId(b.id);
+                          setTool("paint");
+                        }}
                         className={`w-full flex items-center gap-2 px-2 py-1 rounded text-xs hover:bg-accent ${selectedBlockId === b.id ? "ring-2 ring-primary bg-accent" : ""}`}
                       >
-                        <span className="size-4 rounded border border-zinc-700 shrink-0" style={{ background: b.color }} />
+                        <span
+                          className="size-4 rounded border border-zinc-700 shrink-0"
+                          style={{ background: b.color }}
+                        />
                         <span className="flex-1 text-left truncate">{b.name}</span>
                         {b.kind === "liquid" && <Droplet className="size-3 text-cyan-400" />}
                       </button>
@@ -513,22 +650,36 @@ function PdcPage() {
               </div>
 
               {/* Canvas */}
-              <div ref={containerRef} className="relative bg-[#0a0a0c] border border-zinc-800 rounded min-h-[60vh] overflow-hidden">
+              <div
+                ref={containerRef}
+                className="relative bg-[#0a0a0c] border border-zinc-800 rounded min-h-[60vh] overflow-hidden"
+              >
                 <canvas
                   ref={canvasRef}
                   className="w-full h-full cursor-crosshair touch-none"
                   onPointerDown={onPointerDown}
                   onPointerMove={onPointerMove}
                   onPointerUp={onPointerUp}
-                  onPointerLeave={() => { setHoverCell(null); isDrawingRef.current = false; }}
+                  onPointerLeave={() => {
+                    setHoverCell(null);
+                    isDrawingRef.current = false;
+                  }}
                   onWheel={onWheel}
                   onContextMenu={(e) => e.preventDefault()}
                 />
                 <div className="absolute bottom-2 left-2 text-[10px] text-zinc-500 bg-black/60 px-2 py-1 rounded font-mono">
-                  {widthChunks}×{heightChunks} chunks · {wCells}×{hCells} blocs · zoom {zoom.toFixed(1)}x
-                  {hoverCell && hoverCell.x >= 0 && hoverCell.y >= 0 && hoverCell.x < wCells && hoverCell.y < hCells && (
-                    <> · ({hoverCell.x},{hoverCell.y})</>
-                  )}
+                  {widthChunks}×{heightChunks} chunks · {wCells}×{hCells} blocs · zoom{" "}
+                  {zoom.toFixed(1)}x
+                  {hoverCell &&
+                    hoverCell.x >= 0 &&
+                    hoverCell.y >= 0 &&
+                    hoverCell.x < wCells &&
+                    hoverCell.y < hCells && (
+                      <>
+                        {" "}
+                        · ({hoverCell.x},{hoverCell.y})
+                      </>
+                    )}
                 </div>
                 <div className="absolute top-2 right-2 text-[10px] text-zinc-500 bg-black/60 px-2 py-1 rounded">
                   Clic droit / molette = déplacer · Molette = zoom
@@ -538,11 +689,12 @@ function PdcPage() {
               {/* Right: quantities */}
               <div className="space-y-3">
                 <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm">Quantités — couche {currentLayer + 1}</CardTitle></CardHeader>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Quantités — couche {currentLayer + 1}</CardTitle>
+                  </CardHeader>
                   <CardContent className="space-y-1 max-h-[35vh] overflow-y-auto">
-                    {Object.entries(quantities.perLayer[String(currentLayer)] ?? {}).length === 0 && (
-                      <p className="text-xs text-muted-foreground">Couche vide.</p>
-                    )}
+                    {Object.entries(quantities.perLayer[String(currentLayer)] ?? {}).length ===
+                      0 && <p className="text-xs text-muted-foreground">Couche vide.</p>}
                     {Object.entries(quantities.perLayer[String(currentLayer)] ?? {})
                       .sort((a, b) => b[1] - a[1])
                       .map(([bid, n]) => {
@@ -560,7 +712,9 @@ function PdcPage() {
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm">Total toutes couches</CardTitle></CardHeader>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Total toutes couches</CardTitle>
+                  </CardHeader>
                   <CardContent className="space-y-1 max-h-[35vh] overflow-y-auto">
                     {Object.entries(quantities.total).length === 0 && (
                       <p className="text-xs text-muted-foreground">Plan vide.</p>
@@ -580,7 +734,9 @@ function PdcPage() {
                               <span className="font-mono font-bold">{n}</span>
                             </div>
                             <div className="text-[10px] text-muted-foreground pl-5">
-                              {stacks > 0 ? `${stacks} stack${stacks > 1 ? "s" : ""}` : ""}{stacks > 0 && rest > 0 ? " + " : ""}{rest > 0 ? `${rest}` : ""}
+                              {stacks > 0 ? `${stacks} stack${stacks > 1 ? "s" : ""}` : ""}
+                              {stacks > 0 && rest > 0 ? " + " : ""}
+                              {rest > 0 ? `${rest}` : ""}
                             </div>
                           </div>
                         );
@@ -595,21 +751,36 @@ function PdcPage() {
         {/* ----- Plans list ----- */}
         <TabsContent value="plans">
           <Card>
-            <CardHeader><CardTitle className="text-base">Plans sauvegardés</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base">Plans sauvegardés</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-2">
               {(plansData?.plans ?? []).length === 0 && (
                 <p className="text-sm text-muted-foreground">Aucun plan enregistré.</p>
               )}
               {(plansData?.plans ?? []).map((p) => (
-                <div key={p.id} className="flex items-center gap-2 p-2 rounded border border-zinc-800 hover:bg-accent">
+                <div
+                  key={p.id}
+                  className="flex items-center gap-2 p-2 rounded border border-zinc-800 hover:bg-accent"
+                >
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{p.name}</div>
                     <div className="text-[10px] text-muted-foreground">
-                      {p.width_chunks}×{p.height_chunks} chunks · {p.layers_count} couche{p.layers_count > 1 ? "s" : ""} · {p.created_by_username ?? "—"} · {new Date(p.updated_at).toLocaleString()}
+                      {p.width_chunks}×{p.height_chunks} chunks · {p.layers_count} couche
+                      {p.layers_count > 1 ? "s" : ""} · {p.created_by_username ?? "—"} ·{" "}
+                      {new Date(p.updated_at).toLocaleString()}
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => loadPlan(p.id)}>Ouvrir</Button>
-                  <Button size="sm" variant="ghost" onClick={() => { if (confirm(`Supprimer "${p.name}" ?`)) removePlan.mutate(p.id); }}>
+                  <Button size="sm" variant="outline" onClick={() => loadPlan(p.id)}>
+                    Ouvrir
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      if (confirm(`Supprimer "${p.name}" ?`)) removePlan.mutate(p.id);
+                    }}
+                  >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
                 </div>
@@ -622,23 +793,40 @@ function PdcPage() {
         <TabsContent value="palette">
           <div className="grid md:grid-cols-2 gap-3">
             <Card>
-              <CardHeader><CardTitle className="text-base">Ajouter un bloc / liquide</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-base">Ajouter un bloc / liquide</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-2">
                 <div className="space-y-1">
                   <Label className="text-xs">Nom</Label>
-                  <Input value={bName} onChange={(e) => setBName(e.target.value)} placeholder="Ex: Big Obsidienne" />
+                  <Input
+                    value={bName}
+                    onChange={(e) => setBName(e.target.value)}
+                    placeholder="Ex: Big Obsidienne"
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Couleur</Label>
                   <div className="flex items-center gap-2">
-                    <input type="color" value={bColor} onChange={(e) => setBColor(e.target.value)} className="h-9 w-12 rounded border border-input bg-transparent" />
-                    <Input value={bColor} onChange={(e) => setBColor(e.target.value)} className="font-mono" />
+                    <input
+                      type="color"
+                      value={bColor}
+                      onChange={(e) => setBColor(e.target.value)}
+                      className="h-9 w-12 rounded border border-input bg-transparent"
+                    />
+                    <Input
+                      value={bColor}
+                      onChange={(e) => setBColor(e.target.value)}
+                      className="font-mono"
+                    />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Type</Label>
                   <Select value={bKind} onValueChange={(v) => setBKind(v as "block" | "liquid")}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="block">Bloc</SelectItem>
                       <SelectItem value="liquid">Liquide</SelectItem>
@@ -646,21 +834,34 @@ function PdcPage() {
                   </Select>
                 </div>
                 <Button onClick={() => addBlock.mutate()} disabled={!bName || addBlock.isPending}>
-                  <Plus className="size-4" />Ajouter
+                  <Plus className="size-4" />
+                  Ajouter
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader><CardTitle className="text-base">Palette partagée</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="text-base">Palette partagée</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-1 max-h-[60vh] overflow-y-auto">
                 {blocks.map((b) => (
-                  <div key={b.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-accent">
-                    <span className="size-5 rounded border border-zinc-700" style={{ background: b.color }} />
+                  <div
+                    key={b.id}
+                    className="flex items-center gap-2 px-2 py-1 rounded hover:bg-accent"
+                  >
+                    <span
+                      className="size-5 rounded border border-zinc-700"
+                      style={{ background: b.color }}
+                    />
                     <span className="flex-1 text-sm">{b.name}</span>
                     <span className="text-[10px] text-muted-foreground font-mono">{b.color}</span>
                     {b.kind === "liquid" && <Droplet className="size-3 text-cyan-400" />}
-                    <button onClick={() => { if (confirm(`Supprimer ${b.name} ?`)) removeBlock.mutate(b.id); }}>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Supprimer ${b.name} ?`)) removeBlock.mutate(b.id);
+                      }}
+                    >
                       <Trash2 className="size-4 text-destructive" />
                     </button>
                   </div>
@@ -673,31 +874,60 @@ function PdcPage() {
         {/* ----- New plan ----- */}
         <TabsContent value="new">
           <Card className="max-w-lg">
-            <CardHeader><CardTitle className="text-base">Nouveau plan de coupe</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="text-base">Nouveau plan de coupe</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-1">
                 <Label className="text-xs">Nom</Label>
-                <Input value={npName} onChange={(e) => setNpName(e.target.value)} placeholder="Ex: PDC base nord" />
+                <Input
+                  value={npName}
+                  onChange={(e) => setNpName(e.target.value)}
+                  placeholder="Ex: PDC base nord"
+                />
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-1">
                   <Label className="text-xs">Largeur (chunks)</Label>
-                  <Input type="number" min={1} max={50} value={npW} onChange={(e) => setNpW(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={npW}
+                    onChange={(e) => setNpW(Number(e.target.value))}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Hauteur (chunks)</Label>
-                  <Input type="number" min={1} max={50} value={npH} onChange={(e) => setNpH(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={npH}
+                    onChange={(e) => setNpH(Number(e.target.value))}
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs">Couches</Label>
-                  <Input type="number" min={1} max={256} value={npLayers} onChange={(e) => setNpLayers(Number(e.target.value))} />
+                  <Input
+                    type="number"
+                    min={1}
+                    max={256}
+                    value={npLayers}
+                    onChange={(e) => setNpLayers(Number(e.target.value))}
+                  />
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground">
-                Surface : {npW * CHUNK_SIZE}×{npH * CHUNK_SIZE} blocs ({npW * CHUNK_SIZE * npH * CHUNK_SIZE} blocs / couche)
+                Surface : {npW * CHUNK_SIZE}×{npH * CHUNK_SIZE} blocs (
+                {npW * CHUNK_SIZE * npH * CHUNK_SIZE} blocs / couche)
               </p>
-              <Button onClick={() => newPlan.mutate({ name: npName, w: npW, h: npH, layers: npLayers })} disabled={!npName || newPlan.isPending}>
-                <Plus className="size-4" />Créer
+              <Button
+                onClick={() => newPlan.mutate({ name: npName, w: npW, h: npH, layers: npLayers })}
+                disabled={!npName || newPlan.isPending}
+              >
+                <Plus className="size-4" />
+                Créer
               </Button>
             </CardContent>
           </Card>

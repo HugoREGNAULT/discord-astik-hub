@@ -4,10 +4,10 @@
  */
 
 export interface RetryOptions {
-  retries?: number;          // tentatives au-delà de la première
-  baseDelayMs?: number;      // base du backoff
-  maxDelayMs?: number;       // plafond
-  timeoutMs?: number;        // timeout par tentative
+  retries?: number; // tentatives au-delà de la première
+  baseDelayMs?: number; // base du backoff
+  maxDelayMs?: number; // plafond
+  timeoutMs?: number; // timeout par tentative
   retryOn?: (status: number) => boolean;
 }
 

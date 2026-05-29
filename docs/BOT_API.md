@@ -9,22 +9,27 @@ Toutes les routes acceptent CORS (`*`) et OPTIONS. Réponse : `{ ok: true, ... }
 ---
 
 ## 1. POST `/api/public/bot/voice`
+
 Ajoute du temps vocal (à appeler en continu pendant que le membre est en vocal **actif**, càd : pas mute/deaf serveur ou self, dans les conditions définies).
 
 ```json
 { "discord_id": "123", "seconds": 30 }
 ```
+
 Incrémente `voice_total_seconds` ET `voice_7d_seconds`. À appeler par tranches (ex : toutes les 30s).
 
 ## 2. POST `/api/public/bot/message`
+
 Incrémente le compteur de messages (avec la règle anti-spam 1msg/30s appliquée **côté bot**).
 
 ```json
 { "discord_id": "123", "count": 1 }
 ```
+
 `count` est optionnel (défaut 1). Incrémente `messages_total` ET `messages_7d`.
 
 ## 3. POST `/api/public/bot/stats`
+
 SET direct des valeurs 7j calculées côté bot (rolling window précis). Utile pour recalculer périodiquement la fenêtre glissante de 7 jours.
 
 ```json
@@ -36,9 +41,11 @@ SET direct des valeurs 7j calculées côté bot (rolling window précis). Utile 
   "voice_total_seconds": 720000
 }
 ```
+
 Tous les champs autres que `discord_id` sont optionnels.
 
 ## 4. POST `/api/public/bot/member`
+
 Upsert d'un membre (sync pseudo Discord, avatar, IG name, grade…).
 
 ```json
@@ -52,9 +59,11 @@ Upsert d'un membre (sync pseudo Discord, avatar, IG name, grade…).
   "arrival_date": "2024-08-15"
 }
 ```
+
 Tous les champs autres que `discord_id` sont optionnels. Crée le membre s'il n'existe pas.
 
 ## 5. POST `/api/public/bot/import`
+
 Import bulk de timestamps historiques (max 50 000 entrées par appel).
 
 ```json
@@ -65,6 +74,7 @@ Import bulk de timestamps historiques (max 50 000 entrées par appel).
   ]
 }
 ```
+
 Compte tous les timestamps tels quels (pas de règle anti-spam, conformément aux specs). Les membres absents de la table `members` sont **ignorés** (filtre déjà fait côté bot après vérification de présence sur la guilde).
 
 ---

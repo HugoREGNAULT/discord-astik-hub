@@ -16,7 +16,9 @@ export const listObjectives = createServerFn({ method: "GET" }).handler(async ()
 
 export const createObjective = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z.object({ title: z.string().min(1).max(200), description: z.string().max(2000).optional() }).parse(input),
+    z
+      .object({ title: z.string().min(1).max(200), description: z.string().max(2000).optional() })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("objectives.edit");

@@ -6,10 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Clock, UserPlus, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
-import {
-  listApplications,
-  decideApplication,
-} from "@/lib/data/applications.functions";
+import { listApplications, decideApplication } from "@/lib/data/applications.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,12 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
@@ -39,7 +31,11 @@ import { CardListSkeleton } from "@/components/Skeletons";
 
 const PER_PAGE = 15;
 export const Route = createFileRoute("/_authenticated/recruitment")({
-  component: () => (<Guard perm="recruit.access"><RecruitmentPage /></Guard>),
+  component: () => (
+    <Guard perm="recruit.access">
+      <RecruitmentPage />
+    </Guard>
+  ),
 });
 
 type AppStatus = "pending" | "accepted" | "rejected";
@@ -55,8 +51,8 @@ function RecruitmentPage() {
           Candidatures
         </h1>
         <p className="text-sm text-muted-foreground">
-          Accepte ou refuse les candidatures à la PunkAstik. Les candidats sont
-          notifiés en DM Discord.
+          Accepte ou refuse les candidatures à la PunkAstik. Les candidats sont notifiés en DM
+          Discord.
         </p>
       </div>
 
@@ -143,11 +139,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
     <div className="space-y-4">
       <Accordion type="single" collapsible className="space-y-2">
         {paged.map((app) => (
-          <AccordionItem
-            key={app.id}
-            value={app.id}
-            className="border rounded-lg bg-card px-4"
-          >
+          <AccordionItem key={app.id} value={app.id} className="border rounded-lg bg-card px-4">
             <AccordionTrigger className="hover:no-underline">
               <div className="flex items-center gap-3 flex-1 text-left">
                 <img
@@ -159,9 +151,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">
                     {app.mc_name}{" "}
-                    <span className="text-muted-foreground text-xs">
-                      · @{app.discord_username}
-                    </span>
+                    <span className="text-muted-foreground text-xs">· @{app.discord_username}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {app.country} · {app.age} ans · {app.ig_grade} ·{" "}
@@ -169,7 +159,10 @@ function ApplicationsList({ status }: { status: AppStatus }) {
                   </div>
                 </div>
                 {app.blacklist_matches && app.blacklist_matches.length > 0 && (
-                  <Badge variant="outline" className="ml-2 bg-destructive/15 text-destructive border-destructive/40">
+                  <Badge
+                    variant="outline"
+                    className="ml-2 bg-destructive/15 text-destructive border-destructive/40"
+                  >
                     🚫 Blacklist
                   </Badge>
                 )}
@@ -188,7 +181,6 @@ function ApplicationsList({ status }: { status: AppStatus }) {
     </div>
   );
 }
-
 
 function ApplicationDetail({ app }: { app: Application }) {
   const qc = useQueryClient();
@@ -242,35 +234,28 @@ function ApplicationDetail({ app }: { app: Application }) {
         <Info label="Comment a connu PunkAstik">{app.heard_from}</Info>
       </div>
       <Info label="Compétences">{app.skills}</Info>
-      {app.previous_factions && (
-        <Info label="Anciennes factions">{app.previous_factions}</Info>
-      )}
+      {app.previous_factions && <Info label="Anciennes factions">{app.previous_factions}</Info>}
 
       {app.status === "pending" ? (
         <div className="flex gap-2 pt-2">
-          <Button
-            onClick={() => setOpen("accept")}
-            className="bg-emerald-600 hover:bg-emerald-700"
-          >
+          <Button onClick={() => setOpen("accept")} className="bg-emerald-600 hover:bg-emerald-700">
             <CheckCircle2 className="w-4 h-4 mr-1" /> Accepter
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => setOpen("reject")}
-          >
+          <Button variant="destructive" onClick={() => setOpen("reject")}>
             <XCircle className="w-4 h-4 mr-1" /> Refuser
           </Button>
         </div>
       ) : (
         <div className="text-xs text-muted-foreground border-t pt-3">
           {app.status === "accepted" ? "✅ Acceptée" : "❌ Refusée"}
-          {app.decided_by_username && <> par <strong>{app.decided_by_username}</strong></>}
-          {app.decided_at && (
-            <> le {new Date(app.decided_at).toLocaleDateString("fr-FR")}</>
+          {app.decided_by_username && (
+            <>
+              {" "}
+              par <strong>{app.decided_by_username}</strong>
+            </>
           )}
-          {app.decision_reason && (
-            <div className="mt-1 italic">Motif : {app.decision_reason}</div>
-          )}
+          {app.decided_at && <> le {new Date(app.decided_at).toLocaleDateString("fr-FR")}</>}
+          {app.decision_reason && <div className="mt-1 italic">Motif : {app.decision_reason}</div>}
         </div>
       )}
 
@@ -290,9 +275,7 @@ function ApplicationDetail({ app }: { app: Application }) {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={
-              open === "accept"
-                ? "Message de bienvenue (optionnel)"
-                : "Motif du refus (optionnel)"
+              open === "accept" ? "Message de bienvenue (optionnel)" : "Motif du refus (optionnel)"
             }
             rows={4}
           />
@@ -301,9 +284,7 @@ function ApplicationDetail({ app }: { app: Application }) {
               Annuler
             </Button>
             <Button
-              onClick={() =>
-                mutation.mutate(open === "accept" ? "accepted" : "rejected")
-              }
+              onClick={() => mutation.mutate(open === "accept" ? "accepted" : "rejected")}
               disabled={mutation.isPending}
               className={
                 open === "accept"
@@ -311,9 +292,7 @@ function ApplicationDetail({ app }: { app: Application }) {
                   : "bg-red-600 hover:bg-red-700"
               }
             >
-              {mutation.isPending && (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              )}
+              {mutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
               Confirmer
             </Button>
           </DialogFooter>

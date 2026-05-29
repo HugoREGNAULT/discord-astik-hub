@@ -46,14 +46,14 @@ import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 
-
 export const Route = createFileRoute("/_authenticated/me")({
   head: () => ({
     meta: [
       { title: "Mon espace · PunkAstik" },
       {
         name: "description",
-        content: "Ton profil PunkAstik : skin Minecraft, AstikPoints, grade et activité dans la faction.",
+        content:
+          "Ton profil PunkAstik : skin Minecraft, AstikPoints, grade et activité dans la faction.",
       },
     ],
   }),
@@ -62,7 +62,11 @@ export const Route = createFileRoute("/_authenticated/me")({
 
 function formatDate(s: string | null | undefined) {
   if (!s) return "—";
-  return new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+  return new Date(s).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function daysSince(s: string | null | undefined) {
@@ -137,7 +141,9 @@ function MePage() {
                 </Badge>
               )}
               {m.status === "active" ? (
-                <Badge className="bg-green-500/15 text-green-500 hover:bg-green-500/20">Actif</Badge>
+                <Badge className="bg-green-500/15 text-green-500 hover:bg-green-500/20">
+                  Actif
+                </Badge>
               ) : (
                 <Badge variant="outline">Ancien</Badge>
               )}
@@ -146,7 +152,8 @@ function MePage() {
               <div className="flex items-center gap-1.5">
                 <Calendar className="size-4" />
                 <span>
-                  Arrivé le <span className="text-foreground font-medium">{formatDate(m.arrival_date)}</span>
+                  Arrivé le{" "}
+                  <span className="text-foreground font-medium">{formatDate(m.arrival_date)}</span>
                   {sinceArrival !== null && ` · ${sinceArrival}j`}
                 </span>
               </div>
@@ -296,8 +303,8 @@ function DangerZone() {
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <p className="text-muted-foreground">
-          Cette action efface tes alts, notes, warnings, candidatures et historique
-          de points. Ta fiche membre est anonymisée et passée en « ancien ».
+          Cette action efface tes alts, notes, warnings, candidatures et historique de points. Ta
+          fiche membre est anonymisée et passée en « ancien ».
           <strong className="text-foreground"> Action irréversible.</strong>
         </p>
         <AlertDialog open={open} onOpenChange={setOpen}>
@@ -310,8 +317,8 @@ function DangerZone() {
             <AlertDialogHeader>
               <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
               <AlertDialogDescription>
-                Tape <code className="font-mono font-bold">SUPPRIMER</code> ci-dessous
-                pour confirmer définitivement.
+                Tape <code className="font-mono font-bold">SUPPRIMER</code> ci-dessous pour
+                confirmer définitivement.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="space-y-2">
@@ -327,7 +334,10 @@ function DangerZone() {
               <AlertDialogCancel disabled={mDel.isPending}>Annuler</AlertDialogCancel>
               <AlertDialogAction
                 disabled={confirm !== "SUPPRIMER" || mDel.isPending}
-                onClick={(e) => { e.preventDefault(); mDel.mutate(); }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  mDel.mutate();
+                }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Supprimer définitivement
@@ -448,14 +458,16 @@ function PointsTimeline({ gains }: { gains: Gain[] }) {
                       <span className="font-medium text-foreground/80">{dateStr}</span>
                       {" · "}
                       {timeStr}
-                      {g.staff_username && (
-                        <span className="ml-1">· par {g.staff_username}</span>
-                      )}
+                      {g.staff_username && <span className="ml-1">· par {g.staff_username}</span>}
                     </div>
                   </div>
                   <div
                     className={`text-sm font-mono font-semibold whitespace-nowrap ${
-                      isPositive ? "text-green-500" : isNegative ? "text-destructive" : "text-muted-foreground"
+                      isPositive
+                        ? "text-green-500"
+                        : isNegative
+                          ? "text-destructive"
+                          : "text-muted-foreground"
                     }`}
                   >
                     {g.amount >= 0 ? "+" : ""}
@@ -476,4 +488,3 @@ function PointsTimeline({ gains }: { gains: Gain[] }) {
     </div>
   );
 }
-

@@ -25,7 +25,6 @@ import { MemberRowsSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
 import { Users as UsersIcon, FileText as FileTextIcon } from "lucide-react";
 
-
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin · PunkAstik" }] }),
   component: () => (
@@ -57,11 +56,7 @@ function AdminPage() {
         />
         <Stat
           label="Dernier refresh rôles"
-          value={
-            data?.lastRoleRefresh
-              ? new Date(data.lastRoleRefresh).toLocaleTimeString()
-              : "—"
-          }
+          value={data?.lastRoleRefresh ? new Date(data.lastRoleRefresh).toLocaleTimeString() : "—"}
         />
       </div>
 
@@ -156,11 +151,7 @@ function MembersAdminSection() {
               className="flex items-center gap-3 border border-border rounded-md p-2 hover:border-primary/40 transition"
             >
               {m.avatar_url ? (
-                <img
-                  src={m.avatar_url}
-                  alt=""
-                  className="size-9 rounded-full"
-                />
+                <img src={m.avatar_url} alt="" className="size-9 rounded-full" />
               ) : (
                 <div className="size-9 rounded-full bg-muted" />
               )}
@@ -169,18 +160,11 @@ function MembersAdminSection() {
                   {m.ig_name ?? m.discord_username ?? m.discord_id}
                 </div>
                 <div className="text-[11px] text-muted-foreground truncate">
-                  @{m.discord_username ?? "—"} · {m.current_grade ?? "—"} ·{" "}
-                  {m.discord_id}
+                  @{m.discord_username ?? "—"} · {m.current_grade ?? "—"} · {m.discord_id}
                 </div>
               </div>
-              <Badge variant={m.status === "active" ? "secondary" : "outline"}>
-                {m.status}
-              </Badge>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setEditing(m as MemberRow)}
-              >
+              <Badge variant={m.status === "active" ? "secondary" : "outline"}>{m.status}</Badge>
+              <Button size="sm" variant="outline" onClick={() => setEditing(m as MemberRow)}>
                 <Pencil className="size-3.5 mr-1" /> Éditer
               </Button>
               <Button asChild size="sm" variant="ghost">
@@ -201,21 +185,12 @@ function MembersAdminSection() {
         </div>
       </CardContent>
 
-      <EditMemberDialog
-        member={editing}
-        onClose={() => setEditing(null)}
-      />
+      <EditMemberDialog member={editing} onClose={() => setEditing(null)} />
     </Card>
   );
 }
 
-function EditMemberDialog({
-  member,
-  onClose,
-}: {
-  member: MemberRow | null;
-  onClose: () => void;
-}) {
+function EditMemberDialog({ member, onClose }: { member: MemberRow | null; onClose: () => void }) {
   const qc = useQueryClient();
   const updateFn = useServerFn(updateMember);
 
@@ -263,8 +238,7 @@ function EditMemberDialog({
             Éditer {member.ig_name ?? member.discord_username ?? member.discord_id}
           </DialogTitle>
           <DialogDescription>
-            Modifications appliquées immédiatement. Une trace est gardée dans
-            les logs.
+            Modifications appliquées immédiatement. Une trace est gardée dans les logs.
           </DialogDescription>
         </DialogHeader>
 
@@ -276,60 +250,56 @@ function EditMemberDialog({
             className="h-40 w-auto object-contain shrink-0"
           />
           <div className="flex-1 grid sm:grid-cols-2 gap-3">
-
-          <FormField
-            label="Pseudo IG"
-            defaultValue={member.ig_name ?? ""}
-            onChange={(v) => setPatch((p) => ({ ...p, ig_name: v }))}
-          />
-          <FormField
-            label="Pseudo Discord"
-            defaultValue={member.discord_username ?? ""}
-            onChange={(v) => setPatch((p) => ({ ...p, discord_username: v }))}
-          />
-          <FormField
-            label="UUID Minecraft"
-            defaultValue={member.mc_uuid ?? ""}
-            onChange={(v) => setPatch((p) => ({ ...p, mc_uuid: v }))}
-          />
-          <FormField
-            label="Grade"
-            defaultValue={member.current_grade ?? ""}
-            onChange={(v) => setPatch((p) => ({ ...p, current_grade: v }))}
-          />
-          <FormField
-            label="Date d'arrivée"
-            type="date"
-            defaultValue={member.arrival_date ?? ""}
-            onChange={(v) => setPatch((p) => ({ ...p, arrival_date: v }))}
-          />
-          <FormField
-            label="Dernier rankup"
-            type="date"
-            defaultValue={member.last_rankup ?? ""}
-            onChange={(v) => setPatch((p) => ({ ...p, last_rankup: v }))}
-          />
-          <FormField
-            label="Recruteur (Discord ID)"
-            defaultValue={member.recruiter_discord_id ?? ""}
-            onChange={(v) =>
-              setPatch((p) => ({ ...p, recruiter_discord_id: v }))
-            }
-          />
-          <div>
-            <label className="text-xs text-muted-foreground">Statut</label>
-            <select
-              defaultValue={member.status}
-              className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border"
-              onChange={(e) => setPatch((p) => ({ ...p, status: e.target.value }))}
-            >
-              <option value="active">Actif</option>
-              <option value="former">Ancien</option>
-            </select>
-          </div>
+            <FormField
+              label="Pseudo IG"
+              defaultValue={member.ig_name ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, ig_name: v }))}
+            />
+            <FormField
+              label="Pseudo Discord"
+              defaultValue={member.discord_username ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, discord_username: v }))}
+            />
+            <FormField
+              label="UUID Minecraft"
+              defaultValue={member.mc_uuid ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, mc_uuid: v }))}
+            />
+            <FormField
+              label="Grade"
+              defaultValue={member.current_grade ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, current_grade: v }))}
+            />
+            <FormField
+              label="Date d'arrivée"
+              type="date"
+              defaultValue={member.arrival_date ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, arrival_date: v }))}
+            />
+            <FormField
+              label="Dernier rankup"
+              type="date"
+              defaultValue={member.last_rankup ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, last_rankup: v }))}
+            />
+            <FormField
+              label="Recruteur (Discord ID)"
+              defaultValue={member.recruiter_discord_id ?? ""}
+              onChange={(v) => setPatch((p) => ({ ...p, recruiter_discord_id: v }))}
+            />
+            <div>
+              <label className="text-xs text-muted-foreground">Statut</label>
+              <select
+                defaultValue={member.status}
+                className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border"
+                onChange={(e) => setPatch((p) => ({ ...p, status: e.target.value }))}
+              >
+                <option value="active">Actif</option>
+                <option value="former">Ancien</option>
+              </select>
+            </div>
           </div>
         </div>
-
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>
@@ -368,26 +338,14 @@ function FormField({
   return (
     <div>
       <label className="text-xs text-muted-foreground">{label}</label>
-      <Input
-        type={type}
-        defaultValue={defaultValue}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <Input type={type} defaultValue={defaultValue} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
 
 /* ---------- bas: stats & logs ---------- */
 
-function Stat({
-  label,
-  value,
-  ok,
-}: {
-  label: string;
-  value: any;
-  ok?: boolean;
-}) {
+function Stat({ label, value, ok }: { label: string; value: any; ok?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -422,25 +380,18 @@ function LogList({ items }: { items: any[] }) {
         <li key={l.id} className="py-2 flex items-start gap-2">
           <Badge
             variant={
-              l.level === "error"
-                ? "destructive"
-                : l.level === "warn"
-                  ? "secondary"
-                  : "default"
+              l.level === "error" ? "destructive" : l.level === "warn" ? "secondary" : "default"
             }
           >
             {l.level}
           </Badge>
           <div className="flex-1 min-w-0">
             <div className="text-xs text-muted-foreground">
-              {new Date(l.created_at).toLocaleString()} ·{" "}
-              {l.actor_discord_id ?? "system"}
+              {new Date(l.created_at).toLocaleString()} · {l.actor_discord_id ?? "system"}
             </div>
             <div className="font-mono text-xs truncate">
               {l.action}{" "}
-              {l.payload && Object.keys(l.payload).length > 0
-                ? JSON.stringify(l.payload)
-                : ""}
+              {l.payload && Object.keys(l.payload).length > 0 ? JSON.stringify(l.payload) : ""}
             </div>
           </div>
         </li>

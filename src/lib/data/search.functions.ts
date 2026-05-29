@@ -52,8 +52,14 @@ export type SearchHit =
     };
 
 export const globalSearch = createServerFn({ method: "GET" })
-  .inputValidator((input: { q: string; filter?: "member" | "application" | "donation" | "points" }) =>
-    z.object({ q: z.string().max(100), filter: z.enum(["member", "application", "donation", "points"]).optional() }).parse(input),
+  .inputValidator(
+    (input: { q: string; filter?: "member" | "application" | "donation" | "points" }) =>
+      z
+        .object({
+          q: z.string().max(100),
+          filter: z.enum(["member", "application", "donation", "points"]).optional(),
+        })
+        .parse(input),
   )
   .handler(async ({ data }): Promise<{ hits: SearchHit[] }> => {
     const user = await requireSession();
@@ -70,9 +76,7 @@ export const globalSearch = createServerFn({ method: "GET" })
       const r = await db
         .from("members")
         .select("discord_id, discord_username, ig_name, avatar_url, current_grade, status")
-        .or(
-          `discord_id.ilike.${like},discord_username.ilike.${like},ig_name.ilike.${like}`,
-        )
+        .or(`discord_id.ilike.${like},discord_username.ilike.${like},ig_name.ilike.${like}`)
         .limit(8);
 
       /* Doublons / alts */

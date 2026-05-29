@@ -80,32 +80,32 @@ de vérité. Chaque server function sensible appelle
 
 ### Rôles Discord reconnus
 
-| Rôle              | ID                       | Serveur |
-|-------------------|--------------------------|---------|
-| Staff Faction     | `1503083799540404255`    | Privé   |
-| Haut Staff Public | `1485420835165569146`    | Public  |
-| Staff Points      | `1505555444373127188`    | Privé   |
-| Staff Ticket      | `1503077087160828066`    | Privé   |
-| Recruteur         | `1485381120014024876`    | Public  |
-| Membre Faction    | `1503030823174148216`    | Privé   |
+| Rôle              | ID                    | Serveur |
+| ----------------- | --------------------- | ------- |
+| Staff Faction     | `1503083799540404255` | Privé   |
+| Haut Staff Public | `1485420835165569146` | Public  |
+| Staff Points      | `1505555444373127188` | Privé   |
+| Staff Ticket      | `1503077087160828066` | Privé   |
+| Recruteur         | `1485381120014024876` | Public  |
+| Membre Faction    | `1503030823174148216` | Privé   |
 
 > Haut staff = `STAFF_FACTION` (privé) **OU** `HIGH_STAFF_PUBLIC` (public).
 
 ### Permissions
 
-| Permission           | Qui ?                                                  |
-|----------------------|--------------------------------------------------------|
-| `profile.self`       | Membre faction, recruteur, haut staff                  |
-| `members.view`       | Staff faction, staff points                            |
-| `members.edit`       | Staff faction                                          |
-| `notes.view/write`   | Staff faction                                          |
-| `warnings.view/write`| Staff faction                                          |
-| `points.manage`      | Staff points (+ haut staff)                            |
-| `donations.manage`   | Staff points (+ haut staff)                            |
-| `config.manage`      | Staff points (+ haut staff)                            |
-| `recruit.access`     | Recruteur (+ haut staff)                               |
-| `objectives.edit`    | Staff faction                                          |
-| `admin.access`       | Haut staff uniquement                                  |
+| Permission            | Qui ?                                 |
+| --------------------- | ------------------------------------- |
+| `profile.self`        | Membre faction, recruteur, haut staff |
+| `members.view`        | Staff faction, staff points           |
+| `members.edit`        | Staff faction                         |
+| `notes.view/write`    | Staff faction                         |
+| `warnings.view/write` | Staff faction                         |
+| `points.manage`       | Staff points (+ haut staff)           |
+| `donations.manage`    | Staff points (+ haut staff)           |
+| `config.manage`       | Staff points (+ haut staff)           |
+| `recruit.access`      | Recruteur (+ haut staff)              |
+| `objectives.edit`     | Staff faction                         |
+| `admin.access`        | Haut staff uniquement                 |
 
 L'UI cache automatiquement les modules indisponibles (sidebar +
 dashboard), mais **le contrôle réel est serveur** : un appel direct à une

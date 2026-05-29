@@ -46,9 +46,7 @@ export function EmptyState({
       <p className={cn("font-medium text-foreground", isCompact ? "text-sm" : "text-sm")}>
         {title}
       </p>
-      {description ? (
-        <p className="text-xs text-muted-foreground max-w-sm">{description}</p>
-      ) : null}
+      {description ? <p className="text-xs text-muted-foreground max-w-sm">{description}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>
   );

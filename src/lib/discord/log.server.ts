@@ -42,10 +42,7 @@ async function postToChannel(
 
 export type LogKind = "auth" | "site";
 
-export function logToDiscord(
-  kind: LogKind,
-  embed: Embed,
-): Promise<void> {
+export function logToDiscord(kind: LogKind, embed: Embed): Promise<void> {
   const channel = kind === "auth" ? LOG_CHANNELS.AUTH : LOG_CHANNELS.SITE;
   return postToChannel(channel, {
     embeds: [{ timestamp: new Date().toISOString(), ...embed }],

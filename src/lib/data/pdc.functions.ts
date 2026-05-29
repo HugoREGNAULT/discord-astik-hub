@@ -87,7 +87,9 @@ export const listPdcPlans = createServerFn({ method: "GET" }).handler(async () =
   await requireSession();
   const { data, error } = await db
     .from("pdc_plans")
-    .select("id,name,width_chunks,height_chunks,layers_count,created_by_username,created_at,updated_at")
+    .select(
+      "id,name,width_chunks,height_chunks,layers_count,created_by_username,created_at,updated_at",
+    )
     .order("updated_at", { ascending: false })
     .limit(200);
   if (error) throw new Error(error.message);
@@ -98,11 +100,7 @@ export const getPdcPlan = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     await requireSession();
-    const { data: plan, error } = await db
-      .from("pdc_plans")
-      .select("*")
-      .eq("id", data.id)
-      .single();
+    const { data: plan, error } = await db.from("pdc_plans").select("*").eq("id", data.id).single();
     if (error) throw new Error(error.message);
     return { plan };
   });

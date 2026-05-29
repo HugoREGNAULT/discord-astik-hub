@@ -35,21 +35,57 @@ import { hasPerm } from "@/lib/auth/use-current-user";
 import type { Permission } from "@/lib/auth/permissions";
 import logo from "@/assets/logo.png";
 
-type Item = { title: string; url: string; icon: any; perm: Permission; accent?: "pink" | "blurple" };
+type Item = {
+  title: string;
+  url: string;
+  icon: any;
+  perm: Permission;
+  accent?: "pink" | "blurple";
+};
 
 const ITEMS: Item[] = [
   { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
   { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self", accent: "blurple" },
-  { title: "Sondages", url: "/polls", icon: CalendarCheck, perm: "profile.self", accent: "blurple" },
+  {
+    title: "Sondages",
+    url: "/polls",
+    icon: CalendarCheck,
+    perm: "profile.self",
+    accent: "blurple",
+  },
 
-  { title: "Dashboard staff", url: "/staff", icon: LayoutDashboard, perm: "members.view", accent: "blurple" },
+  {
+    title: "Dashboard staff",
+    url: "/staff",
+    icon: LayoutDashboard,
+    perm: "members.view",
+    accent: "blurple",
+  },
   { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
 
-  { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access", accent: "pink" },
+  {
+    title: "Candidatures",
+    url: "/recruitment",
+    icon: UserPlus,
+    perm: "recruit.access",
+    accent: "pink",
+  },
   { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
   { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage", accent: "pink" },
-  { title: "Dons", url: "/donations", icon: ShoppingCart, perm: "donations.manage", accent: "pink" },
-  { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage", accent: "blurple" },
+  {
+    title: "Dons",
+    url: "/donations",
+    icon: ShoppingCart,
+    perm: "donations.manage",
+    accent: "pink",
+  },
+  {
+    title: "Config valeurs",
+    url: "/config",
+    icon: Settings2,
+    perm: "config.manage",
+    accent: "blurple",
+  },
   { title: "Effectif", url: "/effectif", icon: ListTree, perm: "members.view", accent: "blurple" },
   { title: "Objectifs", url: "/objectives", icon: Target, perm: "objectives.edit", accent: "pink" },
   { title: "Plan de coupe", url: "/pdc", icon: Grid3x3, perm: "members.view", accent: "blurple" },
@@ -105,8 +141,7 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
             <SidebarMenu>
               {items.map((item) => {
                 const active = path === item.url || path.startsWith(item.url + "/");
-                const accentBar =
-                  item.accent === "blurple" ? "bg-[#5865F2]" : "bg-pink-500";
+                const accentBar = item.accent === "blurple" ? "bg-[#5865F2]" : "bg-pink-500";
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton

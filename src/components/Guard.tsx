@@ -34,7 +34,9 @@ export function Forbidden({ perm }: { perm?: Permission }) {
           {perm && (
             <div className="text-sm">
               <span className="text-muted-foreground">Permission requise : </span>
-              <Badge variant="outline" className="font-mono">{perm}</Badge>
+              <Badge variant="outline" className="font-mono">
+                {perm}
+              </Badge>
             </div>
           )}
           {user && (
@@ -42,7 +44,8 @@ export function Forbidden({ perm }: { perm?: Permission }) {
               <div className="text-muted-foreground">Connecté en tant que</div>
               <div className="font-medium">{user.globalName ?? user.username}</div>
               <div className="text-xs text-muted-foreground">
-                {user.roleIds.length} rôle(s) Discord détecté(s) · {user.permissions.length} permission(s)
+                {user.roleIds.length} rôle(s) Discord détecté(s) · {user.permissions.length}{" "}
+                permission(s)
               </div>
             </div>
           )}
@@ -63,13 +66,7 @@ export function Forbidden({ perm }: { perm?: Permission }) {
   );
 }
 
-export function Guard({
-  perm,
-  children,
-}: {
-  perm: Permission;
-  children: React.ReactNode;
-}) {
+export function Guard({ perm, children }: { perm: Permission; children: React.ReactNode }) {
   const { data: user, isLoading } = useCurrentUser();
   if (isLoading) {
     return (

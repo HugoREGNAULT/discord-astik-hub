@@ -47,8 +47,7 @@ function AuthLayout() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage:
-                "radial-gradient(#5865F2 0.5px, transparent 0.5px)",
+              backgroundImage: "radial-gradient(#5865F2 0.5px, transparent 0.5px)",
               backgroundSize: "24px 24px",
             }}
           />

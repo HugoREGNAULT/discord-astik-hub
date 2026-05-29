@@ -47,5 +47,8 @@ export function describeError(error: unknown): { name: string; message: string; 
   if (error instanceof Error) {
     return { name: error.name, message: error.message, stack: error.stack };
   }
-  return { name: "UnknownError", message: typeof error === "string" ? error : JSON.stringify(error) };
+  return {
+    name: "UnknownError",
+    message: typeof error === "string" ? error : JSON.stringify(error),
+  };
 }
