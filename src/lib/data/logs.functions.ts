@@ -9,24 +9,52 @@ export const listLogs = createServerFn({ method: "GET" })
       .object({
         action: z.string().trim().max(64).optional(),
         actorDiscordId: z.string().trim().max(32).optional(),
+        memberQuery: z.string().trim().max(64).optional(),
         level: z.enum(["info", "warn", "error", "all"]).optional().default("all"),
         sinceDays: z.number().int().min(1).max(365).optional().default(30),
-        limit: z.number().int().min(1).max(500).optional().default(200),
+        dateFrom: z.string().datetime().optional(),
+        dateTo: z.string().datetime().optional(),
+        limit: z.number().int().min(1).max(5000).optional().default(500),
       })
       .parse(input ?? {}),
   )
   .handler(async ({ data }) => {
     await requirePermission("admin.access");
-    const since = new Date(Date.now() - data.sinceDays * 86_400_000).toISOString();
     let q = db
       .from("logs")
       .select("*")
-      .gte("created_at", since)
       .order("created_at", { ascending: false })
       .limit(data.limit);
+
+    if (data.dateFrom) q = q.gte("created_at", data.dateFrom);
+    else {
+      const since = new Date(Date.now() - data.sinceDays * 86_400_000).toISOString();
+      q = q.gte("created_at", since);
+    }
+    if (data.dateTo) q = q.lte("created_at", data.dateTo);
     if (data.level && data.level !== "all") q = q.eq("level", data.level);
     if (data.action) q = q.ilike("action", `%${data.action}%`);
     if (data.actorDiscordId) q = q.eq("actor_discord_id", data.actorDiscordId);
+
+    if (data.memberQuery) {
+      const needle = data.memberQuery;
+      // Resolve usernames to discord ids
+      const { data: members } = await db
+        .from("members")
+        .select("discord_id")
+        .or(`discord_username.ilike.%${needle}%,ig_name.ilike.%${needle}%,discord_id.eq.${needle}`)
+        .limit(50);
+      const ids = (members ?? []).map((m) => m.discord_id).filter(Boolean);
+      if (/^\d{5,}$/.test(needle)) ids.push(needle);
+      const uniq = Array.from(new Set(ids));
+      if (uniq.length === 0) return { logs: [] };
+      const orClause = [
+        `actor_discord_id.in.(${uniq.join(",")})`,
+        ...uniq.map((id) => `payload->>member_discord_id.eq.${id}`),
+      ].join(",");
+      q = q.or(orClause);
+    }
+
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return { logs: rows ?? [] };
