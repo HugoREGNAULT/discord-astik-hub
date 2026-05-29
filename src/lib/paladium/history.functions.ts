@@ -80,8 +80,10 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
   const rows = flattenStatus(data);
   if (rows.length === 0) return { inserted: 0 };
 
-  const payload = rows.map((r) => ({ ...r, raw: data as unknown as never }));
-  const { error } = await supabaseAdmin.from("paladium_server_status_history").insert(payload);
+  const payload = rows.map((r) => ({ ...r, raw: data as unknown }));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await supabaseAdmin.from("paladium_server_status_history").insert(payload as any);
+
   if (error) throw new Error(error.message);
   return { inserted: rows.length };
 });
