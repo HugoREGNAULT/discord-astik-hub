@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Clock, UserPlus, Loader2, Users, Ban } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, UserPlus, Loader2, Users, Ban, Sparkles } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -22,6 +22,7 @@ import {
   decideApplication,
   getApplicationStats,
 } from "@/lib/data/applications.functions";
+import { reviewApplication } from "@/lib/data/applications-ai.functions";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -249,6 +250,8 @@ function ApplicationDetail({ app }: { app: Application }) {
       <Info label="Compétences">{app.skills}</Info>
       {app.previous_factions && <Info label="Anciennes factions">{app.previous_factions}</Info>}
 
+      <AiReview applicationId={app.id} />
+
       {app.status === "pending" ? (
         <div className="flex gap-2 pt-2">
           <Button onClick={() => setOpen("accept")} className="bg-emerald-600 hover:bg-emerald-700">
@@ -322,6 +325,46 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
         {label}
       </div>
       <div className="text-sm whitespace-pre-wrap">{children}</div>
+    </div>
+  );
+}
+
+function AiReview({ applicationId }: { applicationId: string }) {
+  const reviewFn = useServerFn(reviewApplication);
+  const mutation = useMutation({
+    mutationFn: () => reviewFn({ data: { applicationId } }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="text-sm font-medium flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" />
+          Avis IA
+          <span className="text-xs text-muted-foreground font-normal">
+            · récap + questions d'entretien
+          </span>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+          ) : (
+            <Sparkles className="w-4 h-4 mr-1" />
+          )}
+          {mutation.data ? "Régénérer" : "Demander un avis"}
+        </Button>
+      </div>
+      {mutation.data && (
+        <div className="text-sm whitespace-pre-wrap leading-relaxed border-t border-primary/20 pt-3">
+          {mutation.data.content}
+        </div>
+      )}
     </div>
   );
 }
