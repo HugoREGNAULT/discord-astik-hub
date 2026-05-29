@@ -64,7 +64,7 @@ function ShopAdminPage() {
     retry: false,
   });
 
-  const items = latest.data?.items ?? [];
+  const items = useMemo(() => latest.data?.items ?? [], [latest.data?.items]);
 
   const filtered = useMemo(() => {
     const needle = submitted.toLowerCase().trim();

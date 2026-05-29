@@ -152,11 +152,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
   });
 
   const kindLabel =
-    alert.price_type === "avg"
-      ? "prix moyen"
-      : alert.price_type === "sell"
-        ? "vente"
-        : "achat";
+    alert.price_type === "avg" ? "prix moyen" : alert.price_type === "sell" ? "vente" : "achat";
 
   if (editing) {
     return (
