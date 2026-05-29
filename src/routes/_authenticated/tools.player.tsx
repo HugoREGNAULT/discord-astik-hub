@@ -121,9 +121,17 @@ function PlayerLookup() {
                   />
                   <StatTile
                     label="Grade"
-                    value={profileQ.data.rank ?? profileQ.data.grade ?? "—"}
+                    value={
+                      (profileQ.data as { factionRank?: string }).factionRank ??
+                      profileQ.data.rank ??
+                      profileQ.data.grade ??
+                      "—"
+                    }
                   />
-                  <StatTile label="Niveau" value={profileQ.data.level ?? "—"} />
+                  <StatTile
+                    label="Temps de jeu"
+                    value={fmtPlaytime((profileQ.data as { timePlayed?: number }).timePlayed)}
+                  />
                   <StatTile
                     label="Argent"
                     value={fmtNum(profileQ.data.money ?? profileQ.data.coins)}
@@ -131,31 +139,40 @@ function PlayerLookup() {
                   />
                   <StatTile
                     label="Inscription"
-                    value={fmtDate(profileQ.data.firstJoin ?? profileQ.data.createdAt)}
+                    value={fmtDate(
+                      (profileQ.data as { firstSeen?: number }).firstSeen ??
+                        profileQ.data.firstJoin ??
+                        profileQ.data.createdAt,
+                    )}
                   />
                 </div>
               )}
             </ToolCard>
 
             <ToolCard>
-              <SectionTitle>ClicCoins</SectionTitle>
+              <SectionTitle>Clicker</SectionTitle>
               {palaQ.isLoading && <LoadingBlock />}
               {palaQ.error && <ErrorBlock message={(palaQ.error as Error).message} />}
               {palaQ.data && (
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   <StatTile
-                    label="ClicCoins"
-                    value={fmtNum(palaQ.data.clicker?.coins ?? palaQ.data.cliccoins)}
+                    label="RPS"
+                    value={fmtNum(palaQ.data.clicker?.rps ?? palaQ.data.rps)}
                     accent="pink"
                   />
                   <StatTile
-                    label="RPS"
-                    value={fmtNum(palaQ.data.clicker?.rps ?? palaQ.data.rps)}
+                    label="Bâtiments"
+                    value={
+                      (palaQ.data as { buildings?: unknown[] }).buildings?.length ??
+                      palaQ.data.clicker?.buildings?.length ??
+                      0
+                    }
                     accent="blurple"
                   />
                 </div>
               )}
             </ToolCard>
+
 
             <ToolCard>
               <SectionTitle>Métiers</SectionTitle>
