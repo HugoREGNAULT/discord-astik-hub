@@ -7,13 +7,16 @@ import { canAccess } from "@/lib/auth/permissions";
 /* ---------- Lecture ---------- */
 
 export const listMembers = createServerFn({ method: "GET" })
-  .inputValidator((input: { q?: string; status?: "active" | "former" | "all" } = {}) => input)
+  .inputValidator((input: { q?: string; status?: "active" | "former" | "away" | "all" } = {}) => input)
   .handler(async ({ data }) => {
     await requirePermission("members.view");
     let q = db.from("members").select("*").order("ig_name", { ascending: true, nullsFirst: false });
     if (!data.status || data.status === "active") q = q.eq("status", "active");
     else if (data.status === "former") q = q.eq("status", "former");
+    else if (data.status === "away") q = q.eq("status", "away");
     const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+
     if (error) throw new Error(error.message);
     const needle = data.q?.trim().toLowerCase();
     const filtered = needle
