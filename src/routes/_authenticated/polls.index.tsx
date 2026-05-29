@@ -80,34 +80,38 @@ function PollsPage() {
       ) : (
         <div className="grid gap-3">
           {data.polls.map((p: any) => (
-            <Card key={p.id} className="relative hover:border-primary/40 transition-colors">
-              <Link
-                to="/polls/$id"
-                params={{ id: p.id }}
-                className="absolute inset-0 z-0"
-                aria-label={`Ouvrir ${p.title}`}
-              />
-              <CardContent className="py-4 flex items-center gap-4 relative pointer-events-none">
-                <Calendar className="size-5 text-muted-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold truncate">{p.title}</span>
-                    {p.status === "open" ? (
-                      <Badge variant="secondary">Ouvert</Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1">
-                        <Lock className="size-3" /> Clos
-                      </Badge>
-                    )}
+            <Card key={p.id} className="hover:border-primary/40 transition-colors">
+              <CardContent className="p-0 flex items-stretch gap-0">
+                <Link
+                  to="/polls/$id"
+                  params={{ id: p.id }}
+                  className="flex-1 min-w-0 flex items-center gap-4 py-4 pl-4 pr-2 rounded-l-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  aria-label={`Ouvrir ${p.title}`}
+                >
+                  <Calendar className="size-5 text-muted-foreground shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold truncate">{p.title}</span>
+                      {p.status === "open" ? (
+                        <Badge variant="secondary">Ouvert</Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1">
+                          <Lock className="size-3" /> Clos
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      Créé par {p.created_by_username ?? "—"} ·{" "}
+                      {new Date(p.created_at).toLocaleDateString("fr-FR")}
+                      {p.location && ` · 📍 ${p.location}`}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    Créé par {p.created_by_username ?? "—"} ·{" "}
-                    {new Date(p.created_at).toLocaleDateString("fr-FR")}
-                    {p.location && ` · 📍 ${p.location}`}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 pointer-events-auto relative z-10">
-                  <Button asChild variant="ghost" size="sm">
+                </Link>
+                <div
+                  className="flex items-center gap-1 pr-2 py-2 shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button asChild variant="ghost" size="sm" aria-label="Ouvrir">
                     <Link to="/polls/$id" params={{ id: p.id }}>
                       <ExternalLink className="size-4" />
                     </Link>
@@ -131,6 +135,7 @@ function PollsPage() {
               </CardContent>
             </Card>
           ))}
+
         </div>
       )}
     </div>
