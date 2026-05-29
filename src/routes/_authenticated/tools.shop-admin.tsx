@@ -80,7 +80,7 @@ function ShopAdminPage() {
   });
 
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="max-w-7xl space-y-5">
       <ToolHeader
         code="// tools.shop-admin"
         title="Shop admin"
