@@ -250,6 +250,8 @@ function ApplicationDetail({ app }: { app: Application }) {
       <Info label="Compétences">{app.skills}</Info>
       {app.previous_factions && <Info label="Anciennes factions">{app.previous_factions}</Info>}
 
+      <AiReview applicationId={app.id} />
+
       {app.status === "pending" ? (
         <div className="flex gap-2 pt-2">
           <Button onClick={() => setOpen("accept")} className="bg-emerald-600 hover:bg-emerald-700">
