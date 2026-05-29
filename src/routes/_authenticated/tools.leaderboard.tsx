@@ -22,30 +22,39 @@ export const Route = createFileRoute("/_authenticated/tools/leaderboard")({
 });
 
 const CATEGORIES = [
-  { id: "money", label: "Argent" },
-  { id: "clicker", label: "Clicker" },
-  { id: "boss", label: "Boss" },
-  { id: "job.miner", label: "Mineur" },
-  { id: "job.farmer", label: "Fermier" },
-  { id: "job.hunter", label: "Chasseur" },
-  { id: "job.alchemist", label: "Alchimiste" },
-  { id: "koth", label: "KOTH" },
-  { id: "end", label: "End" },
-  { id: "chorus", label: "Chorus" },
-  { id: "egghunt", label: "Egg Hunt" },
-  { id: "alliance", label: "Alliance" },
+  { id: "money", label: "Argent", kind: "standard" },
+  { id: "clicker", label: "Clicker", kind: "standard" },
+  { id: "boss", label: "Boss", kind: "standard" },
+  { id: "job.miner", label: "Mineur", kind: "standard" },
+  { id: "job.farmer", label: "Fermier", kind: "standard" },
+  { id: "job.hunter", label: "Chasseur", kind: "standard" },
+  { id: "job.alchemist", label: "Alchimiste", kind: "standard" },
+  { id: "koth", label: "KOTH", kind: "standard" },
+  { id: "end", label: "End", kind: "standard" },
+  { id: "chorus", label: "Chorus", kind: "standard" },
+  { id: "egghunt", label: "Egg Hunt", kind: "standard" },
+  { id: "alliance", label: "Alliance", kind: "standard" },
+  { id: "trixium.players", label: "Trixium · Joueurs", kind: "trixium-players" },
+  { id: "trixium.factions", label: "Trixium · Factions", kind: "trixium-factions" },
 ] as const;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function LeaderboardPage() {
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]["id"]>("money");
+  const meta = CATEGORIES.find((c) => c.id === cat)!;
   const q = useQuery({
     queryKey: ["pala-lb", cat],
-    queryFn: () => PaladiumApi.getLeaderboard(cat),
+    queryFn: () => {
+      if (meta.kind === "trixium-players") return PaladiumApi.getTrixiumPlayers();
+      if (meta.kind === "trixium-factions") return PaladiumApi.getTrixiumFactions();
+      return PaladiumApi.getLeaderboard(cat);
+    },
     retry: false,
     staleTime: 60_000,
   });
+  const rows = asArray<LeaderboardEntry>(q.data ?? null);
+
   const rows = asArray<LeaderboardEntry>(q.data ?? null);
 
   // Collect UUIDs that came back as their own username (unresolved).
