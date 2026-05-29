@@ -212,3 +212,77 @@ export const reopenPoll = createServerFn({ method: "POST" })
     await logAction("poll_reopen", user.discordId, { id: data.pollId });
     return { ok: true };
   });
+
+const importSchema = z.object({
+  pollId: z.string().uuid(),
+  voters: z
+    .array(
+      z.object({
+        discordId: z.string().min(1).max(64),
+        username: z.string().trim().min(1).max(120),
+        choices: z
+          .array(
+            z.object({
+              optionId: z.string().uuid(),
+              choice: choiceSchema,
+            }),
+          )
+          .min(1)
+          .max(50),
+      }),
+    )
+    .min(1)
+    .max(200),
+});
+
+/**
+ * Import en lot des votes pour un sondage (typiquement depuis un CSV Framadate).
+ * Staff uniquement. Upsert sur (option_id, voter_discord_id).
+ */
+export const importPollVotes = createServerFn({ method: "POST" })
+  .inputValidator((input) => importSchema.parse(input))
+  .handler(async ({ data }) => {
+    const user = await requirePermission("members.edit");
+
+    const { data: poll } = await db
+      .from("polls")
+      .select("status,title")
+      .eq("id", data.pollId)
+      .maybeSingle();
+    if (!poll) throw new Error("NOT_FOUND");
+    if (poll.status !== "open") throw new Error("CLOSED");
+
+    const rows = data.voters.flatMap((v) =>
+      v.choices.map((c) => ({
+        poll_id: data.pollId,
+        option_id: c.optionId,
+        voter_discord_id: v.discordId,
+        voter_username: v.username,
+        choice: c.choice,
+      })),
+    );
+
+    const { error } = await db
+      .from("poll_votes")
+      .upsert(rows, { onConflict: "option_id,voter_discord_id" });
+    if (error) throw new Error(error.message);
+
+    await logAction("poll_import_votes", user.discordId, {
+      id: data.pollId,
+      voters: data.voters.length,
+      rows: rows.length,
+    });
+    await logToDiscord("site", {
+      title: "📥 Import de votes",
+      color: COLORS.info,
+      description: `**${poll.title}**`,
+      fields: [
+        { name: "Par", value: user.username, inline: true },
+        { name: "Membres", value: String(data.voters.length), inline: true },
+        { name: "Votes", value: String(rows.length), inline: true },
+      ],
+    });
+
+    return { ok: true, voters: data.voters.length, votes: rows.length };
+  });
+
