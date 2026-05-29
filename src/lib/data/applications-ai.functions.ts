@@ -4,8 +4,6 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { db } from "@/lib/db.server";
-import { requirePermission } from "@/lib/auth/require.server";
 
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3-flash-preview";
@@ -15,6 +13,12 @@ export const reviewApplication = createServerFn({ method: "POST" })
     z.object({ applicationId: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data }) => {
+    const [{ db }, { requirePermission }, { findBlacklistMatches }] = await Promise.all([
+      import("@/lib/db.server"),
+      import("@/lib/auth/require.server"),
+      import("@/lib/data/blacklist.server"),
+    ]);
+
     await requirePermission("recruit.access");
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY manquante");
@@ -27,7 +31,6 @@ export const reviewApplication = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!app) throw new Error("Candidature introuvable");
 
-    const { findBlacklistMatches } = await import("@/lib/data/blacklist.server");
     const blacklist = await findBlacklistMatches({
       discordId: app.discord_id,
       mcName: app.mc_name,
