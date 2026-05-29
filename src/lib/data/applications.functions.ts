@@ -165,7 +165,9 @@ export const listApplications = createServerFn({ method: "GET" })
     if (data.status) q.eq("status", data.status);
     const res = await q;
     if (res.error) throw new Error(res.error.message);
-    const rows = res.data ?? [];
+    const rows = (res.data ?? []).filter(
+      (r) => (r.mc_name ?? "").toLowerCase() !== "unknown",
+    );
 
     // Enrichit chaque candidature avec les matchs blacklist (visible staff uniquement).
     const enriched = await Promise.all(
@@ -179,6 +181,73 @@ export const listApplications = createServerFn({ method: "GET" })
     );
     return enriched;
   });
+
+export const getApplicationStats = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("recruit.access");
+  const { findBlacklistMatches } = await import("@/lib/data/blacklist.server");
+  const res = await db
+    .from("applications")
+    .select("discord_id, mc_name, status, created_at")
+    .order("created_at", { ascending: true });
+  if (res.error) throw new Error(res.error.message);
+  const rows = (res.data ?? []).filter(
+    (r) => (r.mc_name ?? "").toLowerCase() !== "unknown",
+  );
+
+  const uniqueIds = new Set(rows.map((r) => r.discord_id));
+  let accepted = 0;
+  let rejected = 0;
+  let pending = 0;
+  for (const r of rows) {
+    if (r.status === "accepted") accepted++;
+    else if (r.status === "rejected") rejected++;
+    else if (r.status === "pending") pending++;
+  }
+
+  // Compte blacklistés (par discord_id unique)
+  let blacklisted = 0;
+  const seen = new Set<string>();
+  for (const r of rows) {
+    if (seen.has(r.discord_id)) continue;
+    seen.add(r.discord_id);
+    const matches = await findBlacklistMatches({
+      discordId: r.discord_id,
+      mcName: r.mc_name,
+    });
+    if (matches.length > 0) blacklisted++;
+  }
+
+  // Série temporelle par mois
+  const monthly = new Map<
+    string,
+    { month: string; total: number; accepted: number; rejected: number; pending: number }
+  >();
+  for (const r of rows) {
+    const d = new Date(r.created_at);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    let entry = monthly.get(key);
+    if (!entry) {
+      entry = { month: key, total: 0, accepted: 0, rejected: 0, pending: 0 };
+      monthly.set(key, entry);
+    }
+    entry.total++;
+    if (r.status === "accepted") entry.accepted++;
+    else if (r.status === "rejected") entry.rejected++;
+    else if (r.status === "pending") entry.pending++;
+  }
+  const timeline = Array.from(monthly.values()).sort((a, b) => a.month.localeCompare(b.month));
+
+  return {
+    unique: uniqueIds.size,
+    total: rows.length,
+    accepted,
+    rejected,
+    pending,
+    blacklisted,
+    timeline,
+  };
+});
+
 
 const decideSchema = z.object({
   applicationId: z.string().uuid(),
