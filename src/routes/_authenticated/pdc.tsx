@@ -84,7 +84,7 @@ function PdcPage() {
   const { data: blocksData } = useQuery({ queryKey: ["pdc-blocks"], queryFn: () => lsBlocks() });
   const { data: plansData } = useQuery({ queryKey: ["pdc-plans"], queryFn: () => lsPlans() });
 
-  const blocks: PdcBlock[] = (blocksData?.blocks ?? []) as PdcBlock[];
+  const blocks = useMemo(() => ((blocksData?.blocks ?? []) as PdcBlock[]), [blocksData?.blocks]);
 
   // currently loaded plan
   const [planId, setPlanId] = useState<string | null>(null);
@@ -515,7 +515,6 @@ function PdcPage() {
         <TabsContent value="calc" className="space-y-3">
           <PdcSliceCalculator blocks={blocks} />
         </TabsContent>
-
 
         {/* ----- Editor ----- */}
         <TabsContent value="editor" className="space-y-3">
