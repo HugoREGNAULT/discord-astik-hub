@@ -239,6 +239,8 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
                     const reader = new FileReader();
                     reader.onload = () => {
                       const text = String(reader.result ?? "");
@@ -264,9 +266,8 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
                       }
                     };
                     reader.readAsText(file);
-
-                    reader.readAsText(file);
                   }}
+
                 />
                 <Button
                   type="button"
