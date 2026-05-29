@@ -26,6 +26,8 @@ function MemberDetail() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const getDetail = useServerFn(getMemberDetail);
+  const getPointsHistory = useServerFn(getMemberPointsHistory);
+  const getDonationsFn = useServerFn(getMemberDonations);
   const update = useServerFn(updateMember);
   const noteFn = useServerFn(addNote);
   const warnFn = useServerFn(addWarning);
@@ -36,6 +38,21 @@ function MemberDetail() {
     queryKey: ["member", id],
     queryFn: () => getDetail({ data: { discordId: id } }),
     retry: false,
+  });
+
+  // Pagination states
+  const [ledger, setLedger] = useState<any[]>([]);
+  const [ledgerHasMore, setLedgerHasMore] = useState(false);
+  const [donations, setDonations] = useState<any[]>([]);
+  const [donationsHasMore, setDonationsHasMore] = useState(false);
+
+  useState(() => {
+    if (data) {
+      setLedger(data.pointsLedger);
+      setLedgerHasMore(data.pointsLedger.length >= 10);
+      setDonations(data.donations);
+      setDonationsHasMore(data.donations.length >= 10);
+    }
   });
 
   const [note, setNote] = useState("");
@@ -55,6 +72,21 @@ function MemberDetail() {
   const mAlt = useMutation({
     mutationFn: () => altAddFn({ data: { memberDiscordId: id, altName: alt } }),
     onSuccess: () => { setAlt(""); toast.success("Alt ajouté"); refresh(); },
+  });
+
+  const loadMorePoints = useMutation({
+    mutationFn: () => getPointsHistory({ data: { discordId: id, offset: ledger.length } }),
+    onSuccess: (res) => {
+      setLedger((prev) => [...prev, ...res.items]);
+      setLedgerHasMore(res.hasMore);
+    },
+  });
+  const loadMoreDonations = useMutation({
+    mutationFn: () => getDonationsFn({ data: { discordId: id, offset: donations.length } }),
+    onSuccess: (res) => {
+      setDonations((prev) => [...prev, ...res.items]);
+      setDonationsHasMore(res.hasMore);
+    },
   });
 
   if (isLoading) return <DetailPageSkeleton />;
