@@ -104,17 +104,21 @@ function PlayerSales() {
   const resolvedName = target?.mode === "name" ? uuidQ.data?.name : undefined;
 
   // Track search → triggers a background snapshot too.
+  // On n'enregistre que si on a un vrai pseudo Minecraft (pas un fragment d'UUID),
+  // pour ne pas polluer la liste des suggestions.
   useEffect(() => {
-    if (uuid) {
-      const name = resolvedName ?? (target?.mode === "uuid" ? target.uuid.slice(0, 8) : "");
-      trackPlayerSearch({ data: { uuid, username: name || "unknown" } })
+    if (uuid && resolvedName) {
+      trackPlayerSearch({ data: { uuid, username: resolvedName } })
         .then(() => {
           queryClient.invalidateQueries({ queryKey: ["pala-sales-history", uuid] });
           queryClient.invalidateQueries({ queryKey: ["pala-top-searched"] });
         })
         .catch(() => {});
+    } else if (uuid && !resolvedName) {
+      // Recherche par UUID direct : on rafraîchit l'historique sans tracker.
+      queryClient.invalidateQueries({ queryKey: ["pala-sales-history", uuid] });
     }
-  }, [uuid, resolvedName, target, queryClient]);
+  }, [uuid, resolvedName, queryClient]);
 
   const historyQ = useQuery({
     queryKey: ["pala-sales-history", uuid],

@@ -1,0 +1,1 @@
+DELETE FROM public.paladium_tracked_players WHERE username ~* '^[0-9a-f]{8}$';
