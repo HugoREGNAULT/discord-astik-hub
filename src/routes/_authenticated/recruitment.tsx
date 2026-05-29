@@ -71,11 +71,9 @@ function RecruitmentPage() {
         </p>
       </div>
 
-
       <ApplicationStats />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AppStatus)}>
-
         <TabsList>
           <TabsTrigger value="pending">
             <Clock className="w-4 h-4 mr-1" /> En attente
@@ -435,4 +433,3 @@ function ApplicationStats() {
     </div>
   );
 }
-
