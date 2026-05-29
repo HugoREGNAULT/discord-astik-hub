@@ -295,6 +295,39 @@ export type Database = {
           },
         ]
       }
+      leaderboard_snapshots: {
+        Row: {
+          astik_points: number
+          discord_id: string
+          id: number
+          messages_7d: number
+          messages_total: number
+          taken_at: string
+          voice_7d_seconds: number
+          voice_total_seconds: number
+        }
+        Insert: {
+          astik_points?: number
+          discord_id: string
+          id?: number
+          messages_7d?: number
+          messages_total?: number
+          taken_at?: string
+          voice_7d_seconds?: number
+          voice_total_seconds?: number
+        }
+        Update: {
+          astik_points?: number
+          discord_id?: string
+          id?: number
+          messages_7d?: number
+          messages_total?: number
+          taken_at?: string
+          voice_7d_seconds?: number
+          voice_total_seconds?: number
+        }
+        Relationships: []
+      }
       logs: {
         Row: {
           action: string
@@ -697,7 +730,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      capture_leaderboard_snapshot: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

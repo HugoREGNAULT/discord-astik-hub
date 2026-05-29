@@ -13,9 +13,11 @@ import { EmptyState } from "@/components/EmptyState";
 import { Search as SearchIcon } from "lucide-react";
 import {
   getLeaderboard,
+  getLeaderboardHistory,
   type LeaderboardEntry,
   type LeaderboardMetric,
 } from "@/lib/data/leaderboard.functions";
+import { LeaderboardChart } from "@/components/LeaderboardChart";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
@@ -52,11 +54,13 @@ function LeaderboardList({
   metric,
   period,
   query,
+  rankOffset = 0,
 }: {
   entries: LeaderboardEntry[];
   metric: LeaderboardMetric;
   period: "all" | "7d";
   query: string;
+  rankOffset?: number;
 }) {
   const sorted = useMemo(() => {
     const arr = [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period));
@@ -72,8 +76,10 @@ function LeaderboardList({
   return (
     <div className="space-y-1">
       {sorted.map((e, i) => {
-        const rank = i + 1;
+        const rank = i + 1 + rankOffset;
         const value = getValue(e, metric, period);
+
+
         return (
           <div
             key={e.discord_id}
@@ -118,16 +124,28 @@ function LeaderboardList({
 
 function LeaderboardPage() {
   const fetchLb = useServerFn(getLeaderboard);
+  const fetchHist = useServerFn(getLeaderboardHistory);
   const { data, isLoading } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
+    refetchInterval: 60_000,
+  });
+  const { data: histData } = useQuery({
+    queryKey: ["leaderboard-history"],
+    queryFn: () => fetchHist(),
+    refetchInterval: 60_000,
   });
   const [metric, setMetric] = useState<LeaderboardMetric>("points");
   const [period, setPeriod] = useState<"all" | "7d">("all");
   const [query, setQuery] = useState("");
 
   const entries = data?.entries ?? [];
-
+  const sortedAll = useMemo(
+    () => [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period)),
+    [entries, metric, period],
+  );
+  const top3 = sortedAll.slice(0, 3);
+  const rest = sortedAll.slice(3);
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-3">
@@ -166,18 +184,68 @@ function LeaderboardPage() {
             </Tabs>
           )}
         </CardHeader>
-        <CardContent className="space-y-3">
-          <Input
-            placeholder="Rechercher un membre…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="max-w-xs"
-          />
-          {isLoading ? (
-            <LeaderboardRowsSkeleton count={10} />
-          ) : (
-            <LeaderboardList entries={entries} metric={metric} period={period} query={query} />
-          )}
+        <CardContent className="space-y-5">
+          {/* Top 3 + graphe d'évolution */}
+          <div className="space-y-3">
+            <div className="grid sm:grid-cols-3 gap-2">
+              {top3.map((e, i) => {
+                const rank = i + 1;
+                const value = getValue(e, metric, period);
+                return (
+                  <div
+                    key={e.discord_id}
+                    className="flex items-center gap-3 rounded-md border border-primary/30 bg-primary/5 px-3 py-2"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono text-sm text-muted-foreground">#{rank}</span>
+                      {rankIcon(rank)}
+                    </div>
+                    <Avatar className="size-8">
+                      <AvatarImage src={e.avatar_url ?? undefined} />
+                      <AvatarFallback className="text-xs">
+                        {(e.ig_name ?? e.discord_username ?? "?").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate">
+                        {e.ig_name ?? e.discord_username ?? e.discord_id}
+                      </div>
+                      <div className="font-mono text-xs text-primary">{formatValue(value, metric)}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <LeaderboardChart
+              snapshots={histData?.snapshots ?? []}
+              topEntries={top3}
+              metric={metric}
+              period={period}
+            />
+          </div>
+
+          <div className="border-t border-border pt-4 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <h2 className="text-sm font-semibold text-muted-foreground">À partir du rang 4</h2>
+              <Input
+                placeholder="Rechercher un membre…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="max-w-xs"
+              />
+            </div>
+            {isLoading ? (
+              <LeaderboardRowsSkeleton count={10} />
+            ) : (
+              <LeaderboardList
+                entries={rest}
+                metric={metric}
+                period={period}
+                query={query}
+                rankOffset={3}
+              />
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

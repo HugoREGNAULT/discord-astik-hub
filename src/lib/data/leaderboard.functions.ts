@@ -29,3 +29,22 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
   if (error) throw new Error(error.message);
   return { entries: (data ?? []) as LeaderboardEntry[] };
 });
+
+export interface LeaderboardHistoryPoint {
+  taken_at: string;
+  values: Record<string, number>; // discord_id -> value
+}
+
+export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("profile.self");
+  // 30 derniers jours de snapshots
+  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+  const { data, error } = await db
+    .from("leaderboard_snapshots")
+    .select("taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d")
+    .gte("taken_at", since)
+    .order("taken_at", { ascending: true })
+    .limit(20000);
+  if (error) throw new Error(error.message);
+  return { snapshots: data ?? [] };
+});
