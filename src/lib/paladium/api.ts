@@ -154,8 +154,6 @@ export type LeaderboardEntry = {
 };
 
 export const PaladiumApi = {
-  getPlayerProfile: (uuid: string) => paladiumFetch<PlayerProfile>(`/v1/player/profile/${uuid}`),
-export const PaladiumApi = {
   getPlayerProfile: (uuid: string) =>
     paladiumFetch<PlayerProfile>(`/v1/paladium/player/profile/${uuid}`),
   getPlayerJobs: (uuid: string) =>
