@@ -165,13 +165,14 @@ function ShopAdminPage() {
                     }))}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis dataKey="t" stroke="#71717a" fontSize={10} />
-                    <YAxis stroke="#71717a" fontSize={10} />
+                    <XAxis dataKey="t" stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
+                    <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
                     <Tooltip
                       contentStyle={{
                         background: "#18181b",
                         border: "1px solid #3f3f46",
                         fontSize: 12,
+                        color: "#e4e4e7",
                       }}
                     />
                     <Line

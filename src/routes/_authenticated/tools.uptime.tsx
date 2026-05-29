@@ -147,10 +147,10 @@ function UptimePage() {
                 <XAxis
                   dataKey="t"
                   tickFormatter={(t) => formatTick(t, days)}
-                  stroke="#71717a"
-                  fontSize={10}
+                  stroke="#52525b"
+                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
                 />
-                <YAxis stroke="#71717a" fontSize={10} />
+                <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
                 <Tooltip
                   contentStyle={{
                     background: "#18181b",
@@ -237,15 +237,15 @@ function UptimePage() {
                     <XAxis
                       dataKey="t"
                       tickFormatter={(t) => formatTick(t, days)}
-                      stroke="#71717a"
-                      fontSize={10}
+                      stroke="#52525b"
+                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
                     />
                     <YAxis
                       domain={[0, 1]}
                       ticks={[0, 1]}
                       tickFormatter={(v) => (v === 1 ? "UP" : "DOWN")}
-                      stroke="#71717a"
-                      fontSize={10}
+                      stroke="#52525b"
+                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
                       width={48}
                     />
                     <Tooltip
@@ -253,6 +253,7 @@ function UptimePage() {
                         background: "#18181b",
                         border: "1px solid #3f3f46",
                         fontSize: 12,
+                        color: "#e4e4e7",
                       }}
                       labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
                       formatter={(v: number) => (v === 1 ? "UP" : "DOWN")}
@@ -283,10 +284,10 @@ function UptimePage() {
                         <XAxis
                           dataKey="t"
                           tickFormatter={(t) => formatTick(t, days)}
-                          stroke="#71717a"
-                          fontSize={10}
+                          stroke="#52525b"
+                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
                         />
-                        <YAxis stroke="#71717a" fontSize={10} />
+                        <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
                         <Tooltip
                           contentStyle={{
                             background: "#18181b",
