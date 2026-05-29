@@ -2,8 +2,7 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import {
   User as UserIcon,
   Users,
-  User as UserIcon,
-  Users,
+
   Activity,
   ShoppingBag,
   Trophy,
