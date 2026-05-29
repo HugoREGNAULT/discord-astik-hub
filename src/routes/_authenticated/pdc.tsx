@@ -38,8 +38,10 @@ import {
   FolderOpen,
   FilePlus2,
   Droplet,
+  Calculator,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
 
 export const Route = createFileRoute("/_authenticated/pdc")({
   head: () => ({ meta: [{ title: "Plans de coupe · PunkAstik" }] }),
@@ -477,8 +479,12 @@ function PdcPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="editor" className="w-full">
+      <Tabs defaultValue="calc" className="w-full">
         <TabsList>
+          <TabsTrigger value="calc">
+            <Calculator className="size-4 mr-1" />
+            Calculateur
+          </TabsTrigger>
           <TabsTrigger value="editor">
             <Brush className="size-4 mr-1" />
             Éditeur
@@ -496,6 +502,12 @@ function PdcPage() {
             Nouveau
           </TabsTrigger>
         </TabsList>
+
+        {/* ----- Slice calculator ----- */}
+        <TabsContent value="calc" className="space-y-3">
+          <PdcSliceCalculator blocks={blocks} />
+        </TabsContent>
+
 
         {/* ----- Editor ----- */}
         <TabsContent value="editor" className="space-y-3">
