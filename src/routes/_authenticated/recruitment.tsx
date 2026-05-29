@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Clock, UserPlus, Loader2, Users, Ban } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, UserPlus, Loader2, Users, Ban, Sparkles } from "lucide-react";
 import {
   LineChart,
   Line,
