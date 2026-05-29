@@ -118,6 +118,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
       canManagePoints: canAccess(user, "points.manage"),
       canViewStaffData,
     };
+  });
 /* ---------- Pagination historique ---------- */
 
 const pageSchema = z.object({ discordId: z.string().min(1), offset: z.number().int().min(0) });
