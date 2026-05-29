@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MonoLabel } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId, useEffect } from "react";
@@ -147,7 +148,8 @@ function MemberDetail() {
           <div className="size-16 rounded-full bg-muted" />
         )}
         <div>
-          <h1 className="text-2xl font-bold">{m.ig_name ?? m.discord_username}</h1>
+          <div className="text-pink-500 mb-1"><MonoLabel>// member</MonoLabel></div>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>{m.ig_name ?? m.discord_username}</h1>
           <p className="text-sm text-muted-foreground">
             @{m.discord_username}
             {data.canEdit && ` · ${m.discord_id}`}
