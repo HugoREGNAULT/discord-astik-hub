@@ -45,7 +45,6 @@ import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { parsePollCsv, type MatrixResult, type Choice as CsvChoice } from "@/lib/csv/poll-csv";
 
-
 type Choice = "yes" | "maybe" | "no";
 
 export const Route = createFileRoute("/_authenticated/polls/$id")({
@@ -152,7 +151,6 @@ function PollDetail() {
     [activeMembers, voterIds],
   );
 
-
   if (isLoading) return <DetailPageSkeleton />;
   if (!data?.poll) return <p>Sondage introuvable.</p>;
 
@@ -211,7 +209,6 @@ function PollDetail() {
               </Button>
             ))}
         </div>
-
       </div>
 
       <Card>
@@ -350,7 +347,6 @@ function PollDetail() {
           </CardContent>
         </Card>
       )}
-
     </div>
   );
 }
@@ -423,9 +419,7 @@ function VotesImportDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [parsed, setParsed] = useState<MatrixResult | null>(null);
-  const [matched, setMatched] = useState<
-    { slotIdx: number; optionId: string }[]
-  >([]);
+  const [matched, setMatched] = useState<{ slotIdx: number; optionId: string }[]>([]);
   const [rows, setRows] = useState<ImportRow[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const importFn = useServerFn(importPollVotes);
@@ -614,9 +608,7 @@ function VotesImportDialog({
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="py-2 px-3 text-right font-mono text-xs">
-                        {r.choices.length}
-                      </td>
+                      <td className="py-2 px-3 text-right font-mono text-xs">{r.choices.length}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -639,4 +631,3 @@ function VotesImportDialog({
     </Dialog>
   );
 }
-
