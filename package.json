@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite dev",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && eslint . && vite build",
-    "build:dev": "tsc --noEmit && eslint . && vite build --mode development",
+    "build": "node scripts/build.js",
+    "build:dev": "node scripts/build.js --mode=development",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
