@@ -132,6 +132,7 @@ export type Database = {
           created_at: string
           display_order: number
           id: string
+          image_url: string | null
           name: string
           points: number
           tier: number | null
@@ -143,6 +144,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          image_url?: string | null
           name: string
           points?: number
           tier?: number | null
@@ -154,6 +156,7 @@ export type Database = {
           created_at?: string
           display_order?: number
           id?: string
+          image_url?: string | null
           name?: string
           points?: number
           tier?: number | null
