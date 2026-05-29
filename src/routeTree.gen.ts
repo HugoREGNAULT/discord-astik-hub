@@ -59,6 +59,7 @@ import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authentica
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
+import { Route as ApiPublicHooksPaladiumMarketSyncRouteImport } from './routes/api/public/hooks/paladium-market-sync'
 import { Route as ApiPublicHooksPaladiumAdminShopSyncRouteImport } from './routes/api/public/hooks/paladium-admin-shop-sync'
 import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/voice'
 import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
@@ -329,6 +330,12 @@ const ApiPublicHooksPaladiumStatusSyncRoute =
     path: '/api/public/hooks/paladium-status-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksPaladiumMarketSyncRoute =
+  ApiPublicHooksPaladiumMarketSyncRouteImport.update({
+    id: '/api/public/hooks/paladium-market-sync',
+    path: '/api/public/hooks/paladium-market-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksPaladiumAdminShopSyncRoute =
   ApiPublicHooksPaladiumAdminShopSyncRouteImport.update({
     id: '/api/public/hooks/paladium-admin-shop-sync',
@@ -414,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
@@ -469,6 +477,7 @@ export interface FileRoutesByTo {
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
@@ -528,6 +537,7 @@ export interface FileRoutesById {
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
@@ -587,6 +597,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/sync-discord-presence'
@@ -642,6 +653,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/sync-discord-presence'
@@ -700,6 +712,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/sync-discord-presence'
@@ -725,6 +738,7 @@ export interface RootRouteChildren {
   ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
   ApiPublicBotVoiceRoute: typeof ApiPublicBotVoiceRoute
   ApiPublicHooksPaladiumAdminShopSyncRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  ApiPublicHooksPaladiumMarketSyncRoute: typeof ApiPublicHooksPaladiumMarketSyncRoute
   ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
   ApiPublicHooksPaladiumSyncRoute: typeof ApiPublicHooksPaladiumSyncRoute
   ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
@@ -1082,6 +1096,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPaladiumStatusSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/paladium-market-sync': {
+      id: '/api/public/hooks/paladium-market-sync'
+      path: '/api/public/hooks/paladium-market-sync'
+      fullPath: '/api/public/hooks/paladium-market-sync'
+      preLoaderRoute: typeof ApiPublicHooksPaladiumMarketSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/paladium-admin-shop-sync': {
       id: '/api/public/hooks/paladium-admin-shop-sync'
       path: '/api/public/hooks/paladium-admin-shop-sync'
@@ -1253,6 +1274,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBotVoiceRoute: ApiPublicBotVoiceRoute,
   ApiPublicHooksPaladiumAdminShopSyncRoute:
     ApiPublicHooksPaladiumAdminShopSyncRoute,
+  ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
   ApiPublicHooksPaladiumStatusSyncRoute: ApiPublicHooksPaladiumStatusSyncRoute,
   ApiPublicHooksPaladiumSyncRoute: ApiPublicHooksPaladiumSyncRoute,
   ApiPublicHooksSyncDiscordPresenceRoute:
