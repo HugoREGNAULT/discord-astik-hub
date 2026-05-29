@@ -21,10 +21,17 @@ export const Route = createFileRoute("/_authenticated/tools/leaderboard")({
 });
 
 const CATEGORIES = [
+const CATEGORIES = [
   { id: "money", label: "Argent" },
-  { id: "level", label: "Niveau" },
-  { id: "cliccoins", label: "ClicCoins" },
-  { id: "playtime", label: "Temps de jeu" },
+  { id: "clicker", label: "Clicker" },
+  { id: "boss", label: "Boss" },
+  { id: "job-miner", label: "Mineur" },
+  { id: "job-farmer", label: "Fermier" },
+  { id: "job-hunter", label: "Chasseur" },
+  { id: "job-alchemist", label: "Alchimiste" },
+  { id: "koth", label: "KOTH" },
+  { id: "end", label: "End" },
+  { id: "chorus", label: "Chorus" },
 ] as const;
 
 function LeaderboardPage() {
