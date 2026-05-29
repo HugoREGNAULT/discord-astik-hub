@@ -139,6 +139,23 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
     staleTime: 60_000,
   });
 
+  const fetchHistory = useServerFn(getMarketPriceHistory);
+  const history = useQuery({
+    queryKey: ["pala-market-history", it.name],
+    queryFn: () => fetchHistory({ data: { itemName: it.name } }),
+    enabled: expanded,
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const historySeries = useMemo(
+    () =>
+      (history.data?.rows ?? []).map((r) => ({
+        t: new Date(r.captured_at).getTime(),
+        price: r.price_average == null ? null : Number(r.price_average),
+      })),
+    [history.data],
+  );
+
   // Resolve seller UUIDs → MC pseudos via Mojang (batched).
   const sellerUuids = useMemo(() => {
     const set = new Set<string>();
