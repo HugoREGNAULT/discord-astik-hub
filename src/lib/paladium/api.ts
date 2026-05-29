@@ -3,6 +3,7 @@
 // (PALADIUM_API_KEY) stays server-side. Mojang is public and stays on the client.
 
 import { callPaladium } from "./paladium.functions";
+import { resolveMojangUuid } from "./mojang.functions";
 
 const MOJANG_BASE = "https://api.mojang.com";
 
