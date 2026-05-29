@@ -63,10 +63,12 @@ function PollDetail() {
   const closeFn = useServerFn(closePoll);
   const reopenFn = useServerFn(reopenPoll);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["poll", id],
     queryFn: () => getFn({ data: { id } }),
+    retry: false,
   });
+
 
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});
 
