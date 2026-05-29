@@ -15,7 +15,6 @@ import {
   FileText,
   Ban,
   LayoutDashboard,
-  LayoutDashboard,
   Grid3x3,
 } from "lucide-react";
 
