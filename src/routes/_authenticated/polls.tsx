@@ -267,8 +267,8 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Format CSV: <code>date,durée</code> — ex.{" "}
-              <code>2026-06-15 20:00,90</code> (durée en minutes, optionnelle).
+              Format CSV: <code>date,durée</code> — ex. <code>2026-06-15 20:00,90</code>
+              {","} durée en minutes optionnelle.
             </p>
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
@@ -341,7 +341,10 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
  */
 function parseCsvSlots(text: string): { value: string; duration: number }[] {
   const out: { value: string; duration: number }[] = [];
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   for (const line of lines) {
     const cols = line.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, ""));
     if (!cols[0]) continue;
