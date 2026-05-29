@@ -212,7 +212,6 @@ function PlayerSales() {
             </div>
           );
         })()}
-
       </div>
 
       {errorMsg && <ErrorBlock message={errorMsg} />}
@@ -244,7 +243,9 @@ function PlayerSales() {
                 .filter(Boolean)
                 .sort()
                 .pop();
-              const ts = lastSync ?? (historyQ.dataUpdatedAt ? new Date(historyQ.dataUpdatedAt).toISOString() : null);
+              const ts =
+                lastSync ??
+                (historyQ.dataUpdatedAt ? new Date(historyQ.dataUpdatedAt).toISOString() : null);
               if (!ts) return null;
               return (
                 <div
@@ -266,9 +267,6 @@ function PlayerSales() {
             <StatTile label="$ listé (en cours)" value={fmtInt(totals.openTotal)} />
             <StatTile label="$ vendu (historique)" value={fmtInt(totals.soldTotal)} />
           </div>
-
-
-
 
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
             <div className="flex gap-1">
