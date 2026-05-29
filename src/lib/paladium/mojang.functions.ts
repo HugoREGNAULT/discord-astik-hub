@@ -11,12 +11,14 @@ function normalizeUuid(id: string): string {
 async function cacheUpsert(entries: Array<{ uuid: string; username: string }>) {
   if (entries.length === 0) return;
   try {
-    await db
-      .from("minecraft_uuid_cache")
-      .upsert(
-        entries.map((e) => ({ uuid: e.uuid, username: e.username, updated_at: new Date().toISOString() })),
-        { onConflict: "uuid" },
-      );
+    await db.from("minecraft_uuid_cache").upsert(
+      entries.map((e) => ({
+        uuid: e.uuid,
+        username: e.username,
+        updated_at: new Date().toISOString(),
+      })),
+      { onConflict: "uuid" },
+    );
   } catch {
     /* ignore cache errors */
   }
@@ -44,7 +46,9 @@ export const resolveMojangUuid = createServerFn({ method: "POST" })
         .maybeSingle();
       if (cached?.uuid) {
         // Refresh from Mojang in background but return cache immediately
-        fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(data.username)}`)
+        fetch(
+          `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(data.username)}`,
+        )
           .then(async (r) => {
             if (!r.ok) return;
             const j = (await r.json()) as { id: string; name: string };
