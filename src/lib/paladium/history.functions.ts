@@ -85,7 +85,6 @@ function flattenStatus(raw: unknown): Array<{
 export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(async () => {
   const { data } = await fetchPaladium("/v1/status");
   const rows = flattenStatus(data);
-  console.log("[snapshotServerStatus] rows=", JSON.stringify(rows));
   if (rows.length === 0) return { inserted: 0 };
 
   const payload = rows.map((r) => ({ ...r, raw: data as unknown }));
@@ -95,7 +94,7 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
     .insert(payload as any);
 
   if (error) throw new Error(error.message);
-  return { inserted: rows.length, debug: rows };
+  return { inserted: rows.length };
 });
 
 export const getStatusHistory = createServerFn({ method: "POST" })
