@@ -55,7 +55,7 @@ function LeaderboardPage() {
   });
   const rows = asArray<LeaderboardEntry>(q.data ?? null);
 
-  const rows = asArray<LeaderboardEntry>(q.data ?? null);
+
 
   // Collect UUIDs that came back as their own username (unresolved).
   const uuidsToResolve = useMemo(() => {
