@@ -65,7 +65,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
             .select("*")
             .eq("member_discord_id", data.discordId)
             .order("created_at", { ascending: false })
-            .limit(50)
+            .limit(10)
         : Promise.resolve({ data: [] as never[], error: null }),
       canViewStaffData
         ? db
@@ -73,7 +73,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
             .select("id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at")
             .eq("member_discord_id", data.discordId)
             .order("created_at", { ascending: false })
-            .limit(20)
+            .limit(10)
         : Promise.resolve({ data: [] as never[], error: null }),
       Promise.resolve(null),
     ]);
@@ -119,6 +119,43 @@ export const getMemberDetail = createServerFn({ method: "GET" })
       canViewStaffData,
     };
   });
+/* ---------- Pagination historique ---------- */
+
+const pageSchema = z.object({ discordId: z.string().min(1), offset: z.number().int().min(0) });
+
+export const getMemberPointsHistory = createServerFn({ method: "GET" })
+  .inputValidator((input) => pageSchema.parse(input))
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const isSelf = user.discordId === data.discordId;
+    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
+    const { data: rows, error } = await db
+      .from("points_ledger")
+      .select("*")
+      .eq("member_discord_id", data.discordId)
+      .order("created_at", { ascending: false })
+      .range(data.offset, data.offset + 19);
+    if (error) throw new Error(error.message);
+    return { items: rows ?? [], hasMore: (rows ?? []).length === 20 };
+  });
+
+export const getMemberDonations = createServerFn({ method: "GET" })
+  .inputValidator((input) => pageSchema.parse(input))
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const isSelf = user.discordId === data.discordId;
+    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
+    const { data: rows, error } = await db
+      .from("donations")
+      .select("id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at")
+      .eq("member_discord_id", data.discordId)
+      .order("created_at", { ascending: false })
+      .range(data.offset, data.offset + 19);
+    if (error) throw new Error(error.message);
+    return { items: rows ?? [], hasMore: (rows ?? []).length === 20 };
+  });
+
+
 
 
 /* ---------- Édition (staff faction) ---------- */

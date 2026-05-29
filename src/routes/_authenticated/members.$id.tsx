@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useId } from "react";
-import { ShieldX, Coins, ShoppingCart, Activity, UserCheck } from "lucide-react";
+import { useState, useId, useEffect } from "react";
+import { ShieldX, Coins, ShoppingCart, Activity, UserCheck, ChevronDown } from "lucide-react";
 
-import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt } from "@/lib/data/members.functions";
+import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt, getMemberPointsHistory, getMemberDonations } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,8 @@ function MemberDetail() {
   const qc = useQueryClient();
   const { data: me } = useCurrentUser();
   const getDetail = useServerFn(getMemberDetail);
+  const getPointsHistory = useServerFn(getMemberPointsHistory);
+  const getDonationsFn = useServerFn(getMemberDonations);
   const update = useServerFn(updateMember);
   const noteFn = useServerFn(addNote);
   const warnFn = useServerFn(addWarning);
@@ -37,6 +39,21 @@ function MemberDetail() {
     queryFn: () => getDetail({ data: { discordId: id } }),
     retry: false,
   });
+
+  // Pagination states
+  const [ledger, setLedger] = useState<any[]>([]);
+  const [ledgerHasMore, setLedgerHasMore] = useState(false);
+  const [donations, setDonations] = useState<any[]>([]);
+  const [donationsHasMore, setDonationsHasMore] = useState(false);
+
+  useEffect(() => {
+    if (data) {
+      setLedger(data.pointsLedger);
+      setLedgerHasMore(data.pointsLedger.length >= 10);
+      setDonations(data.donations);
+      setDonationsHasMore(data.donations.length >= 10);
+    }
+  }, [data]);
 
   const [note, setNote] = useState("");
   const [warn, setWarn] = useState("");
@@ -55,6 +72,21 @@ function MemberDetail() {
   const mAlt = useMutation({
     mutationFn: () => altAddFn({ data: { memberDiscordId: id, altName: alt } }),
     onSuccess: () => { setAlt(""); toast.success("Alt ajouté"); refresh(); },
+  });
+
+  const loadMorePoints = useMutation({
+    mutationFn: () => getPointsHistory({ data: { discordId: id, offset: ledger.length } }),
+    onSuccess: (res) => {
+      setLedger((prev) => [...prev, ...res.items]);
+      setLedgerHasMore(res.hasMore);
+    },
+  });
+  const loadMoreDonations = useMutation({
+    mutationFn: () => getDonationsFn({ data: { discordId: id, offset: donations.length } }),
+    onSuccess: (res) => {
+      setDonations((prev) => [...prev, ...res.items]);
+      setDonationsHasMore(res.hasMore);
+    },
   });
 
   if (isLoading) return <DetailPageSkeleton />;
@@ -228,17 +260,17 @@ function MemberDetail() {
               <span className="flex items-center gap-2">
                 <Coins className="size-4 text-primary" /> Historique points
               </span>
-              <Badge variant="outline">{data.pointsLedger.length}</Badge>
+              <Badge variant="outline">{ledger.length}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {data.pointsLedger.length === 0 ? (
+            {ledger.length === 0 ? (
               <div className="p-4">
                 <EmptyState icon={Coins} title="Aucun mouvement" description="L'historique de points apparaîtra ici." variant="compact" />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {data.pointsLedger.map((p: any) => (
+                {ledger.map((p: any) => (
                   <li key={p.id} className="px-4 py-2 text-sm flex items-center gap-3">
                     <span
                       className={`font-mono font-semibold w-16 text-right ${
@@ -261,6 +293,20 @@ function MemberDetail() {
                 ))}
               </ul>
             )}
+            {ledgerHasMore && (
+              <div className="p-2 border-t border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => loadMorePoints.mutate()}
+                  disabled={loadMorePoints.isPending}
+                >
+                  <ChevronDown className="size-4 mr-1" />
+                  {loadMorePoints.isPending ? "Chargement…" : "Charger plus"}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -272,17 +318,17 @@ function MemberDetail() {
               <span className="flex items-center gap-2">
                 <ShoppingCart className="size-4 text-primary" /> Donations
               </span>
-              <Badge variant="outline">{data.donations.length}</Badge>
+              <Badge variant="outline">{donations.length}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {data.donations.length === 0 ? (
+            {donations.length === 0 ? (
               <div className="p-4">
                 <EmptyState icon={ShoppingCart} title="Aucune donation" description="Les donations valides s'afficheront ici." variant="compact" />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {data.donations.map((d: any) => (
+                {donations.map((d: any) => (
                   <li key={d.id} className="px-4 py-2 text-sm flex items-center gap-3">
                     <Badge
                       variant={
@@ -307,6 +353,20 @@ function MemberDetail() {
                   </li>
                 ))}
               </ul>
+            )}
+            {donationsHasMore && (
+              <div className="p-2 border-t border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => loadMoreDonations.mutate()}
+                  disabled={loadMoreDonations.isPending}
+                >
+                  <ChevronDown className="size-4 mr-1" />
+                  {loadMoreDonations.isPending ? "Chargement…" : "Charger plus"}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
