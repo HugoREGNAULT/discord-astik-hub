@@ -151,7 +151,8 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const kindLabel = alert.price_type === "avg" ? "prix moyen" : alert.price_type === "sell" ? "vente" : "achat";
+  const kindLabel =
+    alert.price_type === "avg" ? "prix moyen" : alert.price_type === "sell" ? "vente" : "achat";
 
   if (editing) {
     return (
