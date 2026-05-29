@@ -294,8 +294,7 @@ function PollDetail() {
     );
   }
 
-    );
-  }
+
 
   if (!data?.poll) {
     return (
