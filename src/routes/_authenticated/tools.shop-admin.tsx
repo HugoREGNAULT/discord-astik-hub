@@ -164,20 +164,13 @@ function ShopAdminPage() {
                     />
                     <Line
                       type="monotone"
-                      dataKey="buy"
-                      stroke="#ffffff"
-                      strokeWidth={2}
-                      dot={false}
-                      name="Achat"
-                    />
-                    <Line
-                      type="monotone"
                       dataKey="sell"
                       stroke="#ec4899"
                       strokeWidth={2}
                       dot={false}
                       name="Vente"
                     />
+
                   </LineChart>
                 </ResponsiveContainer>
               </div>
