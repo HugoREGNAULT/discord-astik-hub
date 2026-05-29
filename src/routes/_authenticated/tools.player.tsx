@@ -121,9 +121,17 @@ function PlayerLookup() {
                   />
                   <StatTile
                     label="Grade"
-                    value={profileQ.data.rank ?? profileQ.data.grade ?? "—"}
+                    value={
+                      (profileQ.data as { factionRank?: string }).factionRank ??
+                      profileQ.data.rank ??
+                      profileQ.data.grade ??
+                      "—"
+                    }
                   />
-                  <StatTile label="Niveau" value={profileQ.data.level ?? "—"} />
+                  <StatTile
+                    label="Temps de jeu"
+                    value={fmtPlaytime((profileQ.data as { timePlayed?: number }).timePlayed)}
+                  />
                   <StatTile
                     label="Argent"
                     value={fmtNum(profileQ.data.money ?? profileQ.data.coins)}
@@ -131,36 +139,44 @@ function PlayerLookup() {
                   />
                   <StatTile
                     label="Inscription"
-                    value={fmtDate(profileQ.data.firstJoin ?? profileQ.data.createdAt)}
+                    value={fmtDate(
+                      (profileQ.data as { firstSeen?: number }).firstSeen ??
+                        profileQ.data.firstJoin ??
+                        profileQ.data.createdAt,
+                    )}
                   />
                 </div>
               )}
             </ToolCard>
 
             <ToolCard>
-              <SectionTitle>ClicCoins</SectionTitle>
+              <SectionTitle>Clicker</SectionTitle>
               {palaQ.isLoading && <LoadingBlock />}
               {palaQ.error && <ErrorBlock message={(palaQ.error as Error).message} />}
               {palaQ.data && (
                 <div className="grid grid-cols-2 gap-3 mt-2">
                   <StatTile
-                    label="ClicCoins"
-                    value={fmtNum(palaQ.data.clicker?.coins ?? palaQ.data.cliccoins)}
+                    label="RPS"
+                    value={fmtNum(palaQ.data.clicker?.rps ?? palaQ.data.rps)}
                     accent="pink"
                   />
                   <StatTile
-                    label="RPS"
-                    value={fmtNum(palaQ.data.clicker?.rps ?? palaQ.data.rps)}
+                    label="Bâtiments"
+                    value={
+                      (palaQ.data as { buildings?: unknown[] }).buildings?.length ??
+                      palaQ.data.clicker?.buildings?.length ??
+                      0
+                    }
                     accent="blurple"
                   />
                 </div>
               )}
             </ToolCard>
 
+
             <ToolCard>
               <SectionTitle>Métiers</SectionTitle>
               {jobsQ.isLoading && <LoadingBlock />}
-              {jobsQ.error && <ErrorBlock message={(jobsQ.error as Error).message} />}
               {jobs.length > 0 && (
                 <table className="w-full text-sm mt-2">
                   <thead>
@@ -181,9 +197,10 @@ function PlayerLookup() {
                   </tbody>
                 </table>
               )}
-              {jobs.length === 0 && !jobsQ.isLoading && !jobsQ.error && (
+              {jobs.length === 0 && !jobsQ.isLoading && (
                 <p className="text-zinc-600 text-xs mt-2">Aucun métier.</p>
               )}
+
             </ToolCard>
           </div>
         </div>
@@ -212,4 +229,10 @@ function fmtDate(v: unknown): string {
   const d = new Date(typeof v === "number" && v < 1e12 ? v * 1000 : (v as string | number));
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("fr-FR");
+}
+function fmtPlaytime(minutes: unknown): string {
+  if (typeof minutes !== "number" || !Number.isFinite(minutes)) return "—";
+  const h = Math.floor(minutes / 60);
+  const m = Math.floor(minutes % 60);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
