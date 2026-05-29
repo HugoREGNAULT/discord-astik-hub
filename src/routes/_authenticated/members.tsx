@@ -44,15 +44,16 @@ function MembersPage() {
       </div>
       <div className="flex flex-wrap gap-2">
         <Input placeholder="Rechercher (pseudo, IG, ID)…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
-        <div className="flex gap-1">
-          {(["active", "former", "all"] as const).map((s) => (
+          {(["active", "away", "former", "all"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatus(s)}
               className={`px-3 py-1.5 rounded-md text-xs border ${status === s ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-muted"}`}
             >
-              {s === "active" ? "Actifs" : s === "former" ? "Anciens" : "Tous"}
+              {s === "active" ? "Actifs" : s === "away" ? "Absents" : s === "former" ? "Anciens" : "Tous"}
             </button>
+          ))}
+
           ))}
         </div>
       </div>
