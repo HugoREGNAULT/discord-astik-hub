@@ -88,8 +88,9 @@ export const Route = createFileRoute("/api/auth/callback")({
           return new Response(null, { status: 302, headers });
         } catch (e) {
           console.error("[oauth callback]", e);
-          return new Response(`OAuth callback failed: ${(e as Error).message}`, { status: 500 });
+          return new Response("Authentication failed. Please try again.", { status: 500 });
         }
+
       },
     },
   },

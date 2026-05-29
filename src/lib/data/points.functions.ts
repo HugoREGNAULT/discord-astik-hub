@@ -116,7 +116,14 @@ export const setPoints = createServerFn({ method: "POST" })
   });
 
 export const getPointsHistory = createServerFn({ method: "GET" })
-  .inputValidator((input: { memberDiscordId: string; limit?: number }) => input)
+  .inputValidator((input) =>
+    z
+      .object({
+        memberDiscordId: z.string().min(1).max(64),
+        limit: z.number().int().min(1).max(200).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     const { requireSession } = await import("@/lib/auth/require.server");
     const { canAccess } = await import("@/lib/auth/permissions");
