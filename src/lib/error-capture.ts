@@ -19,7 +19,7 @@ function record(source: string, error: unknown) {
   lastCapturedError = { error, at: Date.now() };
   // Log eagerly so the error is visible in worker logs even if the response
   // normalizer never picks it up.
-  // eslint-disable-next-line no-console
+
   console.error(`[ssr-capture:${source}] ${formatError(error)}`);
 }
 

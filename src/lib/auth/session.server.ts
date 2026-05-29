@@ -24,7 +24,6 @@ export interface DiscordSessionData {
 function getSessionConfig() {
   const secret = process.env.SESSION_SECRET || "";
   if (secret.length < 32) {
-    // eslint-disable-next-line no-console
     console.warn(
       "[session] SESSION_SECRET is shorter than 32 chars — padding for dev. Set a 32+ char secret in production.",
     );

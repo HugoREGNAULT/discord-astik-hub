@@ -31,11 +31,9 @@ async function postToChannel(
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      // eslint-disable-next-line no-console
       console.error("[discord log] failed", channelId, res.status, await res.text());
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error("[discord log] error", (e as Error).message);
   }
 }

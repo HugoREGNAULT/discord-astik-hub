@@ -231,8 +231,7 @@ export function parsePollCsv(text: string): ParsedPollCsv {
     const value = parseListDate(raw);
     if (!value) continue;
     const dur = Number(row[1]);
-    const duration =
-      Number.isFinite(dur) && dur >= 15 && dur <= 1440 ? Math.round(dur) : 60;
+    const duration = Number.isFinite(dur) && dur >= 15 && dur <= 1440 ? Math.round(dur) : 60;
     slots.push({ value, duration });
   }
   return { mode: "list", slots };

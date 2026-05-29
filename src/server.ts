@@ -27,7 +27,7 @@ function logSsrFailure(
   origin: "thrown" | "h3-swallowed",
 ) {
   const d = describeError(error);
-  // eslint-disable-next-line no-console
+
   console.error(
     `[ssr-failure id=${reqId} origin=${origin} method=${request.method} url=${request.url}]\n` +
       `${d.name}: ${d.message}\n${d.stack ?? "(no stack)"}`,

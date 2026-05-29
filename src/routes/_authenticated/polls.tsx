@@ -26,7 +26,6 @@ import { CardListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
 import { parsePollCsv } from "@/lib/csv/poll-csv";
 
-
 export const Route = createFileRoute("/_authenticated/polls")({
   head: () => ({ meta: [{ title: "Sondages · PunkAstik" }] }),
   component: PollsPage,
@@ -267,7 +266,6 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
                     };
                     reader.readAsText(file);
                   }}
-
                 />
                 <Button
                   type="button"
@@ -280,12 +278,10 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-
-              Accepte un CSV simple <code>date,durée(min)</code> ou un export
-              Framadate/Google Forms (matrice <code>Nom,E-mail,créneau 1,créneau 2…</code>) —
-              les votes pourront être importés ensuite depuis la page du sondage.
+              Accepte un CSV simple <code>date,durée(min)</code> ou un export Framadate/Google Forms
+              (matrice <code>Nom,E-mail,créneau 1,créneau 2…</code>) — les votes pourront être
+              importés ensuite depuis la page du sondage.
             </p>
-
 
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">

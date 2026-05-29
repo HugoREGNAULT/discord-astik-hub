@@ -285,4 +285,3 @@ export const importPollVotes = createServerFn({ method: "POST" })
 
     return { ok: true, voters: data.voters.length, votes: rows.length };
   });
-
