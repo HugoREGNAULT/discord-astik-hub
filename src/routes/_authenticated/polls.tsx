@@ -24,6 +24,8 @@ import { listPolls, createPoll, deletePoll } from "@/lib/data/polls.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { CardListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
+import { parsePollCsv } from "@/lib/csv/poll-csv";
+
 
 export const Route = createFileRoute("/_authenticated/polls")({
   head: () => ({ meta: [{ title: "Sondages · PunkAstik" }] }),
@@ -242,19 +244,30 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
                     const reader = new FileReader();
                     reader.onload = () => {
                       const text = String(reader.result ?? "");
-                      const parsed = parseCsvSlots(text);
-                      if (!parsed.length) {
+                      const parsed = parsePollCsv(text);
+                      const slots = parsed.slots.map((s) => ({
+                        value: s.value,
+                        duration: s.duration,
+                      }));
+                      if (!slots.length) {
                         toast.error("Aucun créneau valide trouvé dans le CSV");
                         return;
                       }
-                      if (parsed.length > 20) {
+                      if (slots.length > 20) {
                         toast.error("Maximum 20 créneaux — seuls les 20 premiers ont été gardés");
                       }
-                      setSlots(parsed.slice(0, 20));
-                      toast.success(`${Math.min(parsed.length, 20)} créneaux importés`);
+                      setSlots(slots.slice(0, 20));
+                      if (parsed.mode === "matrix") {
+                        toast.success(
+                          `${Math.min(slots.length, 20)} créneaux importés. Tu pourras importer les votes du CSV depuis la page du sondage après création.`,
+                        );
+                      } else {
+                        toast.success(`${Math.min(slots.length, 20)} créneaux importés`);
+                      }
                     };
                     reader.readAsText(file);
                   }}
+
                 />
                 <Button
                   type="button"
@@ -267,9 +280,13 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Format CSV: <code>date,durée</code> — ex. <code>2026-06-15 20:00,90</code>
-              {","} durée en minutes optionnelle.
+
+              Accepte un CSV simple <code>date,durée(min)</code> ou un export
+              Framadate/Google Forms (matrice <code>Nom,E-mail,créneau 1,créneau 2…</code>) —
+              les votes pourront être importés ensuite depuis la page du sondage.
             </p>
+
+
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <Input
@@ -330,39 +347,4 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
       </DialogContent>
     </Dialog>
   );
-}
-
-/**
- * Parse un CSV de créneaux. Accepte:
- *  - une colonne datetime (ISO ou "YYYY-MM-DD HH:MM"), durée optionnelle en 2e colonne
- *  - séparateur , ou ;
- *  - ignore une éventuelle ligne d'en-tête non parseable
- *  - renvoie au format datetime-local "YYYY-MM-DDTHH:MM"
- */
-function parseCsvSlots(text: string): { value: string; duration: number }[] {
-  const out: { value: string; duration: number }[] = [];
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  for (const line of lines) {
-    const cols = line.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, ""));
-    if (!cols[0]) continue;
-    const raw = cols[0];
-    // tente plusieurs formats
-    let d: Date | null = null;
-    const isoTry = new Date(raw);
-    if (!isNaN(isoTry.getTime())) d = isoTry;
-    if (!d) {
-      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
-      if (m) d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`);
-    }
-    if (!d || isNaN(d.getTime())) continue;
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    const dur = Number(cols[1]);
-    const duration = Number.isFinite(dur) && dur >= 15 && dur <= 1440 ? Math.round(dur) : 60;
-    out.push({ value, duration });
-  }
-  return out;
 }

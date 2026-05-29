@@ -2,14 +2,49 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState, useEffect } from "react";
-import { ArrowLeft, Check, HelpCircle, X, Lock, Crown, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  HelpCircle,
+  X,
+  Lock,
+  Crown,
+  RefreshCw,
+  Upload,
+  UserX,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getPoll, castVote, closePoll, reopenPoll } from "@/lib/data/polls.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  getPoll,
+  castVote,
+  closePoll,
+  reopenPoll,
+  importPollVotes,
+} from "@/lib/data/polls.functions";
+import { listMembers } from "@/lib/data/members.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
+import { parsePollCsv, type MatrixResult, type Choice as CsvChoice } from "@/lib/csv/poll-csv";
+
 
 type Choice = "yes" | "maybe" | "no";
 
@@ -104,6 +139,20 @@ function PollDetail() {
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [data]);
 
+  const membersFn = useServerFn(listMembers);
+  const { data: membersData } = useQuery({
+    queryKey: ["members", "active"],
+    queryFn: () => membersFn({ data: { status: "active" } }),
+    enabled: canManage,
+  });
+  const activeMembers = (membersData?.members ?? []) as any[];
+  const voterIds = useMemo(() => new Set(voters.map((v) => v.id)), [voters]);
+  const nonVoters = useMemo(
+    () => activeMembers.filter((m) => !voterIds.has(m.discord_id)),
+    [activeMembers, voterIds],
+  );
+
+
   if (isLoading) return <DetailPageSkeleton />;
   if (!data?.poll) return <p>Sondage introuvable.</p>;
 
@@ -142,16 +191,27 @@ function PollDetail() {
             {p.location && ` · 📍 ${p.location}`}
           </div>
         </div>
-        {canManage &&
-          (isOpen ? (
-            <Button variant="outline" size="sm" onClick={() => mClose.mutate(null)}>
-              <Lock className="size-4" /> Clôturer
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={() => mReopen.mutate()}>
-              <RefreshCw className="size-4" /> Rouvrir
-            </Button>
-          ))}
+        <div className="flex flex-wrap gap-2 justify-end">
+          {canManage && isOpen && (
+            <VotesImportDialog
+              pollId={id}
+              options={data.options as any[]}
+              members={activeMembers}
+              onDone={() => qc.invalidateQueries({ queryKey: ["poll", id] })}
+            />
+          )}
+          {canManage &&
+            (isOpen ? (
+              <Button variant="outline" size="sm" onClick={() => mClose.mutate(null)}>
+                <Lock className="size-4" /> Clôturer
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => mReopen.mutate()}>
+                <RefreshCw className="size-4" /> Rouvrir
+              </Button>
+            ))}
+        </div>
+
       </div>
 
       <Card>
@@ -271,6 +331,26 @@ function PollDetail() {
           </CardContent>
         </Card>
       )}
+
+      {canManage && nonVoters.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <UserX className="size-4" /> N&apos;ont pas encore voté ({nonVoters.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1.5">
+              {nonVoters.map((m) => (
+                <Badge key={m.discord_id} variant="outline" className="text-xs">
+                  {m.ig_name || m.discord_username || m.discord_id}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
@@ -309,3 +389,254 @@ function ChoiceBtn({
     </button>
   );
 }
+
+/* ------------------------- Votes import (matrix CSV) --------------------- */
+
+type ImportRow = {
+  name: string;
+  email: string | null;
+  /** undefined = pas encore choisi, "" = ignorer ce nom, sinon discord_id */
+  memberId: string | undefined;
+  choices: { optionId: string; choice: CsvChoice }[];
+};
+
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s*\([^)]*\)\s*/g, " ")
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
+function VotesImportDialog({
+  pollId,
+  options,
+  members,
+  onDone,
+}: {
+  pollId: string;
+  options: any[];
+  members: any[];
+  onDone: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [parsed, setParsed] = useState<MatrixResult | null>(null);
+  const [matched, setMatched] = useState<
+    { slotIdx: number; optionId: string }[]
+  >([]);
+  const [rows, setRows] = useState<ImportRow[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const importFn = useServerFn(importPollVotes);
+
+  const reset = () => {
+    setParsed(null);
+    setMatched([]);
+    setRows([]);
+  };
+
+  const handleFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? "");
+      const p = parsePollCsv(text);
+      if (p.mode !== "matrix") {
+        toast.error("CSV non reconnu — attendu : Nom, E-mail, créneau 1, créneau 2…");
+        return;
+      }
+      // Match slots to options
+      const optByTs = new Map<number, string>();
+      for (const o of options) {
+        optByTs.set(new Date(o.starts_at).getTime(), o.id);
+      }
+      const m: { slotIdx: number; optionId: string }[] = [];
+      p.slots.forEach((s, idx) => {
+        const ts = new Date(s.isoLocal).getTime();
+        const oid = optByTs.get(ts);
+        if (oid) m.push({ slotIdx: idx, optionId: oid });
+      });
+      if (!m.length) {
+        toast.error("Aucun créneau du CSV ne correspond aux créneaux du sondage");
+        return;
+      }
+
+      // Auto-map voters by name
+      const memberByKey = new Map<string, any>();
+      for (const mem of members) {
+        if (mem.ig_name) memberByKey.set(normalize(mem.ig_name), mem);
+        if (mem.discord_username) memberByKey.set(normalize(mem.discord_username), mem);
+      }
+
+      const importRows: ImportRow[] = p.rows.map((r) => {
+        const key = normalize(r.name);
+        const guess = memberByKey.get(key);
+        const choices = m
+          .map(({ slotIdx, optionId }) => {
+            const c = r.choices[slotIdx];
+            return c ? { optionId, choice: c } : null;
+          })
+          .filter((x): x is { optionId: string; choice: CsvChoice } => x !== null);
+        return {
+          name: r.name,
+          email: r.email,
+          memberId: guess?.discord_id,
+          choices,
+        };
+      });
+
+      setParsed(p);
+      setMatched(m);
+      setRows(importRows);
+      toast.success(
+        `${m.length}/${p.slots.length} créneaux matchés, ${importRows.length} votants à mapper`,
+      );
+    };
+    reader.readAsText(file);
+  };
+
+  const submit = async () => {
+    const voters = rows
+      .filter((r) => r.memberId && r.choices.length > 0)
+      .map((r) => {
+        const mem = members.find((m) => m.discord_id === r.memberId)!;
+        return {
+          discordId: r.memberId!,
+          username: mem.discord_username || mem.ig_name || r.name,
+          choices: r.choices,
+        };
+      });
+    if (!voters.length) {
+      toast.error("Aucun votant mappé à un membre");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await importFn({ data: { pollId, voters } });
+      toast.success(`${res.voters} membres importés (${res.votes} votes)`);
+      setOpen(false);
+      reset();
+      onDone();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const mappedCount = rows.filter((r) => r.memberId && r.choices.length > 0).length;
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) reset();
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Upload className="size-4" /> Importer votes CSV
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Importer les votes depuis un CSV</DialogTitle>
+          <DialogDescription>
+            Accepte un export Framadate / Google Forms (matrice <code>Nom, E-mail, créneau 1…</code>
+            ). Les créneaux sont matchés automatiquement, à toi d&apos;associer chaque ligne du CSV
+            à un membre de la faction.
+          </DialogDescription>
+        </DialogHeader>
+
+        {!parsed ? (
+          <div className="py-6 text-center">
+            <input
+              id="votes-csv"
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) handleFile(f);
+              }}
+            />
+            <Button onClick={() => document.getElementById("votes-csv")?.click()}>
+              <Upload className="size-4" /> Choisir un fichier CSV
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="text-xs text-muted-foreground">
+              {matched.length}/{parsed.slots.length} créneaux matchés · {mappedCount}/{rows.length}{" "}
+              votants prêts à importer
+            </div>
+            <div className="max-h-[50vh] overflow-y-auto border border-border rounded">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-background border-b border-border">
+                  <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
+                    <th className="py-2 px-3">Nom CSV</th>
+                    <th className="py-2 px-3">Membre faction</th>
+                    <th className="py-2 px-3 text-right">Votes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i} className="border-b border-border/50">
+                      <td className="py-2 px-3">
+                        <div className="font-medium">{r.name}</div>
+                        {r.email && (
+                          <div className="text-xs text-muted-foreground truncate">{r.email}</div>
+                        )}
+                      </td>
+                      <td className="py-2 px-3">
+                        <Select
+                          value={r.memberId ?? "__skip__"}
+                          onValueChange={(v) => {
+                            const next = [...rows];
+                            next[i] = { ...next[i], memberId: v === "__skip__" ? undefined : v };
+                            setRows(next);
+                          }}
+                        >
+                          <SelectTrigger className="h-8 w-full">
+                            <SelectValue placeholder="—" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__skip__">
+                              <span className="text-muted-foreground">Ignorer</span>
+                            </SelectItem>
+                            {members.map((m) => (
+                              <SelectItem key={m.discord_id} value={m.discord_id}>
+                                {m.ig_name || m.discord_username || m.discord_id}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono text-xs">
+                        {r.choices.length}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Annuler
+          </Button>
+          {parsed && (
+            <Button onClick={submit} disabled={submitting || mappedCount === 0}>
+              Importer {mappedCount} votant{mappedCount > 1 ? "s" : ""}
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
