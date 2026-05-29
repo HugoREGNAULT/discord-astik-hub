@@ -177,7 +177,6 @@ function PlayerLookup() {
             <ToolCard>
               <SectionTitle>Métiers</SectionTitle>
               {jobsQ.isLoading && <LoadingBlock />}
-              {jobsQ.error && <ErrorBlock message={(jobsQ.error as Error).message} />}
               {jobs.length > 0 && (
                 <table className="w-full text-sm mt-2">
                   <thead>
@@ -198,9 +197,10 @@ function PlayerLookup() {
                   </tbody>
                 </table>
               )}
-              {jobs.length === 0 && !jobsQ.isLoading && !jobsQ.error && (
+              {jobs.length === 0 && !jobsQ.isLoading && (
                 <p className="text-zinc-600 text-xs mt-2">Aucun métier.</p>
               )}
+
             </ToolCard>
           </div>
         </div>
