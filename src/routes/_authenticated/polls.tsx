@@ -331,3 +331,35 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
     </Dialog>
   );
 }
+
+/**
+ * Parse un CSV de créneaux. Accepte:
+ *  - une colonne datetime (ISO ou "YYYY-MM-DD HH:MM"), durée optionnelle en 2e colonne
+ *  - séparateur , ou ;
+ *  - ignore une éventuelle ligne d'en-tête non parseable
+ *  - renvoie au format datetime-local "YYYY-MM-DDTHH:MM"
+ */
+function parseCsvSlots(text: string): { value: string; duration: number }[] {
+  const out: { value: string; duration: number }[] = [];
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    const cols = line.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, ""));
+    if (!cols[0]) continue;
+    const raw = cols[0];
+    // tente plusieurs formats
+    let d: Date | null = null;
+    const isoTry = new Date(raw);
+    if (!isNaN(isoTry.getTime())) d = isoTry;
+    if (!d) {
+      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+      if (m) d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`);
+    }
+    if (!d || isNaN(d.getTime())) continue;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const dur = Number(cols[1]);
+    const duration = Number.isFinite(dur) && dur >= 15 && dur <= 1440 ? Math.round(dur) : 60;
+    out.push({ value, duration });
+  }
+  return out;
+}
