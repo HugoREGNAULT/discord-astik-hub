@@ -11,6 +11,8 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
 
   const since7d = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const since30d = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const since90d = new Date(Date.now() - 90 * 86_400_000).toISOString();
+
 
   const [
     pendingApps,
