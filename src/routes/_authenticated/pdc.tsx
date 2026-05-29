@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
+} from "react";
 import {
   listPdcBlocks,
   createPdcBlock,
@@ -76,7 +84,7 @@ function PdcPage() {
   const { data: blocksData } = useQuery({ queryKey: ["pdc-blocks"], queryFn: () => lsBlocks() });
   const { data: plansData } = useQuery({ queryKey: ["pdc-plans"], queryFn: () => lsPlans() });
 
-  const blocks: PdcBlock[] = (blocksData?.blocks ?? []) as PdcBlock[];
+  const blocks = useMemo(() => (blocksData?.blocks ?? []) as PdcBlock[], [blocksData?.blocks]);
 
   // currently loaded plan
   const [planId, setPlanId] = useState<string | null>(null);
@@ -229,7 +237,7 @@ function PdcPage() {
   }, [draw]);
 
   // ---------------- Interaction ----------------
-  const cellFromEvent = (e: React.PointerEvent<HTMLCanvasElement>): { x: number; y: number } => {
+  const cellFromEvent = (e: ReactPointerEvent<HTMLCanvasElement>): { x: number; y: number } => {
     const cv = canvasRef.current!;
     const rect = cv.getBoundingClientRect();
     const px = e.clientX - rect.left - pan.x;
@@ -254,7 +262,7 @@ function PdcPage() {
     setDirty(true);
   };
 
-  const onPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerDown = (e: ReactPointerEvent<HTMLCanvasElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     // middle click or space-like: pan with right button too
     if (e.button === 1 || e.button === 2) {
@@ -280,7 +288,7 @@ function PdcPage() {
     if (tool === "erase") paintCell(cell.x, cell.y, null);
   };
 
-  const onPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerMove = (e: ReactPointerEvent<HTMLCanvasElement>) => {
     if (isPanningRef.current && panStartRef.current) {
       const dx = e.clientX - panStartRef.current.x;
       const dy = e.clientY - panStartRef.current.y;
@@ -294,7 +302,7 @@ function PdcPage() {
     if (tool === "erase") paintCell(cell.x, cell.y, null);
   };
 
-  const onPointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const onPointerUp = () => {
     if (isPanningRef.current) {
       isPanningRef.current = false;
       panStartRef.current = null;
@@ -323,7 +331,7 @@ function PdcPage() {
     isDrawingRef.current = false;
   };
 
-  const onWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+  const onWheel = (e: ReactWheelEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     const cv = canvasRef.current!;
     const rect = cv.getBoundingClientRect();
@@ -507,7 +515,6 @@ function PdcPage() {
         <TabsContent value="calc" className="space-y-3">
           <PdcSliceCalculator blocks={blocks} />
         </TabsContent>
-
 
         {/* ----- Editor ----- */}
         <TabsContent value="editor" className="space-y-3">
