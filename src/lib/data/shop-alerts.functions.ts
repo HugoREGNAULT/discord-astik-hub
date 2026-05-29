@@ -151,9 +151,7 @@ async function postAlertMessage(content: string): Promise<void> {
   }
 }
 
-async function evaluateForSource(
-  source: AlertSource,
-): Promise<{ fired: number; rearmed: number }> {
+async function evaluateForSource(source: AlertSource): Promise<{ fired: number; rearmed: number }> {
   const { data: alerts, error: aerr } = await db
     .from("shop_admin_price_alerts")
     .select("*")
@@ -213,11 +211,11 @@ async function evaluateForSource(
   for (const a of list) {
     const snap = latest.get(a.item_name);
     if (!snap) continue;
-    const current = a.price_type === "avg" ? snap.avg : a.price_type === "sell" ? snap.sell : snap.buy;
+    const current =
+      a.price_type === "avg" ? snap.avg : a.price_type === "sell" ? snap.sell : snap.buy;
     if (current === null || current === undefined) continue;
 
-    const matches =
-      a.direction === "above" ? current >= a.threshold : current <= a.threshold;
+    const matches = a.direction === "above" ? current >= a.threshold : current <= a.threshold;
 
     if (matches && !a.is_triggered) {
       const arrow = a.direction === "above" ? "↑" : "↓";
@@ -234,10 +232,7 @@ async function evaluateForSource(
         .eq("id", a.id);
       fired++;
     } else if (!matches && a.is_triggered) {
-      await db
-        .from("shop_admin_price_alerts")
-        .update({ is_triggered: false })
-        .eq("id", a.id);
+      await db.from("shop_admin_price_alerts").update({ is_triggered: false }).eq("id", a.id);
       rearmed++;
     }
   }
