@@ -7,7 +7,7 @@ import { listMembers } from "@/lib/data/members.functions";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Paginator, usePagedSlice } from "@/components/Paginator";
+import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { MemberRowsSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
 import { Users as UsersIcon } from "lucide-react";
@@ -40,7 +40,7 @@ function MembersPage() {
 
   const members = data?.members ?? [];
   const pageCount = Math.max(1, Math.ceil(members.length / PER_PAGE));
-  const paged = useMemo(() => usePagedSlice(members, page, PER_PAGE), [members, page]);
+  const paged = useMemo(() => getPagedSlice(members, page, PER_PAGE), [members, page]);
 
   return (
     <div className="space-y-4">
