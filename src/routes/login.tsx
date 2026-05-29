@@ -32,6 +32,14 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0c] p-4 relative overflow-hidden">
+      {/* CARRÉ ROUGE DE TEST — vérif déploiement GitHub → Lovable (à retirer ensuite) */}
+      <div
+        className="fixed top-4 right-4 z-50 w-16 h-16 bg-red-600 border-2 border-red-300 shadow-lg shadow-red-500/50 flex items-center justify-center text-white text-[10px] font-mono font-bold"
+        title="Carré rouge de test — déploiement"
+      >
+        TEST
+      </div>
+
       {/* Background cyber elements */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div
