@@ -188,24 +188,31 @@ function PlayerSales() {
           placeholder="Pseudo Minecraft ou UUID…"
         />
 
-        {topQ.data?.players.length ? (
-          <div className="flex flex-wrap gap-1.5 sm:max-w-[60%]">
-            {topQ.data.players.slice(0, 8).map((p) => (
-              <button
-                key={p.uuid}
-                onClick={() => {
-                  setInput(p.username);
-                  setTarget({ mode: "uuid", uuid: p.uuid });
-                }}
-                className="px-2 py-1 rounded border border-zinc-800 text-[11px] uppercase tracking-[0.18em] text-zinc-400 hover:text-pink-400 hover:border-pink-500/40"
-                style={{ fontFamily: "'Space Mono'" }}
-                title={`${p.search_count} recherches`}
-              >
-                {p.username}
-              </button>
-            ))}
-          </div>
-        ) : null}
+        {(() => {
+          const validChips = (topQ.data?.players ?? []).filter(
+            (p) => p.username && !/^[0-9a-f]{8}$/i.test(p.username),
+          );
+          if (!validChips.length) return null;
+          return (
+            <div className="flex flex-wrap gap-1.5 sm:max-w-[60%]">
+              {validChips.slice(0, 8).map((p) => (
+                <button
+                  key={p.uuid}
+                  onClick={() => {
+                    setInput(p.username);
+                    setTarget({ mode: "uuid", uuid: p.uuid });
+                  }}
+                  className="px-2 py-1 rounded border border-zinc-800 text-[11px] uppercase tracking-[0.18em] text-zinc-400 hover:text-pink-400 hover:border-pink-500/40"
+                  style={{ fontFamily: "'Space Mono'" }}
+                  title={`${p.search_count} recherches`}
+                >
+                  {p.username}
+                </button>
+              ))}
+            </div>
+          );
+        })()}
+
       </div>
 
       {errorMsg && <ErrorBlock message={errorMsg} />}
