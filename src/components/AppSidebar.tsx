@@ -45,74 +45,136 @@ type Item = {
   accent?: "pink" | "blurple";
 };
 
-const ITEMS: Item[] = [
-  { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
-  { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self", accent: "blurple" },
-  {
-    title: "Sondages",
-    url: "/polls",
-    icon: CalendarCheck,
-    perm: "profile.self",
-    accent: "blurple",
-  },
-  {
-    title: "Absences",
-    url: "/absences",
-    icon: CalendarCheck,
-    perm: "profile.self",
-    accent: "pink",
-  },
-  {
-    title: "Outils Paladium",
-    url: "/tools",
-    icon: Wrench,
-    perm: "profile.self",
-    accent: "blurple",
-  },
+type Section = {
+  label: string;
+  items: Item[];
+};
 
+const SECTIONS: Section[] = [
   {
-    title: "Dashboard staff",
-    url: "/staff",
-    icon: LayoutDashboard,
-    perm: "members.view",
-    accent: "blurple",
+    label: "// punkastik",
+    items: [
+      { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
+      {
+        title: "Classement",
+        url: "/dashboard",
+        icon: Trophy,
+        perm: "profile.self",
+        accent: "blurple",
+      },
+      {
+        title: "Sondages",
+        url: "/polls",
+        icon: CalendarCheck,
+        perm: "profile.self",
+        accent: "blurple",
+      },
+      {
+        title: "Absences",
+        url: "/absences",
+        icon: CalendarCheck,
+        perm: "profile.self",
+        accent: "pink",
+      },
+      {
+        title: "Outils Paladium",
+        url: "/tools",
+        icon: Wrench,
+        perm: "profile.self",
+        accent: "blurple",
+      },
+    ],
   },
-  { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
-
   {
-    title: "Candidatures",
-    url: "/recruitment",
-    icon: UserPlus,
-    perm: "recruit.access",
-    accent: "pink",
+    label: "// staff",
+    items: [
+      {
+        title: "Dashboard staff",
+        url: "/staff",
+        icon: LayoutDashboard,
+        perm: "members.view",
+        accent: "blurple",
+      },
+      { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
+      {
+        title: "Effectif",
+        url: "/effectif",
+        icon: ListTree,
+        perm: "members.view",
+        accent: "blurple",
+      },
+      {
+        title: "Objectifs",
+        url: "/objectives",
+        icon: Target,
+        perm: "objectives.edit",
+        accent: "pink",
+      },
+      {
+        title: "Plan de coupe",
+        url: "/pdc",
+        icon: Grid3x3,
+        perm: "members.view",
+        accent: "blurple",
+      },
+    ],
   },
-  { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
-  { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage", accent: "pink" },
   {
-    title: "Dons",
-    url: "/donations",
-    icon: ShoppingCart,
-    perm: "donations.manage",
-    accent: "pink",
+    label: "// recrutement",
+    items: [
+      {
+        title: "Candidatures",
+        url: "/recruitment",
+        icon: UserPlus,
+        perm: "recruit.access",
+        accent: "pink",
+      },
+      { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
+    ],
   },
   {
-    title: "Config valeurs",
-    url: "/config",
-    icon: Settings2,
-    perm: "config.manage",
-    accent: "blurple",
+    label: "// économie",
+    items: [
+      {
+        title: "AstikPoints",
+        url: "/points",
+        icon: Coins,
+        perm: "points.manage",
+        accent: "pink",
+      },
+      {
+        title: "Dons",
+        url: "/donations",
+        icon: ShoppingCart,
+        perm: "donations.manage",
+        accent: "pink",
+      },
+      {
+        title: "Config valeurs",
+        url: "/config",
+        icon: Settings2,
+        perm: "config.manage",
+        accent: "blurple",
+      },
+    ],
   },
-  { title: "Effectif", url: "/effectif", icon: ListTree, perm: "members.view", accent: "blurple" },
-  { title: "Objectifs", url: "/objectives", icon: Target, perm: "objectives.edit", accent: "pink" },
-  { title: "Plan de coupe", url: "/pdc", icon: Grid3x3, perm: "members.view", accent: "blurple" },
-  { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
-  { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
+  {
+    label: "// administration",
+    items: [
+      { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
+      { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
+    ],
+  },
 ];
 
 export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { setOpenMobile } = useSidebar();
-  const items = ITEMS.filter((i) => hasPerm(user, i.perm));
+
+  const visibleSections = SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((i) => hasPerm(user, i.perm)),
+  })).filter((section) => section.items.length > 0);
 
   const handleNavClick = () => {
     setOpenMobile(false);
@@ -151,51 +213,53 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
       </SidebarHeader>
 
       <SidebarContent className="bg-[#0a0a0c]">
-        <SidebarGroup>
-          <SidebarGroupLabel
-            className="text-[9px] text-zinc-600 uppercase tracking-[0.3em]"
-            style={{ fontFamily: "'Space Mono'" }}
-          >
-            // navigation
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => {
-                const active = path === item.url || path.startsWith(item.url + "/");
-                const accentBar = item.accent === "blurple" ? "bg-[#5865F2]" : "bg-pink-500";
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={active}
-                      tooltip={item.title}
-                      className={`relative rounded-none border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-900/80 hover:border-zinc-800 data-[active=true]:bg-zinc-900 data-[active=true]:text-white data-[active=true]:border-zinc-800 transition-colors`}
-                    >
-                      <Link
-                        to={item.url}
-                        className="flex items-center gap-3"
-                        onClick={handleNavClick}
+        {visibleSections.map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel
+              className="text-[9px] text-zinc-600 uppercase tracking-[0.3em]"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              {section.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => {
+                  const active = path === item.url || path.startsWith(item.url + "/");
+                  const accentBar = item.accent === "blurple" ? "bg-[#5865F2]" : "bg-pink-500";
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        tooltip={item.title}
+                        className={`relative rounded-none border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-900/80 hover:border-zinc-800 data-[active=true]:bg-zinc-900 data-[active=true]:text-white data-[active=true]:border-zinc-800 transition-colors`}
                       >
-                        <span
-                          className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] ${accentBar} ${
-                            active ? "opacity-100" : "opacity-0 group-hover/menu-item:opacity-60"
-                          } transition-opacity`}
-                        />
-                        <item.icon className="size-4 shrink-0" />
-                        <span
-                          className="text-xs uppercase tracking-wider"
-                          style={{ fontFamily: "'Space Grotesk'" }}
+                        <Link
+                          to={item.url}
+                          className="flex items-center gap-3"
+                          onClick={handleNavClick}
                         >
-                          {item.title}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                          <span
+                            className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] ${accentBar} ${
+                              active ? "opacity-100" : "opacity-0 group-hover/menu-item:opacity-60"
+                            } transition-opacity`}
+                          />
+                          <item.icon className="size-4 shrink-0" />
+                          <span
+                            className="text-xs uppercase tracking-wider"
+                            style={{ fontFamily: "'Space Grotesk'" }}
+                          >
+                            {item.title}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="bg-[#0a0a0c] border-t border-zinc-800/80">

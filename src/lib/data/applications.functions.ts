@@ -11,6 +11,8 @@ import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
+import { addGuildMemberRole } from "@/lib/discord/api.server";
+import { GUILDS, ROLES } from "@/lib/discord/constants";
 import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
@@ -279,35 +281,22 @@ export const decideApplication = createServerFn({ method: "POST" })
       .eq("id", data.applicationId);
     if (upd.error) throw new Error(upd.error.message);
 
-    // Sur acceptation : créer / mettre à jour la fiche membre
+    // Sur acceptation : on ne crée PAS encore la fiche membre (entretien à passer).
+    // On donne juste le rôle "entretien en attente" sur le serveur public.
+    let roleAssigned: { ok: boolean; error?: string } = { ok: false };
     if (data.decision === "accepted") {
-      // Récup UUID Minecraft
-      let mcUuid: string | null = null;
-      try {
-        const m = await fetchMojang(app.mc_name);
-        mcUuid = m.id;
-      } catch {
-        mcUuid = null;
-      }
-
-      await db.from("members").upsert(
-        {
-          discord_id: app.discord_id,
-          discord_username: app.discord_username,
-          ig_name: app.mc_name,
-          mc_uuid: mcUuid,
-          arrival_date: new Date().toISOString().slice(0, 10),
-          recruiter_discord_id: staff.discordId,
-          status: "active",
-        },
-        { onConflict: "discord_id" },
+      const r = await addGuildMemberRole(
+        GUILDS.PUBLIC,
+        app.discord_id,
+        ROLES.INTERVIEW_PENDING_PUBLIC,
       );
+      roleAssigned = { ok: r.ok, error: r.error };
     }
 
     // Notification DM Discord
     const message =
       data.decision === "accepted"
-        ? `🎉 **Bienvenue dans la PunkAstik !**\n\nTa candidature a été acceptée par **${staff.username}**.\nTu peux désormais accéder à ton espace membre : https://discord-astik-hub.lovable.app/me${
+        ? `✅ **Première étape validée !**\n\nTa candidature à la PunkAstik a été retenue par **${staff.username}**.\n\n📅 **Prochaine étape : entretien**\nTu vas être contacté(e) prochainement par un recruteur pour fixer un rendez-vous. Tu as reçu un rôle sur le serveur public pour suivre la suite du process.\n\n⚠️ Tu n'as **pas encore** accès à l'espace membre du site — ça viendra une fois l'entretien passé.${
             data.reason ? `\n\n💬 ${data.reason}` : ""
           }`
         : `❌ **Candidature refusée**\n\nDésolé, ta candidature à la PunkAstik n'a pas été retenue par **${staff.username}**.${
@@ -323,20 +312,38 @@ export const decideApplication = createServerFn({ method: "POST" })
         candidate: app.discord_id,
         dm_ok: dm.ok,
         dm_error: dm.error ?? null,
+        role_assigned: data.decision === "accepted" ? roleAssigned.ok : null,
+        role_error: data.decision === "accepted" ? (roleAssigned.error ?? null) : null,
       },
     );
 
     await logToDiscord("site", {
       title: data.decision === "accepted" ? "✅ Candidature acceptée" : "❌ Candidature refusée",
       color: data.decision === "accepted" ? COLORS.success : COLORS.danger,
-      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) traitée par **${staff.username}**.`,
+      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) traitée par **${staff.username}**.${
+        data.decision === "accepted" ? "\n\n*En attente d'entretien — rôle public attribué.*" : ""
+      }`,
       fields: [
         { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },
         { name: "Décision par", value: `<@${staff.discordId}>`, inline: true },
         { name: "DM envoyé", value: dm.ok ? "Oui" : `Non (${dm.error ?? "?"})`, inline: true },
+        ...(data.decision === "accepted"
+          ? [
+              {
+                name: "Rôle entretien",
+                value: roleAssigned.ok ? "Attribué ✅" : `Échec (${roleAssigned.error ?? "?"})`,
+                inline: true,
+              },
+            ]
+          : []),
         ...(data.reason ? [{ name: "Motif", value: data.reason }] : []),
       ],
     });
 
-    return { ok: true, dmOk: dm.ok, dmError: dm.error ?? null };
+    return {
+      ok: true,
+      dmOk: dm.ok,
+      dmError: dm.error ?? null,
+      roleAssigned: data.decision === "accepted" ? roleAssigned.ok : null,
+    };
   });

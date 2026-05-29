@@ -367,19 +367,19 @@ function ApplicationStats() {
           icon={CheckCircle2}
           label="Acceptées"
           value={data.accepted}
-          tone="bg-emerald-500/10 text-emerald-600"
+          tone="bg-emerald-500/15 text-emerald-300"
         />
         <StatCard
           icon={XCircle}
           label="Refusées"
           value={data.rejected}
-          tone="bg-red-500/10 text-red-600"
+          tone="bg-red-500/15 text-red-300"
         />
         <StatCard
           icon={Ban}
           label="Blacklistées"
           value={data.blacklisted}
-          tone="bg-destructive/10 text-destructive"
+          tone="bg-pink-500/15 text-pink-300"
         />
       </div>
       {data.timeline.length > 1 && (
