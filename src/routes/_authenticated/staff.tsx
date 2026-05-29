@@ -422,3 +422,122 @@ function KpiCard({
 
   return href ? <Link to={href}>{body}</Link> : body;
 }
+
+function InactiveMemberRow({
+  member,
+}: {
+  member: {
+    discord_id: string;
+    ig_name?: string | null;
+    discord_username?: string | null;
+    current_grade?: string | null;
+    avatar_url?: string | null;
+  };
+}) {
+  const qc = useQueryClient();
+  const awayFn = useServerFn(markMemberAway);
+  const dmFn = useServerFn(dmMember);
+  const [dmOpen, setDmOpen] = useState(false);
+  const [dmContent, setDmContent] = useState(
+    `Salut ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nOn ne t'a pas vu cette semaine sur le Discord ni en vocal. Tout va bien ? Donne-nous des nouvelles quand tu peux !`,
+  );
+
+  const awayMut = useMutation({
+    mutationFn: () => awayFn({ data: { memberDiscordId: member.discord_id } }),
+    onSuccess: () => {
+      toast.success("Membre marqué en absence");
+      qc.invalidateQueries({ queryKey: ["staff-dashboard"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const dmMut = useMutation({
+    mutationFn: () =>
+      dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
+    onSuccess: () => {
+      toast.success("DM envoyé");
+      setDmOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="flex items-center gap-2 border border-border rounded p-2 hover:border-primary/40 transition">
+      <Link
+        to="/members/$id"
+        params={{ id: member.discord_id }}
+        className="flex items-center gap-3 flex-1 min-w-0"
+      >
+        {member.avatar_url ? (
+          <img src={member.avatar_url} alt="" className="size-8 rounded-full" />
+        ) : (
+          <div className="size-8 rounded-full bg-muted" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">
+            {member.ig_name ?? member.discord_username}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate">
+            @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
+          </div>
+        </div>
+      </Link>
+      <div className="flex gap-1 shrink-0">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setDmOpen(true)}
+          title="Contacter le membre par DM Discord"
+        >
+          <MessageCircle className="size-3.5" />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={awayMut.isPending}
+          onClick={() => {
+            if (confirm(`Marquer ${member.ig_name ?? member.discord_username} en absence ?`)) {
+              awayMut.mutate();
+            }
+          }}
+          title="Marquer en absence"
+        >
+          <UserMinus className="size-3.5" />
+        </Button>
+      </div>
+
+      <Dialog open={dmOpen} onOpenChange={setDmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Contacter {member.ig_name ?? member.discord_username}
+            </DialogTitle>
+            <DialogDescription>
+              Le message sera envoyé en DM Discord depuis le bot de la faction.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={dmContent}
+            onChange={(e) => setDmContent(e.target.value)}
+            rows={6}
+            maxLength={1800}
+          />
+          <div className="text-[11px] text-muted-foreground text-right">
+            {dmContent.length}/1800
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDmOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => dmMut.mutate()}
+              disabled={dmMut.isPending || dmContent.trim().length === 0}
+            >
+              {dmMut.isPending ? "Envoi…" : "Envoyer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
