@@ -165,9 +165,7 @@ export const listApplications = createServerFn({ method: "GET" })
     if (data.status) q.eq("status", data.status);
     const res = await q;
     if (res.error) throw new Error(res.error.message);
-    const rows = (res.data ?? []).filter(
-      (r) => (r.mc_name ?? "").toLowerCase() !== "unknown",
-    );
+    const rows = (res.data ?? []).filter((r) => (r.mc_name ?? "").toLowerCase() !== "unknown");
 
     // Enrichit chaque candidature avec les matchs blacklist (visible staff uniquement).
     const enriched = await Promise.all(
@@ -190,9 +188,7 @@ export const getApplicationStats = createServerFn({ method: "GET" }).handler(asy
     .select("discord_id, mc_name, status, created_at")
     .order("created_at", { ascending: true });
   if (res.error) throw new Error(res.error.message);
-  const rows = (res.data ?? []).filter(
-    (r) => (r.mc_name ?? "").toLowerCase() !== "unknown",
-  );
+  const rows = (res.data ?? []).filter((r) => (r.mc_name ?? "").toLowerCase() !== "unknown");
 
   const uniqueIds = new Set(rows.map((r) => r.discord_id));
   let accepted = 0;
@@ -247,7 +243,6 @@ export const getApplicationStats = createServerFn({ method: "GET" }).handler(asy
     timeline,
   };
 });
-
 
 const decideSchema = z.object({
   applicationId: z.string().uuid(),

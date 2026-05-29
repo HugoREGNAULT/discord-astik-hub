@@ -40,7 +40,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Paginator, usePagedSlice } from "@/components/Paginator";
+import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CardListSkeleton } from "@/components/Skeletons";
 
@@ -137,7 +137,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
 
   const items = data ?? [];
   const pageCount = Math.max(1, Math.ceil(items.length / PER_PAGE));
-  const paged = useMemo(() => usePagedSlice(items, page, PER_PAGE), [items, page]);
+  const paged = getPagedSlice(items, page, PER_PAGE);
 
   if (isLoading) {
     return <CardListSkeleton count={4} />;

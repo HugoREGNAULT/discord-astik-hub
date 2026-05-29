@@ -40,7 +40,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
-import { Paginator, usePagedSlice } from "@/components/Paginator";
+import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
@@ -400,7 +400,7 @@ function actionIcon(type: string) {
 function PointsTimeline({ gains }: { gains: Gain[] }) {
   const [page, setPage] = useState(1);
   const perPage = 10;
-  const slice = usePagedSlice(gains, page, perPage);
+  const slice = getPagedSlice(gains, page, perPage);
   const pageCount = Math.ceil(gains.length / perPage);
 
   if (gains.length === 0) {
