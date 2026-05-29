@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -462,12 +463,11 @@ function PdcPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Plan de coupe (PDC)</h1>
-          <p className="text-xs text-muted-foreground">
-            Éditeur de base claim · 1 chunk = 16×16 blocs
-          </p>
-        </div>
+        <PageHeader
+          code="// pdc"
+          title="Plan de coupe (PDC)"
+          description="Éditeur de base claim · 1 chunk = 16×16 blocs"
+        />
         <div className="flex items-center gap-2">
           {planId && (
             <>

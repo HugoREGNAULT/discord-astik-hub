@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -69,11 +70,11 @@ function WelcomePage() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
           <Sparkles className="size-3.5" /> Première connexion
         </div>
-        <h1 className="text-3xl font-bold tracking-tight">Bienvenue sur PunkAstik</h1>
-        <p className="text-muted-foreground mt-2">
-          Renseigne ton pseudo Minecraft pour qu'on puisse afficher ton skin et te lier à la
-          faction.
-        </p>
+        <PageHeader
+          code="// welcome"
+          title="Bienvenue sur PunkAstik"
+          description="Renseigne ton pseudo Minecraft pour qu'on puisse afficher ton skin et te lier à la faction."
+        />
       </div>
 
       <form

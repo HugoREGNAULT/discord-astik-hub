@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,10 +33,11 @@ function EffectifPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="text-2xl font-bold">Effectif</h1>
-        {data && <Badge variant="secondary">{data.total} membres</Badge>}
-      </div>
+      <PageHeader
+        code="// effectif"
+        title="Effectif"
+        description={data ? `${data.total} membres au total.` : "Vue d'ensemble des membres par groupe."}
+      />
       {isLoading && <GroupGridSkeleton count={6} />}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data?.groups.map((g: { label: string; members: EMember[] }) => (

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -91,14 +92,11 @@ function StaffPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <LayoutDashboard className="size-6 text-primary" /> Dashboard staff
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Vue d'ensemble de la faction : alertes, files d'attente et activité récente.
-        </p>
-      </div>
+      <PageHeader
+        code="// staff"
+        title="Dashboard staff"
+        description="Vue d'ensemble de la faction : alertes, files d'attente et activité récente."
+      />
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">

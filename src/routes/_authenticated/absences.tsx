@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
@@ -178,12 +179,11 @@ function AbsencesPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold">Calendrier des absences</h1>
-          <p className="text-sm text-muted-foreground">
-            Vue globale des absences déclarées par les membres de la faction.
-          </p>
-        </div>
+        <PageHeader
+          code="// absences"
+          title="Calendrier des absences"
+          description="Vue globale des absences déclarées par les membres de la faction."
+        />
         <CreateOrEditDialog
           mode="create"
           onDone={() => qc.invalidateQueries({ queryKey: ["absences"] })}

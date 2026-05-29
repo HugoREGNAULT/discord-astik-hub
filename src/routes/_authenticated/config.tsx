@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -112,7 +113,7 @@ function ConfigPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Config valeurs (AstikPoints)</h1>
+      <PageHeader code="// config" title="Config valeurs (AstikPoints)" description="Barème des points attribués pour chaque action." />
 
       <Card>
         <CardHeader>

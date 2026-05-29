@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -119,14 +120,11 @@ function LogsPage() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="size-6 text-primary" /> Logs système
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Toutes les actions sensibles (admin, dons, points, candidatures…).
-          </p>
-        </div>
+        <PageHeader
+          code="// logs"
+          title="Logs système"
+          description="Toutes les actions sensibles (admin, dons, points, candidatures…)."
+        />
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={logs.length === 0}>
             <Download className="size-4 mr-1" /> Export CSV
