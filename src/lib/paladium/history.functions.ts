@@ -97,26 +97,29 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
   return { inserted: rows.length };
 });
 
-export const getStatusHistory = createServerFn({ method: "GET" }).handler(async () => {
-  // last 7 days
-  const since = new Date(Date.now() - 7 * 86400000).toISOString();
-  const { data, error } = await supabaseAdmin
-    .from("paladium_server_status_history")
-    .select("server_key, server_label, online_players, is_online, captured_at")
-    .gte("captured_at", since)
-    .order("captured_at", { ascending: true })
-    .limit(5000);
-  if (error) throw new Error(error.message);
-  return {
-    rows: (data ?? []) as Array<{
-      server_key: string;
-      server_label: string | null;
-      online_players: number | null;
-      is_online: boolean;
-      captured_at: string;
-    }>,
-  };
-});
+export const getStatusHistory = createServerFn({ method: "POST" })
+  .inputValidator((d: { days?: number } | undefined) => ({
+    days: Math.min(Math.max(Number(d?.days ?? 7), 1), 30),
+  }))
+  .handler(async ({ data }) => {
+    const since = new Date(Date.now() - data.days * 86400000).toISOString();
+    const { data: rows, error } = await supabaseAdmin
+      .from("paladium_server_status_history")
+      .select("server_key, server_label, online_players, is_online, captured_at")
+      .gte("captured_at", since)
+      .order("captured_at", { ascending: true })
+      .limit(10000);
+    if (error) throw new Error(error.message);
+    return {
+      rows: (rows ?? []) as Array<{
+        server_key: string;
+        server_label: string | null;
+        online_players: number | null;
+        is_online: boolean;
+        captured_at: string;
+      }>,
+    };
+  });
 
 /* ============= Admin shop snapshot (daily) ============= */
 
