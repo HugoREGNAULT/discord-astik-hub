@@ -1,6 +1,11 @@
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
+/**
+ * DA "Tools / PunkAstik" — kit visuel partagé (terminal/cyberpunk).
+ * Réutilisable hors `/tools` : importer depuis ce fichier (alias PageHeader / PageCard).
+ */
+
 export function ToolHeader({
   code,
   title,
@@ -24,10 +29,12 @@ export function ToolHeader({
       >
         {title}
       </h1>
-      <p className="text-zinc-400 text-sm mt-2 max-w-3xl">{description}</p>
+      {description && <p className="text-zinc-400 text-sm mt-2 max-w-3xl">{description}</p>}
     </div>
   );
 }
+
+export const PageHeader = ToolHeader;
 
 export function ToolCard({
   children,
@@ -42,6 +49,114 @@ export function ToolCard({
     >
       {children}
     </div>
+  );
+}
+
+export const PageCard = ToolCard;
+
+export function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="text-[10px] uppercase tracking-[0.3em] text-pink-500 mb-3"
+      style={{ fontFamily: "'Space Mono'" }}
+    >
+      // {children}
+    </div>
+  );
+}
+
+export function MonoLabel({ children }: { children: ReactNode }) {
+  return (
+    <span
+      className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+      style={{ fontFamily: "'Space Mono'" }}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function DaButton({
+  children,
+  onClick,
+  type = "button",
+  variant = "primary",
+  disabled,
+  className = "",
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  type?: "button" | "submit";
+  variant?: "primary" | "ghost" | "danger" | "success";
+  disabled?: boolean;
+  className?: string;
+}) {
+  const styles: Record<string, string> = {
+    primary:
+      "bg-pink-500 hover:bg-pink-600 text-white border-b-4 border-black/20 disabled:opacity-50",
+    ghost:
+      "bg-transparent hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700",
+    danger:
+      "bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 border border-red-500/40",
+    success:
+      "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 border border-emerald-500/40",
+  };
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={`text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors disabled:cursor-not-allowed ${styles[variant]} ${className}`}
+      style={{ fontFamily: "'Space Mono'" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function DaInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none font-mono ${
+        props.className ?? ""
+      }`}
+    />
+  );
+}
+
+export function DaSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-pink-500 focus:outline-none font-mono ${
+        props.className ?? ""
+      }`}
+    />
+  );
+}
+
+export function DaChip({
+  children,
+  accent = "pink",
+}: {
+  children: ReactNode;
+  accent?: "pink" | "blurple" | "zinc" | "green" | "red";
+}) {
+  const map: Record<string, string> = {
+    pink: "bg-pink-500/15 text-pink-300 border-pink-500/30",
+    blurple: "bg-[#5865F2]/15 text-[#a3aafb] border-[#5865F2]/30",
+    zinc: "bg-zinc-800 text-zinc-300 border-zinc-700",
+    green: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+    red: "bg-red-500/15 text-red-300 border-red-500/30",
+  };
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 border text-[10px] uppercase tracking-[0.2em] ${map[accent]}`}
+      style={{ fontFamily: "'Space Mono'" }}
+    >
+      {children}
+    </span>
   );
 }
 
