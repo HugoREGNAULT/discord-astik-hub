@@ -142,13 +142,18 @@ function ShopAdminPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={history.data.rows.map((r) => ({
-                      date: r.snapshot_date,
-                      price: r.price,
-                      pb: r.price_pb,
+                      t: new Date(r.captured_at).toLocaleString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                      buy: r.price,
+                      sell: r.price_pb,
                     }))}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis dataKey="date" stroke="#71717a" fontSize={10} />
+                    <XAxis dataKey="t" stroke="#71717a" fontSize={10} />
                     <YAxis stroke="#71717a" fontSize={10} />
                     <Tooltip
                       contentStyle={{
@@ -159,19 +164,19 @@ function ShopAdminPage() {
                     />
                     <Line
                       type="monotone"
-                      dataKey="price"
+                      dataKey="buy"
                       stroke="#ffffff"
                       strokeWidth={2}
                       dot={false}
-                      name="Prix"
+                      name="Achat"
                     />
                     <Line
                       type="monotone"
-                      dataKey="pb"
+                      dataKey="sell"
                       stroke="#ec4899"
                       strokeWidth={2}
                       dot={false}
-                      name="PB"
+                      name="Vente"
                     />
                   </LineChart>
                 </ResponsiveContainer>
