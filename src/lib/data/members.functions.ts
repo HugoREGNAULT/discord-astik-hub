@@ -17,7 +17,7 @@ export const listMembers = createServerFn({ method: "GET" })
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
 
-    if (error) throw new Error(error.message);
+
     const needle = data.q?.trim().toLowerCase();
     const filtered = needle
       ? (rows ?? []).filter(
