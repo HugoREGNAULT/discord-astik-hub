@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Paginator, usePagedSlice } from "@/components/Paginator";
+import { MemberRowsSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
@@ -53,7 +54,7 @@ function MembersPage() {
         </div>
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Chargement…</p>}
+      {isLoading && <MemberRowsSkeleton count={8} />}
 
       <div className="grid gap-2">
         {paged.map((m) => (

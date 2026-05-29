@@ -102,7 +102,7 @@ function PollDetail() {
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [data]);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Chargement…</p>;
+  if (isLoading) return <DetailPageSkeleton />;
   if (!data?.poll) return <p>Sondage introuvable.</p>;
 
   const p = data.poll;

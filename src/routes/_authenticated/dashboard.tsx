@@ -167,7 +167,7 @@ function LeaderboardPage() {
             className="max-w-xs"
           />
           {isLoading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Chargement…</p>
+            <LeaderboardRowsSkeleton count={10} />
           ) : (
             <LeaderboardList entries={entries} metric={metric} period={period} query={query} />
           )}

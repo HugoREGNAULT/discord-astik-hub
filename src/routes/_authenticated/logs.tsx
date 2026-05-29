@@ -135,7 +135,7 @@ function LogsPage() {
       <Card>
         <CardContent className="p-0">
           {isFetching && logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-6">Chargement…</p>
+            <RowListSkeleton count={10} />
           ) : logs.length === 0 ? (
             <p className="text-sm text-muted-foreground p-6 text-center">
               Aucun log pour ces filtres.

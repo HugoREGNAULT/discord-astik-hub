@@ -125,7 +125,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
   const paged = useMemo(() => usePagedSlice(items, page, PER_PAGE), [items, page]);
 
   if (isLoading) {
-    return <p className="text-muted-foreground text-sm">Chargement…</p>;
+    return <CardListSkeleton count={4} />;
   }
   if (items.length === 0) {
     return (
