@@ -137,18 +137,16 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
         snapshot_date: today,
       };
     })
-    .filter(Boolean) as Array<{
-    item_name: string;
-    category: string | null;
-    price: number | null;
-    price_pb: number | null;
-    raw: object;
-    snapshot_date: string;
-  }>;
+    .filter(Boolean);
 
   const { error } = await supabaseAdmin
     .from("paladium_admin_shop_history")
-    .upsert(rows, { onConflict: "item_name,snapshot_date" });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .upsert(rows as any, { onConflict: "item_name,snapshot_date" });
+  if (error) throw new Error(error.message);
+  return { inserted: rows.length };
+});
+
   if (error) throw new Error(error.message);
   return { inserted: rows.length };
 });
