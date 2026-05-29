@@ -158,6 +158,10 @@ export const validateCart = createServerFn({ method: "POST" })
     if (!cart.member_discord_id) throw new Error("Aucun membre assigné au panier");
 
     const totals = await recomputeCart(data.cartId);
+    if (Math.abs(totals.final) > MAX_TOTAL_POINTS) {
+      throw new Error("Total du panier excède la limite autorisée");
+    }
+
 
     // Ajout des points au membre
     const { data: m } = await db
