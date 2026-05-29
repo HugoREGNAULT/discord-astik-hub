@@ -25,6 +25,40 @@ export const listMyActiveCarts = createServerFn({ method: "GET" }).handler(async
   return { carts: data ?? [] };
 });
 
+export const listRecentCarts = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ limit: z.number().int().min(1).max(50).optional().default(10) }).parse(input ?? {}),
+  )
+  .handler(async ({ data }) => {
+    await requirePermission("donations.manage");
+    await expireOldCarts();
+    const { data: carts, error } = await db
+      .from("donations")
+      .select("*, donation_lines(*)")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (error) throw new Error(error.message);
+
+    const memberIds = Array.from(
+      new Set((carts ?? []).map((c) => c.member_discord_id).filter((id): id is string => !!id)),
+    );
+    let members: Record<string, { ig_name: string | null; discord_username: string | null; avatar_url: string | null }> = {};
+    if (memberIds.length > 0) {
+      const { data: ms } = await db
+        .from("members")
+        .select("discord_id, ig_name, discord_username, avatar_url")
+        .in("discord_id", memberIds);
+      members = Object.fromEntries(
+        (ms ?? []).map((m) => [
+          m.discord_id,
+          { ig_name: m.ig_name, discord_username: m.discord_username, avatar_url: m.avatar_url },
+        ]),
+      );
+    }
+    return { carts: carts ?? [], members };
+  });
+
+
 export const createCart = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
