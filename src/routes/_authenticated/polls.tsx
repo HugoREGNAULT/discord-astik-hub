@@ -341,7 +341,10 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
  */
 function parseCsvSlots(text: string): { value: string; duration: number }[] {
   const out: { value: string; duration: number }[] = [];
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   for (const line of lines) {
     const cols = line.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, ""));
     if (!cols[0]) continue;
