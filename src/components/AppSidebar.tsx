@@ -45,68 +45,126 @@ type Item = {
   accent?: "pink" | "blurple";
 };
 
-const ITEMS: Item[] = [
-  { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
-  { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self", accent: "blurple" },
-  {
-    title: "Sondages",
-    url: "/polls",
-    icon: CalendarCheck,
-    perm: "profile.self",
-    accent: "blurple",
-  },
-  {
-    title: "Absences",
-    url: "/absences",
-    icon: CalendarCheck,
-    perm: "profile.self",
-    accent: "pink",
-  },
-  {
-    title: "Outils Paladium",
-    url: "/tools",
-    icon: Wrench,
-    perm: "profile.self",
-    accent: "blurple",
-  },
+type Section = {
+  label: string;
+  items: Item[];
+};
 
+const SECTIONS: Section[] = [
   {
-    title: "Dashboard staff",
-    url: "/staff",
-    icon: LayoutDashboard,
-    perm: "members.view",
-    accent: "blurple",
+    label: "// punkastik",
+    items: [
+      { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
+      {
+        title: "Classement",
+        url: "/dashboard",
+        icon: Trophy,
+        perm: "profile.self",
+        accent: "blurple",
+      },
+      {
+        title: "Sondages",
+        url: "/polls",
+        icon: CalendarCheck,
+        perm: "profile.self",
+        accent: "blurple",
+      },
+      {
+        title: "Absences",
+        url: "/absences",
+        icon: CalendarCheck,
+        perm: "profile.self",
+        accent: "pink",
+      },
+      {
+        title: "Outils Paladium",
+        url: "/tools",
+        icon: Wrench,
+        perm: "profile.self",
+        accent: "blurple",
+      },
+    ],
   },
-  { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
-
   {
-    title: "Candidatures",
-    url: "/recruitment",
-    icon: UserPlus,
-    perm: "recruit.access",
-    accent: "pink",
+    label: "// staff",
+    items: [
+      {
+        title: "Dashboard staff",
+        url: "/staff",
+        icon: LayoutDashboard,
+        perm: "members.view",
+        accent: "blurple",
+      },
+      { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
+      {
+        title: "Effectif",
+        url: "/effectif",
+        icon: ListTree,
+        perm: "members.view",
+        accent: "blurple",
+      },
+      {
+        title: "Objectifs",
+        url: "/objectives",
+        icon: Target,
+        perm: "objectives.edit",
+        accent: "pink",
+      },
+      {
+        title: "Plan de coupe",
+        url: "/pdc",
+        icon: Grid3x3,
+        perm: "members.view",
+        accent: "blurple",
+      },
+    ],
   },
-  { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
-  { title: "AstikPoints", url: "/points", icon: Coins, perm: "points.manage", accent: "pink" },
   {
-    title: "Dons",
-    url: "/donations",
-    icon: ShoppingCart,
-    perm: "donations.manage",
-    accent: "pink",
+    label: "// recrutement",
+    items: [
+      {
+        title: "Candidatures",
+        url: "/recruitment",
+        icon: UserPlus,
+        perm: "recruit.access",
+        accent: "pink",
+      },
+      { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
+    ],
   },
   {
-    title: "Config valeurs",
-    url: "/config",
-    icon: Settings2,
-    perm: "config.manage",
-    accent: "blurple",
+    label: "// économie",
+    items: [
+      {
+        title: "AstikPoints",
+        url: "/points",
+        icon: Coins,
+        perm: "points.manage",
+        accent: "pink",
+      },
+      {
+        title: "Dons",
+        url: "/donations",
+        icon: ShoppingCart,
+        perm: "donations.manage",
+        accent: "pink",
+      },
+      {
+        title: "Config valeurs",
+        url: "/config",
+        icon: Settings2,
+        perm: "config.manage",
+        accent: "blurple",
+      },
+    ],
   },
-  { title: "Effectif", url: "/effectif", icon: ListTree, perm: "members.view", accent: "blurple" },
-  { title: "Objectifs", url: "/objectives", icon: Target, perm: "objectives.edit", accent: "pink" },
-  { title: "Plan de coupe", url: "/pdc", icon: Grid3x3, perm: "members.view", accent: "blurple" },
-  { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
-  { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
+  {
+    label: "// administration",
+    items: [
+      { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
+      { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
+    ],
+  },
 ];
 
 export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
