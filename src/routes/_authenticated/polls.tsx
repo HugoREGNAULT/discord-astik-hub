@@ -269,7 +269,6 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
             <p className="text-xs text-muted-foreground">
               Format CSV: <code>date,durée</code> — ex. <code>2026-06-15 20:00,90</code>
               {
-            {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <Input
                   type="datetime-local"
