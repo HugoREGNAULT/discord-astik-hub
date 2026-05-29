@@ -173,8 +173,23 @@ export function PdcSliceCalculator({ blocks }: Props) {
                 }
                 className="h-8"
               />
+              <div className="flex items-center gap-1 pt-1">
+                <Label className="text-[10px] text-muted-foreground shrink-0">ou en chunks</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={256}
+                  value={Math.round((depth / 16) * 100) / 100}
+                  onChange={(e) => {
+                    const c = Math.max(0, Math.min(256, Number(e.target.value) || 0));
+                    setDepth(Math.max(1, Math.round(c * 16)));
+                  }}
+                  className="h-7 text-xs"
+                />
+                <span className="text-[10px] text-muted-foreground">×16</span>
+              </div>
               <p className="text-[10px] text-muted-foreground">
-                Le motif sera répété sur {depth} blocs de profondeur.
+                Le motif sera répété sur toute la longueur / largeur de la base ({depth} blocs).
               </p>
             </div>
           </CardContent>
