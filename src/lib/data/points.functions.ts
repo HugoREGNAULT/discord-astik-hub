@@ -116,7 +116,14 @@ export const setPoints = createServerFn({ method: "POST" })
   });
 
 export const getPointsHistory = createServerFn({ method: "GET" })
-  .inputValidator((input: { memberDiscordId: string; limit?: number }) => input)
+  .inputValidator((input) =>
+    z
+      .object({
+        memberDiscordId: z.string().min(1).max(64),
+        limit: z.number().int().min(1).max(200).optional(),
+      })
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     const { requireSession } = await import("@/lib/auth/require.server");
     const { canAccess } = await import("@/lib/auth/permissions");
@@ -129,6 +136,10 @@ export const getPointsHistory = createServerFn({ method: "GET" })
       .eq("member_discord_id", data.memberDiscordId)
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 50);
+    if (error) throw new Error(error.message);
+    return { history: rows ?? [] };
+  });
+
     if (error) throw new Error(error.message);
     return { history: rows ?? [] };
   });
