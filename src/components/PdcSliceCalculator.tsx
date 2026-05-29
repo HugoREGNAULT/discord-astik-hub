@@ -33,6 +33,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
   const [cells, setCells] = useState<Record<string, string>>({});
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [tool, setTool] = useState<Tool>("paint");
+  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
 
   const blockMap = useMemo(() => {
     const m = new Map<string, SliceBlock>();
@@ -94,14 +95,20 @@ export function PdcSliceCalculator({ blocks }: Props) {
 
   const isDrawingRef = useRef(false);
 
-  const paintAt = (clientX: number, clientY: number) => {
+  const cellFromEvent = (clientX: number, clientY: number) => {
     const cv = canvasRef.current;
-    if (!cv) return;
+    if (!cv) return null;
     const rect = cv.getBoundingClientRect();
     const x = Math.floor(((clientX - rect.left) / rect.width) * w);
     const y = Math.floor(((clientY - rect.top) / rect.height) * h);
-    if (x < 0 || y < 0 || x >= w || y >= h) return;
-    const key = `${x},${y}`;
+    if (x < 0 || y < 0 || x >= w || y >= h) return null;
+    return { x, y };
+  };
+
+  const paintAt = (clientX: number, clientY: number) => {
+    const cell = cellFromEvent(clientX, clientY);
+    if (!cell) return;
+    const key = `${cell.x},${cell.y}`;
     setCells((prev) => {
       const next = { ...prev };
       if (tool === "erase") delete next[key];
@@ -109,6 +116,8 @@ export function PdcSliceCalculator({ blocks }: Props) {
       return next;
     });
   };
+
+  const hoveredBlock = hover ? blockMap.get(cells[`${hover.x},${hover.y}`] ?? "") : undefined;
 
   // Quantities
   const totals = useMemo(() => {
@@ -279,6 +288,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
                 paintAt(e.clientX, e.clientY);
               }}
               onPointerMove={(e) => {
+                setHover(cellFromEvent(e.clientX, e.clientY));
                 if (isDrawingRef.current) paintAt(e.clientX, e.clientY);
               }}
               onPointerUp={() => {
@@ -286,13 +296,40 @@ export function PdcSliceCalculator({ blocks }: Props) {
               }}
               onPointerLeave={() => {
                 isDrawingRef.current = false;
+                setHover(null);
               }}
             />
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">
-            {filledCells} bloc{filledCells > 1 ? "s" : ""} dans la tranche · profondeur ×{depth} ={" "}
-            <span className="font-mono">{totalBlocks}</span> blocs au total.
-          </p>
+          <div className="flex items-center justify-between gap-2 mt-2">
+            <p className="text-[10px] text-muted-foreground">
+              {filledCells} bloc{filledCells > 1 ? "s" : ""} dans la tranche · profondeur ×{depth} ={" "}
+              <span className="font-mono">{totalBlocks}</span> blocs au total.
+            </p>
+            <div className="text-[10px] font-mono text-muted-foreground flex items-center gap-1.5 min-h-[16px]">
+              {hover && (
+                <>
+                  <span>
+                    ({hover.x},{hover.y})
+                  </span>
+                  {hoveredBlock ? (
+                    <>
+                      <span
+                        className="size-3 rounded border border-zinc-700"
+                        style={{ background: hoveredBlock.color }}
+                      />
+                      <span className="text-foreground">{hoveredBlock.name}</span>
+                      {hoveredBlock.kind === "liquid" && (
+                        <Droplet className="size-3 text-cyan-400" />
+                      )}
+                    </>
+                  ) : (
+                    <span className="opacity-60">vide</span>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
         </CardContent>
       </Card>
 
