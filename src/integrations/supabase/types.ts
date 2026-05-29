@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_digests: {
+        Row: {
+          content: string
+          created_at: string
+          generated_at: string
+          generated_by: string
+          id: string
+          meta: Json
+          model: string | null
+          summary: string | null
+          week_start: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string
+          id?: string
+          meta?: Json
+          model?: string | null
+          summary?: string | null
+          week_start: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          generated_at?: string
+          generated_by?: string
+          id?: string
+          meta?: Json
+          model?: string | null
+          summary?: string | null
+          week_start?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           age: number
