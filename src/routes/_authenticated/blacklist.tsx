@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { RowListSkeleton as BlacklistRowsSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
 import {
   Dialog,
   DialogContent,
@@ -86,9 +87,17 @@ function BlacklistPage() {
           {isLoading ? (
             <BlacklistRowsSkeleton count={5} />
           ) : filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-6 text-center">
-              {entries.length === 0 ? "Blacklist vide." : "Aucun résultat."}
-            </p>
+            <div className="p-4">
+              <EmptyState
+                icon={Ban}
+                title={entries.length === 0 ? "Blacklist vide" : "Aucun résultat"}
+                description={
+                  entries.length === 0
+                    ? "Aucune entrée pour le moment. Ajoute-en une via le bouton ci-dessus."
+                    : "Aucune entrée ne correspond à ta recherche."
+                }
+              />
+            </div>
           ) : (
             <ul className="divide-y divide-border">
               {filtered.map((entry) => (

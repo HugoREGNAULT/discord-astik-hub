@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
+import { EmptyState } from "@/components/EmptyState";
 
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
@@ -128,7 +129,11 @@ function MemberDetail() {
                 )}
               </li>
             ))}
-            {data.alts.length === 0 && <li className="text-sm text-muted-foreground">Aucun alt.</li>}
+            {data.alts.length === 0 && (
+              <li>
+                <EmptyState title="Aucun alt" description="Aucun compte secondaire déclaré." variant="compact" />
+              </li>
+            )}
           </ul>
           {data.canEdit && (
             <div className="flex gap-2">
@@ -150,7 +155,11 @@ function MemberDetail() {
                   <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
                 </li>
               ))}
-              {data.notes.length === 0 && <li className="text-sm text-muted-foreground">Aucune note.</li>}
+              {data.notes.length === 0 && (
+                <li>
+                  <EmptyState title="Aucune note" description="Les notes staff sur ce membre apparaîtront ici." variant="compact" />
+                </li>
+              )}
             </ul>
             {canWriteNotes && (
               <div className="flex flex-col gap-2">
@@ -173,7 +182,11 @@ function MemberDetail() {
                   <div className="mt-1 whitespace-pre-wrap">{w.body}</div>
                 </li>
               ))}
-              {data.warnings.length === 0 && <li className="text-sm text-muted-foreground">Aucun avertissement.</li>}
+              {data.warnings.length === 0 && (
+                <li>
+                  <EmptyState title="Aucun avertissement" description="Aucune sanction enregistrée." variant="compact" />
+                </li>
+              )}
             </ul>
             {canWriteWarnings && (
               <div className="flex flex-col gap-2">
@@ -220,7 +233,9 @@ function MemberDetail() {
           </CardHeader>
           <CardContent className="p-0">
             {data.pointsLedger.length === 0 ? (
-              <p className="text-sm text-muted-foreground p-4">Aucun mouvement.</p>
+              <div className="p-4">
+                <EmptyState icon={Coins} title="Aucun mouvement" description="L'historique de points apparaîtra ici." variant="compact" />
+              </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
                 {data.pointsLedger.map((p: any) => (
@@ -262,7 +277,9 @@ function MemberDetail() {
           </CardHeader>
           <CardContent className="p-0">
             {data.donations.length === 0 ? (
-              <p className="text-sm text-muted-foreground p-4">Aucune donation.</p>
+              <div className="p-4">
+                <EmptyState icon={ShoppingCart} title="Aucune donation" description="Les donations valides s'afficheront ici." variant="compact" />
+              </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
                 {data.donations.map((d: any) => (
@@ -307,7 +324,9 @@ function MemberDetail() {
           </CardHeader>
           <CardContent className="p-0">
             {data.staffActivity.length === 0 ? (
-              <p className="text-sm text-muted-foreground p-4">Aucune action enregistrée.</p>
+              <div className="p-4">
+                <EmptyState icon={Activity} title="Aucune action enregistrée" description="Les actions du staff sur ce membre apparaîtront ici." variant="compact" />
+              </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
                 {data.staffActivity.map((l: any) => (

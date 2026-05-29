@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2 } from "lucide-react";
+import { Trash2, Target } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/objectives")({
@@ -75,7 +76,15 @@ function ObjectivesPage() {
             </CardContent>
           </Card>
         ))}
-        {data?.objectives.length === 0 && <p className="text-sm text-muted-foreground">Aucun objectif.</p>}
+        {data?.objectives.length === 0 && (
+          <div className="col-span-full">
+            <EmptyState
+              icon={Target}
+              title="Aucun objectif"
+              description="Les objectifs collectifs apparaîtront ici."
+            />
+          </div>
+        )}
       </div>
     </div>
   );

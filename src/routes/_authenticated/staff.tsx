@@ -21,6 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { KpiGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/EmptyState";
+import { TrendingUp as TrendingUpIcon, UserPlus as UserPlusIcon, ShieldAlert as ShieldAlertIcon, Activity as ActivityIcon, ShoppingCart as ShoppingCartIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
@@ -168,9 +170,12 @@ function StaffPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {data.topContributors.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucun gain de points cette semaine.
-              </p>
+              <EmptyState
+                icon={TrendingUpIcon}
+                title="Aucun gain de points cette semaine"
+                description="Les contributeurs apparaîtront ici dès les premiers gains."
+                variant="compact"
+              />
             ) : (
               data.topContributors.map((m, i) => (
                 <Link
@@ -216,9 +221,12 @@ function StaffPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {data.recentApplications.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucune candidature en attente.
-              </p>
+              <EmptyState
+                icon={UserPlusIcon}
+                title="Aucune candidature en attente"
+                description="Boîte vide, tout est traité."
+                variant="compact"
+              />
             ) : (
               data.recentApplications.map((a: any) => (
                 <div
@@ -249,9 +257,12 @@ function StaffPage() {
           </CardHeader>
           <CardContent className="space-y-2 max-h-80 overflow-y-auto">
             {data.recentWarnings.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucun avertissement cette semaine.
-              </p>
+              <EmptyState
+                icon={ShieldAlertIcon}
+                title="Aucun avertissement"
+                description="Aucune sanction sur les 7 derniers jours."
+                variant="compact"
+              />
             ) : (
               data.recentWarnings.map((w: any) => (
                 <Link
@@ -287,7 +298,12 @@ function StaffPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {data.staffActivity.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune action récente.</p>
+            <EmptyState
+              icon={ActivityIcon}
+              title="Aucune action récente"
+              description="L'activité staff apparaîtra ici dès qu'une action est effectuée."
+              variant="compact"
+            />
           ) : (
             <ul className="divide-y divide-border">
               {data.staffActivity.map((l: any) => (
@@ -333,7 +349,12 @@ function StaffPage() {
         </CardHeader>
         <CardContent>
           {data.recentDonations.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucun panier récent.</p>
+            <EmptyState
+              icon={ShoppingCartIcon}
+              title="Aucun panier récent"
+              description="Les paniers validés s'afficheront ici."
+              variant="compact"
+            />
           ) : (
             <ul className="divide-y divide-border">
               {data.recentDonations.map((d: any) => (
