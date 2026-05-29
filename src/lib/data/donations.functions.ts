@@ -100,6 +100,10 @@ async function recomputeCart(cartId: string) {
   return { brut, final };
 }
 
+const MAX_UNIT_POINTS = 100_000;
+const MAX_QUANTITY = 1000;
+const MAX_TOTAL_POINTS = 10_000_000;
+
 export const addCartLine = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
@@ -108,8 +112,8 @@ export const addCartLine = createServerFn({ method: "POST" })
         line_type: z.enum(["item", "action", "other", "money"]),
         config_value_id: z.string().uuid().nullable().optional(),
         label: z.string().min(1).max(200),
-        unit_points: z.number().int(),
-        quantity: z.number().int().min(1).default(1),
+        unit_points: z.number().int().min(-MAX_UNIT_POINTS).max(MAX_UNIT_POINTS),
+        quantity: z.number().int().min(1).max(MAX_QUANTITY).default(1),
       })
       .parse(input),
   )
@@ -125,6 +129,7 @@ export const addCartLine = createServerFn({ method: "POST" })
     await logAction("cart_line_add", user.discordId, { cartId, ...totals });
     return { ok: true, ...totals };
   });
+
 
 export const removeCartLine = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -153,6 +158,10 @@ export const validateCart = createServerFn({ method: "POST" })
     if (!cart.member_discord_id) throw new Error("Aucun membre assigné au panier");
 
     const totals = await recomputeCart(data.cartId);
+    if (Math.abs(totals.final) > MAX_TOTAL_POINTS) {
+      throw new Error("Total du panier excède la limite autorisée");
+    }
+
 
     // Ajout des points au membre
     const { data: m } = await db
