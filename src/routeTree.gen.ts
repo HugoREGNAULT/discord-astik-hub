@@ -38,6 +38,11 @@ import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
+import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/voice'
+import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
+import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot/message'
+import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
+import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -184,6 +189,31 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMembersRoute,
 } as any)
+const ApiPublicBotVoiceRoute = ApiPublicBotVoiceRouteImport.update({
+  id: '/api/public/bot/voice',
+  path: '/api/public/bot/voice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBotStatsRoute = ApiPublicBotStatsRouteImport.update({
+  id: '/api/public/bot/stats',
+  path: '/api/public/bot/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBotMessageRoute = ApiPublicBotMessageRouteImport.update({
+  id: '/api/public/bot/message',
+  path: '/api/public/bot/message',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBotMemberRoute = ApiPublicBotMemberRouteImport.update({
+  id: '/api/public/bot/member',
+  path: '/api/public/bot/member',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
+  id: '/api/public/bot/import',
+  path: '/api/public/bot/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -214,6 +244,11 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/member': typeof ApiPublicBotMemberRoute
+  '/api/public/bot/message': typeof ApiPublicBotMessageRoute
+  '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
+  '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -244,6 +279,11 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/member': typeof ApiPublicBotMemberRoute
+  '/api/public/bot/message': typeof ApiPublicBotMessageRoute
+  '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
+  '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -276,6 +316,11 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/member': typeof ApiPublicBotMemberRoute
+  '/api/public/bot/message': typeof ApiPublicBotMessageRoute
+  '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
+  '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -308,6 +353,11 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/public/bot/import'
+    | '/api/public/bot/member'
+    | '/api/public/bot/message'
+    | '/api/public/bot/stats'
+    | '/api/public/bot/voice'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -338,6 +388,11 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/public/bot/import'
+    | '/api/public/bot/member'
+    | '/api/public/bot/message'
+    | '/api/public/bot/stats'
+    | '/api/public/bot/voice'
   id:
     | '__root__'
     | '/'
@@ -369,6 +424,11 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/public/bot/import'
+    | '/api/public/bot/member'
+    | '/api/public/bot/message'
+    | '/api/public/bot/stats'
+    | '/api/public/bot/voice'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -383,6 +443,11 @@ export interface RootRouteChildren {
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthWhoamiRoute: typeof ApiAuthWhoamiRoute
+  ApiPublicBotImportRoute: typeof ApiPublicBotImportRoute
+  ApiPublicBotMemberRoute: typeof ApiPublicBotMemberRoute
+  ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
+  ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
+  ApiPublicBotVoiceRoute: typeof ApiPublicBotVoiceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -590,6 +655,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembersIdRouteImport
       parentRoute: typeof AuthenticatedMembersRoute
     }
+    '/api/public/bot/voice': {
+      id: '/api/public/bot/voice'
+      path: '/api/public/bot/voice'
+      fullPath: '/api/public/bot/voice'
+      preLoaderRoute: typeof ApiPublicBotVoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/stats': {
+      id: '/api/public/bot/stats'
+      path: '/api/public/bot/stats'
+      fullPath: '/api/public/bot/stats'
+      preLoaderRoute: typeof ApiPublicBotStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/message': {
+      id: '/api/public/bot/message'
+      path: '/api/public/bot/message'
+      fullPath: '/api/public/bot/message'
+      preLoaderRoute: typeof ApiPublicBotMessageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/member': {
+      id: '/api/public/bot/member'
+      path: '/api/public/bot/member'
+      fullPath: '/api/public/bot/member'
+      preLoaderRoute: typeof ApiPublicBotMemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/import': {
+      id: '/api/public/bot/import'
+      path: '/api/public/bot/import'
+      fullPath: '/api/public/bot/import'
+      preLoaderRoute: typeof ApiPublicBotImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -669,6 +769,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthWhoamiRoute: ApiAuthWhoamiRoute,
+  ApiPublicBotImportRoute: ApiPublicBotImportRoute,
+  ApiPublicBotMemberRoute: ApiPublicBotMemberRoute,
+  ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
+  ApiPublicBotStatsRoute: ApiPublicBotStatsRoute,
+  ApiPublicBotVoiceRoute: ApiPublicBotVoiceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
