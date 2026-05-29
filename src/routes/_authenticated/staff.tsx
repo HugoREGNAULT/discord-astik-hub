@@ -36,6 +36,8 @@ import {
 import { KpiGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/EmptyState";
+import { ApplicationsChart } from "@/components/ApplicationsChart";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   TrendingUp as TrendingUpIcon,
   UserPlus as UserPlusIcon,
@@ -43,6 +45,7 @@ import {
   Activity as ActivityIcon,
   ShoppingCart as ShoppingCartIcon,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
@@ -135,7 +138,16 @@ function StaffPage() {
         />
       </div>
 
+      {/* Applications timeline + global stats */}
+      <ApplicationsTimelineCard
+        timeline={data.applicationsTimeline ?? []}
+        stats={
+          data.applicationsStats ?? { total: 0, accepted: 0, rejected: 0, acceptanceRate: 0 }
+        }
+      />
+
       <div className="grid gap-6 lg:grid-cols-2">
+
         {/* Inactifs */}
         <Card>
           <CardHeader>
@@ -540,3 +552,66 @@ function InactiveMemberRow({
     </div>
   );
 }
+
+function ApplicationsTimelineCard({
+  timeline,
+  stats,
+}: {
+  timeline: { date: string; created: number; accepted: number; rejected: number }[];
+  stats: { total: number; accepted: number; rejected: number; acceptanceRate: number };
+}) {
+  const [range, setRange] = useState<30 | 90>(30);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between flex-wrap gap-3">
+          <span className="flex items-center gap-2">
+            <TrendingUp className="size-4 text-primary" />
+            Évolution des candidatures
+          </span>
+          <Tabs value={String(range)} onValueChange={(v) => setRange(Number(v) as 30 | 90)}>
+            <TabsList>
+              <TabsTrigger value="30">30j</TabsTrigger>
+              <TabsTrigger value="90">90j</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <MiniStat label="Total" value={stats.total} />
+          <MiniStat label="Acceptées" value={stats.accepted} tone="green" />
+          <MiniStat label="Refusées" value={stats.rejected} tone="red" />
+          <MiniStat label="Taux d'acceptation" value={`${stats.acceptanceRate}%`} tone="primary" />
+        </div>
+        <ApplicationsChart data={timeline} range={range} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  tone?: "green" | "red" | "primary";
+}) {
+  const color =
+    tone === "green"
+      ? "text-green-500"
+      : tone === "red"
+        ? "text-red-500"
+        : tone === "primary"
+          ? "text-primary"
+          : "";
+  return (
+    <div className="rounded-md border border-border bg-card/40 p-3">
+      <div className="text-[11px] text-muted-foreground">{label}</div>
+      <div className={`text-xl font-bold tabular-nums ${color}`}>{value}</div>
+    </div>
+  );
+}
+
