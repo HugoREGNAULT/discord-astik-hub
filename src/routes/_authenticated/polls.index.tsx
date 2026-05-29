@@ -135,7 +135,6 @@ function PollsPage() {
               </CardContent>
             </Card>
           ))}
-
         </div>
       )}
     </div>

@@ -46,11 +46,7 @@ export const listAbsences = createServerFn({ method: "GET" })
     const user = await requireSession();
     if (!isFactionMember(user)) throw new Error("FORBIDDEN");
 
-    let q = db
-      .from("absences")
-      .select("*")
-      .order("starts_on", { ascending: true })
-      .limit(500);
+    let q = db.from("absences").select("*").order("starts_on", { ascending: true }).limit(500);
     if (data.from) q = q.gte("ends_on", data.from);
     if (data.to) q = q.lte("starts_on", data.to);
 
@@ -59,7 +55,7 @@ export const listAbsences = createServerFn({ method: "GET" })
 
     // Enrich with member names
     const ids = Array.from(new Set((rows ?? []).map((r) => r.member_discord_id)));
-    let names: Record<string, { name: string; avatar?: string | null }> = {};
+    const names: Record<string, { name: string; avatar?: string | null }> = {};
     if (ids.length) {
       const { data: members } = await db
         .from("members")
