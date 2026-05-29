@@ -95,9 +95,14 @@ function LeaderboardPage() {
             <tbody>
               {rows.map((r, i) => (
                 <tr key={i} className="border-b border-zinc-900 last:border-0 hover:bg-zinc-900/50">
-                  <td className="py-2 px-4 text-pink-400 font-bold">{r.rank ?? i + 1}</td>
+                  <td className="py-2 px-4 text-pink-400 font-bold">
+                    {(r as { position?: number }).position ?? r.rank ?? i + 1}
+                  </td>
                   <td className="py-2 px-4 text-zinc-200">{r.username ?? "—"}</td>
-                  <td className="py-2 px-4 text-zinc-400">{r.faction ?? "—"}</td>
+                  <td className="py-2 px-4 text-zinc-400">
+                    {(r as { factionName?: string }).factionName ?? r.faction ?? "—"}
+                  </td>
+
                   <td className="py-2 px-4 text-right text-white font-bold">{fmtNum(r.value)}</td>
                 </tr>
               ))}
