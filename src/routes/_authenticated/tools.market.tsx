@@ -9,6 +9,7 @@ import {
   MissingKeyBanner,
 } from "@/components/tools/ToolsUi";
 import { PaladiumApi, hasPaladiumKey, type MarketItemsPage } from "@/lib/paladium/api";
+import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/market")({
   head: () => ({
