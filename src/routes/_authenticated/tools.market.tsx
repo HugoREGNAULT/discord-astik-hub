@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
   LineChart,
@@ -10,6 +10,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { Bell } from "lucide-react";
+import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ToolHeader,
@@ -21,6 +23,7 @@ import {
 import { PaladiumApi, hasPaladiumKey, type MarketItemsPage } from "@/lib/paladium/api";
 import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
 import { getMarketPriceHistory } from "@/lib/paladium/history.functions";
+import { createShopAlert } from "@/lib/data/shop-alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/market")({
   head: () => ({
@@ -263,6 +266,8 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
               </div>
             )}
 
+            <MarketAlertForm itemName={it.name} />
+
             {detail.data && (
               <table className="w-full text-xs">
                 <thead>
@@ -308,4 +313,105 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
 function fmtNum(n: unknown): string {
   if (typeof n !== "number" || !Number.isFinite(n)) return "—";
   return Math.round(n).toLocaleString("fr-FR");
+}
+
+function MarketAlertForm({ itemName }: { itemName: string }) {
+  const qc = useQueryClient();
+  const createFn = useServerFn(createShopAlert);
+  const [direction, setDirection] = useState<"above" | "below">("below");
+  const [threshold, setThreshold] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const mut = useMutation({
+    mutationFn: (vars: { direction: "above" | "below"; threshold: number }) =>
+      createFn({
+        data: {
+          source: "market" as const,
+          item_name: itemName,
+          price_type: "avg" as const,
+          direction: vars.direction,
+          threshold: vars.threshold,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Alerte HDV créée");
+      setThreshold("");
+      setOpen(false);
+      qc.invalidateQueries({ queryKey: ["my-shop-alerts"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const n = Number(threshold);
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error("Seuil invalide");
+      return;
+    }
+    mut.mutate({ direction, threshold: n });
+  };
+
+  if (!open) {
+    return (
+      <div className="mb-3">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-400 border border-zinc-800 hover:text-pink-400 hover:border-pink-500/40"
+          style={{ fontFamily: "'Space Mono'" }}
+        >
+          <Bell className="size-3" /> créer une alerte HDV
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="mb-3 border border-zinc-800 rounded p-3 space-y-2 bg-zinc-950/60"
+    >
+      <div
+        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-2"
+        style={{ fontFamily: "'Space Mono'" }}
+      >
+        <Bell className="size-3" /> // alerte sur prix moyen HDV
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs items-center">
+        <select
+          value={direction}
+          onChange={(e) => setDirection(e.target.value as "above" | "below")}
+          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+        >
+          <option value="below">passe en dessous de</option>
+          <option value="above">passe au-dessus de</option>
+        </select>
+        <input
+          type="number"
+          step="any"
+          min="0"
+          value={threshold}
+          onChange={(e) => setThreshold(e.target.value)}
+          placeholder="Seuil ($)"
+          className="flex-1 min-w-[120px] bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+        />
+        <button
+          type="submit"
+          disabled={mut.isPending}
+          className="px-3 py-1.5 bg-pink-500 text-white text-xs uppercase tracking-wider rounded hover:bg-pink-600 disabled:opacity-50"
+          style={{ fontFamily: "'Space Grotesk'" }}
+        >
+          {mut.isPending ? "…" : "Créer"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="px-2 py-1.5 text-xs text-zinc-500 hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+    </form>
+  );
 }

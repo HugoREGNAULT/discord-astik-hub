@@ -54,6 +54,7 @@ import { Route as AuthenticatedToolsLeaderboardRouteImport } from './routes/_aut
 import { Route as AuthenticatedToolsFactionRouteImport } from './routes/_authenticated/tools.faction'
 import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenticated/tools.events'
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
+import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
@@ -303,6 +304,12 @@ const AuthenticatedToolsClickerRoute =
     path: '/clicker',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
+const AuthenticatedToolsAlertsRoute =
+  AuthenticatedToolsAlertsRouteImport.update({
+    id: '/alerts',
+    path: '/alerts',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
 const AuthenticatedPollsIdRoute = AuthenticatedPollsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -403,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -460,6 +468,7 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -521,6 +530,7 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/_authenticated/tools/events': typeof AuthenticatedToolsEventsRoute
   '/_authenticated/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -582,6 +592,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/members/$id'
     | '/polls/$id'
+    | '/tools/alerts'
     | '/tools/clicker'
     | '/tools/events'
     | '/tools/faction'
@@ -639,6 +650,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/members/$id'
     | '/polls/$id'
+    | '/tools/alerts'
     | '/tools/clicker'
     | '/tools/events'
     | '/tools/faction'
@@ -699,6 +711,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
+    | '/_authenticated/tools/alerts'
     | '/_authenticated/tools/clicker'
     | '/_authenticated/tools/events'
     | '/_authenticated/tools/faction'
@@ -1075,6 +1088,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsClickerRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
+    '/_authenticated/tools/alerts': {
+      id: '/_authenticated/tools/alerts'
+      path: '/alerts'
+      fullPath: '/tools/alerts'
+      preLoaderRoute: typeof AuthenticatedToolsAlertsRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
     '/_authenticated/polls/$id': {
       id: '/_authenticated/polls/$id'
       path: '/$id'
@@ -1194,6 +1214,7 @@ const AuthenticatedPollsRouteWithChildren =
   AuthenticatedPollsRoute._addFileChildren(AuthenticatedPollsRouteChildren)
 
 interface AuthenticatedToolsRouteChildren {
+  AuthenticatedToolsAlertsRoute: typeof AuthenticatedToolsAlertsRoute
   AuthenticatedToolsClickerRoute: typeof AuthenticatedToolsClickerRoute
   AuthenticatedToolsEventsRoute: typeof AuthenticatedToolsEventsRoute
   AuthenticatedToolsFactionRoute: typeof AuthenticatedToolsFactionRoute
@@ -1209,6 +1230,7 @@ interface AuthenticatedToolsRouteChildren {
 }
 
 const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
+  AuthenticatedToolsAlertsRoute: AuthenticatedToolsAlertsRoute,
   AuthenticatedToolsClickerRoute: AuthenticatedToolsClickerRoute,
   AuthenticatedToolsEventsRoute: AuthenticatedToolsEventsRoute,
   AuthenticatedToolsFactionRoute: AuthenticatedToolsFactionRoute,

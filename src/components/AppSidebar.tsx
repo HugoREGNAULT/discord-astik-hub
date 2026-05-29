@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   Grid3x3,
   Wrench,
+  Bell,
 } from "lucide-react";
 
 import {
@@ -82,6 +83,13 @@ const SECTIONS: Section[] = [
         icon: Wrench,
         perm: "profile.self",
         accent: "blurple",
+      },
+      {
+        title: "Mes alertes",
+        url: "/tools/alerts",
+        icon: Bell,
+        perm: "profile.self",
+        accent: "pink",
       },
     ],
   },
