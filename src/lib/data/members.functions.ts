@@ -65,7 +65,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
             .select("*")
             .eq("member_discord_id", data.discordId)
             .order("created_at", { ascending: false })
-            .limit(50)
+            .limit(10)
         : Promise.resolve({ data: [] as never[], error: null }),
       canViewStaffData
         ? db
@@ -73,7 +73,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
             .select("id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at")
             .eq("member_discord_id", data.discordId)
             .order("created_at", { ascending: false })
-            .limit(20)
+            .limit(10)
         : Promise.resolve({ data: [] as never[], error: null }),
       Promise.resolve(null),
     ]);
