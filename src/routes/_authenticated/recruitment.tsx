@@ -388,18 +388,28 @@ function ApplicationStats() {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.timeline}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--foreground))" fontSize={12} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                <XAxis
+                  dataKey="month"
+                  stroke="#52525b"
+                  tick={{ fill: "#e4e4e7", fontSize: 12 }}
+                />
+                <YAxis
+                  stroke="#52525b"
+                  tick={{ fill: "#e4e4e7", fontSize: 12 }}
+                  allowDecimals={false}
+                />
                 <Tooltip
                   contentStyle={{
-                    background: "hsl(var(--popover))",
-                    border: "1px solid hsl(var(--border))",
+                    background: "#18181b",
+                    border: "1px solid #3f3f46",
                     borderRadius: 8,
                     fontSize: 12,
+                    color: "#e4e4e7",
                   }}
+                  labelStyle={{ color: "#fafafa" }}
                 />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 12, color: "#e4e4e7" }} />
                 <Line
                   type="monotone"
                   dataKey="total"

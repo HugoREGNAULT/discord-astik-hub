@@ -1,0 +1,132 @@
+import { createServerFn } from "@tanstack/react-start";
+import { db } from "@/lib/db.server";
+import { requirePermission } from "@/lib/auth/require.server";
+
+/**
+ * Dashboard "Santé faction" : indicateurs synthétiques de l'activité et
+ * du turnover, plus les top recruteurs sur la période.
+ * Lecture réservée aux personnes ayant `members.view`.
+ */
+export const getFactionHealth = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
+
+  const now = Date.now();
+  const since30dIso = new Date(now - 30 * 86_400_000).toISOString();
+  const since90dIso = new Date(now - 90 * 86_400_000).toISOString();
+  const since30dDate = since30dIso.slice(0, 10);
+  const since90dDate = since90dIso.slice(0, 10);
+
+  const [activeMembers, snapshots, recentArrivals, recentDepartures] = await Promise.all([
+    db
+      .from("members")
+      .select("discord_id, recruiter_discord_id, messages_7d, voice_7d_seconds, arrival_date")
+      .eq("status", "active"),
+    db
+      .from("leaderboard_snapshots")
+      .select("discord_id, taken_at")
+      .gte("taken_at", since90dIso)
+      .order("taken_at", { ascending: true })
+      .limit(200_000),
+    db
+      .from("members")
+      .select("discord_id, ig_name, discord_username, avatar_url, arrival_date, recruiter_discord_id")
+      .gte("arrival_date", since30dDate)
+      .order("arrival_date", { ascending: false }),
+    db
+      .from("members")
+      .select("discord_id, ig_name, discord_username, updated_at, status")
+      .eq("status", "former")
+      .gte("updated_at", since30dIso)
+      .order("updated_at", { ascending: false }),
+  ]);
+
+  const active = activeMembers.data ?? [];
+  const total = active.length;
+  const activeCount = active.filter(
+    (m: any) => (m.messages_7d ?? 0) > 0 || (m.voice_7d_seconds ?? 0) > 0,
+  ).length;
+  const activityRate = total > 0 ? Math.round((activeCount / total) * 100) : 0;
+
+  // Evolution effectif par jour à partir des snapshots (compte distinct par jour)
+  const byDay = new Map<string, Set<string>>();
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(now - i * 86_400_000).toISOString().slice(0, 10);
+    byDay.set(d, new Set());
+  }
+  for (const s of (snapshots.data ?? []) as Array<{ discord_id: string; taken_at: string }>) {
+    const key = s.taken_at.slice(0, 10);
+    const bucket = byDay.get(key);
+    if (bucket) bucket.add(s.discord_id);
+  }
+  const evolution = Array.from(byDay.entries()).map(([date, set]) => ({
+    date,
+    count: set.size,
+  }));
+
+  // Top recruteurs sur les 30 et 90 derniers jours (depuis arrival_date)
+  const recruiters30 = new Map<string, number>();
+  const recruiters90 = new Map<string, number>();
+  // recentArrivals : 30j seulement, on relance pour 90j via filter sur active
+  for (const m of (recentArrivals.data ?? []) as any[]) {
+    if (m.recruiter_discord_id) {
+      recruiters30.set(
+        m.recruiter_discord_id,
+        (recruiters30.get(m.recruiter_discord_id) ?? 0) + 1,
+      );
+    }
+  }
+  for (const m of active as any[]) {
+    if (m.recruiter_discord_id && m.arrival_date && m.arrival_date >= since90dDate) {
+      recruiters90.set(
+        m.recruiter_discord_id,
+        (recruiters90.get(m.recruiter_discord_id) ?? 0) + 1,
+      );
+    }
+  }
+  const topRecruiterIds = Array.from(
+    new Set([...recruiters30.keys(), ...recruiters90.keys()]),
+  );
+  let recruiterMap = new Map<string, { ig_name: string | null; discord_username: string | null; avatar_url: string | null }>();
+  if (topRecruiterIds.length > 0) {
+    const { data: recs } = await db
+      .from("members")
+      .select("discord_id, ig_name, discord_username, avatar_url")
+      .in("discord_id", topRecruiterIds);
+    recruiterMap = new Map(
+      (recs ?? []).map((r: any) => [
+        r.discord_id,
+        { ig_name: r.ig_name, discord_username: r.discord_username, avatar_url: r.avatar_url },
+      ]),
+    );
+  }
+  const topRecruiters = Array.from(recruiters90.entries())
+    .map(([id, count90]) => ({
+      discord_id: id,
+      count_30d: recruiters30.get(id) ?? 0,
+      count_90d: count90,
+      ...recruiterMap.get(id),
+    }))
+    .sort((a, b) => b.count_90d - a.count_90d)
+    .slice(0, 6);
+
+  const arrivals30 = (recentArrivals.data ?? []).length;
+  const departures30 = (recentDepartures.data ?? []).length;
+  const turnoverRate =
+    total > 0 ? Math.round(((arrivals30 + departures30) / total) * 100) : 0;
+  const netGrowth30 = arrivals30 - departures30;
+
+  return {
+    summary: {
+      activeMembers: total,
+      activityRate,
+      arrivals30,
+      departures30,
+      netGrowth30,
+      turnoverRate,
+    },
+    evolution,
+    topRecruiters,
+    recentArrivals: (recentArrivals.data ?? []).slice(0, 8),
+    recentDepartures: (recentDepartures.data ?? []).slice(0, 8),
+  };
+});

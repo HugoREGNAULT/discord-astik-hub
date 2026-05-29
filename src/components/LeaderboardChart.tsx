@@ -77,27 +77,31 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
     <div className="h-[260px] w-full">
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
-          <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
+          <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
           <XAxis
             dataKey="t"
-            tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
+            tick={{ fontSize: 11, fill: "#e4e4e7" }}
+            stroke="#52525b"
             tickFormatter={(v: string) =>
               v.slice(5, 10).replace("-", "/") + " " + v.slice(11) + "h"
             }
             minTickGap={32}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
+            tick={{ fontSize: 11, fill: "#e4e4e7" }}
+            stroke="#52525b"
             tickFormatter={(v) => formatTick(Number(v), metric)}
             width={48}
           />
           <Tooltip
             contentStyle={{
-              background: "hsl(var(--popover))",
-              border: "1px solid hsl(var(--border))",
+              background: "#18181b",
+              border: "1px solid #3f3f46",
               borderRadius: 6,
               fontSize: 12,
+              color: "#e4e4e7",
             }}
+            labelStyle={{ color: "#fafafa" }}
             formatter={(v: number) => formatTick(v, metric)}
             labelFormatter={(l: string) => l.replace("T", " ") + "h"}
           />

@@ -236,15 +236,16 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                           month: "2-digit",
                         })
                       }
-                      stroke="#71717a"
-                      fontSize={10}
+                      stroke="#52525b"
+                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
                     />
-                    <YAxis stroke="#71717a" fontSize={10} width={60} />
+                    <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} width={60} />
                     <Tooltip
                       contentStyle={{
                         background: "#18181b",
                         border: "1px solid #3f3f46",
                         fontSize: 12,
+                        color: "#e4e4e7",
                       }}
                       labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
                       formatter={(v: number) => fmtNum(v)}
