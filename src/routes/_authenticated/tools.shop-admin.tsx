@@ -195,7 +195,13 @@ function ShopAdminPage() {
                 </ResponsiveContainer>
               </div>
             )}
+            {selected && <AlertForm itemName={selected} />}
           </ToolCard>
+
+          <ToolCard className="lg:col-span-2">
+            <MyAlertsPanel />
+          </ToolCard>
+
 
           <ToolCard className="lg:col-span-2">
             <div
