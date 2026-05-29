@@ -36,6 +36,8 @@ import {
 import { KpiGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/EmptyState";
+import { ApplicationsChart } from "@/components/ApplicationsChart";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   TrendingUp as TrendingUpIcon,
   UserPlus as UserPlusIcon,
@@ -43,6 +45,7 @@ import {
   Activity as ActivityIcon,
   ShoppingCart as ShoppingCartIcon,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
