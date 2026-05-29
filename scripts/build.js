@@ -9,13 +9,9 @@ async function run(name, command, args) {
 }
 
 async function main() {
-  const mode = process.argv.includes("--mode=development")
-    ? "development"
-    : "production";
+  const mode = process.argv.includes("--mode=development") ? "development" : "production";
   const viteArgs =
-    mode === "development"
-      ? ["vite", "build", "--mode", "development"]
-      : ["vite", "build"];
+    mode === "development" ? ["vite", "build", "--mode", "development"] : ["vite", "build"];
 
   const tscCode = await run("TypeScript", "npx", ["tsc", "--noEmit"]);
   const eslintCode = await run("ESLint", "npx", ["eslint", "."]);
