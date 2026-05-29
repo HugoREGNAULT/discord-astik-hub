@@ -389,11 +389,7 @@ function ApplicationStats() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.timeline}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis
-                  dataKey="month"
-                  stroke="#52525b"
-                  tick={{ fill: "#e4e4e7", fontSize: 12 }}
-                />
+                <XAxis dataKey="month" stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 12 }} />
                 <YAxis
                   stroke="#52525b"
                   tick={{ fill: "#e4e4e7", fontSize: 12 }}

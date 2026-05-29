@@ -701,10 +701,7 @@ function FactionHealthSection() {
           </div>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={data.evolution}
-                margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
-              >
+              <AreaChart data={data.evolution} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
                 <defs>
                   <linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
@@ -767,9 +764,7 @@ function FactionHealthSection() {
                   params={{ id: r.discord_id }}
                   className="flex items-center gap-3 border border-border rounded p-2 text-sm hover:border-primary/40 transition"
                 >
-                  <span className="text-xs font-mono text-muted-foreground w-5">
-                    #{i + 1}
-                  </span>
+                  <span className="text-xs font-mono text-muted-foreground w-5">#{i + 1}</span>
                   {r.avatar_url ? (
                     <img src={r.avatar_url} alt="" className="size-7 rounded-full" />
                   ) : (
@@ -978,11 +973,11 @@ function DigestMarkdown({ content }: { content: string }) {
 
 function renderInline(text: string): string {
   // Escape HTML d'abord
-  const escaped = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return escaped
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-    .replace(/`([^`]+)`/g, '<code class="font-mono text-xs bg-muted px-1 py-0.5 rounded">$1</code>');
+    .replace(
+      /`([^`]+)`/g,
+      '<code class="font-mono text-xs bg-muted px-1 py-0.5 rounded">$1</code>',
+    );
 }
