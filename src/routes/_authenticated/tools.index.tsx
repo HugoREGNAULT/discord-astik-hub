@@ -10,7 +10,9 @@ import {
 } from "lucide-react";
 import { ToolCard } from "@/components/tools/ToolCard";
 import { ToolHeader, MissingKeyBanner } from "@/components/tools/ToolsUi";
+import { PaladiumRateLimits } from "@/components/tools/PaladiumRateLimits";
 import { hasPaladiumKey } from "@/lib/paladium/api";
+
 
 export const Route = createFileRoute("/_authenticated/tools/")({
   head: () => ({
@@ -93,6 +95,9 @@ function ToolsIndex() {
           description="Calcule l'XP et les ressources à farmer pour passer d'un niveau à un autre."
           accent="pink"
         />
+      </div>
+      <div className="mt-8">
+        <PaladiumRateLimits />
       </div>
     </div>
   );

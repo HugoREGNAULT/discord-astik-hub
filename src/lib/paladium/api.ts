@@ -4,6 +4,7 @@
 
 import { callPaladium } from "./paladium.functions";
 import { resolveMojangUuid } from "./mojang.functions";
+import { updateRate } from "./rate-limits";
 
 const MOJANG_BASE = "https://api.mojang.com";
 
@@ -24,8 +25,9 @@ export function hasPaladiumKey() {
 
 export async function paladiumFetch<T = unknown>(path: string): Promise<T> {
   try {
-    const { json } = await callPaladium({ data: { path } });
-    return JSON.parse(json) as T;
+    const res = await callPaladium({ data: { path } });
+    if (res.rate) updateRate(path, res.rate);
+    return JSON.parse(res.json) as T;
   } catch (err) {
     if (err instanceof PaladiumApiError) throw err;
     const message = err instanceof Error ? err.message : "Paladium request failed";
@@ -34,6 +36,7 @@ export async function paladiumFetch<T = unknown>(path: string): Promise<T> {
     throw new PaladiumApiError(message, status);
   }
 }
+
 
 /* ---------- Mojang ---------- */
 

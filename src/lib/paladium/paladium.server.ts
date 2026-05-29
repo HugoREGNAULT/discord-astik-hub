@@ -11,7 +11,12 @@ export class PaladiumServerError extends Error {
   }
 }
 
-export async function fetchPaladium(path: string): Promise<unknown> {
+export type PaladiumFetchResult = {
+  data: unknown;
+  rate: { limit: number | null; remaining: number | null; reset: number | null };
+};
+
+export async function fetchPaladium(path: string): Promise<PaladiumFetchResult> {
   const key = process.env.PALADIUM_API_KEY?.trim();
   const headers: Record<string, string> = { Accept: "application/json" };
   if (key) headers["Authorization"] = `Bearer ${key}`;
@@ -26,6 +31,13 @@ export async function fetchPaladium(path: string): Promise<unknown> {
     );
   }
 
+  const num = (v: string | null) => (v == null || v === "" ? null : Number(v));
+  const rate = {
+    limit: num(res.headers.get("x-ratelimit-limit")),
+    remaining: num(res.headers.get("x-ratelimit-remaining")),
+    reset: num(res.headers.get("x-ratelimit-reset")),
+  };
+
   if (!res.ok) {
     let detail = "";
     try {
@@ -38,5 +50,5 @@ export async function fetchPaladium(path: string): Promise<unknown> {
       res.status,
     );
   }
-  return res.json();
+  return { data: await res.json(), rate };
 }
