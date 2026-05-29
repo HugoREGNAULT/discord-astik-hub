@@ -210,3 +210,89 @@ export const getAdminShopHistory = createServerFn({ method: "POST" })
       }>,
     };
   });
+
+/* ============= Market HDV price history (hourly, 7 days) ============= */
+
+export const snapshotMarketPrices = createServerFn({ method: "POST" }).handler(async () => {
+  // Paginate through all items (limit 100). Same shape as the live page.
+  type Page = {
+    data: Array<{
+      name: string;
+      countListings?: number;
+      quantityAvailable?: number;
+      quantitySoldTotal?: number;
+      priceAverage?: number;
+    }>;
+    totalCount?: number;
+  };
+  const fetchPage = async (offset: number, limit: number) => {
+    const { data } = await fetchPaladium(
+      `/v1/paladium/shop/market/items?limit=${limit}&offset=${offset}`,
+    );
+    return data as Page;
+  };
+
+  const first = await fetchPage(0, 100);
+  const total = first.totalCount ?? first.data.length;
+  const all = [...first.data];
+  const pages = Math.ceil(total / 100);
+  for (let i = 1; i < pages; i++) {
+    const p = await fetchPage(i * 100, 100);
+    all.push(...p.data);
+  }
+
+  if (all.length === 0) return { inserted: 0 };
+
+  const rows = all
+    .filter((it) => it.name && typeof it.priceAverage === "number")
+    .map((it) => ({
+      item_name: it.name,
+      price_average: it.priceAverage ?? null,
+      count_listings: it.countListings ?? null,
+      quantity_available: it.quantityAvailable ?? null,
+      quantity_sold_total: it.quantitySoldTotal ?? null,
+    }));
+
+  // Insert in chunks to stay under the Supabase payload size cap.
+  const CHUNK = 500;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const slice = rows.slice(i, i + CHUNK);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabaseAdmin
+      .from("paladium_market_price_history")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .insert(slice as any);
+    if (error) throw new Error(error.message);
+  }
+
+  // Keep only the last 7 days.
+  const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
+  await supabaseAdmin
+    .from("paladium_market_price_history")
+    .delete()
+    .lt("captured_at", cutoff);
+
+  return { inserted: rows.length };
+});
+
+export const getMarketPriceHistory = createServerFn({ method: "POST" })
+  .inputValidator((d: { itemName: string }) => d)
+  .handler(async ({ data }) => {
+    const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    const { data: rows, error } = await supabaseAdmin
+      .from("paladium_market_price_history")
+      .select("captured_at, price_average, count_listings, quantity_available")
+      .eq("item_name", data.itemName)
+      .gte("captured_at", since)
+      .order("captured_at", { ascending: true })
+      .limit(500);
+    if (error) throw new Error(error.message);
+    return {
+      rows: (rows ?? []) as Array<{
+        captured_at: string;
+        price_average: number | null;
+        count_listings: number | null;
+        quantity_available: number | null;
+      }>,
+    };
+  });
