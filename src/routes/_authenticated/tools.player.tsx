@@ -172,8 +172,6 @@ function PlayerLookup() {
                 </div>
               )}
             </ToolCard>
-
-
             <ToolCard>
               <SectionTitle>Métiers</SectionTitle>
               {jobsQ.isLoading && <LoadingBlock />}
@@ -200,7 +198,6 @@ function PlayerLookup() {
               {jobs.length === 0 && !jobsQ.isLoading && (
                 <p className="text-zinc-600 text-xs mt-2">Aucun métier.</p>
               )}
-
             </ToolCard>
           </div>
         </div>
