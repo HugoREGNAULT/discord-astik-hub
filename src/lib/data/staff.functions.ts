@@ -117,6 +117,47 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     });
   }
 
+  // Applications timeline: daily counts over the last 90 days
+  const timelineMap = new Map<string, { created: number; accepted: number; rejected: number }>();
+  // seed all days so the chart has a continuous x-axis
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86_400_000);
+    const key = d.toISOString().slice(0, 10);
+    timelineMap.set(key, { created: 0, accepted: 0, rejected: 0 });
+  }
+  for (const row of appsTimeline.data ?? []) {
+    const r = row as { created_at: string; status: string; decided_at: string | null };
+    const cKey = r.created_at.slice(0, 10);
+    const cBucket = timelineMap.get(cKey);
+    if (cBucket) cBucket.created += 1;
+    if (r.decided_at && (r.status === "accepted" || r.status === "rejected")) {
+      const dKey = r.decided_at.slice(0, 10);
+      const dBucket = timelineMap.get(dKey);
+      if (dBucket) {
+        if (r.status === "accepted") dBucket.accepted += 1;
+        else dBucket.rejected += 1;
+      }
+    }
+  }
+  const applicationsTimeline = Array.from(timelineMap.entries()).map(([date, v]) => ({
+    date,
+    ...v,
+  }));
+
+  // Applications totals (all-time)
+  let totalApps = 0,
+    totalAccepted = 0,
+    totalRejected = 0;
+  for (const row of appsTotals.data ?? []) {
+    totalApps += 1;
+    const s = (row as { status: string }).status;
+    if (s === "accepted") totalAccepted += 1;
+    else if (s === "rejected") totalRejected += 1;
+  }
+  const acceptanceRate = totalAccepted + totalRejected > 0
+    ? Math.round((totalAccepted / (totalAccepted + totalRejected)) * 100)
+    : 0;
+
   return {
     kpis: {
       activeMembers: activeMembers.count ?? 0,
@@ -131,5 +172,13 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     recentDonations: recentDonations.data ?? [],
     topContributors,
     staffActivity: staffActivity.data ?? [],
+    applicationsTimeline,
+    applicationsStats: {
+      total: totalApps,
+      accepted: totalAccepted,
+      rejected: totalRejected,
+      acceptanceRate,
+    },
   };
 });
+
