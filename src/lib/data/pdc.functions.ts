@@ -59,7 +59,7 @@ export const updatePdcBlock = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("members.view");
-    const patch: Record<string, unknown> = {};
+    const patch: { name?: string; color?: string; kind?: "block" | "liquid" } = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.color !== undefined) patch.color = data.color.toLowerCase();
     if (data.kind !== undefined) patch.kind = data.kind;
