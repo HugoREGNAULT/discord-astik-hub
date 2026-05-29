@@ -20,11 +20,22 @@ export function Forbidden({ perm }: { perm?: Permission }) {
     <div className="min-h-[60vh] grid place-items-center">
       <Card className="max-w-lg w-full border-destructive/40">
         <CardHeader className="flex flex-row items-center gap-3">
-          <div className="size-10 rounded-full bg-destructive/15 grid place-items-center">
-            <ShieldAlert className="size-5 text-destructive" />
+          <div className="size-10 bg-destructive/15 grid place-items-center border border-destructive/30">
+            <ShieldAlert className="size-5 text-destructive" aria-hidden="true" />
           </div>
           <div>
-            <CardTitle className="text-destructive">Accès refusé</CardTitle>
+            <div
+              className="text-pink-500 text-[10px] uppercase tracking-[0.3em] mb-1"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              // access_denied
+            </div>
+            <CardTitle
+              className="text-destructive uppercase tracking-tight"
+              style={{ fontFamily: "'Space Grotesk'" }}
+            >
+              Accès refusé
+            </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               Tu n'as pas les rôles Discord requis pour accéder à cette page.
             </p>

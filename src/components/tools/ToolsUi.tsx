@@ -106,7 +106,7 @@ export function DaButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors disabled:cursor-not-allowed ${styles[variant]} ${className}`}
+      className={`text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 ${styles[variant]} ${className}`}
       style={{ fontFamily: "'Space Mono'" }}
     >
       {children}
@@ -118,7 +118,7 @@ export function DaInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none font-mono ${
+      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/40 font-mono ${
         props.className ?? ""
       }`}
     />
@@ -129,7 +129,7 @@ export function DaSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-pink-500 focus:outline-none font-mono ${
+      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/40 font-mono ${
         props.className ?? ""
       }`}
     />
