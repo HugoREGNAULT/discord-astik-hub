@@ -23,7 +23,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: LeaderboardPage,
 });
 
-
 function formatVoice(seconds: number) {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -255,7 +254,6 @@ function LeaderboardPage() {
         </div>
       </PageCard>
 
-
       {canSeeCarts && <RecentCartsPanel />}
     </div>
   );
@@ -280,9 +278,7 @@ function MetricTabs<T extends string>({
             key={opt.value}
             onClick={() => onChange(opt.value)}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition-colors ${
-              active
-                ? "bg-pink-500 text-white"
-                : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+              active ? "bg-pink-500 text-white" : "text-zinc-400 hover:text-white hover:bg-zinc-900"
             }`}
             style={{ fontFamily: "'Space Mono'" }}
           >
@@ -294,4 +290,3 @@ function MetricTabs<T extends string>({
     </div>
   );
 }
-
