@@ -85,8 +85,6 @@ function BlacklistPage() {
         <CardContent className="p-0">
           {isLoading ? (
             <BlacklistRowsSkeleton count={5} />
-          ) : false ? (
-            <p className="text-sm text-muted-foreground p-6">Chargement…</p>
           ) : filtered.length === 0 ? (
             <p className="text-sm text-muted-foreground p-6 text-center">
               {entries.length === 0 ? "Blacklist vide." : "Aucun résultat."}
