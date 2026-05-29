@@ -170,7 +170,6 @@ function ShopAdminPage() {
                       dot={false}
                       name="Vente"
                     />
-
                   </LineChart>
                 </ResponsiveContainer>
               </div>
