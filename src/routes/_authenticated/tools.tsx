@@ -2,7 +2,6 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import {
   User as UserIcon,
   Users,
-
   Activity,
   ShoppingBag,
   Trophy,
@@ -32,7 +31,6 @@ const TABS = [
   { to: "/tools/clicker", label: "Clicker", icon: MousePointerClick },
   { to: "/tools/xp-calculator", label: "XP Calc", icon: Calculator },
 ] as const;
-
 
 function ToolsLayout() {
   const path = useRouterState({ select: (r) => r.location.pathname });

@@ -87,21 +87,25 @@ function LeaderboardPage() {
     retry: false,
     staleTime: 5 * 60_000,
   });
-  const searchUuid = searchIsUuid ? trimmedSearch.toLowerCase() : searchQ.data?.id ?? null;
+  const searchUuid = searchIsUuid ? trimmedSearch.toLowerCase() : (searchQ.data?.id ?? null);
   const searchName = searchQ.data?.name ?? null;
 
   const matchesRow = (r: LeaderboardEntry) => {
     if (!trimmedSearch) return true;
     const uuid = ((r as { uuid?: string }).uuid ?? "").toLowerCase();
     const raw = ((r.username ?? "") as string).toLowerCase();
-    const faction = (((r as { factionName?: string }).factionName ?? r.faction ?? "") as string).toLowerCase();
-    const resolved = uuid && UUID_RE.test(raw) ? (nameMap[(r as { uuid?: string }).uuid!] ?? "").toLowerCase() : "";
+    const faction = (
+      ((r as { factionName?: string }).factionName ?? r.faction ?? "") as string
+    ).toLowerCase();
+    const resolved =
+      uuid && UUID_RE.test(raw)
+        ? (nameMap[(r as { uuid?: string }).uuid!] ?? "").toLowerCase()
+        : "";
     const s = trimmedSearch.toLowerCase();
     if (searchUuid && uuid === searchUuid) return true;
     return raw.includes(s) || resolved.includes(s) || faction.includes(s);
   };
   const filtered = trimmedSearch ? rows.filter(matchesRow) : rows;
-
 
   return (
     <div className="max-w-5xl space-y-5">
@@ -157,13 +161,14 @@ function LeaderboardPage() {
             {searchQ.isFetching && "Résolution Mojang…"}
             {!searchQ.isFetching && searchUuid && (
               <>
-                Pseudo résolu :{" "}
-                <span className="text-pink-400">{searchName ?? trimmedSearch}</span>{" "}
+                Pseudo résolu : <span className="text-pink-400">{searchName ?? trimmedSearch}</span>{" "}
                 <span className="text-zinc-600">· {searchUuid}</span>
               </>
             )}
             {!searchQ.isFetching && !searchUuid && !searchIsUuid && searchQ.error && (
-              <span className="text-amber-400">Pseudo introuvable côté Mojang — recherche en texte brut.</span>
+              <span className="text-amber-400">
+                Pseudo introuvable côté Mojang — recherche en texte brut.
+              </span>
             )}
             <span className="ml-2 text-zinc-600">· {filtered.length} résultat(s)</span>
           </div>
@@ -220,14 +225,11 @@ function LeaderboardPage() {
           </table>
         </ToolCard>
       )}
-
     </div>
   );
 }
 
 function fmtNum(n: unknown): string {
   if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-  return Math.round(n * 100) / 100 >= 1
-    ? Math.round(n).toLocaleString("fr-FR")
-    : n.toFixed(2);
+  return Math.round(n * 100) / 100 >= 1 ? Math.round(n).toLocaleString("fr-FR") : n.toFixed(2);
 }

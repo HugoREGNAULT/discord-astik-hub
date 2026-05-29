@@ -36,7 +36,8 @@ function isOnlineStatus(s: string | undefined): boolean {
 
 function statusColor(s: string | undefined): string {
   const v = (s ?? "").toLowerCase();
-  if (v === "online" || v === "running") return "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]";
+  if (v === "online" || v === "running")
+    return "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]";
   if (v === "whitelist") return "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.7)]";
   if (v === "offline") return "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.7)]";
   return "bg-zinc-600";

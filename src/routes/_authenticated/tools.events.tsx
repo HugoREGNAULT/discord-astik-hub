@@ -119,7 +119,10 @@ function EventsPage() {
           </div>
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <div>
-              <div className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk'" }}>
+              <div
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: "'Space Grotesk'" }}
+              >
                 {next.name}
               </div>
               <div className="text-xs text-zinc-400 mt-1">
@@ -196,7 +199,6 @@ function EventsPage() {
         ) : null}
         {onYourMark.isLoading && <LoadingBlock />}
         {onYourMark.error && <ErrorBlock message={(onYourMark.error as Error).message} />}
-
       </ToolCard>
     </div>
   );

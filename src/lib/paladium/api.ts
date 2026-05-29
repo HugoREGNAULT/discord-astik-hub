@@ -37,7 +37,6 @@ export async function paladiumFetch<T = unknown>(path: string): Promise<T> {
   }
 }
 
-
 /* ---------- Mojang ---------- */
 
 export type MojangProfile = { id: string; name: string };
@@ -123,7 +122,6 @@ export type FactionProfile = {
   players?: Array<{ uuid: string; username: string; group?: string; joinedAt?: number }>;
   [k: string]: unknown;
 };
-
 
 export type ServerStatus = {
   servers?: Array<{ name: string; online: number; max?: number; status?: string }>;
@@ -229,7 +227,9 @@ export const PaladiumApi = {
     paladiumFetch<FactionProfile>(`/v1/paladium/faction/profile/${encodeURIComponent(name)}`),
   getStatus: () => paladiumFetch<unknown>(`/v1/status`),
   getMarketItemsPage: (offset = 0, limit = 100) =>
-    paladiumFetch<MarketItemsPage>(`/v1/paladium/shop/market/items?limit=${limit}&offset=${offset}`),
+    paladiumFetch<MarketItemsPage>(
+      `/v1/paladium/shop/market/items?limit=${limit}&offset=${offset}`,
+    ),
   getMarketItem: (item: string) =>
     paladiumFetch<MarketItemsPage["data"][number]>(
       `/v1/paladium/shop/market/items/${encodeURIComponent(item)}`,
@@ -262,7 +262,6 @@ export const PaladiumApi = {
       `/v1/paladium/trixium/leaderboard/factions`,
     ),
 };
-
 
 export function asArray<T>(value: T[] | { [k: string]: unknown } | null | undefined): T[] {
   if (!value) return [];

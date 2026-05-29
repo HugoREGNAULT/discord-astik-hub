@@ -126,15 +126,7 @@ function MarketPage() {
   );
 }
 
-function ItemRow({
-  it,
-  expanded,
-  onToggle,
-}: {
-  it: Row;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onToggle: () => void }) {
   const detail = useQuery({
     queryKey: ["pala-market-item", it.name],
     queryFn: () => PaladiumApi.getMarketItem(it.name),
@@ -176,7 +168,9 @@ function ItemRow({
                       <tr key={i} className="border-t border-zinc-900">
                         <td className="py-1 text-zinc-400">{l.sellerName ?? l.seller ?? "—"}</td>
                         <td className="py-1 text-right text-zinc-300">{fmtNum(l.quantity)}</td>
-                        <td className="py-1 text-right text-pink-400 font-bold">{fmtNum(l.price)}</td>
+                        <td className="py-1 text-right text-pink-400 font-bold">
+                          {fmtNum(l.price)}
+                        </td>
                         <td className="py-1 text-right text-white">
                           {fmtNum((l.price ?? 0) * (l.quantity ?? 0))}
                         </td>

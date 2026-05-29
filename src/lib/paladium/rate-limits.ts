@@ -155,7 +155,6 @@ export const PALADIUM_ROUTES: RouteSpec[] = [
   },
 ];
 
-
 export function routeFor(path: string): RouteSpec | null {
   return PALADIUM_ROUTES.find((r) => r.match.test(path)) ?? null;
 }

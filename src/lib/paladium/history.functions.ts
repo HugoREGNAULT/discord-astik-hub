@@ -35,7 +35,11 @@ function flattenStatus(raw: unknown): Array<{
       server_label: "Java Global",
       online_players: num(global.online ?? global.playersOnline),
       max_players: num(global.max ?? global.maxPlayers),
-      is_online: Boolean((typeof global.online === "number" ? global.online > 0 : false) || global.status === "online" || global.up),
+      is_online: Boolean(
+        (typeof global.online === "number" ? global.online > 0 : false) ||
+        global.status === "online" ||
+        global.up,
+      ),
     });
   }
   const factions = java?.factions as AnyObj | undefined;
@@ -81,8 +85,10 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
   if (rows.length === 0) return { inserted: 0 };
 
   const payload = rows.map((r) => ({ ...r, raw: data as unknown }));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await supabaseAdmin.from("paladium_server_status_history").insert(payload as any);
+
+  const { error } = await supabaseAdmin
+    .from("paladium_server_status_history")
+    .insert(payload as any);
 
   if (error) throw new Error(error.message);
   return { inserted: rows.length };
@@ -98,13 +104,15 @@ export const getStatusHistory = createServerFn({ method: "GET" }).handler(async 
     .order("captured_at", { ascending: true })
     .limit(5000);
   if (error) throw new Error(error.message);
-  return { rows: (data ?? []) as Array<{
-    server_key: string;
-    server_label: string | null;
-    online_players: number | null;
-    is_online: boolean;
-    captured_at: string;
-  }> };
+  return {
+    rows: (data ?? []) as Array<{
+      server_key: string;
+      server_label: string | null;
+      online_players: number | null;
+      is_online: boolean;
+      captured_at: string;
+    }>,
+  };
 });
 
 /* ============= Admin shop snapshot (daily) ============= */
@@ -117,7 +125,10 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
     const d = data as AnyObj;
     for (const k of ["items", "data", "shop"]) {
       const v = d[k];
-      if (Array.isArray(v)) { items = v as AnyObj[]; break; }
+      if (Array.isArray(v)) {
+        items = v as AnyObj[];
+        break;
+      }
     }
   }
   if (items.length === 0) return { inserted: 0 };
@@ -149,8 +160,6 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
   return { inserted: rows.length };
 });
 
-
-
 export const getAdminShopLatest = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await supabaseAdmin
     .from("paladium_admin_shop_history")
@@ -166,13 +175,15 @@ export const getAdminShopLatest = createServerFn({ method: "GET" }).handler(asyn
     seen.add(r.item_name);
     latest.push(r);
   }
-  return { items: latest as Array<{
-    item_name: string;
-    category: string | null;
-    price: number | null;
-    price_pb: number | null;
-    snapshot_date: string;
-  }> };
+  return {
+    items: latest as Array<{
+      item_name: string;
+      category: string | null;
+      price: number | null;
+      price_pb: number | null;
+      snapshot_date: string;
+    }>,
+  };
 });
 
 export const getAdminShopHistory = createServerFn({ method: "POST" })
@@ -185,9 +196,11 @@ export const getAdminShopHistory = createServerFn({ method: "POST" })
       .order("snapshot_date", { ascending: true })
       .limit(365);
     if (error) throw new Error(error.message);
-    return { rows: (rows ?? []) as Array<{
-      snapshot_date: string;
-      price: number | null;
-      price_pb: number | null;
-    }> };
+    return {
+      rows: (rows ?? []) as Array<{
+        snapshot_date: string;
+        price: number | null;
+        price_pb: number | null;
+      }>,
+    };
   });
