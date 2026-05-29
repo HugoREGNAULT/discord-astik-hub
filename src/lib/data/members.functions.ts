@@ -249,3 +249,56 @@ export const addWarning = createServerFn({ method: "POST" })
     await logAction("warning_add", user.discordId, { target: data.memberDiscordId });
     return { ok: true };
   });
+
+export const markMemberAway = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        memberDiscordId: z.string().min(1),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requirePermission("members.edit");
+    const { error } = await db
+      .from("members")
+      .update({ status: "away" })
+      .eq("discord_id", data.memberDiscordId);
+    if (error) throw new Error(error.message);
+    await db.from("notes").insert({
+      member_discord_id: data.memberDiscordId,
+      staff_discord_id: user.discordId,
+      staff_username: user.username,
+      body: `Marqué en absence${data.reason ? ` — ${data.reason}` : ""}`,
+    });
+    await logAction("member_mark_away", user.discordId, {
+      target: data.memberDiscordId,
+      reason: data.reason,
+    });
+    return { ok: true };
+  });
+
+export const dmMember = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        memberDiscordId: z.string().min(1).max(32),
+        content: z.string().min(1).max(1800),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requirePermission("members.edit");
+    const { sendDiscordDM } = await import("@/lib/discord/dm.server");
+    const res = await sendDiscordDM(data.memberDiscordId, data.content);
+    await logAction("member_dm", user.discordId, {
+      target: data.memberDiscordId,
+      ok: res.ok,
+      error: res.error,
+      length: data.content.length,
+    });
+    if (!res.ok) throw new Error(res.error ?? "Échec de l'envoi du DM");
+    return { ok: true };
+  });
+
