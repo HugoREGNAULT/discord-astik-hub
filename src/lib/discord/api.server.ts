@@ -117,6 +117,33 @@ export async function listAllGuildMembers(guildId: string): Promise<DiscordGuild
   return all;
 }
 
+/**
+ * Ajoute un rôle Discord à un membre d'un guild.
+ * Retourne { ok: true } si succès (204) ou si l'utilisateur a déjà le rôle.
+ */
+export async function addGuildMemberRole(
+  guildId: string,
+  userId: string,
+  roleId: string,
+): Promise<{ ok: boolean; status: number; error?: string }> {
+  if (!process.env.DISCORD_BOT_TOKEN) {
+    return { ok: false, status: 0, error: "DISCORD_BOT_TOKEN missing" };
+  }
+  const res = await fetchWithRetry(
+    `${DISCORD_API}/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bot ${BOT_TOKEN()}`,
+        "Content-Length": "0",
+      },
+    },
+  );
+  if (res.status === 204) return { ok: true, status: 204 };
+  const body = await res.text().catch(() => "");
+  return { ok: false, status: res.status, error: body || `HTTP ${res.status}` };
+}
+
 /** Récupère les rôles agrégés d'un user sur les deux serveurs surveillés. */
 export async function fetchAggregatedRoles(userId: string): Promise<string[]> {
   const [pub, fac] = await Promise.all([
