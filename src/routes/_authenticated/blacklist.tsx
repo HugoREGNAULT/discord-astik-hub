@@ -100,6 +100,33 @@ function BlacklistPage() {
       </Card>
     </div>
   );
+function CopyableField({ label, value, mono = true }: { label: string; value: string; mono?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">{label}</div>
+      <div className="flex items-center gap-1.5 group">
+        <span
+          className={`text-sm break-all ${mono ? "font-mono" : ""}`}
+          title={value}
+        >
+          {value}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"
+          aria-label={`Copier ${label}`}
+        >
+          {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
@@ -115,69 +142,177 @@ function BlacklistEntryRow({ entry }: { entry: BlacklistRow }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-
   const headId = entry.mc_uuid || entry.mc_name;
   const avatarUrl = headId ? `https://mc-heads.net/avatar/${encodeURIComponent(headId)}/64` : null;
-  const bodyUrl = headId ? `https://mc-heads.net/body/${encodeURIComponent(headId)}/120` : null;
   const nameLookup = entry.mc_name ? `https://fr.namemc.com/search?q=${encodeURIComponent(entry.mc_name)}` : null;
 
   return (
-    <li className="p-4 flex items-start gap-3 flex-wrap">
-      {avatarUrl && (
+    <li className="p-4 flex items-start gap-4">
+      {avatarUrl ? (
         <img
           src={avatarUrl}
           alt={entry.mc_name ?? "skin"}
-          title={bodyUrl ? "Voir le skin complet sur NameMC" : undefined}
           className="size-12 rounded-md border border-border bg-muted shrink-0"
           loading="lazy"
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
+      ) : (
+        <div className="size-12 rounded-md border border-border bg-muted shrink-0 flex items-center justify-center">
+          <Ban className="size-5 text-muted-foreground" />
+        </div>
       )}
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex flex-wrap gap-2 items-center">
+
+      <div className="flex-1 min-w-0 space-y-3">
+        <div className="grid gap-x-6 gap-y-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {entry.mc_name && (
-            nameLookup ? (
-              <a href={nameLookup} target="_blank" rel="noreferrer">
-                <Badge variant="outline" className="font-mono hover:bg-accent">MC: {entry.mc_name}</Badge>
-              </a>
-            ) : (
-              <Badge variant="outline" className="font-mono">MC: {entry.mc_name}</Badge>
-            )
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-0.5">Pseudo MC</div>
+              {nameLookup ? (
+                <a
+                  href={nameLookup}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-sm font-mono hover:underline break-all"
+                >
+                  {entry.mc_name}
+                </a>
+              ) : (
+                <span className="text-sm font-mono break-all">{entry.mc_name}</span>
+              )}
+            </div>
           )}
-          {entry.discord_id && (
-            <Badge variant="outline" className="font-mono">DC: {entry.discord_id}</Badge>
-          )}
+          {entry.discord_id && <CopyableField label="Discord ID" value={entry.discord_id} />}
           {entry.mc_uuid && (
-            <Badge variant="outline" className="font-mono text-xs">UUID: {entry.mc_uuid.slice(0, 8)}…</Badge>
+            <div className="sm:col-span-2 lg:col-span-1">
+              <CopyableField label="UUID Minecraft" value={entry.mc_uuid} />
+            </div>
           )}
         </div>
+
         {entry.reason && (
-          <p className="text-sm text-muted-foreground italic">« {entry.reason} »</p>
+          <p className="text-sm text-muted-foreground italic border-l-2 border-border pl-3">
+            « {entry.reason} »
+          </p>
         )}
+
         <p className="text-xs text-muted-foreground">
-          Ajouté par <span className="font-medium">{entry.added_by_username ?? "?"}</span>
+          Ajouté par <span className="font-medium text-foreground/80">{entry.added_by_username ?? "?"}</span>
           {" · "}
           {new Date(entry.created_at).toLocaleDateString("fr-FR")}
+          {entry.updated_at && entry.updated_at !== entry.created_at && (
+            <> · modifié le {new Date(entry.updated_at).toLocaleDateString("fr-FR")}</>
+          )}
         </p>
       </div>
-      <ConfirmDialog
-        title="Supprimer cette entrée ?"
-        description="Cette personne ne sera plus détectée comme blacklistée à la candidature."
-        confirmLabel="Supprimer"
-        onConfirm={async () => { await remove.mutateAsync(); }}
-        trigger={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive hover:text-destructive"
-            aria-label="Supprimer"
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        }
-      />
+
+      <div className="flex items-center gap-1 shrink-0">
+        <EditEntryDialog entry={entry} />
+        <ConfirmDialog
+          title="Supprimer cette entrée ?"
+          description="Cette personne ne sera plus détectée comme blacklistée à la candidature."
+          confirmLabel="Supprimer"
+          onConfirm={async () => { await remove.mutateAsync(); }}
+          trigger={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:text-destructive"
+              aria-label="Supprimer"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          }
+        />
+      </div>
     </li>
   );
+}
+
+function EditEntryDialog({ entry }: { entry: BlacklistRow }) {
+  const qc = useQueryClient();
+  const updateFn = useServerFn(updateBlacklistEntry);
+  const [open, setOpen] = useState(false);
+  const [discordId, setDiscordId] = useState(entry.discord_id ?? "");
+  const [mcName, setMcName] = useState(entry.mc_name ?? "");
+  const [mcUuid, setMcUuid] = useState(entry.mc_uuid ?? "");
+  const [reason, setReason] = useState(entry.reason ?? "");
+
+  const update = useMutation({
+    mutationFn: () =>
+      updateFn({
+        data: {
+          id: entry.id,
+          discordId: discordId.trim(),
+          mcName: mcName.trim(),
+          mcUuid: mcUuid.trim(),
+          reason: reason.trim(),
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Entrée mise à jour.");
+      setOpen(false);
+      qc.invalidateQueries({ queryKey: ["blacklist"] });
+      qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const canSubmit = Boolean(discordId.trim() || mcName.trim() || mcUuid.trim());
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) {
+          setDiscordId(entry.discord_id ?? "");
+          setMcName(entry.mc_name ?? "");
+          setMcUuid(entry.mc_uuid ?? "");
+          setReason(entry.reason ?? "");
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Modifier">
+          <Pencil className="size-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Modifier l'entrée</DialogTitle>
+          <DialogDescription>
+            Au moins un identifiant doit rester renseigné.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground">Discord ID</label>
+            <Input value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="123456789012345678" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Pseudo Minecraft</label>
+            <Input value={mcName} onChange={(e) => setMcName(e.target.value)} placeholder="Pseudo_IG" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">UUID Minecraft</label>
+            <Input value={mcUuid} onChange={(e) => setMcUuid(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" className="font-mono" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Motif</label>
+            <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Raison de la blacklist…" rows={3} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
+          <Button onClick={() => update.mutate()} disabled={!canSubmit || update.isPending}>
+            {update.isPending ? "Enregistrement…" : "Enregistrer"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 }
 
 
