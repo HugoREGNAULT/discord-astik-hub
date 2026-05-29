@@ -144,8 +144,6 @@ function PollDetail() {
     enabled: !meLoading && canVote,
   });
 
-
-
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});
 
   useEffect(() => {
@@ -294,8 +292,6 @@ function PollDetail() {
     );
   }
 
-
-
   if (!data?.poll) {
     return (
       <div className="max-w-xl mx-auto">
@@ -317,8 +313,6 @@ function PollDetail() {
       </div>
     );
   }
-
-
 
   const p = data.poll;
   const isOpen = p.status === "open";

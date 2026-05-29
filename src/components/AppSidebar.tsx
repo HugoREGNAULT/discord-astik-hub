@@ -61,7 +61,6 @@ const ITEMS: Item[] = [
     accent: "pink",
   },
 
-
   {
     title: "Dashboard staff",
     url: "/staff",

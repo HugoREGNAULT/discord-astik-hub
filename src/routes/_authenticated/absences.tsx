@@ -53,10 +53,7 @@ export const Route = createFileRoute("/_authenticated/absences")({
 
 type AbsenceType = "vacation" | "irl" | "illness" | "other";
 
-const TYPE_META: Record<
-  AbsenceType,
-  { label: string; icon: any; cls: string; dot: string }
-> = {
+const TYPE_META: Record<AbsenceType, { label: string; icon: any; cls: string; dot: string }> = {
   vacation: {
     label: "Vacances",
     icon: Plane,
@@ -143,8 +140,7 @@ function AbsencesPage() {
   const listFn = useServerFn(listAbsences);
   const { data, isLoading } = useQuery({
     queryKey: ["absences", toISODate(gridStart), toISODate(gridEnd)],
-    queryFn: () =>
-      listFn({ data: { from: toISODate(gridStart), to: toISODate(gridEnd) } }),
+    queryFn: () => listFn({ data: { from: toISODate(gridStart), to: toISODate(gridEnd) } }),
   });
 
   const absences = data?.absences ?? [];
@@ -299,7 +295,11 @@ function AbsencesPage() {
               description="Ajoute une absence pour prévenir le reste de la faction."
             />
           ) : (
-            <AbsenceList items={myAbsences} canManage onChanged={() => qc.invalidateQueries({ queryKey: ["absences"] })} />
+            <AbsenceList
+              items={myAbsences}
+              canManage
+              onChanged={() => qc.invalidateQueries({ queryKey: ["absences"] })}
+            />
           )}
         </CardContent>
       </Card>
@@ -396,9 +396,7 @@ function CreateOrEditDialog({
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<AbsenceType>((absence?.type as AbsenceType) ?? "vacation");
   const [reason, setReason] = useState<string>(absence?.reason ?? "");
-  const [startsOn, setStartsOn] = useState<string>(
-    absence?.starts_on ?? toISODate(new Date()),
-  );
+  const [startsOn, setStartsOn] = useState<string>(absence?.starts_on ?? toISODate(new Date()));
   const [endsOn, setEndsOn] = useState<string>(absence?.ends_on ?? toISODate(new Date()));
   const [submitting, setSubmitting] = useState(false);
 
@@ -463,15 +461,15 @@ function CreateOrEditDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {(Object.entries(TYPE_META) as [AbsenceType, (typeof TYPE_META)[AbsenceType]][]).map(
-                  ([k, v]) => (
-                    <SelectItem key={k} value={k}>
-                      <span className="flex items-center gap-2">
-                        <v.icon className="size-4" /> {v.label}
-                      </span>
-                    </SelectItem>
-                  ),
-                )}
+                {(
+                  Object.entries(TYPE_META) as [AbsenceType, (typeof TYPE_META)[AbsenceType]][]
+                ).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>
+                    <span className="flex items-center gap-2">
+                      <v.icon className="size-4" /> {v.label}
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
