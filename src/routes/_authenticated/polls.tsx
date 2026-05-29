@@ -284,7 +284,7 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
               les votes pourront être importés ensuite depuis la page du sondage.
             </p>
 
-            </p>
+
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <Input
