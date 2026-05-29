@@ -203,6 +203,56 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
           <td colSpan={5} className="p-4">
             {detail.isLoading && <LoadingBlock label="Listings…" />}
             {detail.error && <ErrorBlock message={(detail.error as Error).message} />}
+
+            <div
+              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              // prix moyen — 7 jours
+            </div>
+            {historySeries.length < 2 ? (
+              <p className="text-zinc-600 text-xs mb-3">
+                Pas encore assez d&apos;historique — la sync tourne toutes les heures.
+              </p>
+            ) : (
+              <div className="h-32 mb-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={historySeries}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis
+                      dataKey="t"
+                      tickFormatter={(t) =>
+                        new Date(t).toLocaleDateString("fr-FR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                        })
+                      }
+                      stroke="#71717a"
+                      fontSize={10}
+                    />
+                    <YAxis stroke="#71717a" fontSize={10} width={60} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#18181b",
+                        border: "1px solid #3f3f46",
+                        fontSize: 12,
+                      }}
+                      labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
+                      formatter={(v: number) => fmtNum(v)}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#ec4899"
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
             {detail.data && (
               <table className="w-full text-xs">
                 <thead>
