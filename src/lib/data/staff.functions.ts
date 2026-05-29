@@ -25,8 +25,11 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     recentDonations,
     topPoints7d,
     staffActivity,
+    appsTimeline,
+    appsTotals,
   ] = await Promise.all([
     db.from("applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+
     db.from("donations").select("id", { count: "exact", head: true }).eq("status", "active"),
     db.from("members").select("discord_id", { count: "exact", head: true }).eq("status", "active"),
     db.from("members").select("discord_id", { count: "exact", head: true }).eq("status", "former"),
