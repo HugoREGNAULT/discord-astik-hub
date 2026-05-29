@@ -225,6 +225,52 @@ export const getAdminShopHistory = createServerFn({ method: "POST" })
     };
   });
 
+export const getAdminShopTopMovers = createServerFn({ method: "GET" }).handler(async () => {
+  // Compare latest snapshot vs the oldest snapshot within the last 7 days.
+  const sinceOld = new Date(Date.now() - 7 * 86400000).toISOString();
+  const sinceLatest = new Date(Date.now() - 10 * 60_000).toISOString();
+
+  const [{ data: latestRows, error: e1 }, { data: oldRows, error: e2 }] = await Promise.all([
+    supabaseAdmin
+      .from("paladium_admin_shop_history")
+      .select("item_name, price_pb, captured_at")
+      .gte("captured_at", sinceLatest)
+      .order("captured_at", { ascending: false })
+      .limit(5000),
+    supabaseAdmin
+      .from("paladium_admin_shop_history")
+      .select("item_name, price_pb, captured_at")
+      .gte("captured_at", sinceOld)
+      .order("captured_at", { ascending: true })
+      .limit(20000),
+  ]);
+  if (e1) throw new Error(e1.message);
+  if (e2) throw new Error(e2.message);
+
+  const latestMap = new Map<string, number>();
+  for (const r of latestRows ?? []) {
+    if (latestMap.has(r.item_name)) continue;
+    if (typeof r.price_pb === "number" && r.price_pb > 0) latestMap.set(r.item_name, r.price_pb);
+  }
+  const oldMap = new Map<string, number>();
+  for (const r of oldRows ?? []) {
+    if (oldMap.has(r.item_name)) continue;
+    if (typeof r.price_pb === "number" && r.price_pb > 0) oldMap.set(r.item_name, r.price_pb);
+  }
+
+  const movers: Array<{ item_name: string; current: number; previous: number; pct: number }> = [];
+  for (const [name, current] of latestMap) {
+    const previous = oldMap.get(name);
+    if (typeof previous !== "number" || previous === current) continue;
+    const pct = ((current - previous) / previous) * 100;
+    movers.push({ item_name: name, current, previous, pct });
+  }
+  movers.sort((a, b) => b.pct - a.pct);
+  const top = movers.slice(0, 3);
+  const flop = movers.slice(-3).reverse();
+  return { top, flop };
+});
+
 /* ============= Market HDV price history (hourly, 7 days) ============= */
 
 export const snapshotMarketPrices = createServerFn({ method: "POST" }).handler(async () => {
