@@ -229,7 +229,7 @@ function PlayerSales() {
               alt=""
               className="w-12 h-12 rounded border border-zinc-800"
             />
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="text-white text-lg">{resolvedName ?? "Joueur"}</div>
               <div
                 className="text-[10px] text-zinc-500 uppercase tracking-[0.25em]"
@@ -238,14 +238,28 @@ function PlayerSales() {
                 {uuid}
               </div>
             </div>
+            {(() => {
+              const lastSync = [...open, ...sold]
+                .map((r) => r.last_seen_at)
+                .filter(Boolean)
+                .sort()
+                .pop();
+              const ts = lastSync ?? (historyQ.dataUpdatedAt ? new Date(historyQ.dataUpdatedAt).toISOString() : null);
+              if (!ts) return null;
+              return (
+                <div
+                  className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] text-right"
+                  style={{ fontFamily: "'Space Mono'" }}
+                >
+                  Dernière actualisation
+                  <div className="text-zinc-300 text-xs normal-case tracking-normal mt-0.5">
+                    {fmtDate(ts)}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatTile label="Ventes en cours" value={fmtInt(open.length)} />
-            <StatTile label="Ventes passées" value={fmtInt(sold.length)} />
-            <StatTile label="$ listé (en cours)" value={fmtInt(totals.openTotal)} />
-            <StatTile label="$ vendu (historique)" value={fmtInt(totals.soldTotal)} />
-          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
             <div className="flex gap-1">
