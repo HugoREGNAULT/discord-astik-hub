@@ -87,7 +87,6 @@ export const Route = createFileRoute("/api/auth/callback")({
           headers.append("Set-Cookie", "oauth_next=; Path=/; Max-Age=0");
           return new Response(null, { status: 302, headers });
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.error("[oauth callback]", e);
           return new Response(`OAuth callback failed: ${(e as Error).message}`, { status: 500 });
         }
