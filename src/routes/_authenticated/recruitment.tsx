@@ -68,7 +68,8 @@ function RecruitmentPage() {
         <p className="text-sm text-muted-foreground">
           Accepte ou refuse les candidatures à la PunkAstik. Les candidats sont notifiés en DM
           Discord.
-        </p>
+      </div>
+
       <ApplicationStats />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AppStatus)}>
