@@ -121,37 +121,44 @@ export const getStatusHistory = createServerFn({ method: "POST" })
     };
   });
 
-/* ============= Admin shop snapshot (daily) ============= */
+/* ============= Admin shop snapshot (every 5 min) ============= */
 
 export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(async () => {
-  const { data } = await fetchPaladium("/v1/paladium/shop/admin/items");
-  let items: AnyObj[] = [];
-  if (Array.isArray(data)) items = data as AnyObj[];
-  else if (data && typeof data === "object") {
-    const d = data as AnyObj;
-    for (const k of ["items", "data", "shop"]) {
-      const v = d[k];
-      if (Array.isArray(v)) {
-        items = v as AnyObj[];
-        break;
-      }
-    }
+  // Paginate through all admin shop items (API limit: 100)
+  type AdminItem = {
+    name: string;
+    category?: string | null;
+    buyPrice?: number | null;
+    sellPrice?: number | null;
+    canBuy?: boolean;
+    canSell?: boolean;
+  };
+  const items: AdminItem[] = [];
+  const limit = 100;
+  let offset = 0;
+  for (let page = 0; page < 50; page++) {
+    const { data } = await fetchPaladium(
+      `/v1/paladium/shop/admin/items?limit=${limit}&offset=${offset}`,
+    );
+    const d = data as { data?: AdminItem[]; totalCount?: number } | AdminItem[];
+    const batch = Array.isArray(d) ? d : (d?.data ?? []);
+    items.push(...batch);
+    if (batch.length < limit) break;
+    offset += limit;
   }
   if (items.length === 0) return { inserted: 0 };
 
   const today = new Date().toISOString().slice(0, 10);
   const rows = items
     .map((it) => {
-      const name = (it.name ?? it.item ?? it.id) as string | undefined;
-      if (!name) return null;
-      const price = typeof it.price === "number" ? it.price : null;
-      const pricePB = typeof it.pricePB === "number" ? it.pricePB : null;
-      const category = (it.category ?? it.type ?? null) as string | null;
+      if (!it.name) return null;
+      const buy = typeof it.buyPrice === "number" ? it.buyPrice : null;
+      const sell = typeof it.sellPrice === "number" ? it.sellPrice : null;
       return {
-        item_name: name,
-        category,
-        price,
-        price_pb: pricePB,
+        item_name: it.name,
+        category: it.category ?? null,
+        price: buy,
+        price_pb: sell,
         raw: it as unknown as never,
         snapshot_date: today,
       };
@@ -161,35 +168,42 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
   const { error } = await supabaseAdmin
     .from("paladium_admin_shop_history")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .upsert(rows as any, { onConflict: "item_name,snapshot_date" });
+    .insert(rows as any);
   if (error) throw new Error(error.message);
+
+  // Retention: keep last 30 days
+  await supabaseAdmin
+    .from("paladium_admin_shop_history")
+    .delete()
+    .lt("captured_at", new Date(Date.now() - 30 * 86400000).toISOString());
+
   return { inserted: rows.length };
 });
 
 export const getAdminShopLatest = createServerFn({ method: "GET" }).handler(async () => {
+  // Take the most recent snapshot batch (last 10 min worth).
+  const since = new Date(Date.now() - 10 * 60_000).toISOString();
   const { data, error } = await supabaseAdmin
     .from("paladium_admin_shop_history")
-    .select("item_name, category, price, price_pb, snapshot_date")
-    .order("snapshot_date", { ascending: false })
-    .limit(2000);
+    .select("item_name, category, price, price_pb, captured_at")
+    .gte("captured_at", since)
+    .order("captured_at", { ascending: false })
+    .limit(5000);
   if (error) throw new Error(error.message);
-  // Dedup by item_name keeping most recent
   const seen = new Set<string>();
-  const latest: typeof data = [];
+  const latest: Array<{
+    item_name: string;
+    category: string | null;
+    price: number | null;
+    price_pb: number | null;
+    captured_at: string;
+  }> = [];
   for (const r of data ?? []) {
     if (seen.has(r.item_name)) continue;
     seen.add(r.item_name);
     latest.push(r);
   }
-  return {
-    items: latest as Array<{
-      item_name: string;
-      category: string | null;
-      price: number | null;
-      price_pb: number | null;
-      snapshot_date: string;
-    }>,
-  };
+  return { items: latest };
 });
 
 export const getAdminShopHistory = createServerFn({ method: "POST" })
@@ -197,14 +211,14 @@ export const getAdminShopHistory = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_admin_shop_history")
-      .select("snapshot_date, price, price_pb")
+      .select("captured_at, price, price_pb")
       .eq("item_name", data.itemName)
-      .order("snapshot_date", { ascending: true })
-      .limit(365);
+      .order("captured_at", { ascending: true })
+      .limit(5000);
     if (error) throw new Error(error.message);
     return {
       rows: (rows ?? []) as Array<{
-        snapshot_date: string;
+        captured_at: string;
         price: number | null;
         price_pb: number | null;
       }>,
