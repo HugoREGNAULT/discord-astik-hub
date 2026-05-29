@@ -124,7 +124,6 @@ function ToolsIndex() {
           accent="blurple"
         />
 
-        />
       </div>
       <div className="mt-8">
         <PaladiumRateLimits />
