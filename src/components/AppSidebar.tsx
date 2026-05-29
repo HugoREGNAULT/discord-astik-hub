@@ -16,6 +16,7 @@ import {
   Ban,
   LayoutDashboard,
   Grid3x3,
+  Wrench,
 } from "lucide-react";
 
 import {
@@ -59,6 +60,13 @@ const ITEMS: Item[] = [
     icon: CalendarCheck,
     perm: "profile.self",
     accent: "pink",
+  },
+  {
+    title: "Outils Paladium",
+    url: "/tools",
+    icon: Wrench,
+    perm: "profile.self",
+    accent: "blurple",
   },
 
   {

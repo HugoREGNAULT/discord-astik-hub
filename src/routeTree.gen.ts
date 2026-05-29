@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -34,6 +35,7 @@ import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
+import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
@@ -87,6 +89,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
@@ -174,6 +181,11 @@ const AuthenticatedAbsencesRoute = AuthenticatedAbsencesRouteImport.update({
   id: '/absences',
   path: '/absences',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedToolsRoute,
 } as any)
 const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   id: '/',
@@ -275,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
@@ -286,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
+  '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -326,6 +340,7 @@ export interface FileRoutesByTo {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
+  '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -358,6 +373,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
+  '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
@@ -369,6 +385,7 @@ export interface FileRoutesById {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
+  '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -401,6 +418,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/recruitment'
     | '/staff'
+    | '/tools'
     | '/welcome'
     | '/api/health'
     | '/members/$id'
@@ -412,6 +430,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/polls/'
+    | '/tools/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -452,6 +471,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/polls'
+    | '/tools'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -483,6 +503,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
     | '/_authenticated/staff'
+    | '/_authenticated/tools'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/members/$id'
@@ -494,6 +515,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/_authenticated/polls/'
+    | '/_authenticated/tools/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -580,6 +602,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tools': {
+      id: '/_authenticated/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AuthenticatedToolsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/staff': {
@@ -700,6 +729,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/absences'
       preLoaderRoute: typeof AuthenticatedAbsencesRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tools/': {
+      id: '/_authenticated/tools/'
+      path: '/'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof AuthenticatedToolsIndexRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
     }
     '/_authenticated/polls/': {
       id: '/_authenticated/polls/'
@@ -833,6 +869,17 @@ const AuthenticatedPollsRouteChildren: AuthenticatedPollsRouteChildren = {
 const AuthenticatedPollsRouteWithChildren =
   AuthenticatedPollsRoute._addFileChildren(AuthenticatedPollsRouteChildren)
 
+interface AuthenticatedToolsRouteChildren {
+  AuthenticatedToolsIndexRoute: typeof AuthenticatedToolsIndexRoute
+}
+
+const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
+  AuthenticatedToolsIndexRoute: AuthenticatedToolsIndexRoute,
+}
+
+const AuthenticatedToolsRouteWithChildren =
+  AuthenticatedToolsRoute._addFileChildren(AuthenticatedToolsRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
@@ -851,6 +898,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
+  AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -872,6 +920,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
+  AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
