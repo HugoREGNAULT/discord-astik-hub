@@ -26,6 +26,11 @@ function flattenStatus(raw: unknown): Array<{
   function num(v: unknown): number | null {
     return typeof v === "number" && Number.isFinite(v) ? v : null;
   }
+  function isUp(s: unknown): boolean {
+    if (typeof s !== "string") return false;
+    const v = s.toLowerCase();
+    return v === "online" || v === "running" || v === "whitelist";
+  }
 
   const java = r.java as AnyObj | undefined;
   const global = java?.global as AnyObj | undefined;
@@ -33,26 +38,24 @@ function flattenStatus(raw: unknown): Array<{
     out.push({
       server_key: "java.global",
       server_label: "Java Global",
-      online_players: num(global.online ?? global.playersOnline),
+      online_players: num(global.players ?? global.online ?? global.playersOnline),
       max_players: num(global.max ?? global.maxPlayers),
-      is_online: Boolean(
-        (typeof global.online === "number" ? global.online > 0 : false) ||
-        global.status === "online" ||
-        global.up,
-      ),
+      is_online: isUp(global.status as string | undefined),
     });
   }
   const factions = java?.factions as AnyObj | undefined;
   if (factions && typeof factions === "object") {
     for (const [key, val] of Object.entries(factions)) {
-      if (!val || typeof val !== "object") continue;
-      const v = val as AnyObj;
+      // API shape: { "Soleratl": "running", ... } — value is a status string,
+      // not an object. We don't get per-faction player counts.
+      const status = typeof val === "string" ? val : (val as AnyObj)?.status;
+      const obj = typeof val === "object" && val ? (val as AnyObj) : null;
       out.push({
         server_key: `java.factions.${key}`,
         server_label: `Faction ${key}`,
-        online_players: num(v.online ?? v.playersOnline),
-        max_players: num(v.max ?? v.maxPlayers),
-        is_online: Boolean(v.online != null || v.status === "online" || v.up),
+        online_players: obj ? num(obj.players ?? obj.online) : null,
+        max_players: obj ? num(obj.max ?? obj.maxPlayers) : null,
+        is_online: isUp(status),
       });
     }
   }
@@ -61,9 +64,9 @@ function flattenStatus(raw: unknown): Array<{
     out.push({
       server_key: "launcher",
       server_label: "Launcher",
-      online_players: num(launcher.online ?? launcher.playersOnline),
-      max_players: num(launcher.max ?? launcher.maxPlayers),
-      is_online: Boolean(launcher.online != null || launcher.status === "online" || launcher.up),
+      online_players: null,
+      max_players: null,
+      is_online: isUp(launcher.status as string | undefined),
     });
   }
   const anarchy = r.anarchy as AnyObj | undefined;
@@ -71,9 +74,9 @@ function flattenStatus(raw: unknown): Array<{
     out.push({
       server_key: "anarchy",
       server_label: "Anarchy",
-      online_players: num(anarchy.online ?? anarchy.playersOnline),
+      online_players: num(anarchy.players ?? anarchy.online),
       max_players: num(anarchy.max ?? anarchy.maxPlayers),
-      is_online: Boolean(anarchy.online != null || anarchy.status === "online" || anarchy.up),
+      is_online: isUp(anarchy.status as string | undefined),
     });
   }
   return out;
