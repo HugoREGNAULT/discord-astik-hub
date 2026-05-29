@@ -254,7 +254,7 @@ export const PaladiumApi = {
   getUpcomingEvents: () =>
     paladiumFetch<EventEntry[] | { events: EventEntry[] }>(`/v1/paladium/events/upcoming`),
   getOnYourMark: () => paladiumFetch<unknown>(`/v1/paladium/faction/onyourmarks`),
-  getFactionQuests: () => paladiumFetch<unknown>(`/v1/paladium/faction/quests`),
+  getFactionQuest: () => paladiumFetch<unknown>(`/v1/paladium/faction/quest`),
   getTrixiumPlayers: () =>
     paladiumFetch<TrixiumEntry[] | { entries: TrixiumEntry[] }>(
       `/v1/paladium/trixium/leaderboard/players`,
