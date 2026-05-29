@@ -21,6 +21,8 @@ export const ROLES = {
   MEMBER_FACTION: "1503030823174148216",
   /** Haut staff sur serveur public */
   HIGH_STAFF_PUBLIC: "1485420835165569146",
+  /** Candidature acceptée — en attente d'entretien (serveur public) */
+  INTERVIEW_PENDING_PUBLIC: "1487627885027266611",
 } as const;
 
 /**
