@@ -13,9 +13,11 @@ import { EmptyState } from "@/components/EmptyState";
 import { Search as SearchIcon } from "lucide-react";
 import {
   getLeaderboard,
+  getLeaderboardHistory,
   type LeaderboardEntry,
   type LeaderboardMetric,
 } from "@/lib/data/leaderboard.functions";
+import { LeaderboardChart } from "@/components/LeaderboardChart";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
@@ -118,17 +120,31 @@ function LeaderboardList({
 
 function LeaderboardPage() {
   const fetchLb = useServerFn(getLeaderboard);
+function LeaderboardPage() {
+  const fetchLb = useServerFn(getLeaderboard);
+  const fetchHist = useServerFn(getLeaderboardHistory);
   const { data, isLoading } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
+    refetchInterval: 60_000,
+  });
+  const { data: histData } = useQuery({
+    queryKey: ["leaderboard-history"],
+    queryFn: () => fetchHist(),
+    refetchInterval: 60_000,
   });
   const [metric, setMetric] = useState<LeaderboardMetric>("points");
   const [period, setPeriod] = useState<"all" | "7d">("all");
   const [query, setQuery] = useState("");
 
   const entries = data?.entries ?? [];
+  const sortedAll = useMemo(
+    () => [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period)),
+    [entries, metric, period],
+  );
+  const top3 = sortedAll.slice(0, 3);
+  const rest = sortedAll.slice(3);
 
-  return (
     <div className="space-y-6">
       <div className="flex items-start gap-3">
         <div className="size-10 rounded-md bg-primary/15 text-primary grid place-items-center">
