@@ -149,26 +149,7 @@ function StaffPage() {
               </p>
             ) : (
               data.inactiveMembers.map((m: any) => (
-                <Link
-                  key={m.discord_id}
-                  to="/members/$id"
-                  params={{ id: m.discord_id }}
-                  className="flex items-center gap-3 border border-border rounded p-2 hover:border-primary/40 transition"
-                >
-                  {m.avatar_url ? (
-                    <img src={m.avatar_url} alt="" className="size-8 rounded-full" />
-                  ) : (
-                    <div className="size-8 rounded-full bg-muted" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">
-                      {m.ig_name ?? m.discord_username}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground truncate">
-                      @{m.discord_username ?? "—"} · {m.current_grade ?? "—"}
-                    </div>
-                  </div>
-                </Link>
+                <InactiveMemberRow key={m.discord_id} member={m} />
               ))
             )}
           </CardContent>
