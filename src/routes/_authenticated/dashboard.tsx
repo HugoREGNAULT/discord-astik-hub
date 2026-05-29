@@ -148,93 +148,96 @@ function LeaderboardPage() {
   const top3 = sortedAll.slice(0, 3);
   const rest = sortedAll.slice(3);
   return (
-    <div className="space-y-6">
-      <div className="flex items-start gap-3">
-        <div className="size-10 rounded-md bg-primary/15 text-primary grid place-items-center">
-          <Trophy className="size-5" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Classement</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Le top de la faction — AstikPoints, vocal et messages.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <PageHeader
+        code="// dashboard.leaderboard"
+        title="Classement"
+        description="Le top de la faction — AstikPoints, vocal et messages."
+      />
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0 gap-4 flex-wrap">
-          <Tabs value={metric} onValueChange={(v) => setMetric(v as LeaderboardMetric)}>
-            <TabsList>
-              <TabsTrigger value="points">
-                <Coins className="size-4 mr-1.5" /> Points
-              </TabsTrigger>
-              <TabsTrigger value="voice">
-                <Mic className="size-4 mr-1.5" /> Vocal
-              </TabsTrigger>
-              <TabsTrigger value="messages">
-                <MessageSquare className="size-4 mr-1.5" /> Messages
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+      <PageCard>
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+          <MetricTabs
+            options={[
+              { value: "points", label: "Points", icon: Coins },
+              { value: "voice", label: "Vocal", icon: Mic },
+              { value: "messages", label: "Messages", icon: MessageSquare },
+            ]}
+            value={metric}
+            onChange={(v) => setMetric(v as LeaderboardMetric)}
+          />
           {metric !== "points" && (
-            <Tabs value={period} onValueChange={(v) => setPeriod(v as "all" | "7d")}>
-              <TabsList>
-                <TabsTrigger value="all">Total</TabsTrigger>
-                <TabsTrigger value="7d">7 jours</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <MetricTabs
+              options={[
+                { value: "all", label: "Total" },
+                { value: "7d", label: "7 jours" },
+              ]}
+              value={period}
+              onChange={(v) => setPeriod(v as "all" | "7d")}
+            />
           )}
-        </CardHeader>
-        <CardContent className="space-y-5">
-          {/* Top 3 + graphe d'évolution */}
-          <div className="space-y-3">
-            <div className="grid sm:grid-cols-3 gap-2">
-              {top3.map((e, i) => {
-                const rank = i + 1;
-                const value = getValue(e, metric, period);
-                return (
-                  <div
-                    key={e.discord_id}
-                    className="flex items-center gap-3 rounded-md border border-primary/30 bg-primary/5 px-3 py-2"
-                  >
-                    <div className="flex items-center gap-1">
-                      <span className="font-mono text-sm text-muted-foreground">#{rank}</span>
-                      {rankIcon(rank)}
+        </div>
+
+        <div className="space-y-5">
+          <div className="grid sm:grid-cols-3 gap-2">
+            {top3.map((e, i) => {
+              const rank = i + 1;
+              const value = getValue(e, metric, period);
+              return (
+                <div
+                  key={e.discord_id}
+                  className="flex items-center gap-3 border border-pink-500/30 bg-pink-500/5 px-3 py-2"
+                >
+                  <div className="flex items-center gap-1">
+                    <span
+                      className="font-mono text-xs text-zinc-500"
+                      style={{ fontFamily: "'Space Mono'" }}
+                    >
+                      #{rank}
+                    </span>
+                    {rankIcon(rank)}
+                  </div>
+                  <Avatar className="size-8">
+                    <AvatarImage src={e.avatar_url ?? undefined} />
+                    <AvatarFallback className="text-xs">
+                      {(e.ig_name ?? e.discord_username ?? "?").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="text-sm font-bold uppercase tracking-tight text-white truncate"
+                      style={{ fontFamily: "'Space Grotesk'" }}
+                    >
+                      {e.ig_name ?? e.discord_username ?? e.discord_id}
                     </div>
-                    <Avatar className="size-8">
-                      <AvatarImage src={e.avatar_url ?? undefined} />
-                      <AvatarFallback className="text-xs">
-                        {(e.ig_name ?? e.discord_username ?? "?").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">
-                        {e.ig_name ?? e.discord_username ?? e.discord_id}
-                      </div>
-                      <div className="font-mono text-xs text-primary">
-                        {formatValue(value, metric)}
-                      </div>
+                    <div className="font-mono text-xs text-pink-400">
+                      {formatValue(value, metric)}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-            <LeaderboardChart
-              snapshots={histData?.snapshots ?? []}
-              topEntries={top3}
-              metric={metric}
-              period={period}
-            />
+                </div>
+              );
+            })}
           </div>
+          <LeaderboardChart
+            snapshots={histData?.snapshots ?? []}
+            topEntries={top3}
+            metric={metric}
+            period={period}
+          />
 
-          <div className="border-t border-border pt-4 space-y-3">
+          <div className="border-t border-zinc-800 pt-4 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-sm font-semibold text-muted-foreground">À partir du rang 4</h2>
-              <Input
+              <h2
+                className="text-[10px] uppercase tracking-[0.3em] text-pink-500"
+                style={{ fontFamily: "'Space Mono'" }}
+              >
+                // à partir du rang 4
+              </h2>
+              <input
                 placeholder="Rechercher un membre…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="max-w-xs"
+                className="max-w-xs bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none font-mono"
               />
             </div>
             {isLoading ? (
@@ -249,8 +252,9 @@ function LeaderboardPage() {
               />
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </PageCard>
+
 
       {canSeeCarts && <RecentCartsPanel />}
     </div>
