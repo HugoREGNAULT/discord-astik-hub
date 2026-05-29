@@ -47,6 +47,8 @@ function rankIcon(rank: number) {
   if (rank === 2) return <Medal className="size-4 text-zinc-300" />;
   if (rank === 3) return <Award className="size-4 text-amber-600" />;
   return null;
+}
+
 function LeaderboardList({
   entries,
   metric,
