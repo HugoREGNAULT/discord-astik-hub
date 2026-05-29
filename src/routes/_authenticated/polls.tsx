@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Plus, Calendar, Lock, Trash2, ExternalLink } from "lucide-react";
+import { Plus, Calendar, Lock, Trash2, ExternalLink, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -227,7 +227,49 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
           </div>
 
           <div className="space-y-2">
-            <Label>Créneaux proposés</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label>Créneaux proposés</Label>
+              <div>
+                <input
+                  id="poll-csv"
+                  type="file"
+                  accept=".csv,text/csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const text = String(reader.result ?? "");
+                      const parsed = parseCsvSlots(text);
+                      if (!parsed.length) {
+                        toast.error("Aucun créneau valide trouvé dans le CSV");
+                        return;
+                      }
+                      if (parsed.length > 20) {
+                        toast.error("Maximum 20 créneaux — seuls les 20 premiers ont été gardés");
+                      }
+                      setSlots(parsed.slice(0, 20));
+                      toast.success(`${Math.min(parsed.length, 20)} créneaux importés`);
+                    };
+                    reader.readAsText(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => document.getElementById("poll-csv")?.click()}
+                >
+                  <Upload className="size-3" /> Importer CSV
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Format CSV: <code>date,durée</code> — ex.{" "}
+              <code>2026-06-15 20:00,90</code> (durée en minutes, optionnelle).
+            </p>
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
                 <Input
@@ -288,4 +330,36 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
       </DialogContent>
     </Dialog>
   );
+}
+
+/**
+ * Parse un CSV de créneaux. Accepte:
+ *  - une colonne datetime (ISO ou "YYYY-MM-DD HH:MM"), durée optionnelle en 2e colonne
+ *  - séparateur , ou ;
+ *  - ignore une éventuelle ligne d'en-tête non parseable
+ *  - renvoie au format datetime-local "YYYY-MM-DDTHH:MM"
+ */
+function parseCsvSlots(text: string): { value: string; duration: number }[] {
+  const out: { value: string; duration: number }[] = [];
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    const cols = line.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, ""));
+    if (!cols[0]) continue;
+    const raw = cols[0];
+    // tente plusieurs formats
+    let d: Date | null = null;
+    const isoTry = new Date(raw);
+    if (!isNaN(isoTry.getTime())) d = isoTry;
+    if (!d) {
+      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
+      if (m) d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`);
+    }
+    if (!d || isNaN(d.getTime())) continue;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const dur = Number(cols[1]);
+    const duration = Number.isFinite(dur) && dur >= 15 && dur <= 1440 ? Math.round(dur) : 60;
+    out.push({ value, duration });
+  }
+  return out;
 }
