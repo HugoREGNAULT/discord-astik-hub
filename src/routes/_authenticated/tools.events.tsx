@@ -194,9 +194,9 @@ function EventsPage() {
             {JSON.stringify(onYourMark.data, null, 2)}
           </pre>
         ) : null}
+        {onYourMark.isLoading && <LoadingBlock />}
+        {onYourMark.error && <ErrorBlock message={(onYourMark.error as Error).message} />}
 
-          </pre>
-        )}
       </ToolCard>
     </div>
   );
