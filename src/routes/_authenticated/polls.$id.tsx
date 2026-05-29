@@ -151,9 +151,12 @@ function PollDetail() {
   const nonVoters = useMemo(
     () => activeMembers.filter((m) => !voterIds.has(m.discord_id)),
     [activeMembers, voterIds],
+  );
+
   if (isLoading) return <DetailPageSkeleton />;
 
   if (error) {
+
     const msg = String((error as any)?.message ?? "");
     const isForbidden = /FORBIDDEN|403|unauthor/i.test(msg);
     return (
