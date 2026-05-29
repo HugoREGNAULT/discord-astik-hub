@@ -72,7 +72,7 @@ function ShopAdminPage() {
       <ToolHeader
         code="// tools.shop-admin"
         title="Shop admin"
-        description="Prix actuels du shop admin Paladium et historique quotidien (snapshot 1×/jour)."
+        description="Prix d'achat / vente du shop admin Paladium et évolution (snapshot toutes les 5 min, 30j)."
       />
 
       <ToolCard>
@@ -87,7 +87,7 @@ function ShopAdminPage() {
       {latest.isLoading && <LoadingBlock />}
       {latest.error && <ErrorBlock message={(latest.error as Error).message} />}
       {!latest.isLoading && items.length === 0 && (
-        <EmptyBlock label="Aucun snapshot — attends le prochain passage du cron (1×/jour)." />
+        <EmptyBlock label="Aucun snapshot — attends le prochain passage du cron (toutes les 5 min)." />
       )}
 
       {filtered.length > 0 && (
@@ -98,8 +98,8 @@ function ShopAdminPage() {
                 <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
                   <th className="py-2 px-4">Item</th>
                   <th className="py-2 px-4">Catégorie</th>
-                  <th className="py-2 px-4 text-right">Prix</th>
-                  <th className="py-2 px-4 text-right">PB</th>
+                  <th className="py-2 px-4 text-right">Achat</th>
+                  <th className="py-2 px-4 text-right">Vente</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,13 +142,18 @@ function ShopAdminPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={history.data.rows.map((r) => ({
-                      date: r.snapshot_date,
-                      price: r.price,
-                      pb: r.price_pb,
+                      t: new Date(r.captured_at).toLocaleString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                      buy: r.price,
+                      sell: r.price_pb,
                     }))}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis dataKey="date" stroke="#71717a" fontSize={10} />
+                    <XAxis dataKey="t" stroke="#71717a" fontSize={10} />
                     <YAxis stroke="#71717a" fontSize={10} />
                     <Tooltip
                       contentStyle={{
@@ -159,19 +164,19 @@ function ShopAdminPage() {
                     />
                     <Line
                       type="monotone"
-                      dataKey="price"
+                      dataKey="buy"
                       stroke="#ffffff"
                       strokeWidth={2}
                       dot={false}
-                      name="Prix"
+                      name="Achat"
                     />
                     <Line
                       type="monotone"
-                      dataKey="pb"
+                      dataKey="sell"
                       stroke="#ec4899"
                       strokeWidth={2}
                       dot={false}
-                      name="PB"
+                      name="Vente"
                     />
                   </LineChart>
                 </ResponsiveContainer>

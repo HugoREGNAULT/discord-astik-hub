@@ -126,8 +126,8 @@ export const PALADIUM_ROUTES: RouteSpec[] = [
     windowMin: 5,
   },
   {
-    template: "/v1/paladium/faction/onyourmark",
-    match: /^\/v1\/paladium\/faction\/onyourmark$/,
+    template: "/v1/paladium/faction/onyourmarks",
+    match: /^\/v1\/paladium\/faction\/onyourmarks$/,
     label: "À vos marques",
     limit: 300,
     windowMin: 5,
