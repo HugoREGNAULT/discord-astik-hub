@@ -193,14 +193,13 @@ function PlayerSales() {
       />
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-        <div className="flex-1">
           <SearchInput
             value={input}
             onChange={setInput}
-            onSubmit={onSubmit}
+            onSubmit={() => onSubmit(input)}
             placeholder="Pseudo Minecraft ou UUID…"
           />
-        </div>
+
         {topQ.data?.players.length ? (
           <div className="flex flex-wrap gap-1.5 sm:max-w-[60%]">
             {topQ.data.players.slice(0, 8).map((p) => (
