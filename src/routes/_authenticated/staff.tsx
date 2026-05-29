@@ -21,6 +21,19 @@ import {
 
 import { Guard } from "@/components/Guard";
 import { getStaffDashboard } from "@/lib/data/staff.functions";
+import { getFactionHealth } from "@/lib/data/health.functions";
+import { getLatestDigest, generateDigestManually } from "@/lib/data/digest.functions";
+import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
+import {
+  AreaChart,
+  Area,
+  XAxis as RXAxis,
+  YAxis as RYAxis,
+  Tooltip as RTooltip,
+  ResponsiveContainer,
+  CartesianGrid as RGrid,
+} from "recharts";
+import { Sparkles, HeartPulse, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
