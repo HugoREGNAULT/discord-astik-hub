@@ -189,6 +189,35 @@ export type PlayerMarketResponse = {
   totalCount?: number;
 };
 
+export type EventEntry = {
+  id?: string;
+  name?: string;
+  type?: string;
+  startAt?: number;
+  endAt?: number;
+  description?: string;
+  [k: string]: unknown;
+};
+
+export type TrixiumEntry = {
+  position?: number;
+  rank?: number;
+  uuid?: string;
+  username?: string;
+  factionName?: string;
+  value?: number;
+  trixium?: number;
+  [k: string]: unknown;
+};
+
+export type AdminShopItem = {
+  name?: string;
+  category?: string;
+  price?: number;
+  pricePB?: number;
+  [k: string]: unknown;
+};
+
 export const PaladiumApi = {
   getPlayerProfile: (uuid: string) =>
     paladiumFetch<PlayerProfile>(`/v1/paladium/player/profile/${uuid}`),
@@ -217,7 +246,23 @@ export const PaladiumApi = {
     paladiumFetch<LeaderboardEntry[] | { entries: LeaderboardEntry[] }>(
       `/v1/paladium/faction/leaderboard`,
     ),
+  getAdminShop: () =>
+    paladiumFetch<AdminShopItem[] | { items: AdminShopItem[] }>(`/v1/paladium/shop/admin/items`),
+  getEvents: () => paladiumFetch<EventEntry[] | { events: EventEntry[] }>(`/v1/paladium/events`),
+  getUpcomingEvents: () =>
+    paladiumFetch<EventEntry[] | { events: EventEntry[] }>(`/v1/paladium/events/upcoming`),
+  getOnYourMark: () => paladiumFetch<unknown>(`/v1/paladium/faction/onyourmark`),
+  getFactionQuests: () => paladiumFetch<unknown>(`/v1/paladium/faction/quests`),
+  getTrixiumPlayers: () =>
+    paladiumFetch<TrixiumEntry[] | { entries: TrixiumEntry[] }>(
+      `/v1/paladium/trixium/leaderboard/players`,
+    ),
+  getTrixiumFactions: () =>
+    paladiumFetch<TrixiumEntry[] | { entries: TrixiumEntry[] }>(
+      `/v1/paladium/trixium/leaderboard/factions`,
+    ),
 };
+
 
 export function asArray<T>(value: T[] | { [k: string]: unknown } | null | undefined): T[] {
   if (!value) return [];
