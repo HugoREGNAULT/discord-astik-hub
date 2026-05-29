@@ -11,6 +11,8 @@ import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
+import { addGuildMemberRole } from "@/lib/discord/api.server";
+import { GUILDS, ROLES } from "@/lib/discord/constants";
 import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
