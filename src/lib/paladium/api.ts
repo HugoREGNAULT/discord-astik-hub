@@ -51,7 +51,6 @@ export async function resolveUuid(username: string): Promise<MojangProfile> {
   }
 }
 
-
 export function avatarUrl(uuid: string, size = 128) {
   return `https://crafatar.com/avatars/${uuid}?size=${size}&overlay`;
 }
@@ -153,9 +152,7 @@ export const PaladiumApi = {
   getPlayerProfile: (uuid: string) =>
     paladiumFetch<PlayerProfile>(`/v1/paladium/player/profile/${uuid}`),
   getPlayerJobs: (uuid: string) =>
-    paladiumFetch<PlayerJob[] | { jobs: PlayerJob[] }>(
-      `/v1/paladium/player/profile/${uuid}/jobs`,
-    ),
+    paladiumFetch<PlayerJob[] | { jobs: PlayerJob[] }>(`/v1/paladium/player/profile/${uuid}/jobs`),
   getPaladiumProfile: (uuid: string) =>
     paladiumFetch<PaladiumProfile>(`/v1/paladium/player/profile/${uuid}/clicker`),
   getFaction: (name: string) =>
