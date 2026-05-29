@@ -84,7 +84,7 @@ function PdcPage() {
   const { data: blocksData } = useQuery({ queryKey: ["pdc-blocks"], queryFn: () => lsBlocks() });
   const { data: plansData } = useQuery({ queryKey: ["pdc-plans"], queryFn: () => lsPlans() });
 
-  const blocks = useMemo(() => ((blocksData?.blocks ?? []) as PdcBlock[]), [blocksData?.blocks]);
+  const blocks = useMemo(() => (blocksData?.blocks ?? []) as PdcBlock[], [blocksData?.blocks]);
 
   // currently loaded plan
   const [planId, setPlanId] = useState<string | null>(null);
