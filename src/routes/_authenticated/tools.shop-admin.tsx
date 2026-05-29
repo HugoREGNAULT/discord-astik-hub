@@ -19,7 +19,11 @@ import {
   SearchInput,
 } from "@/components/tools/ToolsUi";
 import { useServerFn } from "@tanstack/react-start";
-import { getAdminShopLatest, getAdminShopHistory } from "@/lib/paladium/history.functions";
+import {
+  getAdminShopLatest,
+  getAdminShopHistory,
+  getAdminShopTopMovers,
+} from "@/lib/paladium/history.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
   head: () => ({
