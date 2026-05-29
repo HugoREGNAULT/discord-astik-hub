@@ -479,7 +479,7 @@ function PdcPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="editor" className="w-full">
+      <Tabs defaultValue="calc" className="w-full">
         <TabsList>
           <TabsTrigger value="calc">
             <Calculator className="size-4 mr-1" />
