@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      absences: {
+        Row: {
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          ends_on: string
+          id: string
+          member_discord_id: string
+          reason: string | null
+          starts_on: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          ends_on: string
+          id?: string
+          member_discord_id: string
+          reason?: string | null
+          starts_on: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          ends_on?: string
+          id?: string
+          member_discord_id?: string
+          reason?: string | null
+          starts_on?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           age: number

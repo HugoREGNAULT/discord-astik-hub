@@ -53,6 +53,14 @@ const ITEMS: Item[] = [
     perm: "profile.self",
     accent: "blurple",
   },
+  {
+    title: "Absences",
+    url: "/absences",
+    icon: CalendarCheck,
+    perm: "profile.self",
+    accent: "pink",
+  },
+
 
   {
     title: "Dashboard staff",
