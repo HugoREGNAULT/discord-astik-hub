@@ -9,7 +9,7 @@ import {
   MissingKeyBanner,
 } from "@/components/tools/ToolsUi";
 import { PaladiumApi, asArray, hasPaladiumKey, type LeaderboardEntry } from "@/lib/paladium/api";
-import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
+import { resolveMojangUuid, resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/leaderboard")({
   head: () => ({
