@@ -80,18 +80,18 @@ function PollsPage() {
       ) : (
         <div className="grid gap-3">
           {data.polls.map((p: any) => (
-            <Card key={p.id}>
-              <CardContent className="py-4 flex items-center gap-4">
+            <Card key={p.id} className="relative hover:border-primary/40 transition-colors">
+              <Link
+                to="/polls/$id"
+                params={{ id: p.id }}
+                className="absolute inset-0 z-0"
+                aria-label={`Ouvrir ${p.title}`}
+              />
+              <CardContent className="py-4 flex items-center gap-4 relative pointer-events-none">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Link
-                      to="/polls/$id"
-                      params={{ id: p.id }}
-                      className="font-semibold hover:underline truncate"
-                    >
-                      {p.title}
-                    </Link>
+                    <span className="font-semibold truncate">{p.title}</span>
                     {p.status === "open" ? (
                       <Badge variant="secondary">Ouvert</Badge>
                     ) : (
@@ -106,29 +106,32 @@ function PollsPage() {
                     {p.location && ` · 📍 ${p.location}`}
                   </div>
                 </div>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/polls/$id" params={{ id: p.id }}>
-                    <ExternalLink className="size-4" />
-                  </Link>
-                </Button>
-                {canManage && (
-                  <ConfirmDialog
-                    trigger={
-                      <Button variant="ghost" size="sm" aria-label="Supprimer">
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    }
-                    title={`Supprimer "${p.title}" ?`}
-                    description="Ce sondage et tous les votes associés seront définitivement effacés."
-                    confirmLabel="Supprimer"
-                    onConfirm={async () => {
-                      await mDel.mutateAsync(p.id);
-                    }}
-                  />
-                )}
+                <div className="flex items-center gap-1 pointer-events-auto relative z-10">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/polls/$id" params={{ id: p.id }}>
+                      <ExternalLink className="size-4" />
+                    </Link>
+                  </Button>
+                  {canManage && (
+                    <ConfirmDialog
+                      trigger={
+                        <Button variant="ghost" size="sm" aria-label="Supprimer">
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      }
+                      title={`Supprimer "${p.title}" ?`}
+                      description="Ce sondage et tous les votes associés seront définitivement effacés."
+                      confirmLabel="Supprimer"
+                      onConfirm={async () => {
+                        await mDel.mutateAsync(p.id);
+                      }}
+                    />
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}
+
         </div>
       )}
     </div>
