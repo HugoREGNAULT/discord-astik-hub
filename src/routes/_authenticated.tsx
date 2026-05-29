@@ -61,25 +61,28 @@ function AuthLayout() {
           <header className="h-14 flex items-center gap-3 border-b border-zinc-800/80 px-4 sticky top-0 bg-[#0a0a0c]/90 backdrop-blur z-10">
             <SidebarTrigger className="text-zinc-400 hover:text-pink-500" />
             <div
-              className="text-[10px] text-zinc-500 uppercase tracking-[0.3em]"
+              className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] hidden sm:block"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // punkastik / hub
+            </div>
+            <div className="ml-auto flex items-center gap-1">
               <CommandPalette />
               <NotificationBell />
               <ThemeToggle />
-
-              <NotificationBell />
               <span
-                className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] hidden sm:inline ml-1"
+                className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] hidden md:inline ml-1"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 SYS_HUB_V2
               </span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+              <span
+                className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)] ml-1"
+                aria-hidden
+              />
             </div>
-
           </header>
+
           <main
             className="flex-1 p-4 md:p-6 overflow-x-hidden relative"
             style={{ fontFamily: "'Space Grotesk'" }}
