@@ -46,7 +46,6 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from "lucide-react";
 
-
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
   component: () => (
@@ -141,13 +140,10 @@ function StaffPage() {
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
         timeline={data.applicationsTimeline ?? []}
-        stats={
-          data.applicationsStats ?? { total: 0, accepted: 0, rejected: 0, acceptanceRate: 0 }
-        }
+        stats={data.applicationsStats ?? { total: 0, accepted: 0, rejected: 0, acceptanceRate: 0 }}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-
         {/* Inactifs */}
         <Card>
           <CardHeader>
@@ -614,4 +610,3 @@ function MiniStat({
     </div>
   );
 }
-
