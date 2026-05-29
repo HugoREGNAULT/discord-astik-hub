@@ -47,28 +47,32 @@ export function ApplicationsChart({ data, range = 90 }: Props) {
               <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
           <XAxis
             dataKey="date"
             tickFormatter={fmtDate}
-            tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
+            tick={{ fill: "#e4e4e7", fontSize: 11 }}
+            stroke="#52525b"
             minTickGap={30}
           />
           <YAxis
             allowDecimals={false}
-            tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
+            tick={{ fill: "#e4e4e7", fontSize: 11 }}
+            stroke="#52525b"
             width={28}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: "hsl(var(--card))",
-              border: "1px solid hsl(var(--border))",
+              backgroundColor: "#18181b",
+              border: "1px solid #3f3f46",
               borderRadius: 6,
               fontSize: 12,
+              color: "#e4e4e7",
             }}
+            labelStyle={{ color: "#fafafa" }}
             labelFormatter={(l) => fmtDate(String(l))}
           />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Legend wrapperStyle={{ fontSize: 12, color: "#e4e4e7" }} />
           <Area
             type="monotone"
             dataKey="created"
