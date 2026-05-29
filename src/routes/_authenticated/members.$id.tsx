@@ -318,17 +318,17 @@ function MemberDetail() {
               <span className="flex items-center gap-2">
                 <ShoppingCart className="size-4 text-primary" /> Donations
               </span>
-              <Badge variant="outline">{data.donations.length}</Badge>
+              <Badge variant="outline">{donations.length}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {data.donations.length === 0 ? (
+            {donations.length === 0 ? (
               <div className="p-4">
                 <EmptyState icon={ShoppingCart} title="Aucune donation" description="Les donations valides s'afficheront ici." variant="compact" />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {data.donations.map((d: any) => (
+                {donations.map((d: any) => (
                   <li key={d.id} className="px-4 py-2 text-sm flex items-center gap-3">
                     <Badge
                       variant={
@@ -353,6 +353,20 @@ function MemberDetail() {
                   </li>
                 ))}
               </ul>
+            )}
+            {donationsHasMore && (
+              <div className="p-2 border-t border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => loadMoreDonations.mutate()}
+                  disabled={loadMoreDonations.isPending}
+                >
+                  <ChevronDown className="size-4 mr-1" />
+                  {loadMoreDonations.isPending ? "Chargement…" : "Charger plus"}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
