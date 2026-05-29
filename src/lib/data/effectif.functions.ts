@@ -4,9 +4,17 @@ import { listAllGuildMembers, type DiscordGuildMember } from "@/lib/discord/api.
 import { GUILDS, EFFECTIF_GRADES } from "@/lib/discord/constants";
 import { db } from "@/lib/db.server";
 
+interface EffectifMember {
+  discord_id: string;
+  name: string;
+  ig_name: string | null;
+  avatarUrl: string | null;
+  blacklisted: boolean;
+}
+
 interface EffectifGroup {
   label: string;
-  members: { discord_id: string; name: string; avatarUrl: string | null }[];
+  members: EffectifMember[];
 }
 
 export const getEffectif = createServerFn({ method: "GET" }).handler(async () => {
@@ -40,23 +48,44 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     throw e;
   }
 
+  // Récupère les IG names et la blacklist en une fois
+  const allDiscordIds = members.map((m) => m.user?.id).filter(Boolean) as string[];
+  const [{ data: dbMembers }, { data: blacklistRows }] = await Promise.all([
+    db.from("members").select("discord_id, ig_name").in("discord_id", allDiscordIds),
+    db.from("blacklist").select("discord_id").not("discord_id", "is", null),
+  ]);
+  const igByDiscord = new Map<string, string | null>(
+    (dbMembers ?? []).map((m: any) => [m.discord_id, m.ig_name ?? null]),
+  );
+  const blacklisted = new Set<string>(
+    (blacklistRows ?? []).map((b: any) => b.discord_id as string),
+  );
+
   const seen = new Set<string>();
   const groups: EffectifGroup[] = gradeRoleIds.map((g) => {
-    const list: EffectifGroup["members"] = [];
+    const list: EffectifMember[] = [];
     for (const m of members) {
       const uid = m.user?.id;
       if (!uid || seen.has(uid)) continue;
       if (g.roleIds.some((rid) => m.roles.includes(rid))) {
         seen.add(uid);
+        const igName = igByDiscord.get(uid) ?? null;
+        // Priorité : IG name (DB) → nick Discord → global_name → username
+        const displayName =
+          igName || m.nick || m.user?.global_name || m.user?.username || uid;
         list.push({
           discord_id: uid,
-          name: m.nick || m.user?.global_name || m.user?.username || uid,
+          name: displayName,
+          ig_name: igName,
           avatarUrl: m.user?.avatar
             ? `https://cdn.discordapp.com/avatars/${uid}/${m.user.avatar}.png`
             : null,
+          blacklisted: blacklisted.has(uid),
         });
       }
     }
+    // tri alphabétique pour stabilité
+    list.sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
     return { label: g.label, members: list };
   });
 
