@@ -3,6 +3,7 @@
 // (PALADIUM_API_KEY) stays server-side. Mojang is public and stays on the client.
 
 import { callPaladium } from "./paladium.functions";
+import { resolveMojangUuid } from "./mojang.functions";
 
 const MOJANG_BASE = "https://api.mojang.com";
 
@@ -41,20 +42,15 @@ export type MojangProfile = { id: string; name: string };
 export async function resolveUuid(username: string): Promise<MojangProfile> {
   const u = username.trim();
   if (!u) throw new PaladiumApiError("Pseudo vide", 400);
-  const res = await fetch(`${MOJANG_BASE}/users/profiles/minecraft/${encodeURIComponent(u)}`);
-  if (res.status === 204 || res.status === 404) {
-    throw new PaladiumApiError(`Pseudo "${u}" introuvable sur Mojang`, 404);
+  try {
+    return await resolveMojangUuid({ data: { username: u } });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Mojang request failed";
+    const status = /introuvable/i.test(message) ? 404 : 0;
+    throw new PaladiumApiError(message, status);
   }
-  if (!res.ok) {
-    throw new PaladiumApiError(`Mojang API ${res.status}`, res.status);
-  }
-  const data = (await res.json()) as MojangProfile;
-  // Convert "compact" uuid -> dashed if needed
-  if (data.id && data.id.length === 32) {
-    data.id = `${data.id.slice(0, 8)}-${data.id.slice(8, 12)}-${data.id.slice(12, 16)}-${data.id.slice(16, 20)}-${data.id.slice(20)}`;
-  }
-  return data;
 }
+
 
 export function avatarUrl(uuid: string, size = 128) {
   return `https://crafatar.com/avatars/${uuid}?size=${size}&overlay`;
