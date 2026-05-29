@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -63,15 +64,11 @@ function BlacklistPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Ban className="size-6 text-destructive" />
-            Blacklist
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Personnes interdites de candidature/recrutement. Détection automatique côté candidature.
-          </p>
-        </div>
+        <PageHeader
+          code="// blacklist"
+          title="Blacklist"
+          description="Personnes interdites de candidature/recrutement. Détection automatique côté candidature."
+        />
         <AddEntryDialog />
       </div>
 

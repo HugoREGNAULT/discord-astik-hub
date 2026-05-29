@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -54,12 +55,11 @@ function PollsPage() {
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Sondages de planification</h1>
-          <p className="text-sm text-muted-foreground">
-            Vote sur les créneaux proposés pour les prochaines réunions / events.
-          </p>
-        </div>
+        <PageHeader
+          code="// polls"
+          title="Sondages de planification"
+          description="Vote sur les créneaux proposés pour les prochaines réunions / events."
+        />
         {canManage && (
           <CreatePollDialog onCreated={() => qc.invalidateQueries({ queryKey: ["polls"] })} />
         )}

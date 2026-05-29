@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -48,7 +49,7 @@ function ObjectivesPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold">Objectifs faction</h1>
+      <PageHeader code="// objectives" title="Objectifs faction" description="Les buts en cours pour la faction." />
 
       {canEdit && (
         <Card>

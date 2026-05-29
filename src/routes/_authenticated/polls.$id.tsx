@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { MonoLabel } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState, useEffect } from "react";
@@ -328,8 +329,9 @@ function PollDetail() {
           </Link>
         </Button>
         <div className="flex-1 min-w-0">
+          <div className="text-pink-500 mb-1"><MonoLabel>// poll</MonoLabel></div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold">{p.title}</h1>
+            <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>{p.title}</h1>
             {isOpen ? (
               <Badge variant="secondary">Ouvert</Badge>
             ) : (
