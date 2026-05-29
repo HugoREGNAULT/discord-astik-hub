@@ -329,6 +329,46 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
+function AiReview({ applicationId }: { applicationId: string }) {
+  const reviewFn = useServerFn(reviewApplication);
+  const mutation = useMutation({
+    mutationFn: () => reviewFn({ data: { applicationId } }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="text-sm font-medium flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" />
+          Avis IA
+          <span className="text-xs text-muted-foreground font-normal">
+            · récap + questions d'entretien
+          </span>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? (
+            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+          ) : (
+            <Sparkles className="w-4 h-4 mr-1" />
+          )}
+          {mutation.data ? "Régénérer" : "Demander un avis"}
+        </Button>
+      </div>
+      {mutation.data && (
+        <div className="text-sm whitespace-pre-wrap leading-relaxed border-t border-primary/20 pt-3">
+          {mutation.data.content}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StatCard({
   icon: Icon,
   label,
