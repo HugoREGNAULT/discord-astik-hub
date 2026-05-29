@@ -151,9 +151,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
                 min={1}
                 max={MAX_DIM}
                 value={w}
-                onChange={(e) =>
-                  setW(Math.max(1, Math.min(MAX_DIM, Number(e.target.value) || 1)))
-                }
+                onChange={(e) => setW(Math.max(1, Math.min(MAX_DIM, Number(e.target.value) || 1)))}
                 className="h-8"
               />
             </div>
@@ -164,9 +162,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
                 min={1}
                 max={MAX_DIM}
                 value={h}
-                onChange={(e) =>
-                  setH(Math.max(1, Math.min(MAX_DIM, Number(e.target.value) || 1)))
-                }
+                onChange={(e) => setH(Math.max(1, Math.min(MAX_DIM, Number(e.target.value) || 1)))}
                 className="h-8"
               />
             </div>
@@ -177,9 +173,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
                 min={1}
                 max={4096}
                 value={depth}
-                onChange={(e) =>
-                  setDepth(Math.max(1, Math.min(4096, Number(e.target.value) || 1)))
-                }
+                onChange={(e) => setDepth(Math.max(1, Math.min(4096, Number(e.target.value) || 1)))}
                 className="h-8"
               />
               <div className="flex items-center gap-1 pt-1">
@@ -329,7 +323,6 @@ export function PdcSliceCalculator({ blocks }: Props) {
               )}
             </div>
           </div>
-
         </CardContent>
       </Card>
 
