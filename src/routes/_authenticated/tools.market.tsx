@@ -9,6 +9,7 @@ import {
   MissingKeyBanner,
 } from "@/components/tools/ToolsUi";
 import { PaladiumApi, hasPaladiumKey, type MarketItemsPage } from "@/lib/paladium/api";
+import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/market")({
   head: () => ({
@@ -134,6 +135,37 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
     retry: false,
     staleTime: 60_000,
   });
+
+  // Resolve seller UUIDs → MC pseudos via Mojang (batched).
+  const sellerUuids = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of detail.data?.listing ?? []) {
+      const candidate = l.seller ?? l.sellerName;
+      if (typeof candidate === "string" && /^[0-9a-f-]{32,36}$/i.test(candidate)) {
+        set.add(candidate);
+      }
+    }
+    return Array.from(set);
+  }, [detail.data]);
+
+  const namesQ = useQuery({
+    queryKey: ["mojang-names", ...sellerUuids],
+    queryFn: () => resolveUuidsToNames({ data: { uuids: sellerUuids } }),
+    enabled: sellerUuids.length > 0,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+  const nameMap = namesQ.data ?? {};
+
+  function sellerLabel(l: { seller?: string; sellerName?: string }): string {
+    const raw = l.sellerName ?? l.seller;
+    if (!raw) return "—";
+    if (/^[0-9a-f-]{32,36}$/i.test(raw)) {
+      return nameMap[raw] ?? `${raw.slice(0, 8)}…`;
+    }
+    return raw;
+  }
+
   return (
     <>
       <tr
@@ -166,7 +198,7 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                     .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
                     .map((l, i) => (
                       <tr key={i} className="border-t border-zinc-900">
-                        <td className="py-1 text-zinc-400">{l.sellerName ?? l.seller ?? "—"}</td>
+                        <td className="py-1 text-zinc-400">{sellerLabel(l)}</td>
                         <td className="py-1 text-right text-zinc-300">{fmtNum(l.quantity)}</td>
                         <td className="py-1 text-right text-pink-400 font-bold">
                           {fmtNum(l.price)}

@@ -53,8 +53,10 @@ export async function resolveUuid(username: string): Promise<MojangProfile> {
   }
 }
 
+// mc-heads.net is far more reliable than crafatar (which is regularly down
+// or rate-limited). Returns a PNG head render at the requested size.
 export function avatarUrl(uuid: string, size = 128) {
-  return `https://crafatar.com/avatars/${uuid}?size=${size}&overlay`;
+  return `https://mc-heads.net/avatar/${encodeURIComponent(uuid)}/${size}`;
 }
 
 /* ---------- Paladium typed helpers ---------- */
