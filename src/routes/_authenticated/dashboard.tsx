@@ -252,6 +252,8 @@ function LeaderboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {canSeeCarts && <RecentCartsPanel />}
     </div>
   );
 }
