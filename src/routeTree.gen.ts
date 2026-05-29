@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -34,6 +35,7 @@ import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
+import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
@@ -41,6 +43,13 @@ import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as AuthenticatedToolsXpCalculatorRouteImport } from './routes/_authenticated/tools.xp-calculator'
+import { Route as AuthenticatedToolsStatusRouteImport } from './routes/_authenticated/tools.status'
+import { Route as AuthenticatedToolsPlayerRouteImport } from './routes/_authenticated/tools.player'
+import { Route as AuthenticatedToolsMarketRouteImport } from './routes/_authenticated/tools.market'
+import { Route as AuthenticatedToolsLeaderboardRouteImport } from './routes/_authenticated/tools.leaderboard'
+import { Route as AuthenticatedToolsFactionRouteImport } from './routes/_authenticated/tools.faction'
+import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
@@ -87,6 +96,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
@@ -175,6 +189,11 @@ const AuthenticatedAbsencesRoute = AuthenticatedAbsencesRouteImport.update({
   path: '/absences',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedToolsRoute,
+} as any)
 const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -210,6 +229,48 @@ const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
   path: '/api/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedToolsXpCalculatorRoute =
+  AuthenticatedToolsXpCalculatorRouteImport.update({
+    id: '/xp-calculator',
+    path: '/xp-calculator',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsStatusRoute =
+  AuthenticatedToolsStatusRouteImport.update({
+    id: '/status',
+    path: '/status',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsPlayerRoute =
+  AuthenticatedToolsPlayerRouteImport.update({
+    id: '/player',
+    path: '/player',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsMarketRoute =
+  AuthenticatedToolsMarketRouteImport.update({
+    id: '/market',
+    path: '/market',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsLeaderboardRoute =
+  AuthenticatedToolsLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsFactionRoute =
+  AuthenticatedToolsFactionRouteImport.update({
+    id: '/faction',
+    path: '/faction',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsClickerRoute =
+  AuthenticatedToolsClickerRouteImport.update({
+    id: '/clicker',
+    path: '/clicker',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
 const AuthenticatedPollsIdRoute = AuthenticatedPollsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -275,10 +336,18 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/tools/clicker': typeof AuthenticatedToolsClickerRoute
+  '/tools/faction': typeof AuthenticatedToolsFactionRoute
+  '/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
+  '/tools/market': typeof AuthenticatedToolsMarketRoute
+  '/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/tools/status': typeof AuthenticatedToolsStatusRoute
+  '/tools/xp-calculator': typeof AuthenticatedToolsXpCalculatorRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -286,6 +355,7 @@ export interface FileRoutesByFullPath {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
+  '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -319,6 +389,13 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/tools/clicker': typeof AuthenticatedToolsClickerRoute
+  '/tools/faction': typeof AuthenticatedToolsFactionRoute
+  '/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
+  '/tools/market': typeof AuthenticatedToolsMarketRoute
+  '/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/tools/status': typeof AuthenticatedToolsStatusRoute
+  '/tools/xp-calculator': typeof AuthenticatedToolsXpCalculatorRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -326,6 +403,7 @@ export interface FileRoutesByTo {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
+  '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -358,10 +436,18 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
+  '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
+  '/_authenticated/tools/faction': typeof AuthenticatedToolsFactionRoute
+  '/_authenticated/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
+  '/_authenticated/tools/market': typeof AuthenticatedToolsMarketRoute
+  '/_authenticated/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/_authenticated/tools/status': typeof AuthenticatedToolsStatusRoute
+  '/_authenticated/tools/xp-calculator': typeof AuthenticatedToolsXpCalculatorRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -369,6 +455,7 @@ export interface FileRoutesById {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
+  '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -401,10 +488,18 @@ export interface FileRouteTypes {
     | '/profile'
     | '/recruitment'
     | '/staff'
+    | '/tools'
     | '/welcome'
     | '/api/health'
     | '/members/$id'
     | '/polls/$id'
+    | '/tools/clicker'
+    | '/tools/faction'
+    | '/tools/leaderboard'
+    | '/tools/market'
+    | '/tools/player'
+    | '/tools/status'
+    | '/tools/xp-calculator'
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -412,6 +507,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/polls/'
+    | '/tools/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -445,6 +541,13 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/members/$id'
     | '/polls/$id'
+    | '/tools/clicker'
+    | '/tools/faction'
+    | '/tools/leaderboard'
+    | '/tools/market'
+    | '/tools/player'
+    | '/tools/status'
+    | '/tools/xp-calculator'
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -452,6 +555,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/polls'
+    | '/tools'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -483,10 +587,18 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
     | '/_authenticated/staff'
+    | '/_authenticated/tools'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
+    | '/_authenticated/tools/clicker'
+    | '/_authenticated/tools/faction'
+    | '/_authenticated/tools/leaderboard'
+    | '/_authenticated/tools/market'
+    | '/_authenticated/tools/player'
+    | '/_authenticated/tools/status'
+    | '/_authenticated/tools/xp-calculator'
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -494,6 +606,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/_authenticated/polls/'
+    | '/_authenticated/tools/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -580,6 +693,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/tools': {
+      id: '/_authenticated/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AuthenticatedToolsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/staff': {
@@ -701,6 +821,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAbsencesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/tools/': {
+      id: '/_authenticated/tools/'
+      path: '/'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof AuthenticatedToolsIndexRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
     '/_authenticated/polls/': {
       id: '/_authenticated/polls/'
       path: '/'
@@ -749,6 +876,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/callback'
       preLoaderRoute: typeof ApiAuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tools/xp-calculator': {
+      id: '/_authenticated/tools/xp-calculator'
+      path: '/xp-calculator'
+      fullPath: '/tools/xp-calculator'
+      preLoaderRoute: typeof AuthenticatedToolsXpCalculatorRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/status': {
+      id: '/_authenticated/tools/status'
+      path: '/status'
+      fullPath: '/tools/status'
+      preLoaderRoute: typeof AuthenticatedToolsStatusRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/player': {
+      id: '/_authenticated/tools/player'
+      path: '/player'
+      fullPath: '/tools/player'
+      preLoaderRoute: typeof AuthenticatedToolsPlayerRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/market': {
+      id: '/_authenticated/tools/market'
+      path: '/market'
+      fullPath: '/tools/market'
+      preLoaderRoute: typeof AuthenticatedToolsMarketRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/leaderboard': {
+      id: '/_authenticated/tools/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/tools/leaderboard'
+      preLoaderRoute: typeof AuthenticatedToolsLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/faction': {
+      id: '/_authenticated/tools/faction'
+      path: '/faction'
+      fullPath: '/tools/faction'
+      preLoaderRoute: typeof AuthenticatedToolsFactionRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/clicker': {
+      id: '/_authenticated/tools/clicker'
+      path: '/clicker'
+      fullPath: '/tools/clicker'
+      preLoaderRoute: typeof AuthenticatedToolsClickerRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
     }
     '/_authenticated/polls/$id': {
       id: '/_authenticated/polls/$id'
@@ -833,6 +1009,31 @@ const AuthenticatedPollsRouteChildren: AuthenticatedPollsRouteChildren = {
 const AuthenticatedPollsRouteWithChildren =
   AuthenticatedPollsRoute._addFileChildren(AuthenticatedPollsRouteChildren)
 
+interface AuthenticatedToolsRouteChildren {
+  AuthenticatedToolsClickerRoute: typeof AuthenticatedToolsClickerRoute
+  AuthenticatedToolsFactionRoute: typeof AuthenticatedToolsFactionRoute
+  AuthenticatedToolsLeaderboardRoute: typeof AuthenticatedToolsLeaderboardRoute
+  AuthenticatedToolsMarketRoute: typeof AuthenticatedToolsMarketRoute
+  AuthenticatedToolsPlayerRoute: typeof AuthenticatedToolsPlayerRoute
+  AuthenticatedToolsStatusRoute: typeof AuthenticatedToolsStatusRoute
+  AuthenticatedToolsXpCalculatorRoute: typeof AuthenticatedToolsXpCalculatorRoute
+  AuthenticatedToolsIndexRoute: typeof AuthenticatedToolsIndexRoute
+}
+
+const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
+  AuthenticatedToolsClickerRoute: AuthenticatedToolsClickerRoute,
+  AuthenticatedToolsFactionRoute: AuthenticatedToolsFactionRoute,
+  AuthenticatedToolsLeaderboardRoute: AuthenticatedToolsLeaderboardRoute,
+  AuthenticatedToolsMarketRoute: AuthenticatedToolsMarketRoute,
+  AuthenticatedToolsPlayerRoute: AuthenticatedToolsPlayerRoute,
+  AuthenticatedToolsStatusRoute: AuthenticatedToolsStatusRoute,
+  AuthenticatedToolsXpCalculatorRoute: AuthenticatedToolsXpCalculatorRoute,
+  AuthenticatedToolsIndexRoute: AuthenticatedToolsIndexRoute,
+}
+
+const AuthenticatedToolsRouteWithChildren =
+  AuthenticatedToolsRoute._addFileChildren(AuthenticatedToolsRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
@@ -851,6 +1052,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
+  AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -872,6 +1074,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
+  AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
