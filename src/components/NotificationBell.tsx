@@ -6,10 +6,7 @@ import { Bell, Coins, AlertTriangle, UserPlus, ShoppingCart } from "lucide-react
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  getMyNotifications,
-  type NotificationItem,
-} from "@/lib/data/notifications.functions";
+import { getMyNotifications, type NotificationItem } from "@/lib/data/notifications.functions";
 
 const LS_KEY = "notif:lastSeenAt";
 
@@ -92,10 +89,7 @@ export function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        className="w-80 p-0 bg-[#0a0a0c] border-zinc-800 text-white"
-      >
+      <PopoverContent align="end" className="w-80 p-0 bg-[#0a0a0c] border-zinc-800 text-white">
         <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
           <span
             className="text-[10px] text-zinc-500 uppercase tracking-[0.3em]"
@@ -109,9 +103,7 @@ export function NotificationBell() {
         </div>
         <div className="max-h-[400px] overflow-y-auto">
           {items.length === 0 && (
-            <p className="p-4 text-xs text-zinc-500 text-center">
-              Rien à signaler.
-            </p>
+            <p className="p-4 text-xs text-zinc-500 text-center">Rien à signaler.</p>
           )}
           <ul className="divide-y divide-zinc-800/80">
             {items.map((n) => {
@@ -128,13 +120,9 @@ export function NotificationBell() {
                   >
                     <Icon className={`size-4 shrink-0 mt-0.5 ${colorFor(n.kind)}`} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium truncate">
-                        {n.title}
-                      </div>
+                      <div className="text-xs font-medium truncate">{n.title}</div>
                       {n.detail && (
-                        <div className="text-[11px] text-zinc-500 truncate">
-                          {n.detail}
-                        </div>
+                        <div className="text-[11px] text-zinc-500 truncate">{n.detail}</div>
                       )}
                       <div className="text-[10px] text-zinc-600 mt-0.5">
                         {new Date(n.createdAt).toLocaleString("fr-FR")}

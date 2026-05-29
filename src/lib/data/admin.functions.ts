@@ -8,8 +8,17 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(async 
     db.from("members").select("discord_id", { count: "exact", head: true }),
     db.from("donations").select("id", { count: "exact", head: true }).eq("status", "active"),
     db.from("logs").select("*").order("created_at", { ascending: false }).limit(20),
-    db.from("logs").select("*").eq("level", "error").order("created_at", { ascending: false }).limit(10),
-    db.from("discord_role_cache").select("refreshed_at").order("refreshed_at", { ascending: false }).limit(1),
+    db
+      .from("logs")
+      .select("*")
+      .eq("level", "error")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    db
+      .from("discord_role_cache")
+      .select("refreshed_at")
+      .order("refreshed_at", { ascending: false })
+      .limit(1),
   ]);
 
   // Ping Discord API

@@ -31,9 +31,7 @@ export const Route = createFileRoute("/api/auth/whoami")({
           avatar: s.avatar,
           avatarUrl,
           rolesCount: s.roleIds?.length ?? 0,
-          rolesRefreshedAt: s.rolesRefreshedAt
-            ? new Date(s.rolesRefreshedAt).toISOString()
-            : null,
+          rolesRefreshedAt: s.rolesRefreshedAt ? new Date(s.rolesRefreshedAt).toISOString() : null,
           tokenExpiresAt: s.expiresAt ? new Date(s.expiresAt).toISOString() : null,
           tokenExpired: s.expiresAt ? Date.now() > s.expiresAt : null,
           guildsMonitored: { public: GUILDS.PUBLIC, faction: GUILDS.FACTION },

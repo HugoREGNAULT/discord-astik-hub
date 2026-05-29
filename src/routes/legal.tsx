@@ -6,7 +6,10 @@ export const Route = createFileRoute("/legal")({
   head: () => ({
     meta: [
       { title: "Mentions légales · PunkAstik" },
-      { name: "description", content: "Mentions légales, confidentialité et suppression de données pour PunkAstik Hub." },
+      {
+        name: "description",
+        content: "Mentions légales, confidentialité et suppression de données pour PunkAstik Hub.",
+      },
     ],
     links: [
       {
@@ -35,8 +38,9 @@ function LegalPage() {
       tag: "[01] · LEGAL_ENTITY",
       children: (
         <p>
-          PunkAstik Hub est un outil interne édité par la faction <strong className="text-white">PunkAstik</strong> à des
-          fins de gestion communautaire. Hébergement : Lovable / Cloudflare. Contact : staff PunkAstik sur Discord.
+          PunkAstik Hub est un outil interne édité par la faction{" "}
+          <strong className="text-white">PunkAstik</strong> à des fins de gestion communautaire.
+          Hébergement : Lovable / Cloudflare. Contact : staff PunkAstik sur Discord.
         </p>
       ),
     },
@@ -54,7 +58,8 @@ function LegalPage() {
             <li>Journal d'actions du staff (logs).</li>
           </ul>
           <p className="mt-3">
-            Aucune donnée n'est revendue. La base est utilisée uniquement par le staff de la faction.
+            Aucune donnée n'est revendue. La base est utilisée uniquement par le staff de la
+            faction.
           </p>
         </>
       ),
@@ -66,8 +71,8 @@ function LegalPage() {
       tag: "[03] · SESSION",
       children: (
         <p>
-          Un seul cookie de session chiffré est utilisé pour maintenir ta connexion Discord OAuth2. Aucun cookie
-          publicitaire ni traceur tiers.
+          Un seul cookie de session chiffré est utilisé pour maintenir ta connexion Discord OAuth2.
+          Aucun cookie publicitaire ni traceur tiers.
         </p>
       ),
     },
@@ -78,8 +83,9 @@ function LegalPage() {
       tag: "[04] · USER_RIGHTS",
       children: (
         <p>
-          Tu peux demander à tout moment l'accès, la rectification ou la suppression de tes données en contactant un
-          administrateur sur le Discord PunkAstik. La suppression entraîne la fin de ton accès à la faction.
+          Tu peux demander à tout moment l'accès, la rectification ou la suppression de tes données
+          en contactant un administrateur sur le Discord PunkAstik. La suppression entraîne la fin
+          de ton accès à la faction.
         </p>
       ),
     },
@@ -90,8 +96,8 @@ function LegalPage() {
       tag: "[05] · ACCESS_POLICY",
       children: (
         <p>
-          Accès strictement réservé aux membres connectés via Discord. La base de données est isolée et inaccessible
-          publiquement. Toutes les communications sont chiffrées en transit.
+          Accès strictement réservé aux membres connectés via Discord. La base de données est isolée
+          et inaccessible publiquement. Toutes les communications sont chiffrées en transit.
         </p>
       ),
     },

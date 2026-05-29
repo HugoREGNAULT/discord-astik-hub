@@ -59,7 +59,9 @@ function PollsPage() {
             Vote sur les créneaux proposés pour les prochaines réunions / events.
           </p>
         </div>
-        {canManage && <CreatePollDialog onCreated={() => qc.invalidateQueries({ queryKey: ["polls"] })} />}
+        {canManage && (
+          <CreatePollDialog onCreated={() => qc.invalidateQueries({ queryKey: ["polls"] })} />
+        )}
       </div>
 
       {isLoading ? (
@@ -68,7 +70,11 @@ function PollsPage() {
         <EmptyState
           icon={Calendar}
           title="Aucun sondage pour le moment"
-          description={canManage ? "Crée le premier sondage avec le bouton ci-dessus." : "Reviens plus tard, les sondages apparaîtront ici."}
+          description={
+            canManage
+              ? "Crée le premier sondage avec le bouton ci-dessus."
+              : "Reviens plus tard, les sondages apparaîtront ici."
+          }
         />
       ) : (
         <div className="grid gap-3">
@@ -114,7 +120,9 @@ function PollsPage() {
                     title={`Supprimer "${p.title}" ?`}
                     description="Ce sondage et tous les votes associés seront définitivement effacés."
                     confirmLabel="Supprimer"
-                    onConfirm={async () => { await mDel.mutateAsync(p.id); }}
+                    onConfirm={async () => {
+                      await mDel.mutateAsync(p.id);
+                    }}
                   />
                 )}
               </CardContent>
@@ -159,7 +167,10 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
       setTitle("");
       setDescription("");
       setLocation("");
-      setSlots([{ value: "", duration: 60 }, { value: "", duration: 60 }]);
+      setSlots([
+        { value: "", duration: 60 },
+        { value: "", duration: 60 },
+      ]);
       onCreated();
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur");

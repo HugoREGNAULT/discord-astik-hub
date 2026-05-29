@@ -60,10 +60,15 @@ export const addBlacklistEntry = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (ins.error) throw new Error(ins.error.message);
-    await logAction("blacklist_add", staff.discordId, {
-      entry_id: ins.data.id,
-      ...data,
-    }, "warn");
+    await logAction(
+      "blacklist_add",
+      staff.discordId,
+      {
+        entry_id: ins.data.id,
+        ...data,
+      },
+      "warn",
+    );
     return { ok: true, id: ins.data.id };
   });
 
@@ -112,4 +117,3 @@ export const updateBlacklistEntry = createServerFn({ method: "POST" })
     await logAction("blacklist_update", staff.discordId, { entry_id: data.id, patch }, "warn");
     return { ok: true };
   });
-

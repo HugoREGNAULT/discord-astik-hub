@@ -75,24 +75,40 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "PunkAstik" },
-      { name: "description", content: "PunkAstik Hub is a web application for managing Discord server roles and data." },
+      {
+        name: "description",
+        content: "PunkAstik Hub is a web application for managing Discord server roles and data.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "PunkAstik" },
-      { property: "og:description", content: "PunkAstik Hub is a web application for managing Discord server roles and data." },
+      {
+        property: "og:description",
+        content: "PunkAstik Hub is a web application for managing Discord server roles and data.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "PunkAstik" },
-      { name: "twitter:description", content: "PunkAstik Hub is a web application for managing Discord server roles and data." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b63b95-255e-423e-865c-825c0ee85554/id-preview-82518a41--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app-1779971064504.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b63b95-255e-423e-865c-825c0ee85554/id-preview-82518a41--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app-1779971064504.png" },
+      {
+        name: "twitter:description",
+        content: "PunkAstik Hub is a web application for managing Discord server roles and data.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b63b95-255e-423e-865c-825c0ee85554/id-preview-82518a41--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app-1779971064504.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b63b95-255e-423e-865c-825c0ee85554/id-preview-82518a41--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app-1779971064504.png",
+      },
     ],
     links: [
       {
@@ -123,7 +139,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
     </html>
   );
 }
-
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();

@@ -128,12 +128,7 @@ function LogsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportCsv}
-            disabled={logs.length === 0}
-          >
+          <Button variant="outline" size="sm" onClick={exportCsv} disabled={logs.length === 0}>
             <Download className="size-4 mr-1" /> Export CSV
           </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
@@ -147,20 +142,38 @@ function LogsPage() {
         <CardContent className="py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="text-xs text-muted-foreground">Action</label>
-            <Select value={action} onValueChange={(v) => { setAction(v); setPage(1); }}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={action}
+              onValueChange={(v) => {
+                setAction(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent className="max-h-72">
                 <SelectItem value="all">Toutes</SelectItem>
                 {(actionsData?.actions ?? []).map((a) => (
-                  <SelectItem key={a} value={a}>{a}</SelectItem>
+                  <SelectItem key={a} value={a}>
+                    {a}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Niveau</label>
-            <Select value={level} onValueChange={(v) => { setLevel(v as typeof level); setPage(1); }}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={level}
+              onValueChange={(v) => {
+                setLevel(v as typeof level);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous</SelectItem>
                 <SelectItem value="info">Info</SelectItem>
@@ -170,10 +183,15 @@ function LogsPage() {
             </Select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Membre (ID, pseudo Discord ou IG)</label>
+            <label className="text-xs text-muted-foreground">
+              Membre (ID, pseudo Discord ou IG)
+            </label>
             <Input
               value={memberQuery}
-              onChange={(e) => { setMemberQuery(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setMemberQuery(e.target.value);
+                setPage(1);
+              }}
               placeholder="ex: 1234567890 ou astik"
             />
           </div>
@@ -181,10 +199,17 @@ function LogsPage() {
             <label className="text-xs text-muted-foreground">Période rapide</label>
             <Select
               value={String(sinceDays)}
-              onValueChange={(v) => { setSinceDays(Number(v)); setDateFrom(""); setDateTo(""); setPage(1); }}
+              onValueChange={(v) => {
+                setSinceDays(Number(v));
+                setDateFrom("");
+                setDateTo("");
+                setPage(1);
+              }}
               disabled={useRange}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">24h</SelectItem>
                 <SelectItem value="7">7 jours</SelectItem>
@@ -199,7 +224,10 @@ function LogsPage() {
             <Input
               type="date"
               value={dateFrom}
-              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setDateFrom(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
           <div>
@@ -207,7 +235,10 @@ function LogsPage() {
             <Input
               type="date"
               value={dateTo}
-              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setDateTo(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
           <div className="sm:col-span-2 lg:col-span-3 flex justify-end">

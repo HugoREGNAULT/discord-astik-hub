@@ -33,8 +33,7 @@ export const Route = createFileRoute("/api/auth/login")({
         const authorizeUrl = buildAuthorizeUrl(redirectUri, state);
 
         const rawNext = url.searchParams.get("next") || "";
-        const next =
-          rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
+        const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
 
         const cookies = [
           `oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
@@ -48,4 +47,3 @@ export const Route = createFileRoute("/api/auth/login")({
     },
   },
 });
-

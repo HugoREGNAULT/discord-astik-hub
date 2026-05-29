@@ -39,9 +39,7 @@ export const Route = createFileRoute("/api/public/hooks/sync-discord-presence")(
           if (m.user?.id) presentIds.add(m.user.id);
         }
 
-        const { data: rows, error: readErr } = await db
-          .from("members")
-          .select("discord_id,status");
+        const { data: rows, error: readErr } = await db.from("members").select("discord_id,status");
         if (readErr) return json({ ok: false, error: readErr.message }, 500);
 
         const toLeft: string[] = [];

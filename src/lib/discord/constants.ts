@@ -30,17 +30,17 @@ export const ROLES = {
  * que les IDs soient fournis. Ajustables dans EFFECTIF_GRADES.
  */
 export const EFFECTIF_GRADES: { label: string; matchNames: string[] }[] = [
-  { label: "Leader",      matchNames: ["leader"] },
+  { label: "Leader", matchNames: ["leader"] },
   { label: "Bras droits", matchNames: ["bras droit", "bras droits"] },
-  { label: "Lieutenant",  matchNames: ["lieutenant"] },
-  { label: "Aspirant",    matchNames: ["aspirant"] },
-  { label: "Major",       matchNames: ["major"] },
-  { label: "Adjudant",    matchNames: ["adjudant"] },
-  { label: "Recruteur",   matchNames: ["recruteur"] },
-  { label: "Sergent",     matchNames: ["sergent"] },
-  { label: "Caporal",     matchNames: ["caporal"] },
-  { label: "Soldat",      matchNames: ["soldat"] },
-  { label: "Bleu",        matchNames: ["bleu", "bleus"] },
+  { label: "Lieutenant", matchNames: ["lieutenant"] },
+  { label: "Aspirant", matchNames: ["aspirant"] },
+  { label: "Major", matchNames: ["major"] },
+  { label: "Adjudant", matchNames: ["adjudant"] },
+  { label: "Recruteur", matchNames: ["recruteur"] },
+  { label: "Sergent", matchNames: ["sergent"] },
+  { label: "Caporal", matchNames: ["caporal"] },
+  { label: "Soldat", matchNames: ["soldat"] },
+  { label: "Bleu", matchNames: ["bleu", "bleus"] },
 ];
 
 export const DISCORD_API = "https://discord.com/api/v10";
@@ -51,4 +51,3 @@ export const LOG_CHANNELS = {
   AUTH: "1509547507640701081",
   SITE: "1509547529384235178",
 } as const;
-

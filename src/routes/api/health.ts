@@ -9,7 +9,10 @@ export const Route = createFileRoute("/api/health")({
         let dbOk = false;
         let dbError: string | null = null;
         try {
-          const { error } = await db.from("members").select("discord_id", { head: true, count: "exact" }).limit(1);
+          const { error } = await db
+            .from("members")
+            .select("discord_id", { head: true, count: "exact" })
+            .limit(1);
           if (error) dbError = error.message;
           else dbOk = true;
         } catch (e) {

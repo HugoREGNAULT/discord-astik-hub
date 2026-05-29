@@ -39,11 +39,7 @@ export async function findBlacklistMatches(input: {
   return data.map((row) => {
     const matched_on: BlacklistMatch["matched_on"] = [];
     if (input.discordId && row.discord_id === input.discordId) matched_on.push("discord_id");
-    if (
-      input.mcName &&
-      row.mc_name &&
-      row.mc_name.toLowerCase() === input.mcName.toLowerCase()
-    )
+    if (input.mcName && row.mc_name && row.mc_name.toLowerCase() === input.mcName.toLowerCase())
       matched_on.push("mc_name");
     if (input.mcUuid && row.mc_uuid === input.mcUuid) matched_on.push("mc_uuid");
     return { ...row, matched_on };

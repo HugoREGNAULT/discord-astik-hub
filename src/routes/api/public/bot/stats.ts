@@ -22,9 +22,14 @@ export const Route = createFileRoute("/api/public/bot/stats")({
         if (unauth) return unauth;
 
         let body: unknown;
-        try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
         const parsed = schema.safeParse(body);
-        if (!parsed.success) return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
+        if (!parsed.success)
+          return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
 
         const { discord_id, ...patch } = parsed.data;
         if (Object.keys(patch).length === 0) return json({ error: "No stats provided" }, 400);

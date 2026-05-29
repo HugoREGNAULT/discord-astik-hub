@@ -14,8 +14,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "PunkAstik · Faction Paladium" },
       {
         property: "og:description",
-        content:
-          "Hub officiel de la PunkAstik — connexion membre et candidatures.",
+        content: "Hub officiel de la PunkAstik — connexion membre et candidatures.",
       },
     ],
     links: [
@@ -95,8 +94,7 @@ function LandingPage() {
           Bienvenue dans la <span className="text-pink-500">PunkAstik</span>
         </h2>
         <p className="text-zinc-400 max-w-2xl mx-auto text-sm md:text-base">
-          Faction Paladium. Connecte-toi à ton espace membre, ou candidate pour
-          rejoindre l'équipe.
+          Faction Paladium. Connecte-toi à ton espace membre, ou candidate pour rejoindre l'équipe.
         </p>
       </section>
 
@@ -120,8 +118,8 @@ function LandingPage() {
               Déjà membre ?
             </h3>
             <p className="text-zinc-400 text-sm mb-8 flex-1">
-              Connecte-toi avec Discord pour accéder à ton espace personnel, tes
-              AstikPoints, ton grade et l'activité de la faction.
+              Connecte-toi avec Discord pour accéder à ton espace personnel, tes AstikPoints, ton
+              grade et l'activité de la faction.
             </p>
             <a
               href="/api/auth/login"
@@ -151,8 +149,8 @@ function LandingPage() {
               Pas encore des nôtres ?
             </h3>
             <p className="text-zinc-400 text-sm mb-8 flex-1">
-              Rejoins la PunkAstik en remplissant le formulaire de candidature.
-              Connexion Discord requise pour identifier ton compte.
+              Rejoins la PunkAstik en remplissant le formulaire de candidature. Connexion Discord
+              requise pour identifier ton compte.
             </p>
             <Link
               to="/candidature"
@@ -170,7 +168,9 @@ function LandingPage() {
         style={{ fontFamily: "'Space Mono'" }}
       >
         ENCRYPTED_HUB · PUNKASTIK © {new Date().getFullYear()} ·{" "}
-        <Link to="/legal" className="hover:text-zinc-400 underline">Mentions légales</Link>
+        <Link to="/legal" className="hover:text-zinc-400 underline">
+          Mentions légales
+        </Link>
       </footer>
     </div>
   );

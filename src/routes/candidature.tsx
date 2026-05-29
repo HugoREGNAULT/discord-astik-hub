@@ -5,10 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { ArrowLeft, LogIn, Send, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
-import {
-  submitApplication,
-  getMyApplication,
-} from "@/lib/data/applications.functions";
+import { submitApplication, getMyApplication } from "@/lib/data/applications.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,8 +26,7 @@ export const Route = createFileRoute("/candidature")({
       { title: "Candidature · PunkAstik" },
       {
         name: "description",
-        content:
-          "Postule pour rejoindre la PunkAstik. Connexion Discord requise.",
+        content: "Postule pour rejoindre la PunkAstik. Connexion Discord requise.",
       },
     ],
     links: [
@@ -119,8 +115,8 @@ function LoginGate() {
               Lie ton compte Discord
             </h2>
             <p className="text-zinc-400 text-sm mb-6">
-              Avant de remplir ta candidature, connecte-toi avec Discord pour
-              qu'on puisse t'identifier et te recontacter.
+              Avant de remplir ta candidature, connecte-toi avec Discord pour qu'on puisse
+              t'identifier et te recontacter.
             </p>
             <a
               href="/api/auth/login?next=/candidature"
@@ -193,9 +189,8 @@ function ApplicationForm() {
           color="yellow"
           body={
             <>
-              Ta candidature pour <strong>{existing.mc_name}</strong> est en
-              cours d'examen par les recruteurs. Tu recevras un DM Discord dès
-              qu'une décision sera prise.
+              Ta candidature pour <strong>{existing.mc_name}</strong> est en cours d'examen par les
+              recruteurs. Tu recevras un DM Discord dès qu'une décision sera prise.
             </>
           }
         />
@@ -214,9 +209,7 @@ function ApplicationForm() {
             <>
               Bienvenue dans la PunkAstik ! Accède à ton espace membre.
               <div className="mt-4">
-                <Button onClick={() => navigate({ to: "/me" })}>
-                  Mon espace
-                </Button>
+                <Button onClick={() => navigate({ to: "/me" })}>Mon espace</Button>
               </div>
             </>
           }
@@ -241,8 +234,8 @@ function ApplicationForm() {
           Candidature PunkAstik
         </h2>
         <p className="text-zinc-400 text-sm mt-2">
-          Tous les champs sont obligatoires sauf indication contraire. Sois
-          honnête, c'est plus simple pour tout le monde.
+          Tous les champs sont obligatoires sauf indication contraire. Sois honnête, c'est plus
+          simple pour tout le monde.
         </p>
         {existing?.status === "rejected" && (
           <div className="mt-4 p-3 bg-red-950/40 border border-red-800/50 text-red-200 text-sm">

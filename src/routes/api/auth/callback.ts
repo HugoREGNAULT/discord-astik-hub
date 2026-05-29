@@ -14,7 +14,6 @@ import { db } from "@/lib/db.server";
 import { ROLES } from "@/lib/discord/constants";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
 
-
 export const Route = createFileRoute("/api/auth/callback")({
   server: {
     handlers: {
@@ -27,9 +26,7 @@ export const Route = createFileRoute("/api/auth/callback")({
         const nextCookieRaw = /(?:^|;\s*)oauth_next=([^;]*)/.exec(cookieHeader)?.[1] ?? "";
         const nextDecoded = decodeURIComponent(nextCookieRaw);
         const nextPath =
-          nextDecoded.startsWith("/") && !nextDecoded.startsWith("//")
-            ? nextDecoded
-            : "/me";
+          nextDecoded.startsWith("/") && !nextDecoded.startsWith("//") ? nextDecoded : "/me";
 
         if (!code || !state || !stateCookie || state !== stateCookie) {
           return new Response("Invalid OAuth state", { status: 400 });
@@ -85,7 +82,6 @@ export const Route = createFileRoute("/api/auth/callback")({
             ],
           });
 
-
           const headers = new Headers({ Location: nextPath });
           headers.append("Set-Cookie", "oauth_state=; Path=/; Max-Age=0");
           headers.append("Set-Cookie", "oauth_next=; Path=/; Max-Age=0");
@@ -99,4 +95,3 @@ export const Route = createFileRoute("/api/auth/callback")({
     },
   },
 });
-

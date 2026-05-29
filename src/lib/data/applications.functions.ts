@@ -43,7 +43,10 @@ async function fetchMojang(name: string): Promise<{ id: string; name: string }> 
     { retries: 3, timeoutMs: 8000 },
   );
   if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
-  if (!res.ok) throw new Error("Impossible de vérifier le pseudo (API Mojang temporairement indisponible, réessaie dans un instant).");
+  if (!res.ok)
+    throw new Error(
+      "Impossible de vérifier le pseudo (API Mojang temporairement indisponible, réessaie dans un instant).",
+    );
   const body = (await res.json()) as { id?: string; name?: string };
   if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
   return { id: body.id, name: body.name };
@@ -137,7 +140,6 @@ export const submitApplication = createServerFn({ method: "POST" })
       footer: { text: `Application ${ins.data.id}` },
     });
 
-
     return { ok: true, applicationId: ins.data.id };
   });
 
@@ -177,7 +179,6 @@ export const listApplications = createServerFn({ method: "GET" })
     );
     return enriched;
   });
-
 
 const decideSchema = z.object({
   applicationId: z.string().uuid(),
@@ -272,7 +273,6 @@ export const decideApplication = createServerFn({ method: "POST" })
         ...(data.reason ? [{ name: "Motif", value: data.reason }] : []),
       ],
     });
-
 
     return { ok: true, dmOk: dm.ok, dmError: dm.error ?? null };
   });

@@ -41,7 +41,9 @@ export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(a
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
   const { data, error } = await db
     .from("leaderboard_snapshots")
-    .select("taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d")
+    .select(
+      "taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d",
+    )
     .gte("taken_at", since)
     .order("taken_at", { ascending: true })
     .limit(20000);

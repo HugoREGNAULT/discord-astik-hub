@@ -4,7 +4,16 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState, useId, useEffect } from "react";
 import { ShieldX, Coins, ShoppingCart, Activity, UserCheck, ChevronDown } from "lucide-react";
 
-import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt, getMemberPointsHistory, getMemberDonations } from "@/lib/data/members.functions";
+import {
+  getMemberDetail,
+  updateMember,
+  addNote,
+  addWarning,
+  addAlt,
+  removeAlt,
+  getMemberPointsHistory,
+  getMemberDonations,
+} from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +23,6 @@ import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
-
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
   head: () => ({ meta: [{ title: "Profil membre · PunkAstik" }] }),
@@ -63,15 +71,27 @@ function MemberDetail() {
 
   const mNote = useMutation({
     mutationFn: () => noteFn({ data: { memberDiscordId: id, body: note } }),
-    onSuccess: () => { setNote(""); toast.success("Note ajoutée"); refresh(); },
+    onSuccess: () => {
+      setNote("");
+      toast.success("Note ajoutée");
+      refresh();
+    },
   });
   const mWarn = useMutation({
     mutationFn: () => warnFn({ data: { memberDiscordId: id, body: warn } }),
-    onSuccess: () => { setWarn(""); toast.success("Avertissement ajouté"); refresh(); },
+    onSuccess: () => {
+      setWarn("");
+      toast.success("Avertissement ajouté");
+      refresh();
+    },
   });
   const mAlt = useMutation({
     mutationFn: () => altAddFn({ data: { memberDiscordId: id, altName: alt } }),
-    onSuccess: () => { setAlt(""); toast.success("Alt ajouté"); refresh(); },
+    onSuccess: () => {
+      setAlt("");
+      toast.success("Alt ajouté");
+      refresh();
+    },
   });
 
   const loadMorePoints = useMutation({
@@ -102,7 +122,9 @@ function MemberDetail() {
           <p className="text-sm text-muted-foreground">
             Tu n'as pas les permissions pour consulter ce profil membre.
           </p>
-          <Button asChild variant="outline" size="sm"><Link to="/me">Retour à mon profil</Link></Button>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/me">Retour à mon profil</Link>
+          </Button>
         </CardContent>
       </Card>
     );
@@ -119,17 +141,23 @@ function MemberDetail() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-4">
-        {m.avatar_url ? <img src={m.avatar_url} className="size-16 rounded-full" alt="" /> : <div className="size-16 rounded-full bg-muted" />}
+        {m.avatar_url ? (
+          <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
+        ) : (
+          <div className="size-16 rounded-full bg-muted" />
+        )}
         <div>
           <h1 className="text-2xl font-bold">{m.ig_name ?? m.discord_username}</h1>
-          <p className="text-sm text-muted-foreground">@{m.discord_username}{data.canEdit && ` · ${m.discord_id}`}</p>
+          <p className="text-sm text-muted-foreground">
+            @{m.discord_username}
+            {data.canEdit && ` · ${m.discord_id}`}
+          </p>
         </div>
         <div className="ml-auto flex gap-2">
           {isSelf && <Badge variant="outline">Toi</Badge>}
           <Badge variant="secondary">{m.status}</Badge>
         </div>
       </div>
-
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="AstikPoints" value={m.astik_points} accent />
@@ -139,38 +167,67 @@ function MemberDetail() {
 
       {data.canEdit && (
         <Card>
-          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Éditer</h2></CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>
+              <h2 className="text-lg font-semibold m-0">Éditer</h2>
+            </CardTitle>
+          </CardHeader>
           <CardContent>
-            <EditForm member={m} onSave={async (patch) => {
-              await update({ data: { discordId: id, patch } });
-              toast.success("Membre mis à jour"); refresh();
-            }} />
+            <EditForm
+              member={m}
+              onSave={async (patch) => {
+                await update({ data: { discordId: id, patch } });
+                toast.success("Membre mis à jour");
+                refresh();
+              }}
+            />
           </CardContent>
         </Card>
       )}
 
       <Card>
-        <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Comptes alts</h2></CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>
+            <h2 className="text-lg font-semibold m-0">Comptes alts</h2>
+          </CardTitle>
+        </CardHeader>
         <CardContent className="space-y-3">
           <ul className="space-y-1">
             {data.alts.map((a: any) => (
-              <li key={a.id} className="flex items-center justify-between text-sm border border-border rounded px-3 py-2">
+              <li
+                key={a.id}
+                className="flex items-center justify-between text-sm border border-border rounded px-3 py-2"
+              >
                 <span>{a.alt_name ?? a.alt_discord_id}</span>
                 {data.canEdit && (
-                  <button onClick={async () => { await altRmFn({ data: { id: a.id } }); refresh(); }} className="text-destructive text-xs">Supprimer</button>
+                  <button
+                    onClick={async () => {
+                      await altRmFn({ data: { id: a.id } });
+                      refresh();
+                    }}
+                    className="text-destructive text-xs"
+                  >
+                    Supprimer
+                  </button>
                 )}
               </li>
             ))}
             {data.alts.length === 0 && (
               <li>
-                <EmptyState title="Aucun alt" description="Aucun compte secondaire déclaré." variant="compact" />
+                <EmptyState
+                  title="Aucun alt"
+                  description="Aucun compte secondaire déclaré."
+                  variant="compact"
+                />
               </li>
             )}
           </ul>
           {data.canEdit && (
             <div className="flex gap-2">
               <Input placeholder="Nom alt" value={alt} onChange={(e) => setAlt(e.target.value)} />
-              <Button onClick={() => mAlt.mutate()} disabled={!alt}>Ajouter</Button>
+              <Button onClick={() => mAlt.mutate()} disabled={!alt}>
+                Ajouter
+              </Button>
             </div>
           )}
         </CardContent>
@@ -178,25 +235,41 @@ function MemberDetail() {
 
       {canViewNotes && (
         <Card>
-          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Notes staff</h2></CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>
+              <h2 className="text-lg font-semibold m-0">Notes staff</h2>
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
             <ul className="space-y-2">
               {data.notes.map((n: any) => (
                 <li key={n.id} className="text-sm border border-border rounded p-3">
-                  <div className="text-[11px] text-muted-foreground">{new Date(n.created_at).toLocaleString()} · {n.staff_username}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date(n.created_at).toLocaleString()} · {n.staff_username}
+                  </div>
                   <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
                 </li>
               ))}
               {data.notes.length === 0 && (
                 <li>
-                  <EmptyState title="Aucune note" description="Les notes staff sur ce membre apparaîtront ici." variant="compact" />
+                  <EmptyState
+                    title="Aucune note"
+                    description="Les notes staff sur ce membre apparaîtront ici."
+                    variant="compact"
+                  />
                 </li>
               )}
             </ul>
             {canWriteNotes && (
               <div className="flex flex-col gap-2">
-                <Textarea placeholder="Nouvelle note…" value={note} onChange={(e) => setNote(e.target.value)} />
-                <Button onClick={() => mNote.mutate()} disabled={!note} className="self-end">Ajouter</Button>
+                <Textarea
+                  placeholder="Nouvelle note…"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
+                <Button onClick={() => mNote.mutate()} disabled={!note} className="self-end">
+                  Ajouter
+                </Button>
               </div>
             )}
           </CardContent>
@@ -205,25 +278,49 @@ function MemberDetail() {
 
       {canViewWarnings && (
         <Card>
-          <CardHeader><CardTitle><h2 className="text-lg font-semibold m-0">Avertissements</h2></CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>
+              <h2 className="text-lg font-semibold m-0">Avertissements</h2>
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-3">
             <ul className="space-y-2">
               {data.warnings.map((w: any) => (
-                <li key={w.id} className="text-sm border border-destructive/50 bg-destructive/10 rounded p-3">
-                  <div className="text-[11px] text-muted-foreground">{new Date(w.created_at).toLocaleString()} · {w.staff_username}</div>
+                <li
+                  key={w.id}
+                  className="text-sm border border-destructive/50 bg-destructive/10 rounded p-3"
+                >
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date(w.created_at).toLocaleString()} · {w.staff_username}
+                  </div>
                   <div className="mt-1 whitespace-pre-wrap">{w.body}</div>
                 </li>
               ))}
               {data.warnings.length === 0 && (
                 <li>
-                  <EmptyState title="Aucun avertissement" description="Aucune sanction enregistrée." variant="compact" />
+                  <EmptyState
+                    title="Aucun avertissement"
+                    description="Aucune sanction enregistrée."
+                    variant="compact"
+                  />
                 </li>
               )}
             </ul>
             {canWriteWarnings && (
               <div className="flex flex-col gap-2">
-                <Textarea placeholder="Nouvel avertissement…" value={warn} onChange={(e) => setWarn(e.target.value)} />
-                <Button variant="destructive" onClick={() => mWarn.mutate()} disabled={!warn} className="self-end">Avertir</Button>
+                <Textarea
+                  placeholder="Nouvel avertissement…"
+                  value={warn}
+                  onChange={(e) => setWarn(e.target.value)}
+                />
+                <Button
+                  variant="destructive"
+                  onClick={() => mWarn.mutate()}
+                  disabled={!warn}
+                  className="self-end"
+                >
+                  Avertir
+                </Button>
               </div>
             )}
           </CardContent>
@@ -232,7 +329,6 @@ function MemberDetail() {
 
       {data.canViewStaffData && data.recruiter && (
         <Card>
-
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
               <UserCheck className="size-4 text-primary" /> Recruteur
@@ -244,7 +340,9 @@ function MemberDetail() {
               params={{ id: data.recruiter.discord_id }}
               className="text-sm hover:text-primary"
             >
-              {data.recruiter.ig_name ?? data.recruiter.discord_username ?? data.recruiter.discord_id}
+              {data.recruiter.ig_name ??
+                data.recruiter.discord_username ??
+                data.recruiter.discord_id}
               <span className="text-xs text-muted-foreground ml-2">
                 @{data.recruiter.discord_username ?? "—"}
               </span>
@@ -266,7 +364,12 @@ function MemberDetail() {
           <CardContent className="p-0">
             {ledger.length === 0 ? (
               <div className="p-4">
-                <EmptyState icon={Coins} title="Aucun mouvement" description="L'historique de points apparaîtra ici." variant="compact" />
+                <EmptyState
+                  icon={Coins}
+                  title="Aucun mouvement"
+                  description="L'historique de points apparaîtra ici."
+                  variant="compact"
+                />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
@@ -281,9 +384,13 @@ function MemberDetail() {
                       {p.amount}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs">{p.action_type}{p.reason ? ` · ${p.reason}` : ""}</div>
+                      <div className="text-xs">
+                        {p.action_type}
+                        {p.reason ? ` · ${p.reason}` : ""}
+                      </div>
                       <div className="text-[11px] text-muted-foreground">
-                        Par {p.staff_username ?? p.staff_discord_id} · {new Date(p.created_at).toLocaleString("fr-FR")}
+                        Par {p.staff_username ?? p.staff_discord_id} ·{" "}
+                        {new Date(p.created_at).toLocaleString("fr-FR")}
                       </div>
                     </div>
                     <span className="text-xs text-muted-foreground font-mono">
@@ -324,7 +431,12 @@ function MemberDetail() {
           <CardContent className="p-0">
             {donations.length === 0 ? (
               <div className="p-4">
-                <EmptyState icon={ShoppingCart} title="Aucune donation" description="Les donations valides s'afficheront ici." variant="compact" />
+                <EmptyState
+                  icon={ShoppingCart}
+                  title="Aucune donation"
+                  description="Les donations valides s'afficheront ici."
+                  variant="compact"
+                />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
@@ -385,7 +497,12 @@ function MemberDetail() {
           <CardContent className="p-0">
             {data.staffActivity.length === 0 ? (
               <div className="p-4">
-                <EmptyState icon={Activity} title="Aucune action enregistrée" description="Les actions du staff sur ce membre apparaîtront ici." variant="compact" />
+                <EmptyState
+                  icon={Activity}
+                  title="Aucune action enregistrée"
+                  description="Les actions du staff sur ce membre apparaîtront ici."
+                  variant="compact"
+                />
               </div>
             ) : (
               <ul className="divide-y divide-border max-h-80 overflow-y-auto">
@@ -414,19 +531,19 @@ function MemberDetail() {
           </CardContent>
         </Card>
       )}
-
     </div>
   );
 }
 
-
-
-
 function Stat({ label, value, accent }: { label: string; value: any; accent?: boolean }) {
   return (
     <Card>
-      <CardHeader><CardTitle className="text-sm text-muted-foreground">{label}</CardTitle></CardHeader>
-      <CardContent><div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div></CardContent>
+      <CardHeader>
+        <CardTitle className="text-sm text-muted-foreground">{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div>
+      </CardContent>
     </Card>
   );
 }
@@ -443,18 +560,33 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
   });
   return (
     <div className="grid sm:grid-cols-2 gap-3">
-      {(["ig_name", "current_grade", "arrival_date", "last_rankup", "recruiter_discord_id"] as const).map((k) => {
+      {(
+        ["ig_name", "current_grade", "arrival_date", "last_rankup", "recruiter_discord_id"] as const
+      ).map((k) => {
         const fid = `${reactId}-${k}`;
         return (
           <div key={k}>
-            <label htmlFor={fid} className="text-xs text-muted-foreground">{k}</label>
-            <Input id={fid} value={(p as any)[k] ?? ""} onChange={(e) => setP({ ...p, [k]: e.target.value })} />
+            <label htmlFor={fid} className="text-xs text-muted-foreground">
+              {k}
+            </label>
+            <Input
+              id={fid}
+              value={(p as any)[k] ?? ""}
+              onChange={(e) => setP({ ...p, [k]: e.target.value })}
+            />
           </div>
         );
       })}
       <div>
-        <label htmlFor={`${reactId}-status`} className="text-xs text-muted-foreground">status</label>
-        <select id={`${reactId}-status`} className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border" value={p.status} onChange={(e) => setP({ ...p, status: e.target.value })}>
+        <label htmlFor={`${reactId}-status`} className="text-xs text-muted-foreground">
+          status
+        </label>
+        <select
+          id={`${reactId}-status`}
+          className="w-full bg-input rounded-md px-3 py-2 text-sm border border-border"
+          value={p.status}
+          onChange={(e) => setP({ ...p, status: e.target.value })}
+        >
           <option value="active">active</option>
           <option value="former">former</option>
         </select>
@@ -465,4 +597,3 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
     </div>
   );
 }
-

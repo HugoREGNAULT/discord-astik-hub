@@ -79,10 +79,7 @@ function highlightText(text: string, query: string): React.ReactNode {
   return parts.map((part, i) => {
     if (part.toLowerCase() === query.toLowerCase()) {
       return (
-        <mark
-          key={i}
-          className="bg-primary/30 text-primary rounded px-0.5 font-semibold"
-        >
+        <mark key={i} className="bg-primary/30 text-primary rounded px-0.5 font-semibold">
           {part}
         </mark>
       );
@@ -206,12 +203,29 @@ export function CommandPalette() {
           onValueChange={setQ}
         />
         <div className="px-3 py-2 flex flex-wrap gap-1.5 border-b border-border/40">
-          {([
-            { key: "member" as const, label: "Membres", icon: Users, perm: "members.view" as Permission },
-            { key: "application" as const, label: "Candidatures", icon: UserPlus, perm: "recruit.access" as Permission },
-            { key: "donation" as const, label: "Dons", icon: ShoppingCart, perm: "donations.manage" as Permission },
-            { key: "points" as const, label: "AstikPoints", icon: Coins, perm: null },
-          ] as { key: SearchHit["kind"]; label: string; icon: any; perm: Permission | null }[])
+          {(
+            [
+              {
+                key: "member" as const,
+                label: "Membres",
+                icon: Users,
+                perm: "members.view" as Permission,
+              },
+              {
+                key: "application" as const,
+                label: "Candidatures",
+                icon: UserPlus,
+                perm: "recruit.access" as Permission,
+              },
+              {
+                key: "donation" as const,
+                label: "Dons",
+                icon: ShoppingCart,
+                perm: "donations.manage" as Permission,
+              },
+              { key: "points" as const, label: "AstikPoints", icon: Coins, perm: null },
+            ] as { key: SearchHit["kind"]; label: string; icon: any; perm: Permission | null }[]
+          )
             .filter((f) => f.perm === null || hasPerm(user, f.perm))
             .map((f) => {
               const active = filter === f.key;
@@ -251,11 +265,7 @@ export function CommandPalette() {
           {!filter && (
             <CommandGroup heading="Navigation">
               {navs.map((n) => (
-                <CommandItem
-                  key={n.to}
-                  value={`nav ${n.label}`}
-                  onSelect={() => go(n.to)}
-                >
+                <CommandItem key={n.to} value={`nav ${n.label}`} onSelect={() => go(n.to)}>
                   <n.icon className="size-4 mr-2 opacity-70" />
                   {highlightText(n.label, q)}
                 </CommandItem>

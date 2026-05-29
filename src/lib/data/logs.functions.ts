@@ -20,11 +20,7 @@ export const listLogs = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     await requirePermission("admin.access");
-    let q = db
-      .from("logs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(data.limit);
+    let q = db.from("logs").select("*").order("created_at", { ascending: false }).limit(data.limit);
 
     if (data.dateFrom) q = q.gte("created_at", data.dateFrom);
     else {

@@ -3,7 +3,12 @@ import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useRef, useState } from "react";
-import { listValues, upsertValue, toggleValueActive, deleteValue } from "@/lib/data/values.functions";
+import {
+  listValues,
+  upsertValue,
+  toggleValueActive,
+  deleteValue,
+} from "@/lib/data/values.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +20,11 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/config")({
   head: () => ({ meta: [{ title: "Config valeurs · PunkAstik" }] }),
-  component: () => (<Guard perm="config.manage"><ConfigPage /></Guard>),
+  component: () => (
+    <Guard perm="config.manage">
+      <ConfigPage />
+    </Guard>
+  ),
 });
 
 const CATS = ["item", "action", "other", "money"] as const;
@@ -106,7 +115,9 @@ function ConfigPage() {
       <h1 className="text-2xl font-bold">Config valeurs (AstikPoints)</h1>
 
       <Card>
-        <CardHeader><CardTitle>Ajouter une valeur</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Ajouter une valeur</CardTitle>
+        </CardHeader>
         <CardContent className="grid sm:grid-cols-6 gap-3 items-end">
           {/* Icône */}
           <div>
@@ -154,7 +165,11 @@ function ConfigPage() {
               onChange={(e) => setForm({ ...form, category: e.target.value as Cat })}
               className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm"
             >
-              {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
+              {CATS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
           </div>
           <div className="sm:col-span-2">
@@ -197,7 +212,9 @@ function ConfigPage() {
                   <ImagePlus className="size-4 text-muted-foreground" />
                 )}
               </div>
-              <span className="flex-1 truncate text-sm">{form.name || <span className="text-muted-foreground italic">nom…</span>}</span>
+              <span className="flex-1 truncate text-sm">
+                {form.name || <span className="text-muted-foreground italic">nom…</span>}
+              </span>
               <span className="text-xs text-muted-foreground capitalize">{form.category}</span>
               <span className="font-mono text-primary text-sm">
                 {form.points.toLocaleString("fr-FR", { maximumFractionDigits: 4 })} pts
@@ -209,22 +226,34 @@ function ConfigPage() {
 
       {grouped.map((g) => (
         <Card key={g.cat}>
-          <CardHeader><CardTitle className="capitalize">{g.cat} ({g.items.length})</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="capitalize">
+              {g.cat} ({g.items.length})
+            </CardTitle>
+          </CardHeader>
           <CardContent>
             <ul className="divide-y divide-border">
               {g.items.map((v) => (
                 <ValueRowItem
                   key={v.id}
                   value={v}
-                  onToggle={async (c) => { await tog({ data: { id: v.id, active: c } }); refresh(); }}
-                  onDelete={async () => { await del({ data: { id: v.id } }); refresh(); }}
+                  onToggle={async (c) => {
+                    await tog({ data: { id: v.id, active: c } });
+                    refresh();
+                  }}
+                  onDelete={async () => {
+                    await del({ data: { id: v.id } });
+                    refresh();
+                  }}
                   onUpdateImage={async (url) => {
                     await up({ data: { ...v, image_url: url } });
                     refresh();
                   }}
                 />
               ))}
-              {g.items.length === 0 && <li className="text-sm text-muted-foreground py-2">Vide.</li>}
+              {g.items.length === 0 && (
+                <li className="text-sm text-muted-foreground py-2">Vide.</li>
+              )}
             </ul>
           </CardContent>
         </Card>

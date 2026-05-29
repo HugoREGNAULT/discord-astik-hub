@@ -55,12 +55,14 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
       .eq("member_discord_id", user.discordId)
       .order("created_at", { ascending: false })
       .limit(3),
-
   ]);
 
   // Recruteur (lookup léger)
-  let recruiter: { discord_id: string; ig_name: string | null; discord_username: string | null } | null =
-    null;
+  let recruiter: {
+    discord_id: string;
+    ig_name: string | null;
+    discord_username: string | null;
+  } | null = null;
   if (member.recruiter_discord_id) {
     const r = await db
       .from("members")

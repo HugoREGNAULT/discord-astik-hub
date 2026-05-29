@@ -8,7 +8,6 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && eslint . && vite build",
     "build:dev": "tsc --noEmit && eslint . && vite build --mode development",
-
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

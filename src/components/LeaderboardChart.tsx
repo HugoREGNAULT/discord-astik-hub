@@ -81,7 +81,9 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
           <XAxis
             dataKey="t"
             tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-            tickFormatter={(v: string) => v.slice(5, 10).replace("-", "/") + " " + v.slice(11) + "h"}
+            tickFormatter={(v: string) =>
+              v.slice(5, 10).replace("-", "/") + " " + v.slice(11) + "h"
+            }
             minTickGap={32}
           />
           <YAxis

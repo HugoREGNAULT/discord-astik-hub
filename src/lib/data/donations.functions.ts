@@ -42,7 +42,10 @@ export const listRecentCarts = createServerFn({ method: "GET" })
     const memberIds = Array.from(
       new Set((carts ?? []).map((c) => c.member_discord_id).filter((id): id is string => !!id)),
     );
-    let members: Record<string, { ig_name: string | null; discord_username: string | null; avatar_url: string | null }> = {};
+    let members: Record<
+      string,
+      { ig_name: string | null; discord_username: string | null; avatar_url: string | null }
+    > = {};
     if (memberIds.length > 0) {
       const { data: ms } = await db
         .from("members")
@@ -57,7 +60,6 @@ export const listRecentCarts = createServerFn({ method: "GET" })
     }
     return { carts: carts ?? [], members };
   });
-
 
 export const createCart = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -94,10 +96,7 @@ async function recomputeCart(cartId: string) {
   const { data: cart } = await db.from("donations").select("bonus_pct").eq("id", cartId).single();
   const bonus = cart?.bonus_pct ?? 0;
   const final = Math.round(brut * (1 + bonus / 100));
-  await db
-    .from("donations")
-    .update({ total_brut: brut, total_final: final })
-    .eq("id", cartId);
+  await db.from("donations").update({ total_brut: brut, total_final: final }).eq("id", cartId);
   return { brut, final };
 }
 
@@ -118,7 +117,9 @@ export const addCartLine = createServerFn({ method: "POST" })
     const user = await requirePermission("donations.manage");
     const subtotal = data.unit_points * data.quantity;
     const { cartId, ...rest } = data;
-    const { error } = await db.from("donation_lines").insert({ ...rest, subtotal, donation_id: cartId });
+    const { error } = await db
+      .from("donation_lines")
+      .insert({ ...rest, subtotal, donation_id: cartId });
     if (error) throw new Error(error.message);
     const totals = await recomputeCart(cartId);
     await logAction("cart_line_add", user.discordId, { cartId, ...totals });
@@ -126,7 +127,9 @@ export const addCartLine = createServerFn({ method: "POST" })
   });
 
 export const removeCartLine = createServerFn({ method: "POST" })
-  .inputValidator((input) => z.object({ lineId: z.string().uuid(), cartId: z.string().uuid() }).parse(input))
+  .inputValidator((input) =>
+    z.object({ lineId: z.string().uuid(), cartId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }) => {
     const user = await requirePermission("donations.manage");
     await db.from("donation_lines").delete().eq("id", data.lineId);
@@ -139,7 +142,11 @@ export const validateCart = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ cartId: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const user = await requirePermission("donations.manage");
-    const { data: cart, error } = await db.from("donations").select("*").eq("id", data.cartId).single();
+    const { data: cart, error } = await db
+      .from("donations")
+      .select("*")
+      .eq("id", data.cartId)
+      .single();
     if (error || !cart) throw new Error("Panier introuvable");
     if (cart.status !== "active") throw new Error("Panier non actif");
     if (new Date(cart.expires_at).getTime() < Date.now()) throw new Error("Panier expiré");
@@ -154,7 +161,10 @@ export const validateCart = createServerFn({ method: "POST" })
       .eq("discord_id", cart.member_discord_id)
       .single();
     const next = (m?.astik_points ?? 0) + totals.final;
-    await db.from("members").update({ astik_points: next }).eq("discord_id", cart.member_discord_id);
+    await db
+      .from("members")
+      .update({ astik_points: next })
+      .eq("discord_id", cart.member_discord_id);
     await db.from("points_ledger").insert({
       member_discord_id: cart.member_discord_id,
       staff_discord_id: user.discordId,

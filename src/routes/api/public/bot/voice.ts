@@ -17,9 +17,14 @@ export const Route = createFileRoute("/api/public/bot/voice")({
         if (unauth) return unauth;
 
         let body: unknown;
-        try { body = await request.json(); } catch { return json({ error: "Invalid JSON" }, 400); }
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "Invalid JSON" }, 400);
+        }
         const parsed = schema.safeParse(body);
-        if (!parsed.success) return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
+        if (!parsed.success)
+          return json({ error: "Invalid payload", details: parsed.error.flatten() }, 400);
 
         const { discord_id, seconds } = parsed.data;
         const { data: m, error: e1 } = await db
