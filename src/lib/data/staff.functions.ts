@@ -13,7 +13,6 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
   const since30d = new Date(Date.now() - 30 * 86_400_000).toISOString();
   const since90d = new Date(Date.now() - 90 * 86_400_000).toISOString();
 
-
   const [
     pendingApps,
     activeDonations,
@@ -76,7 +75,6 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
       .order("created_at", { ascending: true }),
     db.from("applications").select("status"),
   ]);
-
 
   // Aggregate top contributors over last 7 days
   const sums = new Map<string, number>();
@@ -154,9 +152,10 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     if (s === "accepted") totalAccepted += 1;
     else if (s === "rejected") totalRejected += 1;
   }
-  const acceptanceRate = totalAccepted + totalRejected > 0
-    ? Math.round((totalAccepted / (totalAccepted + totalRejected)) * 100)
-    : 0;
+  const acceptanceRate =
+    totalAccepted + totalRejected > 0
+      ? Math.round((totalAccepted / (totalAccepted + totalRejected)) * 100)
+      : 0;
 
   return {
     kpis: {
@@ -181,4 +180,3 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     },
   };
 });
-
