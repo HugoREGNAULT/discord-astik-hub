@@ -153,6 +153,42 @@ export type LeaderboardEntry = {
   [k: string]: unknown;
 };
 
+export type MarketItemsPage = {
+  data: Array<{
+    name: string;
+    countListings?: number;
+    quantityAvailable?: number;
+    quantitySoldTotal?: number;
+    priceAverage?: number;
+    priceSum?: number;
+    listing?: Array<{
+      seller?: string;
+      sellerName?: string;
+      price?: number;
+      pricePB?: number;
+      quantity?: number;
+      createdAt?: number;
+      expireAt?: number;
+    }>;
+  }>;
+  totalCount: number;
+};
+
+export type PlayerMarketResponse = {
+  data: Array<{
+    name?: string;
+    item?: string;
+    listing?: Array<{
+      price?: number;
+      pricePB?: number;
+      quantity?: number;
+      createdAt?: number;
+      expireAt?: number;
+    }>;
+  }>;
+  totalCount?: number;
+};
+
 export const PaladiumApi = {
   getPlayerProfile: (uuid: string) =>
     paladiumFetch<PlayerProfile>(`/v1/paladium/player/profile/${uuid}`),
@@ -162,16 +198,20 @@ export const PaladiumApi = {
     paladiumFetch<PaladiumProfile>(`/v1/paladium/player/profile/${uuid}/clicker`),
   getFaction: (name: string) =>
     paladiumFetch<FactionProfile>(`/v1/paladium/faction/profile/${encodeURIComponent(name)}`),
-  getStatus: () => paladiumFetch<ServerStatus>(`/v1/status`),
-  getMarketItems: () =>
-    paladiumFetch<MarketItem[] | { items: MarketItem[] }>(`/v1/paladium/shop/market/items`),
+  getStatus: () => paladiumFetch<unknown>(`/v1/status`),
+  getMarketItemsPage: (offset = 0, limit = 100) =>
+    paladiumFetch<MarketItemsPage>(`/v1/paladium/shop/market/items?limit=${limit}&offset=${offset}`),
   getMarketItem: (item: string) =>
-    paladiumFetch<MarketItem | { items: MarketItem[] }>(
+    paladiumFetch<MarketItemsPage["data"][number]>(
       `/v1/paladium/shop/market/items/${encodeURIComponent(item)}`,
     ),
-  getLeaderboard: (category = "money") =>
+  getPlayerMarketItems: (uuid: string) =>
+    paladiumFetch<PlayerMarketResponse>(
+      `/v1/paladium/shop/market/players/${encodeURIComponent(uuid)}/items`,
+    ),
+  getLeaderboard: (category = "money", page = 1) =>
     paladiumFetch<LeaderboardEntry[] | { entries: LeaderboardEntry[] }>(
-      `/v1/paladium/ranking/leaderboard/${encodeURIComponent(category)}/1`,
+      `/v1/paladium/ranking/leaderboard/${encodeURIComponent(category)}/${page}`,
     ),
   getFactionLeaderboard: () =>
     paladiumFetch<LeaderboardEntry[] | { entries: LeaderboardEntry[] }>(

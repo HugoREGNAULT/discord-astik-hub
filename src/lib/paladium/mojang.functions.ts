@@ -30,3 +30,35 @@ export const resolveMojangUuid = createServerFn({ method: "POST" })
     }
     return { id, name: json.name };
   });
+
+// Resolve a batch of UUIDs to Minecraft usernames via Mojang sessionserver.
+// Returns a map { uuid: name } (uuid normalized with dashes).
+export const resolveUuidsToNames = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        uuids: z.array(z.string().min(20).max(40)).min(1).max(100),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const out: Record<string, string> = {};
+    const unique = Array.from(new Set(data.uuids));
+    await Promise.all(
+      unique.map(async (raw) => {
+        const stripped = raw.replace(/-/g, "");
+        if (stripped.length !== 32) return;
+        try {
+          const res = await fetch(
+            `https://sessionserver.mojang.com/session/minecraft/profile/${stripped}`,
+          );
+          if (!res.ok) return;
+          const json = (await res.json()) as { id: string; name: string };
+          out[raw] = json.name;
+        } catch {
+          /* ignore */
+        }
+      }),
+    );
+    return out;
+  });

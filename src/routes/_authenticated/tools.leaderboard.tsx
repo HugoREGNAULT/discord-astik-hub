@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ToolHeader,
   ToolCard,
@@ -9,6 +9,7 @@ import {
   MissingKeyBanner,
 } from "@/components/tools/ToolsUi";
 import { PaladiumApi, asArray, hasPaladiumKey, type LeaderboardEntry } from "@/lib/paladium/api";
+import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/leaderboard")({
   head: () => ({
@@ -24,14 +25,18 @@ const CATEGORIES = [
   { id: "money", label: "Argent" },
   { id: "clicker", label: "Clicker" },
   { id: "boss", label: "Boss" },
-  { id: "job-miner", label: "Mineur" },
-  { id: "job-farmer", label: "Fermier" },
-  { id: "job-hunter", label: "Chasseur" },
-  { id: "job-alchemist", label: "Alchimiste" },
+  { id: "job.miner", label: "Mineur" },
+  { id: "job.farmer", label: "Fermier" },
+  { id: "job.hunter", label: "Chasseur" },
+  { id: "job.alchemist", label: "Alchimiste" },
   { id: "koth", label: "KOTH" },
   { id: "end", label: "End" },
   { id: "chorus", label: "Chorus" },
+  { id: "egghunt", label: "Egg Hunt" },
+  { id: "alliance", label: "Alliance" },
 ] as const;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function LeaderboardPage() {
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]["id"]>("money");
@@ -42,6 +47,27 @@ function LeaderboardPage() {
     staleTime: 60_000,
   });
   const rows = asArray<LeaderboardEntry>(q.data ?? null);
+
+  // Collect UUIDs that came back as their own username (unresolved).
+  const uuidsToResolve = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rows) {
+      const username = (r.username ?? "") as string;
+      const uuid = (r as { uuid?: string }).uuid;
+      if (uuid && username && UUID_RE.test(username)) set.add(uuid);
+    }
+    return Array.from(set);
+  }, [rows]);
+
+  const namesQ = useQuery({
+    queryKey: ["mojang-names", uuidsToResolve.sort().join(",")],
+    queryFn: () => resolveUuidsToNames({ data: { uuids: uuidsToResolve } }),
+    enabled: uuidsToResolve.length > 0,
+    retry: false,
+    staleTime: 10 * 60_000,
+  });
+
+  const nameMap = namesQ.data ?? {};
 
   return (
     <div className="max-w-5xl space-y-5">
@@ -73,12 +99,7 @@ function LeaderboardPage() {
       </ToolCard>
 
       {q.isLoading && <LoadingBlock />}
-      {q.error && (
-        <ErrorBlock
-          message={(q.error as Error).message}
-          hint="L'endpoint leaderboard peut différer selon la catégorie."
-        />
-      )}
+      {q.error && <ErrorBlock message={(q.error as Error).message} />}
 
       {rows.length > 0 && (
         <ToolCard className="!p-0 overflow-x-auto">
@@ -92,19 +113,24 @@ function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => (
-                <tr key={i} className="border-b border-zinc-900 last:border-0 hover:bg-zinc-900/50">
-                  <td className="py-2 px-4 text-pink-400 font-bold">
-                    {(r as { position?: number }).position ?? r.rank ?? i + 1}
-                  </td>
-                  <td className="py-2 px-4 text-zinc-200">{r.username ?? "—"}</td>
-                  <td className="py-2 px-4 text-zinc-400">
-                    {(r as { factionName?: string }).factionName ?? r.faction ?? "—"}
-                  </td>
-
-                  <td className="py-2 px-4 text-right text-white font-bold">{fmtNum(r.value)}</td>
-                </tr>
-              ))}
+              {rows.map((r, i) => {
+                const uuid = (r as { uuid?: string }).uuid;
+                const raw = (r.username ?? "") as string;
+                const resolved = uuid && UUID_RE.test(raw) ? nameMap[uuid] : null;
+                const display = resolved ?? (UUID_RE.test(raw) ? "—" : raw || "—");
+                return (
+                  <tr key={i} className="border-b border-zinc-900 last:border-0 hover:bg-zinc-900/50">
+                    <td className="py-2 px-4 text-pink-400 font-bold">
+                      {(r as { position?: number }).position ?? r.rank ?? i + 1}
+                    </td>
+                    <td className="py-2 px-4 text-zinc-200">{display}</td>
+                    <td className="py-2 px-4 text-zinc-400">
+                      {(r as { factionName?: string }).factionName ?? r.faction ?? "—"}
+                    </td>
+                    <td className="py-2 px-4 text-right text-white font-bold">{fmtNum(r.value)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </ToolCard>
@@ -115,5 +141,7 @@ function LeaderboardPage() {
 
 function fmtNum(n: unknown): string {
   if (typeof n !== "number" || !Number.isFinite(n)) return "—";
-  return Math.round(n).toLocaleString("fr-FR");
+  return Math.round(n * 100) / 100 >= 1
+    ? Math.round(n).toLocaleString("fr-FR")
+    : n.toFixed(2);
 }

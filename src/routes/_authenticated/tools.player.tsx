@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import {
   ToolHeader,
   ToolCard,
@@ -18,6 +18,11 @@ import {
   resolveUuid,
   type PlayerJob,
 } from "@/lib/paladium/api";
+import {
+  trackPlayerSearch,
+  getTopSearchedPlayers,
+  getPlayerSalesHistory,
+} from "@/lib/paladium/tracked-players.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/player")({
   head: () => ({
@@ -32,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/tools/player")({
 function PlayerLookup() {
   const [input, setInput] = useState("");
   const [username, setUsername] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const uuidQ = useQuery({
     queryKey: ["mojang", username],
@@ -40,8 +46,26 @@ function PlayerLookup() {
     retry: false,
     staleTime: 60_000,
   });
-
   const uuid = uuidQ.data?.id;
+  const resolvedName = uuidQ.data?.name;
+
+  // Track each successful resolution server-side.
+  useEffect(() => {
+    if (uuid && resolvedName) {
+      trackPlayerSearch({ data: { uuid, username: resolvedName } })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["pala-top-searched"] });
+          queryClient.invalidateQueries({ queryKey: ["pala-sales-history", uuid] });
+        })
+        .catch(() => {});
+    }
+  }, [uuid, resolvedName, queryClient]);
+
+  const topQ = useQuery({
+    queryKey: ["pala-top-searched"],
+    queryFn: () => getTopSearchedPlayers(),
+    staleTime: 60_000,
+  });
 
   const profileQ = useQuery({
     queryKey: ["pala-profile", uuid],
@@ -60,6 +84,13 @@ function PlayerLookup() {
     queryFn: () => PaladiumApi.getPaladiumProfile(uuid!),
     enabled: !!uuid,
     retry: false,
+  });
+  const salesQ = useQuery({
+    queryKey: ["pala-sales-history", uuid],
+    queryFn: () => getPlayerSalesHistory({ data: { uuid: uuid! } }),
+    enabled: !!uuid,
+    retry: false,
+    staleTime: 30_000,
   });
 
   const jobs = asArray<PlayerJob>(jobsQ.data ?? null);
@@ -81,6 +112,34 @@ function PlayerLookup() {
           placeholder="Pseudo Minecraft…"
         />
       </ToolCard>
+
+      {topQ.data && topQ.data.players.length > 0 && (
+        <ToolCard>
+          <SectionTitle>Top joueurs recherchés</SectionTitle>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {topQ.data.players.map((p) => (
+              <button
+                key={p.uuid}
+                type="button"
+                onClick={() => {
+                  setInput(p.username);
+                  setUsername(p.username);
+                }}
+                className="flex items-center gap-2 border border-zinc-800 hover:border-pink-500 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-300 transition-colors"
+                title={`${p.search_count} recherche(s)`}
+              >
+                <img
+                  src={avatarUrl(p.uuid, 24)}
+                  alt={p.username}
+                  className="w-5 h-5 border border-zinc-800"
+                />
+                <span className="font-mono">{p.username}</span>
+                <span className="text-pink-400 font-bold">×{p.search_count}</span>
+              </button>
+            ))}
+          </div>
+        </ToolCard>
+      )}
 
       {uuidQ.isFetching && <LoadingBlock label="Résolution UUID…" />}
       {uuidQ.error && <ErrorBlock message={(uuidQ.error as Error).message} />}
@@ -150,6 +209,75 @@ function PlayerLookup() {
             </ToolCard>
 
             <ToolCard>
+              <SectionTitle>Ventes en cours</SectionTitle>
+              {salesQ.isLoading && <LoadingBlock />}
+              {salesQ.data && salesQ.data.open.length === 0 && (
+                <p className="text-zinc-600 text-xs mt-2">Aucune vente active enregistrée.</p>
+              )}
+              {salesQ.data && salesQ.data.open.length > 0 && (
+                <table className="w-full text-sm mt-2">
+                  <thead>
+                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+                      <th className="py-2">Item</th>
+                      <th className="py-2 text-right">Qté</th>
+                      <th className="py-2 text-right">Prix u.</th>
+                      <th className="py-2 text-right">Listé</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesQ.data.open.map((r) => (
+                      <tr key={r.id} className="border-b border-zinc-900 last:border-0">
+                        <td className="py-2 text-zinc-300 font-mono">{r.item_name}</td>
+                        <td className="py-2 text-right text-white">{r.quantity}</td>
+                        <td className="py-2 text-right text-pink-400 font-bold">
+                          {fmtNum(Number(r.price))}
+                        </td>
+                        <td className="py-2 text-right text-zinc-500 text-xs">
+                          {fmtDate(r.listed_at ?? r.first_seen_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </ToolCard>
+
+            <ToolCard>
+              <SectionTitle>Ventes passées (snapshots BDD)</SectionTitle>
+              {salesQ.data && salesQ.data.sold.length === 0 && (
+                <p className="text-zinc-600 text-xs mt-2">
+                  Aucun historique pour l'instant — la sync auto tourne toutes les 10 min.
+                </p>
+              )}
+              {salesQ.data && salesQ.data.sold.length > 0 && (
+                <table className="w-full text-sm mt-2">
+                  <thead>
+                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+                      <th className="py-2">Item</th>
+                      <th className="py-2 text-right">Qté</th>
+                      <th className="py-2 text-right">Prix u.</th>
+                      <th className="py-2 text-right">Vendu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {salesQ.data.sold.slice(0, 50).map((r) => (
+                      <tr key={r.id} className="border-b border-zinc-900 last:border-0">
+                        <td className="py-2 text-zinc-300 font-mono">{r.item_name}</td>
+                        <td className="py-2 text-right text-white">{r.quantity}</td>
+                        <td className="py-2 text-right text-pink-400 font-bold">
+                          {fmtNum(Number(r.price))}
+                        </td>
+                        <td className="py-2 text-right text-zinc-500 text-xs">
+                          {fmtDate(r.sold_at)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </ToolCard>
+
+            <ToolCard>
               <SectionTitle>Clicker</SectionTitle>
               {palaQ.isLoading && <LoadingBlock />}
               {palaQ.error && <ErrorBlock message={(palaQ.error as Error).message} />}
@@ -172,6 +300,7 @@ function PlayerLookup() {
                 </div>
               )}
             </ToolCard>
+
             <ToolCard>
               <SectionTitle>Métiers</SectionTitle>
               {jobsQ.isLoading && <LoadingBlock />}

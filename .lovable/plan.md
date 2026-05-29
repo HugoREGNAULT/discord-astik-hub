@@ -1,75 +1,75 @@
-# Section privée `/tools` — Outils Paladium (faction only)
+## Constats (tests API à l'instant)
 
-Section **protégée par Discord auth** (sous `_authenticated`), réservée aux membres de la faction. Design cohérent avec l'existant (cyberpunk/terminal, Space Grotesk + Space Mono, fond `#0a0a0c`, accents pink/Discord blue, bordures d'angle).
+- **Status** : l'API renvoie `{ java: { global, factions }, launcher, anarchy }` — mon extracteur actuel ne sait pas lire cette forme, d'où l'écran vide.
+- **Classements** : les IDs corrects sont `job.miner`, `job.farmer`, etc. (avec un point, pas un tiret) → mes onglets métiers renvoient 404. Pour KOTH/END, certaines lignes ont `username == uuid` (joueurs « wilderness ») → il faut résoudre via Mojang.
+- **Market** : `/items/{nom}` exige le nom interne exact (`paladium-ore`, `tile-grass`…). « draper » n'existe pas tel quel. La liste globale est paginée à 100 max (1481 items au total) → impossible de chercher librement sans paginer.
 
-## Structure des routes
+## Plan
 
-Toutes les routes vivent sous `_authenticated/` → redirige vers `/login` si non connecté (gate déjà en place dans `src/routes/_authenticated.tsx`).
+### 1. Page Statut — refonte
+Nouvelle mise en page basée sur la vraie structure :
+- Bandeau global Java (online/offline + joueurs)
+- Tuile Launcher + tuile Anarchy
+- Grille des serveurs faction (Aeloria, Egopolis, …) avec pastille colorée selon `running` / `whitelist` / `offline` / `unknown`
 
-```text
-src/routes/_authenticated/
-├── tools.tsx                  → /tools          (layout + landing avec cards)
-├── tools.player.tsx           → /tools/player
-├── tools.faction.tsx          → /tools/faction
-├── tools.status.tsx           → /tools/status
-├── tools.market.tsx           → /tools/market
-├── tools.leaderboard.tsx      → /tools/leaderboard
-├── tools.clicker.tsx          → /tools/clicker
-└── tools.xp-calculator.tsx    → /tools/xp-calculator
+### 2. Classements
+- IDs corrigés (`money`, `job.miner`, `job.farmer`, `job.hunter`, `job.alchemist`, `boss`, `egghunt`, `end`, `chorus`, `koth`, `clicker`, `alliance`)
+- Résolution UUID → pseudo via Mojang sessionserver pour les lignes où le pseudo est un UUID (KOTH / END). Cache mémoire par UUID pour éviter les appels répétés.
+
+### 3. Market HDV — recherche libre
+- Au premier rendu : charger toutes les pages (15 requêtes × 100 items, dans la limite 300/5min) et indexer en mémoire.
+- Recherche par sous-chaîne sur le nom interne.
+- Pour chaque item correspondant : afficher quantité dispo, total vendu, prix moyen.
+- Détail au clic : `/items/{name}` pour voir les listings actifs (vendeur, prix, quantité, expiration).
+
+### 4. Lookup Joueur — ventes + historique BDD
+Ajout de deux sections à la fiche joueur :
+- **Ventes en cours** : `/v1/paladium/shop/market/players/{uuid}/items`
+- **Ventes passées** : lues depuis la table d'historique
+
+Chaque recherche réussie :
+- Upsert dans `paladium_tracked_players` (uuid, pseudo, compte de lookups, `last_searched_at`)
+- Snapshot immédiat des listings du joueur dans `paladium_player_listings_history`
+
+### 5. Top joueurs recherchés
+Bloc en haut du lookup affichant les 10 joueurs les plus recherchés, cliquables pour relancer la recherche.
+
+### 6. Sync automatique toutes les 10 min
+- Route publique `POST /api/public/hooks/paladium-sync` (vérif via clé anon)
+- Itère sur les joueurs trackés (priorité aux plus recherchés, max ~30 par run pour respecter le rate limit)
+- Pour chaque : appelle `/players/{uuid}/items`, compare avec le dernier snapshot, marque les listings disparus comme « vendus », insère les nouveaux
+- pg_cron toutes les 10 minutes
+
+## Détails techniques
+
+**Nouvelles tables Supabase**
+- `paladium_tracked_players` : uuid (PK), username, search_count, first_searched_at, last_searched_at, last_synced_at
+- `paladium_player_listings_history` : id, player_uuid, item_name, item_display, quantity, price, price_pb, listed_at (createdAt API), expires_at, first_seen_at, last_seen_at, sold_at (null tant que présent)
+
+RLS : lecture pour `authenticated`, écriture via service role uniquement.
+
+**Server functions**
+- `trackPlayerSearch({ uuid, username })` — upsert + snapshot initial
+- `getTopSearchedPlayers()` — top 10 par `search_count`
+- `getPlayerSalesHistory({ uuid })` — listings actuels + historique des ventes
+- `syncTrackedPlayersListings()` — utilisée par la route cron, signature interne
+
+**Résolution UUID → pseudo**
+- Helper côté serveur via Mojang sessionserver (pas de clé) + cache mémoire request-scoped pour le leaderboard ; les UUID résolus sont aussi écrits dans `paladium_tracked_players` quand disponibles.
+
+**Cron pg_cron**
+```sql
+select cron.schedule(
+  'paladium-sync-listings',
+  '*/10 * * * *',
+  $$ select net.http_post(
+    url:='https://punkastik.com/api/public/hooks/paladium-sync',
+    headers:='{"Content-Type":"application/json","apikey":"<anon>"}'::jsonb,
+    body:='{}'::jsonb
+  ) $$
+);
 ```
 
-Chaque route a son propre `head()` (title + description).
-
-Le layout `tools.tsx` rend : header partagé (logo, retour au dashboard, onglets/drawer vers les 7 outils) + `<Outlet />` + footer minimal. S'intègre dans le shell membre existant (sidebar conservée si déjà présent).
-
-## Ajout au menu membre
-
-Ajouter une entrée "Outils Paladium" dans la navigation latérale/principale du dashboard staff (celle de `/`, `/recruitment`, `/pdc`, etc.) — je localise le composant de nav existant et j'y greffe le lien avec une icône Lucide (`Wrench` ou `Hammer`).
-
-## Module API partagé
-
-`src/lib/paladium/api.ts`
-- `paladiumFetch(path)` — wrapper `fetch` vers `https://api.paladium.games` avec `Authorization: Bearer ${import.meta.env.VITE_PALADIUM_API_KEY}`, gestion erreurs typée (`PaladiumApiError`).
-- `resolveUuid(username)` — appel `api.mojang.com/users/profiles/minecraft/{u}`.
-- Helpers : `getPlayerProfile`, `getPlayerJobs`, `getPaladiumProfile`, `getFaction`, `getStatus`, `getMarketItems`, `getMarketItem`, `getLeaderboard`.
-- Avatar Crafatar : `https://crafatar.com/avatars/{uuid}?size=128`.
-
-**CORS fallback** : si un endpoint échoue en CORS depuis le navigateur, bascule sur une Edge Function Supabase `paladium-proxy` (créée seulement à ce moment, avec `verify_jwt = false` mais accessible via la session membre côté front).
-
-> Note clé API : `VITE_PALADIUM_API_KEY` est préfixée `VITE_` donc **bundlée côté client (visible)**. C'est conforme à la demande. Si la clé doit rester secrète, dis-le et je bascule tout via Edge Function avec une `PALADIUM_API_KEY` runtime. Je laisse un message d'erreur clair si la variable est absente du build.
-
-## Composants partagés (`src/components/tools/`)
-
-- `ToolsHeader.tsx` — sous-header avec onglets (Player, Faction, Status, …).
-- `ToolCard.tsx` — card cliquable (icône, titre, description) pour la landing.
-- `SearchInput.tsx` — input thématisé style terminal.
-- `LoadingBlock.tsx`, `ErrorBlock.tsx`, `EmptyBlock.tsx`.
-- `StatTile.tsx` — tuile chiffrée réutilisable.
-
-## Détails par outil
-
-1. **Landing `/tools`** — grille 7 cards.
-2. **Player** — input pseudo → resolve UUID → 3 `useQuery` en parallèle. Affiche avatar, identité (pseudo, faction, grade, argent, niveau, inscription), table métiers (niveau + XP), ClicCoins + RPS.
-3. **Faction** — input + bouton "Voir PunkAstik" pré-rempli. Affiche nom, membres, alliances, stats.
-4. **Status** — `useQuery` avec `refetchInterval: 60_000`. Grille de serveurs avec pastille online/offline + nb joueurs.
-5. **Market** — table compacte, recherche par nom, tri prix asc/desc, clic ligne → drawer détail item (via `/items/{item}`).
-6. **Leaderboard** — `Tabs` par catégorie (argent, niveau, …), table rang/pseudo/faction/valeur.
-7. **Clicker Optimizer** — récupère profil clicker → pour chaque achat possible calcule `ratio = gain_rps / cout` et `temps = cout / (rps / 1.33)`. Top 10 trié par ratio, #1 mis en évidence. Catalogue bâtiments/améliorations dans `src/lib/paladium/clicker-catalog.ts` (placeholder à compléter si l'API ne le renvoie pas).
-8. **XP Calculator** — sélecteur métier, niveau actuel + cible, XP actuelle (optionnel), bonus % (optionnel). Pseudo optionnel pour pré-remplir via `/jobs`. Courbes XP dans `src/lib/paladium/xp-curves.ts` (formule paramétrable, valeurs initiales documentées et faciles à ajuster). Rendement par action dans `xp-rates.ts`. Sortie : XP totale + table ressources/actions à farmer. Toggle Java/Bedrock.
-
-## Gestion d'erreurs
-
-- Joueur introuvable (Mojang 204/404) → "Pseudo inconnu".
-- Faction introuvable → message dédié.
-- API Paladium 5xx/timeout → bandeau "API Paladium indisponible" + retry.
-- Clé API absente → bandeau explicatif.
-
-## Hors scope
-
-- Pas de cache persistant (TanStack Query staleTime 60s).
-- Pas de favoris ni d'historique de recherches.
-- Pas de comparateur multi-joueurs.
-
-## Question avant d'attaquer
-
-Tu confirmes que je peux greffer le lien "Outils Paladium" dans la nav latérale existante du dashboard membre ? Et OK pour `VITE_PALADIUM_API_KEY` côté client (visible dans le bundle) — sinon je passe tout par Edge Function ?
+## À confirmer
+1. OK pour créer les 2 nouvelles tables ?
+2. La sync auto toutes les 10 min — OK pour limiter à ~30 joueurs par tick (pour ne pas exploser le rate limit profile 50/5min) ?

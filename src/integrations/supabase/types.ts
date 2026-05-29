@@ -557,6 +557,78 @@ export type Database = {
         }
         Relationships: []
       }
+      paladium_player_listings_history: {
+        Row: {
+          expires_at: string | null
+          external_id: string | null
+          first_seen_at: string
+          id: string
+          item_name: string
+          last_seen_at: string
+          listed_at: string | null
+          player_uuid: string
+          price: number
+          price_pb: number | null
+          quantity: number
+          sold_at: string | null
+        }
+        Insert: {
+          expires_at?: string | null
+          external_id?: string | null
+          first_seen_at?: string
+          id?: string
+          item_name: string
+          last_seen_at?: string
+          listed_at?: string | null
+          player_uuid: string
+          price: number
+          price_pb?: number | null
+          quantity: number
+          sold_at?: string | null
+        }
+        Update: {
+          expires_at?: string | null
+          external_id?: string | null
+          first_seen_at?: string
+          id?: string
+          item_name?: string
+          last_seen_at?: string
+          listed_at?: string | null
+          player_uuid?: string
+          price?: number
+          price_pb?: number | null
+          quantity?: number
+          sold_at?: string | null
+        }
+        Relationships: []
+      }
+      paladium_tracked_players: {
+        Row: {
+          first_searched_at: string
+          last_searched_at: string
+          last_synced_at: string | null
+          search_count: number
+          username: string
+          uuid: string
+        }
+        Insert: {
+          first_searched_at?: string
+          last_searched_at?: string
+          last_synced_at?: string | null
+          search_count?: number
+          username: string
+          uuid: string
+        }
+        Update: {
+          first_searched_at?: string
+          last_searched_at?: string
+          last_synced_at?: string | null
+          search_count?: number
+          username?: string
+          uuid?: string
+        }
+        Relationships: []
+      }
       pdc_blocks: {
         Row: {
           color: string
