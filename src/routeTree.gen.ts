@@ -38,6 +38,7 @@ import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
+import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/voice'
 import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
 import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot/message'
@@ -189,6 +190,12 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMembersRoute,
 } as any)
+const ApiPublicHooksSyncDiscordPresenceRoute =
+  ApiPublicHooksSyncDiscordPresenceRouteImport.update({
+    id: '/api/public/hooks/sync-discord-presence',
+    path: '/api/public/hooks/sync-discord-presence',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicBotVoiceRoute = ApiPublicBotVoiceRouteImport.update({
   id: '/api/public/bot/voice',
   path: '/api/public/bot/voice',
@@ -249,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
+  '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -284,6 +292,7 @@ export interface FileRoutesByTo {
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
+  '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -321,6 +330,7 @@ export interface FileRoutesById {
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
+  '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
+    | '/api/public/hooks/sync-discord-presence'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
+    | '/api/public/hooks/sync-discord-presence'
   id:
     | '__root__'
     | '/'
@@ -429,6 +441,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
+    | '/api/public/hooks/sync-discord-presence'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -448,6 +461,7 @@ export interface RootRouteChildren {
   ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
   ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
   ApiPublicBotVoiceRoute: typeof ApiPublicBotVoiceRoute
+  ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -655,6 +669,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembersIdRouteImport
       parentRoute: typeof AuthenticatedMembersRoute
     }
+    '/api/public/hooks/sync-discord-presence': {
+      id: '/api/public/hooks/sync-discord-presence'
+      path: '/api/public/hooks/sync-discord-presence'
+      fullPath: '/api/public/hooks/sync-discord-presence'
+      preLoaderRoute: typeof ApiPublicHooksSyncDiscordPresenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/bot/voice': {
       id: '/api/public/bot/voice'
       path: '/api/public/bot/voice'
@@ -774,7 +795,19 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
   ApiPublicBotStatsRoute: ApiPublicBotStatsRoute,
   ApiPublicBotVoiceRoute: ApiPublicBotVoiceRoute,
+  ApiPublicHooksSyncDiscordPresenceRoute:
+    ApiPublicHooksSyncDiscordPresenceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
