@@ -132,6 +132,44 @@ function LeaderboardPage() {
         </div>
       </ToolCard>
 
+      <ToolCard>
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher un pseudo, UUID ou faction…"
+            className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-pink-500/60"
+            style={{ fontFamily: "'Space Mono'" }}
+          />
+          {trimmedSearch && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="px-3 py-2 text-[11px] uppercase tracking-[0.2em] border border-zinc-800 text-zinc-400 hover:text-pink-400"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              Effacer
+            </button>
+          )}
+        </div>
+        {trimmedSearch && (
+          <div className="mt-2 text-[11px] text-zinc-500" style={{ fontFamily: "'Space Mono'" }}>
+            {searchQ.isFetching && "Résolution Mojang…"}
+            {!searchQ.isFetching && searchUuid && (
+              <>
+                Pseudo résolu :{" "}
+                <span className="text-pink-400">{searchName ?? trimmedSearch}</span>{" "}
+                <span className="text-zinc-600">· {searchUuid}</span>
+              </>
+            )}
+            {!searchQ.isFetching && !searchUuid && !searchIsUuid && searchQ.error && (
+              <span className="text-amber-400">Pseudo introuvable côté Mojang — recherche en texte brut.</span>
+            )}
+            <span className="ml-2 text-zinc-600">· {filtered.length} résultat(s)</span>
+          </div>
+        )}
+      </ToolCard>
+
       {q.isLoading && <LoadingBlock />}
       {q.error && <ErrorBlock message={(q.error as Error).message} />}
 
@@ -147,13 +185,19 @@ function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => {
+              {filtered.map((r, i) => {
                 const uuid = (r as { uuid?: string }).uuid;
                 const raw = (r.username ?? "") as string;
                 const resolved = uuid && UUID_RE.test(raw) ? nameMap[uuid] : null;
                 const display = resolved ?? (UUID_RE.test(raw) ? "—" : raw || "—");
+                const highlight = !!searchUuid && (uuid ?? "").toLowerCase() === searchUuid;
                 return (
-                  <tr key={i} className="border-b border-zinc-900 last:border-0 hover:bg-zinc-900/50">
+                  <tr
+                    key={i}
+                    className={`border-b border-zinc-900 last:border-0 ${
+                      highlight ? "bg-pink-500/10" : "hover:bg-zinc-900/50"
+                    }`}
+                  >
                     <td className="py-2 px-4 text-pink-400 font-bold">
                       {(r as { position?: number }).position ?? r.rank ?? i + 1}
                     </td>
@@ -165,10 +209,18 @@ function LeaderboardPage() {
                   </tr>
                 );
               })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-6 px-4 text-center text-zinc-500 text-xs">
+                    Aucun joueur ne correspond à « {trimmedSearch} » dans cette catégorie.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </ToolCard>
       )}
+
     </div>
   );
 }
