@@ -51,12 +51,12 @@ export function ApplicationsChart({ data, range = 90 }: Props) {
           <XAxis
             dataKey="date"
             tickFormatter={fmtDate}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+            tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
             minTickGap={30}
           />
           <YAxis
             allowDecimals={false}
-            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+            tick={{ fill: "hsl(var(--foreground))", fontSize: 11 }}
             width={28}
           />
           <Tooltip
