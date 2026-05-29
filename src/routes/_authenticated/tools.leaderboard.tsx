@@ -21,7 +21,6 @@ export const Route = createFileRoute("/_authenticated/tools/leaderboard")({
 });
 
 const CATEGORIES = [
-
   { id: "money", label: "Argent" },
   { id: "clicker", label: "Clicker" },
   { id: "boss", label: "Boss" },
