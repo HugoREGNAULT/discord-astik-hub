@@ -17,6 +17,7 @@ import {
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { listLogs, listLogActions } from "@/lib/data/logs.functions";
 import { FileText, RotateCw } from "lucide-react";
+import { RowListSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/logs")({
   head: () => ({ meta: [{ title: "Logs · PunkAstik" }] }),

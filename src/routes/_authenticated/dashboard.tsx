@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MemberRowsSkeleton as LeaderboardRowsSkeleton } from "@/components/Skeletons";
 import {
   getLeaderboard,
   type LeaderboardEntry,

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getPoll, castVote, closePoll, reopenPoll } from "@/lib/data/polls.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+import { DetailPageSkeleton } from "@/components/Skeletons";
 
 type Choice = "yes" | "maybe" | "no";
 

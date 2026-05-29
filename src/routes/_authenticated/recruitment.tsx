@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/accordion";
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CardListSkeleton } from "@/components/Skeletons";
 
 const PER_PAGE = 15;
 export const Route = createFileRoute("/_authenticated/recruitment")({
