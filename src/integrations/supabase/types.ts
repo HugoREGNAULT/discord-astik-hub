@@ -590,6 +590,36 @@ export type Database = {
         }
         Relationships: []
       }
+      paladium_market_price_history: {
+        Row: {
+          captured_at: string
+          count_listings: number | null
+          id: number
+          item_name: string
+          price_average: number | null
+          quantity_available: number | null
+          quantity_sold_total: number | null
+        }
+        Insert: {
+          captured_at?: string
+          count_listings?: number | null
+          id?: number
+          item_name: string
+          price_average?: number | null
+          quantity_available?: number | null
+          quantity_sold_total?: number | null
+        }
+        Update: {
+          captured_at?: string
+          count_listings?: number | null
+          id?: number
+          item_name?: string
+          price_average?: number | null
+          quantity_available?: number | null
+          quantity_sold_total?: number | null
+        }
+        Relationships: []
+      }
       paladium_player_listings_history: {
         Row: {
           expires_at: string | null
