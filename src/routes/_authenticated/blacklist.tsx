@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { RowListSkeleton as BlacklistRowsSkeleton } from "@/components/Skeletons";
 import {
   Dialog,
   DialogContent,
@@ -83,7 +84,7 @@ function BlacklistPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <p className="text-sm text-muted-foreground p-6">Chargement…</p>
+            <BlacklistRowsSkeleton count={5} />
           ) : filtered.length === 0 ? (
             <p className="text-sm text-muted-foreground p-6 text-center">
               {entries.length === 0 ? "Blacklist vide." : "Aucun résultat."}

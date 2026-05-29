@@ -42,6 +42,8 @@ import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
+import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 export const Route = createFileRoute("/_authenticated/me")({
@@ -78,7 +80,32 @@ function MePage() {
   }, [data, navigate]);
 
   if (isLoading || !data || data.needsOnboarding) {
-    return <div className="text-muted-foreground">Chargement…</div>;
+    return (
+      <div className="space-y-6 max-w-6xl">
+        <ProfileHeroSkeleton />
+        <StatGridSkeleton count={4} cols={4} />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <Skeleton className="h-5 w-44" />
+            </CardHeader>
+            <CardContent>
+              <RowListSkeleton count={5} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-9 w-full mt-3" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   const m = data.member;

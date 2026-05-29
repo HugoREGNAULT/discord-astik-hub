@@ -22,6 +22,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { listPolls, createPoll, deletePoll } from "@/lib/data/polls.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+import { CardListSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/polls")({
   head: () => ({ meta: [{ title: "Sondages · PunkAstik" }] }),
@@ -61,7 +62,7 @@ function PollsPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <CardListSkeleton count={4} />
       ) : !data?.polls.length ? (
         <Card>
           <CardContent className="py-12 text-center text-sm text-muted-foreground">

@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
+import { MemberRowsSkeleton } from "@/components/Skeletons";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -144,9 +145,7 @@ function MembersAdminSection() {
           </div>
         </div>
 
-        {isLoading && (
-          <p className="text-sm text-muted-foreground">Chargement…</p>
-        )}
+        {isLoading && <MemberRowsSkeleton count={6} />}
 
         <div className="grid gap-1.5 max-h-[480px] overflow-y-auto pr-1">
           {data?.members.map((m) => (

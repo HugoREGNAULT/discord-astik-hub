@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getPoll, castVote, closePoll, reopenPoll } from "@/lib/data/polls.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+import { DetailPageSkeleton } from "@/components/Skeletons";
 
 type Choice = "yes" | "maybe" | "no";
 
@@ -102,7 +103,7 @@ function PollDetail() {
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [data]);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Chargement…</p>;
+  if (isLoading) return <DetailPageSkeleton />;
   if (!data?.poll) return <p>Sondage introuvable.</p>;
 
   const p = data.poll;

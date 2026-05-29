@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/accordion";
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CardListSkeleton } from "@/components/Skeletons";
 
 const PER_PAGE = 15;
 export const Route = createFileRoute("/_authenticated/recruitment")({
@@ -125,7 +126,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
   const paged = useMemo(() => usePagedSlice(items, page, PER_PAGE), [items, page]);
 
   if (isLoading) {
-    return <p className="text-muted-foreground text-sm">Chargement…</p>;
+    return <CardListSkeleton count={4} />;
   }
   if (items.length === 0) {
     return (

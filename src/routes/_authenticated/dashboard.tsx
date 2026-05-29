@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MemberRowsSkeleton as LeaderboardRowsSkeleton } from "@/components/Skeletons";
 import {
   getLeaderboard,
   type LeaderboardEntry,
@@ -167,7 +168,7 @@ function LeaderboardPage() {
             className="max-w-xs"
           />
           {isLoading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">Chargement…</p>
+            <LeaderboardRowsSkeleton count={10} />
           ) : (
             <LeaderboardList entries={entries} metric={metric} period={period} query={query} />
           )}

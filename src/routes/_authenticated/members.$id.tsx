@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+import { DetailPageSkeleton } from "@/components/Skeletons";
 
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
@@ -55,7 +56,7 @@ function MemberDetail() {
     onSuccess: () => { setAlt(""); toast.success("Alt ajouté"); refresh(); },
   });
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Chargement…</p>;
+  if (isLoading) return <DetailPageSkeleton />;
   if (error) {
     return (
       <Card className="max-w-md">

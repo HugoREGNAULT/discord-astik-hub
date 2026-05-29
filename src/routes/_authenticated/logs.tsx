@@ -17,6 +17,7 @@ import {
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { listLogs, listLogActions } from "@/lib/data/logs.functions";
 import { FileText, RotateCw } from "lucide-react";
+import { RowListSkeleton } from "@/components/Skeletons";
 
 export const Route = createFileRoute("/_authenticated/logs")({
   head: () => ({ meta: [{ title: "Logs · PunkAstik" }] }),
@@ -135,7 +136,7 @@ function LogsPage() {
       <Card>
         <CardContent className="p-0">
           {isFetching && logs.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-6">Chargement…</p>
+            <RowListSkeleton count={10} />
           ) : logs.length === 0 ? (
             <p className="text-sm text-muted-foreground p-6 text-center">
               Aucun log pour ces filtres.
