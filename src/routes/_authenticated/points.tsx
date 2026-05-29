@@ -1,15 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Guard } from "@/components/Guard";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
 
 import { listMembers } from "@/lib/data/members.functions";
 import { addPoints, removePoints, setPoints, getPointsHistory } from "@/lib/data/points.functions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import {
+  PageHeader,
+  PageCard,
+  SectionLabel,
+  DaButton,
+  DaInput,
+  DaSelect,
+  EmptyBlock,
+} from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/points")({
   head: () => ({ meta: [{ title: "AstikPoints · PunkAstik" }] }),
@@ -79,23 +85,29 @@ function PointsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <h1 className="text-2xl font-bold">AstikPoints</h1>
+    <div className="max-w-4xl space-y-5">
+      <PageHeader
+        code="// points.manage"
+        title="AstikPoints"
+        description="Ajoute, retire ou redéfinit manuellement le solde d'un membre. Historique complet par membre."
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Action manuelle</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <PageCard>
+        <SectionLabel>action manuelle</SectionLabel>
+        <div className="space-y-3">
           <div>
-            <label htmlFor={`${fid}-member`} className="text-xs text-muted-foreground">
+            <label
+              htmlFor={`${fid}-member`}
+              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
               Membre
             </label>
-            <select
+            <DaSelect
               id={`${fid}-member`}
               value={target}
               onChange={(e) => setTarget(e.target.value)}
-              className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm"
+              className="w-full mt-1"
             >
               <option value="">— Choisir —</option>
               {members.data?.members.map((m) => (
@@ -103,80 +115,93 @@ function PointsPage() {
                   {m.ig_name ?? m.discord_username} ({m.astik_points} pts)
                 </option>
               ))}
-            </select>
+            </DaSelect>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor={`${fid}-amount`} className="text-xs text-muted-foreground">
+              <label
+                htmlFor={`${fid}-amount`}
+                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+                style={{ fontFamily: "'Space Mono'" }}
+              >
                 Montant
               </label>
-              <Input
+              <DaInput
                 id={`${fid}-amount`}
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
+                className="w-full mt-1"
               />
             </div>
             <div>
-              <label htmlFor={`${fid}-reason`} className="text-xs text-muted-foreground">
+              <label
+                htmlFor={`${fid}-reason`}
+                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+                style={{ fontFamily: "'Space Mono'" }}
+              >
                 Raison
               </label>
-              <Input
+              <DaInput
                 id={`${fid}-reason`}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="ex: don raid base ennemie"
+                className="w-full mt-1"
               />
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              onClick={() => run("add")}
-              className="bg-success text-success-foreground hover:opacity-90"
-            >
+          <div className="flex gap-2 flex-wrap pt-2">
+            <DaButton variant="success" onClick={() => run("add")}>
               + Ajouter
-            </Button>
-            <Button onClick={() => run("remove")} variant="destructive">
+            </DaButton>
+            <DaButton variant="danger" onClick={() => run("remove")}>
               − Retirer
-            </Button>
-            <Button onClick={() => run("set")} variant="secondary">
+            </DaButton>
+            <DaButton variant="ghost" onClick={() => run("set")}>
               = Définir
-            </Button>
+            </DaButton>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </PageCard>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Historique du membre</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!target && <p className="text-sm text-muted-foreground">Sélectionne un membre.</p>}
-          {history.data?.history && (
-            <ul className="divide-y divide-border">
-              {history.data.history.map((e: any) => (
-                <li key={e.id} className="py-2 flex justify-between text-sm">
-                  <div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(e.created_at).toLocaleString()} · {e.staff_username ?? "—"}
-                    </div>
-                    <div>
-                      {e.action_type} · {e.reason ?? ""}
-                    </div>
-                  </div>
+      <PageCard>
+        <SectionLabel>historique du membre</SectionLabel>
+        {!target && <EmptyBlock label="Sélectionne un membre" />}
+        {target && history.data?.history && history.data.history.length === 0 && (
+          <EmptyBlock label="Aucun mouvement" />
+        )}
+        {history.data?.history && history.data.history.length > 0 && (
+          <ul className="divide-y divide-zinc-800">
+            {history.data.history.map((e: any) => (
+              <li key={e.id} className="py-2 flex justify-between text-sm gap-3">
+                <div className="min-w-0">
                   <div
-                    className={`font-bold ${e.amount >= 0 ? "text-success" : "text-destructive"}`}
+                    className="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+                    style={{ fontFamily: "'Space Mono'" }}
                   >
-                    {e.amount >= 0 ? "+" : ""}
-                    {e.amount}
+                    {new Date(e.created_at).toLocaleString("fr-FR")} · {e.staff_username ?? "—"}
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+                  <div className="text-zinc-200 truncate">
+                    <span className="font-mono text-pink-400 mr-2">{e.action_type}</span>
+                    {e.reason ?? ""}
+                  </div>
+                </div>
+                <div
+                  className={`font-bold whitespace-nowrap ${
+                    e.amount >= 0 ? "text-emerald-400" : "text-red-400"
+                  }`}
+                  style={{ fontFamily: "'Space Grotesk'" }}
+                >
+                  {e.amount >= 0 ? "+" : ""}
+                  {e.amount}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </PageCard>
     </div>
   );
 }
