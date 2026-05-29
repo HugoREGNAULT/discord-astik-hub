@@ -42,6 +42,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 function LeaderboardPage() {
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]["id"]>("money");
+  const [search, setSearch] = useState("");
   const meta = CATEGORIES.find((c) => c.id === cat)!;
   const q = useQuery({
     queryKey: ["pala-lb", cat],
@@ -54,8 +55,6 @@ function LeaderboardPage() {
     staleTime: 60_000,
   });
   const rows = asArray<LeaderboardEntry>(q.data ?? null);
-
-
 
   // Collect UUIDs that came back as their own username (unresolved).
   const uuidsToResolve = useMemo(() => {
@@ -77,6 +76,32 @@ function LeaderboardPage() {
   });
 
   const nameMap = namesQ.data ?? {};
+
+  // Resolve search input → uuid (if it looks like a pseudo, not a uuid).
+  const trimmedSearch = search.trim();
+  const searchIsUuid = UUID_RE.test(trimmedSearch);
+  const searchQ = useQuery({
+    queryKey: ["mojang-search", trimmedSearch.toLowerCase()],
+    queryFn: () => resolveMojangUuid({ data: { username: trimmedSearch } }),
+    enabled: trimmedSearch.length >= 2 && !searchIsUuid && /^[A-Za-z0-9_]+$/.test(trimmedSearch),
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
+  const searchUuid = searchIsUuid ? trimmedSearch.toLowerCase() : searchQ.data?.id ?? null;
+  const searchName = searchQ.data?.name ?? null;
+
+  const matchesRow = (r: LeaderboardEntry) => {
+    if (!trimmedSearch) return true;
+    const uuid = ((r as { uuid?: string }).uuid ?? "").toLowerCase();
+    const raw = ((r.username ?? "") as string).toLowerCase();
+    const faction = (((r as { factionName?: string }).factionName ?? r.faction ?? "") as string).toLowerCase();
+    const resolved = uuid && UUID_RE.test(raw) ? (nameMap[(r as { uuid?: string }).uuid!] ?? "").toLowerCase() : "";
+    const s = trimmedSearch.toLowerCase();
+    if (searchUuid && uuid === searchUuid) return true;
+    return raw.includes(s) || resolved.includes(s) || faction.includes(s);
+  };
+  const filtered = trimmedSearch ? rows.filter(matchesRow) : rows;
+
 
   return (
     <div className="max-w-5xl space-y-5">
