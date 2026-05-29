@@ -125,6 +125,15 @@ function ToolsIndex() {
           accent="blurple"
         />
 
+        <ToolCard
+          to="/tools/sales"
+          code="[11]"
+          icon={Receipt}
+          title="Ventes joueur"
+          description="Recherche un joueur (pseudo ou UUID) et consulte ses ventes HDV en cours et passées avec filtres."
+          accent="pink"
+        />
+
       </div>
       <div className="mt-8">
         <PaladiumRateLimits />
