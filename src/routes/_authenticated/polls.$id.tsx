@@ -151,9 +151,61 @@ function PollDetail() {
   const nonVoters = useMemo(
     () => activeMembers.filter((m) => !voterIds.has(m.discord_id)),
     [activeMembers, voterIds],
-  );
-
   if (isLoading) return <DetailPageSkeleton />;
+
+  if (error) {
+    const msg = String((error as any)?.message ?? "");
+    const isForbidden = /FORBIDDEN|403|unauthor/i.test(msg);
+    return (
+      <div className="max-w-xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lock className="size-4" />
+              {isForbidden ? "Accès restreint" : "Impossible de charger le sondage"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {isForbidden
+                ? "Ce sondage est réservé aux membres de la faction. Si tu penses que c'est une erreur, contacte un membre du staff."
+                : "Une erreur est survenue en chargeant ce sondage. Réessaie dans un instant."}
+            </p>
+            <div className="flex gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link to="/polls">
+                  <ArrowLeft className="size-4" /> Retour aux sondages
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!data?.poll) {
+    return (
+      <div className="max-w-xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Sondage introuvable</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Ce sondage n&apos;existe plus ou a été supprimé.
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/polls">
+                <ArrowLeft className="size-4" /> Retour aux sondages
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!data?.poll) return <p>Sondage introuvable.</p>;
 
   const p = data.poll;
