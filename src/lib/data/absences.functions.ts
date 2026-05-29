@@ -8,7 +8,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
-import { isFactionMember, hasPermission } from "@/lib/auth/permissions";
+import { canAccess, isFactionMember } from "@/lib/auth/permissions";
 
 const typeSchema = z.enum(["vacation", "irl", "illness", "other"]);
 const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (YYYY-MM-DD)");
@@ -91,7 +91,7 @@ export const createAbsence = createServerFn({ method: "POST" })
     // Members can only create their own; staff can target any member
     let targetId = user.discordId;
     if (data.memberDiscordId && data.memberDiscordId !== user.discordId) {
-      if (!hasPermission(user, "members.edit")) throw new Error("FORBIDDEN");
+      if (!canAccess(user, "members.edit")) throw new Error("FORBIDDEN");
       targetId = data.memberDiscordId;
     }
 
@@ -132,7 +132,7 @@ export const updateAbsence = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!existing) throw new Error("NOT_FOUND");
     const isOwner = existing.member_discord_id === user.discordId;
-    if (!isOwner && !hasPermission(user, "members.edit")) throw new Error("FORBIDDEN");
+    if (!isOwner && !canAccess(user, "members.edit")) throw new Error("FORBIDDEN");
 
     const { error } = await db
       .from("absences")
@@ -162,7 +162,7 @@ export const deleteAbsence = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!existing) throw new Error("NOT_FOUND");
     const isOwner = existing.member_discord_id === user.discordId;
-    if (!isOwner && !hasPermission(user, "members.edit")) {
+    if (!isOwner && !canAccess(user, "members.edit")) {
       await requirePermission("members.edit"); // throws standard error
     }
 
