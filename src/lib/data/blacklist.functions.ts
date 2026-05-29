@@ -76,3 +76,32 @@ export const removeBlacklistEntry = createServerFn({ method: "POST" })
     await logAction("blacklist_remove", staff.discordId, { entry_id: data.id }, "warn");
     return { ok: true };
   });
+
+const updateSchema = z
+  .object({
+    id: z.string().uuid(),
+    discordId: z.string().trim().max(32).nullable().optional(),
+    mcName: z.string().trim().max(32).nullable().optional(),
+    mcUuid: z.string().trim().max(64).nullable().optional(),
+    reason: z.string().trim().max(2000).optional(),
+  })
+  .refine(
+    (v) => Boolean((v.discordId ?? "") || (v.mcName ?? "") || (v.mcUuid ?? "")),
+    "Au moins un identifiant requis (Discord ID, pseudo MC ou UUID).",
+  );
+
+export const updateBlacklistEntry = createServerFn({ method: "POST" })
+  .inputValidator((input) => updateSchema.parse(input))
+  .handler(async ({ data }) => {
+    const staff = await requirePermission("recruit.access");
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (data.discordId !== undefined) patch.discord_id = data.discordId?.trim() || null;
+    if (data.mcName !== undefined) patch.mc_name = data.mcName?.trim() || null;
+    if (data.mcUuid !== undefined) patch.mc_uuid = data.mcUuid?.trim() || null;
+    if (data.reason !== undefined) patch.reason = data.reason;
+    const { error } = await db.from("blacklist").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAction("blacklist_update", staff.discordId, { entry_id: data.id, patch }, "warn");
+    return { ok: true };
+  });
+
