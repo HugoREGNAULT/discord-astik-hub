@@ -266,6 +266,8 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
               </div>
             )}
 
+            <MarketAlertForm itemName={it.name} />
+
             {detail.data && (
               <table className="w-full text-xs">
                 <thead>
