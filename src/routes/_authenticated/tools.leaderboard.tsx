@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
   ToolHeader,
@@ -43,6 +44,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 function LeaderboardPage() {
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]["id"]>("money");
   const [search, setSearch] = useState("");
+  const fetchNames = useServerFn(resolveUuidsToNames);
+  const fetchUuid = useServerFn(resolveMojangUuid);
   const meta = CATEGORIES.find((c) => c.id === cat)!;
   const q = useQuery({
     queryKey: ["pala-lb", cat],
@@ -69,7 +72,7 @@ function LeaderboardPage() {
 
   const namesQ = useQuery({
     queryKey: ["mojang-names", uuidsToResolve.sort().join(",")],
-    queryFn: () => resolveUuidsToNames({ data: { uuids: uuidsToResolve } }),
+    queryFn: () => fetchNames({ data: { uuids: uuidsToResolve } }),
     enabled: uuidsToResolve.length > 0,
     retry: false,
     staleTime: 10 * 60_000,
@@ -82,7 +85,7 @@ function LeaderboardPage() {
   const searchIsUuid = UUID_RE.test(trimmedSearch);
   const searchQ = useQuery({
     queryKey: ["mojang-search", trimmedSearch.toLowerCase()],
-    queryFn: () => resolveMojangUuid({ data: { username: trimmedSearch } }),
+    queryFn: () => fetchUuid({ data: { username: trimmedSearch } }),
     enabled: trimmedSearch.length >= 2 && !searchIsUuid && /^[A-Za-z0-9_]+$/.test(trimmedSearch),
     retry: false,
     staleTime: 5 * 60_000,
