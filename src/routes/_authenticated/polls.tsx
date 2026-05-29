@@ -239,22 +239,32 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    e.target.value = "";
-                    if (!file) return;
                     const reader = new FileReader();
                     reader.onload = () => {
                       const text = String(reader.result ?? "");
-                      const parsed = parseCsvSlots(text);
-                      if (!parsed.length) {
+                      const parsed = parsePollCsv(text);
+                      const slots = parsed.slots.map((s) => ({
+                        value: s.value,
+                        duration: s.duration,
+                      }));
+                      if (!slots.length) {
                         toast.error("Aucun créneau valide trouvé dans le CSV");
                         return;
                       }
-                      if (parsed.length > 20) {
+                      if (slots.length > 20) {
                         toast.error("Maximum 20 créneaux — seuls les 20 premiers ont été gardés");
                       }
-                      setSlots(parsed.slice(0, 20));
-                      toast.success(`${Math.min(parsed.length, 20)} créneaux importés`);
+                      setSlots(slots.slice(0, 20));
+                      if (parsed.mode === "matrix") {
+                        toast.success(
+                          `${Math.min(slots.length, 20)} créneaux importés. Tu pourras importer les votes du CSV depuis la page du sondage après création.`,
+                        );
+                      } else {
+                        toast.success(`${Math.min(slots.length, 20)} créneaux importés`);
+                      }
                     };
+                    reader.readAsText(file);
+
                     reader.readAsText(file);
                   }}
                 />
