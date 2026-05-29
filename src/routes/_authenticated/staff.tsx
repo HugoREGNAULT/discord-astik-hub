@@ -19,6 +19,8 @@ import { getStaffDashboard } from "@/lib/data/staff.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { KpiGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
