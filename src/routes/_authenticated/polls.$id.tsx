@@ -50,7 +50,77 @@ type Choice = "yes" | "maybe" | "no";
 export const Route = createFileRoute("/_authenticated/polls/$id")({
   head: () => ({ meta: [{ title: "Sondage · PunkAstik" }] }),
   component: PollDetail,
+  errorComponent: PollDetailError,
+  notFoundComponent: () => {
+    const { id } = Route.useParams();
+    return (
+      <div className="max-w-xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Sondage introuvable</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Le sondage <code className="font-mono">{id}</code> n&apos;existe pas ou a été
+              supprimé.
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/polls">
+                <ArrowLeft className="size-4" /> Retour aux sondages
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  },
 });
+
+function PollDetailError({ error, reset }: { error: Error; reset: () => void }) {
+  const { id } = Route.useParams();
+  const router = useRouter();
+  useEffect(() => {
+    console.error("[polls/$id] render error", {
+      pollId: id,
+      message: error?.message,
+      stack: error?.stack,
+    });
+  }, [error, id]);
+  return (
+    <div className="max-w-xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Impossible d&apos;afficher ce sondage</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Une erreur est survenue en affichant le sondage. Tu peux réessayer ou revenir à la
+            liste.
+          </p>
+          {error?.message && (
+            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">{error.message}</pre>
+          )}
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                router.invalidate();
+                reset();
+              }}
+            >
+              <RefreshCw className="size-4" /> Réessayer
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/polls">
+                <ArrowLeft className="size-4" /> Retour aux sondages
+              </Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function PollDetail() {
   const { id } = Route.useParams();
