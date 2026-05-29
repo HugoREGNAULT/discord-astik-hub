@@ -57,7 +57,13 @@ function MembersPage() {
             {(["active", "away", "former", "all"] as const).map((s) => {
               const active = status === s;
               const label =
-                s === "active" ? "Actifs" : s === "away" ? "Absents" : s === "former" ? "Anciens" : "Tous";
+                s === "active"
+                  ? "Actifs"
+                  : s === "away"
+                    ? "Absents"
+                    : s === "former"
+                      ? "Anciens"
+                      : "Tous";
               return (
                 <button
                   key={s}
