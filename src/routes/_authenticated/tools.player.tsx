@@ -230,3 +230,9 @@ function fmtDate(v: unknown): string {
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("fr-FR");
 }
+function fmtPlaytime(minutes: unknown): string {
+  if (typeof minutes !== "number" || !Number.isFinite(minutes)) return "—";
+  const h = Math.floor(minutes / 60);
+  const m = Math.floor(minutes % 60);
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
