@@ -33,6 +33,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
@@ -167,6 +168,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAbsencesRoute = AuthenticatedAbsencesRouteImport.update({
+  id: '/absences',
+  path: '/absences',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/forbidden': typeof ForbiddenRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -278,6 +285,7 @@ export interface FileRoutesByTo {
   '/forbidden': typeof ForbiddenRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   '/forbidden': typeof ForbiddenRoute
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
+  '/_authenticated/absences': typeof AuthenticatedAbsencesRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
@@ -357,6 +366,7 @@ export interface FileRouteTypes {
     | '/forbidden'
     | '/legal'
     | '/login'
+    | '/absences'
     | '/admin'
     | '/blacklist'
     | '/config'
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | '/forbidden'
     | '/legal'
     | '/login'
+    | '/absences'
     | '/admin'
     | '/blacklist'
     | '/config'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/forbidden'
     | '/legal'
     | '/login'
+    | '/_authenticated/absences'
     | '/_authenticated/admin'
     | '/_authenticated/blacklist'
     | '/_authenticated/config'
@@ -656,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/absences': {
+      id: '/_authenticated/absences'
+      path: '/absences'
+      fullPath: '/absences'
+      preLoaderRoute: typeof AuthenticatedAbsencesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/polls/': {
       id: '/_authenticated/polls/'
       path: '/'
@@ -775,6 +794,7 @@ const AuthenticatedPollsRouteWithChildren =
   AuthenticatedPollsRoute._addFileChildren(AuthenticatedPollsRouteChildren)
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
@@ -795,6 +815,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAbsencesRoute: AuthenticatedAbsencesRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
