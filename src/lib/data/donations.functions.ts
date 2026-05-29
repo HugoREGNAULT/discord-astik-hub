@@ -130,7 +130,6 @@ export const addCartLine = createServerFn({ method: "POST" })
     return { ok: true, ...totals };
   });
 
-
 export const removeCartLine = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ lineId: z.string().uuid(), cartId: z.string().uuid() }).parse(input),
@@ -161,7 +160,6 @@ export const validateCart = createServerFn({ method: "POST" })
     if (Math.abs(totals.final) > MAX_TOTAL_POINTS) {
       throw new Error("Total du panier excède la limite autorisée");
     }
-
 
     // Ajout des points au membre
     const { data: m } = await db

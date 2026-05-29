@@ -29,7 +29,6 @@ export const Route = createFileRoute("/api/health")({
           status: dbOk ? 200 : 503,
           headers: { "content-type": "application/json" },
         });
-
       },
     },
   },

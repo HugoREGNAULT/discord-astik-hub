@@ -90,7 +90,6 @@ export const Route = createFileRoute("/api/auth/callback")({
           console.error("[oauth callback]", e);
           return new Response("Authentication failed. Please try again.", { status: 500 });
         }
-
       },
     },
   },
