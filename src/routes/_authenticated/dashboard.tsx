@@ -260,3 +260,38 @@ function LeaderboardPage() {
     </div>
   );
 }
+
+function MetricTabs<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: Array<{ value: T; label: string; icon?: any }>;
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="inline-flex border border-zinc-800 bg-zinc-950">
+      {options.map((opt) => {
+        const Icon = opt.icon;
+        const active = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition-colors ${
+              active
+                ? "bg-pink-500 text-white"
+                : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+            }`}
+            style={{ fontFamily: "'Space Mono'" }}
+          >
+            {Icon && <Icon className="size-3.5" />}
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
