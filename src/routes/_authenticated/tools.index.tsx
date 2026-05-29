@@ -10,6 +10,7 @@ import {
   Calendar,
   LineChart,
   Store,
+  Receipt,
 } from "lucide-react";
 
 import { ToolCard } from "@/components/tools/ToolCard";
