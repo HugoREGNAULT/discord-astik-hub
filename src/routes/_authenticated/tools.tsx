@@ -2,12 +2,15 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import {
   User as UserIcon,
   Users,
+  User as UserIcon,
+  Users,
   Activity,
   ShoppingBag,
   Trophy,
   MousePointerClick,
   Calculator,
   ArrowLeft,
+  Receipt,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/tools")({
@@ -22,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/tools")({
 
 const TABS = [
   { to: "/tools/player", label: "Player", icon: UserIcon },
+  { to: "/tools/sales", label: "Ventes", icon: Receipt },
   { to: "/tools/faction", label: "Faction", icon: Users },
   { to: "/tools/status", label: "Status", icon: Activity },
   { to: "/tools/market", label: "Market", icon: ShoppingBag },
@@ -29,6 +33,7 @@ const TABS = [
   { to: "/tools/clicker", label: "Clicker", icon: MousePointerClick },
   { to: "/tools/xp-calculator", label: "XP Calc", icon: Calculator },
 ] as const;
+
 
 function ToolsLayout() {
   const path = useRouterState({ select: (r) => r.location.pathname });
