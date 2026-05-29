@@ -21,7 +21,8 @@ const PER_PAGE = 30;
 
 function MembersPage() {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState<"active" | "former" | "all">("active");
+  const [status, setStatus] = useState<"active" | "former" | "away" | "all">("active");
+
   const [page, setPage] = useState(1);
   const fn = useServerFn(listMembers);
   const { data, isLoading } = useQuery({
