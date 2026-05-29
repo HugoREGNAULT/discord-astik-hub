@@ -278,10 +278,12 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
                   <Upload className="size-3" /> Importer CSV
                 </Button>
               </div>
-            </div>
             <p className="text-xs text-muted-foreground">
-              Format CSV: <code>date,durée</code> — ex. <code>2026-06-15 20:00,90</code>
-              {","} durée en minutes optionnelle.
+              Accepte un CSV simple <code>date,durée(min)</code> ou un export
+              Framadate/Google Forms (matrice <code>Nom,E-mail,créneau 1,créneau 2…</code>) —
+              les votes pourront être importés ensuite depuis la page du sondage.
+            </p>
+
             </p>
             {slots.map((s, i) => (
               <div key={i} className="flex gap-2 items-center">
