@@ -557,6 +557,39 @@ export type Database = {
         }
         Relationships: []
       }
+      paladium_admin_shop_history: {
+        Row: {
+          captured_at: string
+          category: string | null
+          id: string
+          item_name: string
+          price: number | null
+          price_pb: number | null
+          raw: Json | null
+          snapshot_date: string
+        }
+        Insert: {
+          captured_at?: string
+          category?: string | null
+          id?: string
+          item_name: string
+          price?: number | null
+          price_pb?: number | null
+          raw?: Json | null
+          snapshot_date?: string
+        }
+        Update: {
+          captured_at?: string
+          category?: string | null
+          id?: string
+          item_name?: string
+          price?: number | null
+          price_pb?: number | null
+          raw?: Json | null
+          snapshot_date?: string
+        }
+        Relationships: []
+      }
       paladium_player_listings_history: {
         Row: {
           expires_at: string | null
@@ -599,6 +632,39 @@ export type Database = {
           price_pb?: number | null
           quantity?: number
           sold_at?: string | null
+        }
+        Relationships: []
+      }
+      paladium_server_status_history: {
+        Row: {
+          captured_at: string
+          id: number
+          is_online: boolean
+          max_players: number | null
+          online_players: number | null
+          raw: Json | null
+          server_key: string
+          server_label: string | null
+        }
+        Insert: {
+          captured_at?: string
+          id?: number
+          is_online?: boolean
+          max_players?: number | null
+          online_players?: number | null
+          raw?: Json | null
+          server_key: string
+          server_label?: string | null
+        }
+        Update: {
+          captured_at?: string
+          id?: number
+          is_online?: boolean
+          max_players?: number | null
+          online_players?: number | null
+          raw?: Json | null
+          server_key?: string
+          server_label?: string | null
         }
         Relationships: []
       }
