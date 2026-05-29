@@ -138,7 +138,16 @@ function StaffPage() {
         />
       </div>
 
+      {/* Applications timeline + global stats */}
+      <ApplicationsTimelineCard
+        timeline={data.applicationsTimeline ?? []}
+        stats={
+          data.applicationsStats ?? { total: 0, accepted: 0, rejected: 0, acceptanceRate: 0 }
+        }
+      />
+
       <div className="grid gap-6 lg:grid-cols-2">
+
         {/* Inactifs */}
         <Card>
           <CardHeader>
