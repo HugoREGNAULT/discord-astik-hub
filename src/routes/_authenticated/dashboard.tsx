@@ -252,5 +252,3 @@ function LeaderboardPage() {
     </div>
   );
 }
-
-}
