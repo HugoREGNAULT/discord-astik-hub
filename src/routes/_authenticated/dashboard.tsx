@@ -18,6 +18,8 @@ import {
   type LeaderboardMetric,
 } from "@/lib/data/leaderboard.functions";
 import { LeaderboardChart } from "@/components/LeaderboardChart";
+import { RecentCartsPanel } from "@/components/RecentCartsPanel";
+import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
