@@ -37,6 +37,8 @@ function StaffPage() {
     queryKey: ["staff-dashboard"],
     queryFn: () => fn(),
     refetchInterval: 60_000,
+  });
+
   if (isLoading || !data) {
     return (
       <div className="space-y-6 max-w-6xl">
@@ -63,9 +65,6 @@ function StaffPage() {
 
   const k = data.kpis;
 
-  }
-
-  const k = data.kpis;
 
   return (
     <div className="space-y-6 max-w-6xl">
