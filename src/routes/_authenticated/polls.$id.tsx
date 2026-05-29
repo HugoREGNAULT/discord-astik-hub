@@ -191,16 +191,27 @@ function PollDetail() {
             {p.location && ` · 📍 ${p.location}`}
           </div>
         </div>
-        {canManage &&
-          (isOpen ? (
-            <Button variant="outline" size="sm" onClick={() => mClose.mutate(null)}>
-              <Lock className="size-4" /> Clôturer
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={() => mReopen.mutate()}>
-              <RefreshCw className="size-4" /> Rouvrir
-            </Button>
-          ))}
+        <div className="flex flex-wrap gap-2 justify-end">
+          {canManage && isOpen && (
+            <VotesImportDialog
+              pollId={id}
+              options={data.options as any[]}
+              members={activeMembers}
+              onDone={() => qc.invalidateQueries({ queryKey: ["poll", id] })}
+            />
+          )}
+          {canManage &&
+            (isOpen ? (
+              <Button variant="outline" size="sm" onClick={() => mClose.mutate(null)}>
+                <Lock className="size-4" /> Clôturer
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => mReopen.mutate()}>
+                <RefreshCw className="size-4" /> Rouvrir
+              </Button>
+            ))}
+        </div>
+
       </div>
 
       <Card>
