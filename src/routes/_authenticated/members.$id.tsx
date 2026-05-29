@@ -46,14 +46,14 @@ function MemberDetail() {
   const [donations, setDonations] = useState<any[]>([]);
   const [donationsHasMore, setDonationsHasMore] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (data) {
       setLedger(data.pointsLedger);
       setLedgerHasMore(data.pointsLedger.length >= 10);
       setDonations(data.donations);
       setDonationsHasMore(data.donations.length >= 10);
     }
-  });
+  }, [data]);
 
   const [note, setNote] = useState("");
   const [warn, setWarn] = useState("");
