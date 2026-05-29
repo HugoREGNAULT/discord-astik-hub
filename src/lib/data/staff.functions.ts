@@ -69,7 +69,14 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
       .gte("created_at", since30d)
       .order("created_at", { ascending: false })
       .limit(15),
+    db
+      .from("applications")
+      .select("created_at, status, decided_at")
+      .gte("created_at", since90d)
+      .order("created_at", { ascending: true }),
+    db.from("applications").select("status"),
   ]);
+
 
   // Aggregate top contributors over last 7 days
   const sums = new Map<string, number>();
