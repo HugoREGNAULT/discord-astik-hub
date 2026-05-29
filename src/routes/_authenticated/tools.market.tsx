@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
   LineChart,
@@ -10,6 +10,8 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { Bell } from "lucide-react";
+import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ToolHeader,
@@ -21,6 +23,7 @@ import {
 import { PaladiumApi, hasPaladiumKey, type MarketItemsPage } from "@/lib/paladium/api";
 import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
 import { getMarketPriceHistory } from "@/lib/paladium/history.functions";
+import { createShopAlert } from "@/lib/data/shop-alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/market")({
   head: () => ({
