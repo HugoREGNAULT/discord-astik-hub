@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Ban, Plus, Trash2 } from "lucide-react";
+import { Ban, Plus, Trash2, Pencil, Copy, Check } from "lucide-react";
 import {
   listBlacklist,
   addBlacklistEntry,
   removeBlacklistEntry,
+  updateBlacklistEntry,
   type BlacklistRow,
 } from "@/lib/data/blacklist.functions";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
