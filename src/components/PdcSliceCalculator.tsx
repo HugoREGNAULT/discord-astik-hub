@@ -288,6 +288,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
                 paintAt(e.clientX, e.clientY);
               }}
               onPointerMove={(e) => {
+                setHover(cellFromEvent(e.clientX, e.clientY));
                 if (isDrawingRef.current) paintAt(e.clientX, e.clientY);
               }}
               onPointerUp={() => {
@@ -295,13 +296,40 @@ export function PdcSliceCalculator({ blocks }: Props) {
               }}
               onPointerLeave={() => {
                 isDrawingRef.current = false;
+                setHover(null);
               }}
             />
           </div>
-          <p className="text-[10px] text-muted-foreground mt-2">
-            {filledCells} bloc{filledCells > 1 ? "s" : ""} dans la tranche · profondeur ×{depth} ={" "}
-            <span className="font-mono">{totalBlocks}</span> blocs au total.
-          </p>
+          <div className="flex items-center justify-between gap-2 mt-2">
+            <p className="text-[10px] text-muted-foreground">
+              {filledCells} bloc{filledCells > 1 ? "s" : ""} dans la tranche · profondeur ×{depth} ={" "}
+              <span className="font-mono">{totalBlocks}</span> blocs au total.
+            </p>
+            <div className="text-[10px] font-mono text-muted-foreground flex items-center gap-1.5 min-h-[16px]">
+              {hover && (
+                <>
+                  <span>
+                    ({hover.x},{hover.y})
+                  </span>
+                  {hoveredBlock ? (
+                    <>
+                      <span
+                        className="size-3 rounded border border-zinc-700"
+                        style={{ background: hoveredBlock.color }}
+                      />
+                      <span className="text-foreground">{hoveredBlock.name}</span>
+                      {hoveredBlock.kind === "liquid" && (
+                        <Droplet className="size-3 text-cyan-400" />
+                      )}
+                    </>
+                  ) : (
+                    <span className="opacity-60">vide</span>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
         </CardContent>
       </Card>
 
