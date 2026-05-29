@@ -18,14 +18,9 @@ export const Route = createFileRoute("/api/public/hooks/sync-discord-presence")(
     handlers: {
       OPTIONS: preflight,
       POST: async ({ request }) => {
-        // Accepte soit x-bot-key (bot Discord), soit apikey == publishable key (pg_cron).
-        const apikey = request.headers.get("apikey");
-        const publishable = process.env.SUPABASE_PUBLISHABLE_KEY;
-        const cronOk = apikey && publishable && apikey === publishable;
-        if (!cronOk) {
-          const unauth = requireBotAuth(request);
-          if (unauth) return unauth;
-        }
+        const unauth = requireBotAuth(request);
+        if (unauth) return unauth;
+
         const startedAt = Date.now();
         let guildMembers;
         try {
