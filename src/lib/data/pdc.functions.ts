@@ -154,14 +154,18 @@ export const savePdcPlan = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("members.view");
-    const patch: Record<string, unknown> = {};
+    const user = await requirePermission("members.view");
+    const patch: {
+      name?: string;
+      layers_count?: number;
+      notes?: string;
+      layers?: Record<string, Record<string, string>>;
+    } = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.layers_count !== undefined) patch.layers_count = data.layers_count;
     if (data.notes !== undefined) patch.notes = data.notes;
     if (data.layers !== undefined) patch.layers = data.layers;
     const { error } = await db.from("pdc_plans").update(patch).eq("id", data.id);
-    if (error) throw new Error(error.message);
-    await logAction("pdc_plan_save", user.discordId, { id: data.id });
     return { ok: true };
   });
 
