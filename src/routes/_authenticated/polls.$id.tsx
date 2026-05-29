@@ -331,6 +331,26 @@ function PollDetail() {
           </CardContent>
         </Card>
       )}
+
+      {canManage && nonVoters.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <UserX className="size-4" /> N&apos;ont pas encore voté ({nonVoters.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-1.5">
+              {nonVoters.map((m) => (
+                <Badge key={m.discord_id} variant="outline" className="text-xs">
+                  {m.ig_name || m.discord_username || m.discord_id}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }
