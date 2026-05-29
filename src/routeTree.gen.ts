@@ -35,6 +35,7 @@ import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
+import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
@@ -178,6 +179,11 @@ const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedPollsRoute,
 } as any)
+const ApiTestLoginRoute = ApiTestLoginRouteImport.update({
+  id: '/api/test/login',
+  path: '/api/test/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthWhoamiRoute = ApiAuthWhoamiRouteImport.update({
   id: '/api/auth/whoami',
   path: '/api/auth/whoami',
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/test/login': typeof ApiTestLoginRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -309,6 +316,7 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/test/login': typeof ApiTestLoginRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/test/login': typeof ApiTestLoginRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/test/login'
     | '/polls/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/test/login'
     | '/polls'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/test/login'
     | '/_authenticated/polls/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
@@ -490,6 +502,7 @@ export interface RootRouteChildren {
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthWhoamiRoute: typeof ApiAuthWhoamiRoute
+  ApiTestLoginRoute: typeof ApiTestLoginRoute
   ApiPublicBotImportRoute: typeof ApiPublicBotImportRoute
   ApiPublicBotMemberRoute: typeof ApiPublicBotMemberRoute
   ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
@@ -682,6 +695,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPollsIndexRouteImport
       parentRoute: typeof AuthenticatedPollsRoute
     }
+    '/api/test/login': {
+      id: '/api/test/login'
+      path: '/api/test/login'
+      fullPath: '/api/test/login'
+      preLoaderRoute: typeof ApiTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/whoami': {
       id: '/api/auth/whoami'
       path: '/api/auth/whoami'
@@ -851,6 +871,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthWhoamiRoute: ApiAuthWhoamiRoute,
+  ApiTestLoginRoute: ApiTestLoginRoute,
   ApiPublicBotImportRoute: ApiPublicBotImportRoute,
   ApiPublicBotMemberRoute: ApiPublicBotMemberRoute,
   ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
