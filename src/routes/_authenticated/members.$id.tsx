@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import { ShieldX, Coins, ShoppingCart, Activity, UserCheck, ChevronDown } from "lucide-react";
 
 import { getMemberDetail, updateMember, addNote, addWarning, addAlt, removeAlt, getMemberPointsHistory, getMemberDonations } from "@/lib/data/members.functions";
