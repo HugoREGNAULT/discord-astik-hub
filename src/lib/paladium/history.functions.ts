@@ -271,7 +271,7 @@ export const snapshotMarketPrices = createServerFn({ method: "POST" }).handler(a
   const CHUNK = 500;
   for (let i = 0; i < rows.length; i += CHUNK) {
     const slice = rows.slice(i, i + CHUNK);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const { error } = await supabaseAdmin
       .from("paladium_market_price_history")
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -281,10 +281,7 @@ export const snapshotMarketPrices = createServerFn({ method: "POST" }).handler(a
 
   // Keep only the last 7 days.
   const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
-  await supabaseAdmin
-    .from("paladium_market_price_history")
-    .delete()
-    .lt("captured_at", cutoff);
+  await supabaseAdmin.from("paladium_market_price_history").delete().lt("captured_at", cutoff);
 
   return { inserted: rows.length };
 });
