@@ -140,6 +140,7 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
   });
 
   const fetchHistory = useServerFn(getMarketPriceHistory);
+  const fetchNames = useServerFn(resolveUuidsToNames);
   const history = useQuery({
     queryKey: ["pala-market-history", it.name],
     queryFn: () => fetchHistory({ data: { itemName: it.name } }),
@@ -170,7 +171,7 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
 
   const namesQ = useQuery({
     queryKey: ["mojang-names", ...sellerUuids],
-    queryFn: () => resolveUuidsToNames({ data: { uuids: sellerUuids } }),
+    queryFn: () => fetchNames({ data: { uuids: sellerUuids } }),
     enabled: sellerUuids.length > 0,
     staleTime: 10 * 60_000,
     retry: false,
