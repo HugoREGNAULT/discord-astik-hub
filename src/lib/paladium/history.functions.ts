@@ -35,7 +35,7 @@ function flattenStatus(raw: unknown): Array<{
       server_label: "Java Global",
       online_players: num(global.online ?? global.playersOnline),
       max_players: num(global.max ?? global.maxPlayers),
-      is_online: Boolean(global.online ?? global.status === "online" ?? global.up),
+      is_online: Boolean((typeof global.online === "number" ? global.online > 0 : false) || global.status === "online" || global.up),
     });
   }
   const factions = java?.factions as AnyObj | undefined;
@@ -80,7 +80,7 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
   const rows = flattenStatus(data);
   if (rows.length === 0) return { inserted: 0 };
 
-  const payload = rows.map((r) => ({ ...r, raw: data as object }));
+  const payload = rows.map((r) => ({ ...r, raw: data as unknown as never }));
   const { error } = await supabaseAdmin.from("paladium_server_status_history").insert(payload);
   if (error) throw new Error(error.message);
   return { inserted: rows.length };
@@ -133,7 +133,7 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
         category,
         price,
         price_pb: pricePB,
-        raw: it as object,
+        raw: it as unknown as never,
         snapshot_date: today,
       };
     })
