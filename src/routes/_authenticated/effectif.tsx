@@ -36,7 +36,9 @@ function EffectifPage() {
       <PageHeader
         code="// effectif"
         title="Effectif"
-        description={data ? `${data.total} membres au total.` : "Vue d'ensemble des membres par groupe."}
+        description={
+          data ? `${data.total} membres au total.` : "Vue d'ensemble des membres par groupe."
+        }
       />
       {isLoading && <GroupGridSkeleton count={6} />}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
