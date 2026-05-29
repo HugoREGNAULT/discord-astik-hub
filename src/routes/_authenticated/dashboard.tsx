@@ -2,11 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Trophy, Coins, Mic, MessageSquare, Crown, Medal, Award } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Coins, Mic, MessageSquare, Crown, Medal, Award } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberRowsSkeleton as LeaderboardRowsSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
@@ -20,11 +16,13 @@ import {
 import { LeaderboardChart } from "@/components/LeaderboardChart";
 import { RecentCartsPanel } from "@/components/RecentCartsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
+import { PageHeader, PageCard, DaChip } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
   component: LeaderboardPage,
 });
+
 
 function formatVoice(seconds: number) {
   const h = Math.floor(seconds / 3600);
