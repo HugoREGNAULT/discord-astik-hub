@@ -23,17 +23,17 @@ export function hasPaladiumKey() {
 
 export async function paladiumFetch<T = unknown>(path: string): Promise<T> {
   try {
-    const data = await callPaladium({ data: { path } });
-    return data as T;
+    const { json } = await callPaladium({ data: { path } });
+    return JSON.parse(json) as T;
   } catch (err) {
     if (err instanceof PaladiumApiError) throw err;
     const message = err instanceof Error ? err.message : "Paladium request failed";
-    // Try to recover an HTTP status from the error message (e.g. "Paladium API 404: ...")
     const m = /Paladium API (\d{3})/.exec(message);
     const status = m ? Number(m[1]) : 0;
     throw new PaladiumApiError(message, status);
   }
 }
+
 
 
 /* ---------- Mojang ---------- */
