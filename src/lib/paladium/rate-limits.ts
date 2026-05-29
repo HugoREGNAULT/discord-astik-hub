@@ -133,9 +133,9 @@ export const PALADIUM_ROUTES: RouteSpec[] = [
     windowMin: 5,
   },
   {
-    template: "/v1/paladium/faction/quests",
-    match: /^\/v1\/paladium\/faction\/quests$/,
-    label: "Quêtes faction",
+    template: "/v1/paladium/faction/quest",
+    match: /^\/v1\/paladium\/faction\/quest$/,
+    label: "Quête faction",
     limit: 300,
     windowMin: 5,
   },

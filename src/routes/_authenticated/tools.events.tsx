@@ -16,7 +16,8 @@ export const Route = createFileRoute("/_authenticated/tools/events")({
       { title: "Agenda Événements · Outils PunkAstik" },
       {
         name: "description",
-        content: "Agenda des événements Paladium : KOTH, À vos marques, prochains événements.",
+        content:
+          "Agenda Paladium : Boss, Egghunt, KOTH à gauche — À vos marques et Quête de faction à droite.",
       },
     ],
   }),
@@ -45,6 +46,11 @@ function fmtDate(ts: number): string {
   });
 }
 
+function toMs(v: unknown): number | null {
+  if (typeof v !== "number" || !Number.isFinite(v)) return null;
+  return v < 1e12 ? v * 1000 : v;
+}
+
 function normalizeEvent(e: EventEntry & { [k: string]: unknown }): {
   name: string;
   type: string;
@@ -53,10 +59,6 @@ function normalizeEvent(e: EventEntry & { [k: string]: unknown }): {
 } {
   const name = String(e.name ?? e.type ?? e.id ?? "Événement");
   const type = String(e.type ?? "");
-  function toMs(v: unknown): number | null {
-    if (typeof v !== "number" || !Number.isFinite(v)) return null;
-    return v < 1e12 ? v * 1000 : v;
-  }
   return {
     name,
     type,
@@ -64,6 +66,26 @@ function normalizeEvent(e: EventEntry & { [k: string]: unknown }): {
     endMs: toMs(e.endAt ?? e.end ?? e.finishAt ?? e.endTime),
   };
 }
+
+type OymData = {
+  goalType?: string;
+  extra?: string;
+  amount?: number;
+  rewardElo?: number;
+  serverType?: string;
+  start?: number;
+  end?: number;
+  state?: string;
+};
+
+type QuestData = {
+  item?: string;
+  quantity?: number;
+  start?: number;
+  end?: number;
+  earningXp?: number;
+  earningMoney?: number;
+};
 
 function EventsPage() {
   const upcoming = useQuery({
@@ -80,7 +102,14 @@ function EventsPage() {
   });
   const onYourMark = useQuery({
     queryKey: ["pala-oym"],
-    queryFn: () => PaladiumApi.getOnYourMark(),
+    queryFn: () => PaladiumApi.getOnYourMark() as Promise<OymData>,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    retry: false,
+  });
+  const quest = useQuery({
+    queryKey: ["pala-quest"],
+    queryFn: () => PaladiumApi.getFactionQuest() as Promise<QuestData>,
     staleTime: 60_000,
     retry: false,
   });
@@ -101,12 +130,17 @@ function EventsPage() {
 
   const next = sorted[0];
 
+  const oymStart = toMs(onYourMark.data?.start);
+  const oymEnd = toMs(onYourMark.data?.end);
+  const questStart = toMs(quest.data?.start);
+  const questEnd = toMs(quest.data?.end);
+
   return (
-    <div className="max-w-5xl space-y-5">
+    <div className="max-w-7xl space-y-5">
       <ToolHeader
         code="// tools.events"
         title="Agenda événements"
-        description="KOTH, À vos marques et autres événements Paladium à venir."
+        description="Boss, Egghunt, KOTH à gauche — À vos marques et Quête de faction à droite."
       />
 
       {next && (
@@ -144,62 +178,210 @@ function EventsPage() {
         </ToolCard>
       )}
 
-      <ToolCard>
-        <div
-          className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
-          style={{ fontFamily: "'Space Mono'" }}
-        >
-          // calendrier
-        </div>
-        {(upcoming.isLoading || all.isLoading) && <LoadingBlock />}
-        {upcoming.error && <ErrorBlock message={(upcoming.error as Error).message} />}
-        {!upcoming.isLoading && sorted.length === 0 && (
-          <EmptyBlock label="Aucun événement à venir" />
-        )}
-        {sorted.length > 0 && (
-          <ul className="divide-y divide-zinc-800">
-            {sorted.map((e, i) => (
-              <li key={i} className="py-3 flex flex-wrap items-baseline justify-between gap-2">
-                <div>
-                  <div className="text-sm text-white font-medium">{e.name}</div>
-                  {e.type && (
-                    <div
-                      className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mt-0.5"
-                      style={{ fontFamily: "'Space Mono'" }}
-                    >
-                      {e.type}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* LEFT — Calendar (Boss / Egghunt / KOTH …) */}
+        <ToolCard>
+          <div
+            className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
+            // calendrier (boss · egghunt · koth …)
+          </div>
+          {(upcoming.isLoading || all.isLoading) && <LoadingBlock />}
+          {upcoming.error && <ErrorBlock message={(upcoming.error as Error).message} />}
+          {!upcoming.isLoading && sorted.length === 0 && (
+            <EmptyBlock label="Aucun événement à venir" />
+          )}
+          {sorted.length > 0 && (
+            <ul className="divide-y divide-zinc-800 max-h-[640px] overflow-y-auto">
+              {sorted.map((e, i) => (
+                <li
+                  key={i}
+                  className="py-3 flex flex-wrap items-baseline justify-between gap-2"
+                >
+                  <div>
+                    <div className="text-sm text-white font-medium">{e.name}</div>
+                    {e.type && (
+                      <div
+                        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mt-0.5"
+                        style={{ fontFamily: "'Space Mono'" }}
+                      >
+                        {e.type}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-zinc-200">
+                      {e.startMs ? fmtDate(e.startMs) : "—"}
                     </div>
-                  )}
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-zinc-200">
-                    {e.startMs ? fmtDate(e.startMs) : "—"}
+                    <div className="text-[11px] text-pink-400 font-mono">
+                      {e.startMs ? fmtCountdown(e.startMs - now) : "—"}
+                    </div>
                   </div>
-                  <div className="text-[11px] text-pink-400 font-mono">
-                    {e.startMs ? fmtCountdown(e.startMs - now) : "—"}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </ToolCard>
+                </li>
+              ))}
+            </ul>
+          )}
+        </ToolCard>
 
-      <ToolCard>
-        <div
-          className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2"
-          style={{ fontFamily: "'Space Mono'" }}
-        >
-          // à vos marques
+        {/* RIGHT — À vos marques + Quête de faction */}
+        <div className="space-y-5">
+          {/* À vos marques */}
+          <ToolCard>
+            <div
+              className="text-[10px] uppercase tracking-[0.3em] text-pink-400 mb-3"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              // à vos marques
+            </div>
+            {onYourMark.isLoading && <LoadingBlock />}
+            {onYourMark.error && (
+              <ErrorBlock message={(onYourMark.error as Error).message} />
+            )}
+            {onYourMark.data && (
+              <div className="space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <div
+                      className="text-lg font-bold text-white"
+                      style={{ fontFamily: "'Space Grotesk'" }}
+                    >
+                      {onYourMark.data.goalType ?? "—"}
+                    </div>
+                    {onYourMark.data.extra && (
+                      <div className="text-xs text-zinc-500 font-mono mt-0.5">
+                        {onYourMark.data.extra}
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] uppercase tracking-[0.2em] px-2 py-1 rounded ${
+                      onYourMark.data.state === "STARTED"
+                        ? "bg-pink-500/20 text-pink-300"
+                        : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {onYourMark.data.state ?? "—"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <Stat label="quantité" value={onYourMark.data.amount} />
+                  <Stat label="récompense elo" value={onYourMark.data.rewardElo} />
+                  <Stat label="serveur" value={onYourMark.data.serverType} />
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <div className="text-zinc-500">Début</div>
+                    <div className="text-zinc-200">
+                      {oymStart ? fmtDate(oymStart) : "—"}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-zinc-500">
+                      {oymStart && oymStart > now ? "commence dans" : "se termine dans"}
+                    </div>
+                    <div className="text-pink-400 font-mono">
+                      {oymStart && oymStart > now
+                        ? fmtCountdown(oymStart - now)
+                        : oymEnd
+                          ? fmtCountdown(oymEnd - now)
+                          : "—"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </ToolCard>
+
+          {/* Quête de faction */}
+          <ToolCard>
+            <div
+              className="text-[10px] uppercase tracking-[0.3em] text-pink-400 mb-3"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              // quête de faction
+            </div>
+            {quest.isLoading && <LoadingBlock />}
+            {quest.error && (
+              <EmptyBlock
+                label={
+                  /No current quest/i.test((quest.error as Error).message)
+                    ? "Aucune quête active actuellement."
+                    : (quest.error as Error).message
+                }
+              />
+            )}
+            {quest.data && (
+              <div className="space-y-3">
+                <div className="flex items-baseline justify-between">
+                  <div
+                    className="text-lg font-bold text-white"
+                    style={{ fontFamily: "'Space Grotesk'" }}
+                  >
+                    {quest.data.item ?? "—"}
+                  </div>
+                  <div className="text-2xl font-bold text-pink-400 font-mono">
+                    ×{quest.data.quantity?.toLocaleString("fr-FR") ?? "—"}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <Stat
+                    label="xp"
+                    value={quest.data.earningXp?.toLocaleString("fr-FR")}
+                  />
+                  <Stat
+                    label="money"
+                    value={
+                      quest.data.earningMoney != null
+                        ? `${quest.data.earningMoney.toLocaleString("fr-FR")} $`
+                        : undefined
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <div className="text-zinc-500">Début</div>
+                    <div className="text-zinc-200">
+                      {questStart ? fmtDate(questStart) : "—"}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-zinc-500">Fin</div>
+                    <div className="text-zinc-200">
+                      {questEnd ? fmtDate(questEnd) : "—"}
+                    </div>
+                    {questEnd && questEnd > now && (
+                      <div className="text-pink-400 font-mono mt-0.5">
+                        {fmtCountdown(questEnd - now)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </ToolCard>
         </div>
-        {onYourMark.data ? (
-          <pre className="text-[11px] text-zinc-400 font-mono overflow-x-auto max-h-96">
-            {JSON.stringify(onYourMark.data, null, 2)}
-          </pre>
-        ) : null}
-        {onYourMark.isLoading && <LoadingBlock />}
-        {onYourMark.error && <ErrorBlock message={(onYourMark.error as Error).message} />}
-      </ToolCard>
+      </div>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+}) {
+  return (
+    <div className="bg-zinc-900/60 border border-zinc-800 rounded px-2 py-2">
+      <div
+        className="text-[9px] uppercase tracking-[0.2em] text-zinc-500"
+        style={{ fontFamily: "'Space Mono'" }}
+      >
+        {label}
+      </div>
+      <div className="text-sm font-bold text-white mt-0.5">{value ?? "—"}</div>
     </div>
   );
 }
