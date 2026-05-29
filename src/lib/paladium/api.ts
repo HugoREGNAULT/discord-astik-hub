@@ -110,15 +110,17 @@ export type PaladiumProfile = {
 
 export type FactionProfile = {
   name: string;
+  uuid?: string;
   description?: string | null;
-  level?: number;
-  members?: Array<{ uuid: string; username: string; role?: string }>;
-  allies?: string[];
-  enemies?: string[];
-  power?: number;
-  stats?: Record<string, number | string>;
+  access?: string;
+  createdAt?: number;
+  alliance?: string | null;
+  level?: { level: number; xp: number };
+  emblem?: Record<string, number>;
+  players?: Array<{ uuid: string; username: string; group?: string; joinedAt?: number }>;
   [k: string]: unknown;
 };
+
 
 export type ServerStatus = {
   servers?: Array<{ name: string; online: number; max?: number; status?: string }>;
