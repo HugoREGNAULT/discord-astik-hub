@@ -30,6 +30,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { CurrentUser } from "@/lib/auth/session.functions";
 import { hasPerm } from "@/lib/auth/use-current-user";
