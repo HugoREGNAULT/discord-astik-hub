@@ -124,8 +124,12 @@ function PollDetailError({ error, reset }: { error: Error; reset: () => void }) 
 
 function PollDetail() {
   const { id } = Route.useParams();
-  const { data: me } = useCurrentUser();
-  const canManage = hasPerm(me, "members.edit");
+  const { data: me, isLoading: meLoading } = useCurrentUser();
+  // Garde-fou d'autorisation explicite côté UI.
+  // Source de vérité = serveur (requireSession + isFactionMember), mais on
+  // vérifie aussi côté client pour masquer vote/édition aux rôles non autorisés.
+  const canVote = hasPerm(me, "profile.self"); // accordée aux membres faction
+  const canManage = hasPerm(me, "members.edit"); // staff faction uniquement
   const qc = useQueryClient();
 
   const getFn = useServerFn(getPoll);
@@ -137,7 +141,9 @@ function PollDetail() {
     queryKey: ["poll", id],
     queryFn: () => getFn({ data: { id } }),
     retry: false,
+    enabled: !meLoading && canVote,
   });
+
 
 
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});
@@ -223,10 +229,40 @@ function PollDetail() {
     [activeMembers, voterIds],
   );
 
-  if (isLoading) return <DetailPageSkeleton />;
+  if (meLoading || (isLoading && canVote)) return <DetailPageSkeleton />;
+
+  // Garde UI : utilisateur connecté mais sans le rôle requis.
+  if (!canVote) {
+    console.warn("[polls/$id] permission denied (client)", {
+      pollId: id,
+      userId: me?.discordId,
+      permissions: me?.permissions,
+    });
+    return (
+      <div className="max-w-xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Lock className="size-4" /> Accès restreint
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Les sondages sont réservés aux membres de la faction. Si tu penses que c&apos;est une
+              erreur, contacte un membre du staff sur Discord.
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/">
+                <ArrowLeft className="size-4" /> Retour à l&apos;accueil
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (error) {
-
     const msg = String((error as any)?.message ?? "");
     const isForbidden = /FORBIDDEN|403|unauthor/i.test(msg);
     return (
@@ -246,8 +282,9 @@ function PollDetail() {
             </p>
             <div className="flex gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link to="/polls">
-                  <ArrowLeft className="size-4" /> Retour aux sondages
+                <Link to={isForbidden ? "/" : "/polls"}>
+                  <ArrowLeft className="size-4" />{" "}
+                  {isForbidden ? "Retour à l'accueil" : "Retour aux sondages"}
                 </Link>
               </Button>
             </div>
@@ -256,6 +293,8 @@ function PollDetail() {
       </div>
     );
   }
+
+
 
   if (!data?.poll) {
     return (
