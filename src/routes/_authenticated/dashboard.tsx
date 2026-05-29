@@ -123,8 +123,6 @@ function LeaderboardList({
 
 function LeaderboardPage() {
   const fetchLb = useServerFn(getLeaderboard);
-function LeaderboardPage() {
-  const fetchLb = useServerFn(getLeaderboard);
   const fetchHist = useServerFn(getLeaderboardHistory);
   const { data, isLoading } = useQuery({
     queryKey: ["leaderboard"],
