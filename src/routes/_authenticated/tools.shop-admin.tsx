@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Bell, Trash2 } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -24,6 +26,11 @@ import {
   getAdminShopHistory,
   getAdminShopTopMovers,
 } from "@/lib/paladium/history.functions";
+import {
+  listMyShopAlerts,
+  createShopAlert,
+  deleteShopAlert,
+} from "@/lib/data/shop-alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
   head: () => ({
@@ -34,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/tools/shop-admin")({
   }),
   component: ShopAdminPage,
 });
+
 
 function ShopAdminPage() {
   const fetchLatest = useServerFn(getAdminShopLatest);
