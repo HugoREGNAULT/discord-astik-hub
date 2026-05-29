@@ -135,14 +135,23 @@ function PollDetail() {
     const map = new Map<string, string>();
     for (const v of data.votes as any[]) {
       map.set(v.voter_discord_id, v.voter_username ?? v.voter_discord_id);
-  const voters = useMemo(() => {
-    if (!data) return [] as { id: string; name: string }[];
-    const map = new Map<string, string>();
-    for (const v of data.votes as any[]) {
-      map.set(v.voter_discord_id, v.voter_username ?? v.voter_discord_id);
     }
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [data]);
+
+  const membersFn = useServerFn(listMembers);
+  const { data: membersData } = useQuery({
+    queryKey: ["members", "active"],
+    queryFn: () => membersFn({ data: { status: "active" } }),
+    enabled: canManage,
+  });
+  const activeMembers = (membersData?.members ?? []) as any[];
+  const voterIds = useMemo(() => new Set(voters.map((v) => v.id)), [voters]);
+  const nonVoters = useMemo(
+    () => activeMembers.filter((m) => !voterIds.has(m.discord_id)),
+    [activeMembers, voterIds],
+  );
+
 
   if (isLoading) return <DetailPageSkeleton />;
   if (!data?.poll) return <p>Sondage introuvable.</p>;
