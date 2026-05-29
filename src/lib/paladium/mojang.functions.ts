@@ -1,5 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { db } from "@/lib/db.server";
+
+function normalizeUuid(id: string): string {
+  const stripped = id.replace(/-/g, "");
+  if (stripped.length !== 32) return id;
+  return `${stripped.slice(0, 8)}-${stripped.slice(8, 12)}-${stripped.slice(12, 16)}-${stripped.slice(16, 20)}-${stripped.slice(20)}`;
+}
+
+async function cacheUpsert(entries: Array<{ uuid: string; username: string }>) {
+  if (entries.length === 0) return;
+  try {
+    await db
+      .from("minecraft_uuid_cache")
+      .upsert(
+        entries.map((e) => ({ uuid: e.uuid, username: e.username, updated_at: new Date().toISOString() })),
+        { onConflict: "uuid" },
+      );
+  } catch {
+    /* ignore cache errors */
+  }
+}
 
 export const resolveMojangUuid = createServerFn({ method: "POST" })
   .inputValidator((input) =>
@@ -14,6 +35,29 @@ export const resolveMojangUuid = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    // 1) Try cache (case-insensitive)
+    try {
+      const { data: cached } = await db
+        .from("minecraft_uuid_cache")
+        .select("uuid, username")
+        .eq("username_lower", data.username.toLowerCase())
+        .maybeSingle();
+      if (cached?.uuid) {
+        // Refresh from Mojang in background but return cache immediately
+        fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(data.username)}`)
+          .then(async (r) => {
+            if (!r.ok) return;
+            const j = (await r.json()) as { id: string; name: string };
+            await cacheUpsert([{ uuid: normalizeUuid(j.id), username: j.name }]);
+          })
+          .catch(() => {});
+        return { id: cached.uuid, name: cached.username };
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // 2) Hit Mojang
     const res = await fetch(
       `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(data.username)}`,
     );
@@ -24,10 +68,8 @@ export const resolveMojangUuid = createServerFn({ method: "POST" })
       throw new Error(`Mojang API ${res.status}`);
     }
     const json = (await res.json()) as { id: string; name: string };
-    let id = json.id;
-    if (id && id.length === 32) {
-      id = `${id.slice(0, 8)}-${id.slice(8, 12)}-${id.slice(12, 16)}-${id.slice(16, 20)}-${id.slice(20)}`;
-    }
+    const id = normalizeUuid(json.id);
+    await cacheUpsert([{ uuid: id, username: json.name }]);
     return { id, name: json.name };
   });
 
@@ -43,9 +85,28 @@ export const resolveUuidsToNames = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const out: Record<string, string> = {};
-    const unique = Array.from(new Set(data.uuids));
+    const unique = Array.from(new Set(data.uuids.map(normalizeUuid)));
+
+    // 1) Cache lookup
+    try {
+      const { data: cached } = await db
+        .from("minecraft_uuid_cache")
+        .select("uuid, username")
+        .in("uuid", unique);
+      cached?.forEach((r) => {
+        out[r.uuid] = r.username;
+      });
+    } catch {
+      /* ignore */
+    }
+
+    const missing = unique.filter((u) => !out[u]);
+    if (missing.length === 0) return out;
+
+    // 2) Hit Mojang for the rest
+    const fetched: Array<{ uuid: string; username: string }> = [];
     await Promise.all(
-      unique.map(async (raw) => {
+      missing.map(async (raw) => {
         const stripped = raw.replace(/-/g, "");
         if (stripped.length !== 32) return;
         try {
@@ -55,10 +116,13 @@ export const resolveUuidsToNames = createServerFn({ method: "POST" })
           if (!res.ok) return;
           const json = (await res.json()) as { id: string; name: string };
           out[raw] = json.name;
+          fetched.push({ uuid: raw, username: json.name });
         } catch {
           /* ignore */
         }
       }),
     );
+
+    await cacheUpsert(fetched);
     return out;
   });
