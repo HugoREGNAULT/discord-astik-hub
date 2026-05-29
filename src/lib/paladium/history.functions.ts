@@ -147,9 +147,7 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
   return { inserted: rows.length };
 });
 
-  if (error) throw new Error(error.message);
-  return { inserted: rows.length };
-});
+
 
 export const getAdminShopLatest = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await supabaseAdmin
