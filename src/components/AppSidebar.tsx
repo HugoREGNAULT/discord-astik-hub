@@ -52,6 +52,7 @@ const ITEMS: Item[] = [
   { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage", accent: "blurple" },
   { title: "Effectif", url: "/effectif", icon: ListTree, perm: "members.view", accent: "blurple" },
   { title: "Objectifs", url: "/objectives", icon: Target, perm: "objectives.edit", accent: "pink" },
+  { title: "Plan de coupe", url: "/pdc", icon: Grid3x3, perm: "members.view", accent: "blurple" },
   { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
   { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
 ];
