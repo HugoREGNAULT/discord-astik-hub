@@ -7,7 +7,11 @@ import {
   Trophy,
   MousePointerClick,
   Calculator,
+  Calendar,
+  LineChart,
+  Store,
 } from "lucide-react";
+
 import { ToolCard } from "@/components/tools/ToolCard";
 import { ToolHeader, MissingKeyBanner } from "@/components/tools/ToolsUi";
 import { PaladiumRateLimits } from "@/components/tools/PaladiumRateLimits";
