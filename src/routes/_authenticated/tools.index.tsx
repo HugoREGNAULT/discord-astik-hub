@@ -10,6 +10,7 @@ import {
   Calendar,
   LineChart,
   Store,
+  Receipt,
 } from "lucide-react";
 
 import { ToolCard } from "@/components/tools/ToolCard";
@@ -122,6 +123,15 @@ function ToolsIndex() {
           title="Shop admin"
           description="Prix actuels du shop admin et historique quotidien par item."
           accent="blurple"
+        />
+
+        <ToolCard
+          to="/tools/sales"
+          code="[11]"
+          icon={Receipt}
+          title="Ventes joueur"
+          description="Recherche un joueur (pseudo ou UUID) et consulte ses ventes HDV en cours et passées avec filtres."
+          accent="pink"
         />
 
       </div>
