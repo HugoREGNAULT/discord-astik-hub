@@ -22,6 +22,7 @@ const valueSchema = z.object({
   active: z.boolean().default(true),
   tier: z.number().int().nullable().optional(),
   display_order: z.number().int().default(0),
+  image_url: z.string().url().nullable().optional(),
 });
 
 export const upsertValue = createServerFn({ method: "POST" })
