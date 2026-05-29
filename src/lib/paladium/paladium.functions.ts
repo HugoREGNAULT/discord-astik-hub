@@ -18,5 +18,6 @@ export const callPaladium = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    return (await fetchPaladium(data.path)) as unknown;
+    const result = (await fetchPaladium(data.path)) as Record<string, unknown> | unknown[];
+    return result;
   });
