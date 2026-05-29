@@ -84,6 +84,13 @@ const SECTIONS: Section[] = [
         perm: "profile.self",
         accent: "blurple",
       },
+      {
+        title: "Mes alertes",
+        url: "/tools/alerts",
+        icon: Bell,
+        perm: "profile.self",
+        accent: "pink",
+      },
     ],
   },
   {
