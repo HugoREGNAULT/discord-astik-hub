@@ -87,7 +87,7 @@ function ShopAdminPage() {
       {latest.isLoading && <LoadingBlock />}
       {latest.error && <ErrorBlock message={(latest.error as Error).message} />}
       {!latest.isLoading && items.length === 0 && (
-        <EmptyBlock label="Aucun snapshot — attends le prochain passage du cron (1×/jour)." />
+        <EmptyBlock label="Aucun snapshot — attends le prochain passage du cron (toutes les 5 min)." />
       )}
 
       {filtered.length > 0 && (
