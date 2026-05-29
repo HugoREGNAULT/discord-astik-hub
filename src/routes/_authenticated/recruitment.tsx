@@ -69,9 +69,10 @@ function RecruitmentPage() {
           Accepte ou refuse les candidatures à la PunkAstik. Les candidats sont notifiés en DM
           Discord.
         </p>
-      </div>
+      <ApplicationStats />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AppStatus)}>
+
         <TabsList>
           <TabsTrigger value="pending">
             <Clock className="w-4 h-4 mr-1" /> En attente
