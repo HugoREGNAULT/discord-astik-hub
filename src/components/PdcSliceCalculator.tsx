@@ -95,14 +95,20 @@ export function PdcSliceCalculator({ blocks }: Props) {
 
   const isDrawingRef = useRef(false);
 
-  const paintAt = (clientX: number, clientY: number) => {
+  const cellFromEvent = (clientX: number, clientY: number) => {
     const cv = canvasRef.current;
-    if (!cv) return;
+    if (!cv) return null;
     const rect = cv.getBoundingClientRect();
     const x = Math.floor(((clientX - rect.left) / rect.width) * w);
     const y = Math.floor(((clientY - rect.top) / rect.height) * h);
-    if (x < 0 || y < 0 || x >= w || y >= h) return;
-    const key = `${x},${y}`;
+    if (x < 0 || y < 0 || x >= w || y >= h) return null;
+    return { x, y };
+  };
+
+  const paintAt = (clientX: number, clientY: number) => {
+    const cell = cellFromEvent(clientX, clientY);
+    if (!cell) return;
+    const key = `${cell.x},${cell.y}`;
     setCells((prev) => {
       const next = { ...prev };
       if (tool === "erase") delete next[key];
@@ -110,6 +116,8 @@ export function PdcSliceCalculator({ blocks }: Props) {
       return next;
     });
   };
+
+  const hoveredBlock = hover ? blockMap.get(cells[`${hover.x},${hover.y}`] ?? "") : undefined;
 
   // Quantities
   const totals = useMemo(() => {
