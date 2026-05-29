@@ -98,8 +98,8 @@ function ShopAdminPage() {
                 <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
                   <th className="py-2 px-4">Item</th>
                   <th className="py-2 px-4">Catégorie</th>
-                  <th className="py-2 px-4 text-right">Prix</th>
-                  <th className="py-2 px-4 text-right">PB</th>
+                  <th className="py-2 px-4 text-right">Achat</th>
+                  <th className="py-2 px-4 text-right">Vente</th>
                 </tr>
               </thead>
               <tbody>
