@@ -80,14 +80,14 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
           <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
           <XAxis
             dataKey="t"
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
             tickFormatter={(v: string) =>
               v.slice(5, 10).replace("-", "/") + " " + v.slice(11) + "h"
             }
             minTickGap={32}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
             tickFormatter={(v) => formatTick(Number(v), metric)}
             width={48}
           />

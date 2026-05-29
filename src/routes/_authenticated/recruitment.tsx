@@ -393,8 +393,8 @@ function ApplicationStats() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.timeline}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} allowDecimals={false} />
+                <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} />
+                <YAxis stroke="hsl(var(--foreground))" fontSize={12} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
                     background: "hsl(var(--popover))",
