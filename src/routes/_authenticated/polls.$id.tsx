@@ -135,6 +135,11 @@ function PollDetail() {
     const map = new Map<string, string>();
     for (const v of data.votes as any[]) {
       map.set(v.voter_discord_id, v.voter_username ?? v.voter_discord_id);
+  const voters = useMemo(() => {
+    if (!data) return [] as { id: string; name: string }[];
+    const map = new Map<string, string>();
+    for (const v of data.votes as any[]) {
+      map.set(v.voter_discord_id, v.voter_username ?? v.voter_discord_id);
     }
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [data]);
