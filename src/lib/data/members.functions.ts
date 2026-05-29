@@ -126,7 +126,9 @@ const pageSchema = z.object({ discordId: z.string().min(1), offset: z.number().i
 export const getMemberPointsHistory = createServerFn({ method: "GET" })
   .inputValidator((input) => pageSchema.parse(input))
   .handler(async ({ data }) => {
-    await requireSession();
+    const user = await requireSession();
+    const isSelf = user.discordId === data.discordId;
+    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
     const { data: rows, error } = await db
       .from("points_ledger")
       .select("*")
@@ -140,7 +142,9 @@ export const getMemberPointsHistory = createServerFn({ method: "GET" })
 export const getMemberDonations = createServerFn({ method: "GET" })
   .inputValidator((input) => pageSchema.parse(input))
   .handler(async ({ data }) => {
-    await requireSession();
+    const user = await requireSession();
+    const isSelf = user.discordId === data.discordId;
+    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
     const { data: rows, error } = await db
       .from("donations")
       .select("id, status, total_brut, total_final, bonus_pct, staff_username, created_at, validated_at")
