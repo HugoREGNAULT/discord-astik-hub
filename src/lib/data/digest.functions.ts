@@ -24,6 +24,9 @@ export const getLatestDigest = createServerFn({ method: "GET" }).handler(async (
  */
 export const generateDigestManually = createServerFn({ method: "POST" }).handler(async () => {
   const user = await requirePermission("admin.access");
-  const result = await generateWeeklyDigest({ generatedBy: `manual:${user.discordId}`, force: true });
+  const result = await generateWeeklyDigest({
+    generatedBy: `manual:${user.discordId}`,
+    force: true,
+  });
   return result;
 });
