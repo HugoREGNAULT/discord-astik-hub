@@ -2,14 +2,49 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState, useEffect } from "react";
-import { ArrowLeft, Check, HelpCircle, X, Lock, Crown, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  HelpCircle,
+  X,
+  Lock,
+  Crown,
+  RefreshCw,
+  Upload,
+  UserX,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getPoll, castVote, closePoll, reopenPoll } from "@/lib/data/polls.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  getPoll,
+  castVote,
+  closePoll,
+  reopenPoll,
+  importPollVotes,
+} from "@/lib/data/polls.functions";
+import { listMembers } from "@/lib/data/members.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
+import { parsePollCsv, type MatrixResult, type Choice as CsvChoice } from "@/lib/csv/poll-csv";
+
 
 type Choice = "yes" | "maybe" | "no";
 
