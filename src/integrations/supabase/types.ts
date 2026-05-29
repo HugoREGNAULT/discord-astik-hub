@@ -518,6 +518,81 @@ export type Database = {
         }
         Relationships: []
       }
+      pdc_blocks: {
+        Row: {
+          color: string
+          created_at: string
+          created_by_discord_id: string | null
+          created_by_username: string | null
+          id: string
+          kind: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          created_by_discord_id?: string | null
+          created_by_username?: string | null
+          id?: string
+          kind?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by_discord_id?: string | null
+          created_by_username?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pdc_plans: {
+        Row: {
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          height_chunks: number
+          id: string
+          layers: Json
+          layers_count: number
+          name: string
+          notes: string | null
+          updated_at: string
+          width_chunks: number
+        }
+        Insert: {
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          height_chunks?: number
+          id?: string
+          layers?: Json
+          layers_count?: number
+          name: string
+          notes?: string | null
+          updated_at?: string
+          width_chunks?: number
+        }
+        Update: {
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          height_chunks?: number
+          id?: string
+          layers?: Json
+          layers_count?: number
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          width_chunks?: number
+        }
+        Relationships: []
+      }
       points_ledger: {
         Row: {
           action_type: string

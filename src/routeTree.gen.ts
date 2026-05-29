@@ -22,6 +22,7 @@ import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
+import { Route as AuthenticatedPdcRouteImport } from './routes/_authenticated/pdc'
 import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authenticated/objectives'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
@@ -108,6 +109,11 @@ const AuthenticatedPollsRoute = AuthenticatedPollsRouteImport.update({
 const AuthenticatedPointsRoute = AuthenticatedPointsRouteImport.update({
   id: '/points',
   path: '/points',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPdcRoute = AuthenticatedPdcRouteImport.update({
+  id: '/pdc',
+  path: '/pdc',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedObjectivesRoute = AuthenticatedObjectivesRouteImport.update({
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
+  '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/objectives': typeof AuthenticatedObjectivesRoute
+  '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/objectives': typeof AuthenticatedObjectivesRoute
+  '/_authenticated/pdc': typeof AuthenticatedPdcRoute
   '/_authenticated/points': typeof AuthenticatedPointsRoute
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -350,6 +359,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/members'
     | '/objectives'
+    | '/pdc'
     | '/points'
     | '/polls'
     | '/profile'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/members'
     | '/objectives'
+    | '/pdc'
     | '/points'
     | '/polls'
     | '/profile'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/objectives'
+    | '/_authenticated/pdc'
     | '/_authenticated/points'
     | '/_authenticated/polls'
     | '/_authenticated/profile'
@@ -555,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/points'
       fullPath: '/points'
       preLoaderRoute: typeof AuthenticatedPointsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/pdc': {
+      id: '/_authenticated/pdc'
+      path: '/pdc'
+      fullPath: '/pdc'
+      preLoaderRoute: typeof AuthenticatedPdcRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/objectives': {
@@ -747,6 +766,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedObjectivesRoute: typeof AuthenticatedObjectivesRoute
+  AuthenticatedPdcRoute: typeof AuthenticatedPdcRoute
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -766,6 +786,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedObjectivesRoute: AuthenticatedObjectivesRoute,
+  AuthenticatedPdcRoute: AuthenticatedPdcRoute,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
