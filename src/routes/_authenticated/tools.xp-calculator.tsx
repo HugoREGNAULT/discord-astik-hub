@@ -9,7 +9,13 @@ import {
   StatTile,
   MissingKeyBanner,
 } from "@/components/tools/ToolsUi";
-import { PaladiumApi, asArray, hasPaladiumKey, resolveUuid, type PlayerJob } from "@/lib/paladium/api";
+import {
+  PaladiumApi,
+  asArray,
+  hasPaladiumKey,
+  resolveUuid,
+  type PlayerJob,
+} from "@/lib/paladium/api";
 import { JOBS, type JobId, xpBetween } from "@/lib/paladium/xp-curves";
 import { RATES } from "@/lib/paladium/xp-rates";
 
@@ -214,8 +220,8 @@ function XpCalculator() {
           </tbody>
         </table>
         <p className="text-[10px] text-zinc-600 mt-3" style={{ fontFamily: "'Space Mono'" }}>
-          // les courbes d'XP et rendements sont des approximations — ajuste les fichiers
-          xp-curves / xp-rates si besoin. Édition: {edition}.
+          // les courbes d'XP et rendements sont des approximations — ajuste les fichiers xp-curves
+          / xp-rates si besoin. Édition: {edition}.
         </p>
       </ToolCard>
     </div>

@@ -110,10 +110,7 @@ export function StatTile({
       >
         {label}
       </div>
-      <div
-        className={`text-xl font-bold ${color}`}
-        style={{ fontFamily: "'Space Grotesk'" }}
-      >
+      <div className={`text-xl font-bold ${color}`} style={{ fontFamily: "'Space Grotesk'" }}>
         {value}
       </div>
     </div>
@@ -161,11 +158,9 @@ export function SearchInput({
 export function MissingKeyBanner() {
   return (
     <div className="border border-amber-500/40 bg-amber-500/5 p-3 text-xs text-amber-300 mb-4">
-      <span className="font-mono uppercase tracking-[0.2em] text-amber-400 mr-2">
-        // config
-      </span>
-      Variable <code className="font-mono">VITE_PALADIUM_API_KEY</code> manquante — les
-      appels API échoueront. Ajoute-la dans les Build Secrets puis relance le build.
+      <span className="font-mono uppercase tracking-[0.2em] text-amber-400 mr-2">// config</span>
+      Variable <code className="font-mono">VITE_PALADIUM_API_KEY</code> manquante — les appels API
+      échoueront. Ajoute-la dans les Build Secrets puis relance le build.
     </div>
   );
 }

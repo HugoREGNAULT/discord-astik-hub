@@ -34,8 +34,6 @@ export async function paladiumFetch<T = unknown>(path: string): Promise<T> {
   }
 }
 
-
-
 /* ---------- Mojang ---------- */
 
 export type MojangProfile = { id: string; name: string };

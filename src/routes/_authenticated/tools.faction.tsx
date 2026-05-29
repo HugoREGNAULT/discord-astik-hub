@@ -90,11 +90,7 @@ function FactionLookup() {
               <p className="text-zinc-400 text-sm mt-2">{q.data.description}</p>
             )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              <StatTile
-                label="Membres"
-                value={q.data.members?.length ?? "—"}
-                accent="pink"
-              />
+              <StatTile label="Membres" value={q.data.members?.length ?? "—"} accent="pink" />
               <StatTile label="Alliés" value={q.data.allies?.length ?? "—"} />
               <StatTile label="Ennemis" value={q.data.enemies?.length ?? "—"} />
               <StatTile

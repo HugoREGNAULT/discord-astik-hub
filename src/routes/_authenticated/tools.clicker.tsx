@@ -97,8 +97,8 @@ function ClickerOptimizer() {
     // Fallback to static catalog if nothing useful from API
     if (list.length === 0 && uuid) {
       for (const entry of CLICKER_CATALOG) {
-        const owned = apiBuildings.find((b) => b.name.toLowerCase() === entry.label.toLowerCase())
-          ?.amount ?? 0;
+        const owned =
+          apiBuildings.find((b) => b.name.toLowerCase() === entry.label.toLowerCase())?.amount ?? 0;
         const cost = nextCost(entry, owned);
         list.push({
           name: entry.label,
@@ -143,10 +143,7 @@ function ClickerOptimizer() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <StatTile label="ClicCoins" value={fmtNum(coins)} accent="pink" />
             <StatTile label="RPS actuel" value={fmtNum(rps)} accent="blurple" />
-            <StatTile
-              label="Tick"
-              value={`${TICK_SECONDS}s`}
-            />
+            <StatTile label="Tick" value={`${TICK_SECONDS}s`} />
           </div>
 
           {suggestions.length > 0 && (
@@ -169,11 +166,8 @@ function ClickerOptimizer() {
                     {suggestions[0].name}
                   </div>
                   <div className="text-zinc-400 text-sm">
-                    coût <span className="text-pink-400">{fmtNum(suggestions[0].cost)}</span>{" "}
-                    · gain{" "}
-                    <span className="text-emerald-400">
-                      +{fmtNum(suggestions[0].gainRps)} rps
-                    </span>{" "}
+                    coût <span className="text-pink-400">{fmtNum(suggestions[0].cost)}</span> · gain{" "}
+                    <span className="text-emerald-400">+{fmtNum(suggestions[0].gainRps)} rps</span>{" "}
                     · attente{" "}
                     <span className="text-[#5865F2]">
                       {fmtDuration(suggestions[0].waitSeconds)}
@@ -204,9 +198,7 @@ function ClickerOptimizer() {
                       >
                         <td className="py-2 px-4 text-pink-400 font-bold">{i + 1}</td>
                         <td className="py-2 px-4 text-zinc-200">{s.name}</td>
-                        <td className="py-2 px-4 text-right text-zinc-300">
-                          {fmtNum(s.cost)}
-                        </td>
+                        <td className="py-2 px-4 text-right text-zinc-300">{fmtNum(s.cost)}</td>
                         <td className="py-2 px-4 text-right text-emerald-400">
                           +{fmtNum(s.gainRps)}
                         </td>
