@@ -77,8 +77,7 @@ function LeaderboardList({
         const rank = i + 1 + rankOffset;
         const value = getValue(e, metric, period);
 
-        const rank = i + 1;
-        const value = getValue(e, metric, period);
+
         return (
           <div
             key={e.discord_id}
