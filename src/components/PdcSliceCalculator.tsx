@@ -33,6 +33,7 @@ export function PdcSliceCalculator({ blocks }: Props) {
   const [cells, setCells] = useState<Record<string, string>>({});
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [tool, setTool] = useState<Tool>("paint");
+  const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
 
   const blockMap = useMemo(() => {
     const m = new Map<string, SliceBlock>();
