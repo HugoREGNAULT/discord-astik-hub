@@ -154,13 +154,16 @@ export type LeaderboardEntry = {
 };
 
 export const PaladiumApi = {
-  getPlayerProfile: (uuid: string) => paladiumFetch<PlayerProfile>(`/v1/player/profile/${uuid}`),
+  getPlayerProfile: (uuid: string) =>
+    paladiumFetch<PlayerProfile>(`/v1/paladium/player/profile/${uuid}`),
   getPlayerJobs: (uuid: string) =>
-    paladiumFetch<PlayerJob[] | { jobs: PlayerJob[] }>(`/v1/player/profile/${uuid}/jobs`),
+    paladiumFetch<PlayerJob[] | { jobs: PlayerJob[] }>(
+      `/v1/paladium/player/profile/${uuid}/jobs`,
+    ),
   getPaladiumProfile: (uuid: string) =>
-    paladiumFetch<PaladiumProfile>(`/v1/paladium/profile/${uuid}`),
+    paladiumFetch<PaladiumProfile>(`/v1/paladium/player/profile/${uuid}/clicker`),
   getFaction: (name: string) =>
-    paladiumFetch<FactionProfile>(`/v1/faction/profile/${encodeURIComponent(name)}`),
+    paladiumFetch<FactionProfile>(`/v1/paladium/faction/profile/${encodeURIComponent(name)}`),
   getStatus: () => paladiumFetch<ServerStatus>(`/v1/status`),
   getMarketItems: () =>
     paladiumFetch<MarketItem[] | { items: MarketItem[] }>(`/v1/paladium/shop/market/items`),
@@ -170,7 +173,11 @@ export const PaladiumApi = {
     ),
   getLeaderboard: (category = "money") =>
     paladiumFetch<LeaderboardEntry[] | { entries: LeaderboardEntry[] }>(
-      `/v1/paladium/leaderboard/${encodeURIComponent(category)}`,
+      `/v1/paladium/ranking/leaderboard/${encodeURIComponent(category)}/1`,
+    ),
+  getFactionLeaderboard: () =>
+    paladiumFetch<LeaderboardEntry[] | { entries: LeaderboardEntry[] }>(
+      `/v1/paladium/faction/leaderboard`,
     ),
 };
 
