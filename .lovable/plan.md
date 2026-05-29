@@ -1,75 +1,80 @@
-## Constats (tests API à l'instant)
+# Unification DA — style "Outils Paladium" partout
 
-- **Status** : l'API renvoie `{ java: { global, factions }, launcher, anarchy }` — mon extracteur actuel ne sait pas lire cette forme, d'où l'écran vide.
-- **Classements** : les IDs corrects sont `job.miner`, `job.farmer`, etc. (avec un point, pas un tiret) → mes onglets métiers renvoient 404. Pour KOTH/END, certaines lignes ont `username == uuid` (joueurs « wilderness ») → il faut résoudre via Mojang.
-- **Market** : `/items/{nom}` exige le nom interne exact (`paladium-ore`, `tile-grass`…). « draper » n'existe pas tel quel. La liste globale est paginée à 100 max (1481 items au total) → impossible de chercher librement sans paginer.
+## Objectif
 
-## Plan
+Appliquer la direction artistique terminal/cyberpunk (déjà utilisée dans `/tools/*` et sur punkastik.com) à toutes les pages authentifiées de l'app, pour avoir une cohérence visuelle complète.
 
-### 1. Page Statut — refonte
-Nouvelle mise en page basée sur la vraie structure :
-- Bandeau global Java (online/offline + joueurs)
-- Tuile Launcher + tuile Anarchy
-- Grille des serveurs faction (Aeloria, Egopolis, …) avec pastille colorée selon `running` / `whitelist` / `offline` / `unknown`
+## La DA en question (référence)
 
-### 2. Classements
-- IDs corrigés (`money`, `job.miner`, `job.farmer`, `job.hunter`, `job.alchemist`, `boss`, `egghunt`, `end`, `chorus`, `koth`, `clicker`, `alliance`)
-- Résolution UUID → pseudo via Mojang sessionserver pour les lignes où le pseudo est un UUID (KOTH / END). Cache mémoire par UUID pour éviter les appels répétés.
+- **Fond** : `zinc-950` / `zinc-900/70` avec `backdrop-blur`
+- **Accents** : rose `#ec4899` (pink-500) + blurple `#5865F2` ponctuel
+- **Typo** : `Space Mono` UPPERCASE tracking large (`0.2em–0.4em`) pour labels/codes, `Space Grotesk` bold pour titres
+- **Bordures** : `border-zinc-800`, nettes, **pas de border-radius** (carré)
+- **Marqueurs "code"** : préfixes `// section` et `[NN]` partout
+- **Boutons** : pink solid avec `border-b-4 border-black/20`, uppercase tracké
+- **Tableaux** : header sticky `bg-zinc-900`, lignes `border-b border-zinc-900`, hover `bg-zinc-900/50`
 
-### 3. Market HDV — recherche libre
-- Au premier rendu : charger toutes les pages (15 requêtes × 100 items, dans la limite 300/5min) et indexer en mémoire.
-- Recherche par sous-chaîne sur le nom interne.
-- Pour chaque item correspondant : afficher quantité dispo, total vendu, prix moyen.
-- Détail au clic : `/items/{name}` pour voir les listings actifs (vendeur, prix, quantité, expiration).
+## Approche
 
-### 4. Lookup Joueur — ventes + historique BDD
-Ajout de deux sections à la fiche joueur :
-- **Ventes en cours** : `/v1/paladium/shop/market/players/{uuid}/items`
-- **Ventes passées** : lues depuis la table d'historique
+### Phase 1 — Primitives partagées (1 fichier)
 
-Chaque recherche réussie :
-- Upsert dans `paladium_tracked_players` (uuid, pseudo, compte de lookups, `last_searched_at`)
-- Snapshot immédiat des listings du joueur dans `paladium_player_listings_history`
+Étendre `src/components/tools/ToolsUi.tsx` (déjà fait pour les outils) en **kit DA global** réutilisable hors `/tools` :
 
-### 5. Top joueurs recherchés
-Bloc en haut du lookup affichant les 10 joueurs les plus recherchés, cliquables pour relancer la recherche.
+- `PageHeader` (code + titre + description) — alias de `ToolHeader`
+- `PageCard` — alias de `ToolCard`
+- `DataTable` wrapper (header sticky pink/mono)
+- `PrimaryButton` / `GhostButton` (style pink + border-b-4)
+- `StatTile`, `EmptyBlock`, `LoadingBlock`, `ErrorBlock` (déjà existants)
+- `SectionLabel` (`// xxx` en pink mono)
 
-### 6. Sync automatique toutes les 10 min
-- Route publique `POST /api/public/hooks/paladium-sync` (vérif via clé anon)
-- Itère sur les joueurs trackés (priorité aux plus recherchés, max ~30 par run pour respecter le rate limit)
-- Pour chaque : appelle `/players/{uuid}/items`, compare avec le dernier snapshot, marque les listings disparus comme « vendus », insère les nouveaux
-- pg_cron toutes les 10 minutes
+Déplacé vers `src/components/ui/da/` pour clarifier que c'est réutilisable partout, avec ré-export depuis `tools/ToolsUi` pour ne rien casser.
+
+### Phase 2 — Refonte page par page
+
+Appliquer le kit sur chaque route, en gardant **toute la logique métier intacte** (juste le visuel) :
+
+Pages dashboard/admin :
+- `dashboard.tsx`, `me.tsx`, `profile.tsx`, `welcome.tsx`
+- `members.tsx`, `members.$id.tsx`, `effectif.tsx`, `staff.tsx`
+- `points.tsx`, `donations.tsx`, `objectives.tsx`, `absences.tsx`
+- `polls.tsx`, `polls.index.tsx`, `polls.$id.tsx`
+- `recruitment.tsx`, `blacklist.tsx`, `logs.tsx`, `admin.tsx`, `config.tsx`, `pdc.tsx`
+
+Pour chacune :
+1. Remplacer cartes shadcn `Card` → `PageCard`
+2. Remplacer titres ad-hoc → `PageHeader` avec code `// xx.yy`
+3. Remplacer boutons primaires → style pink mono uppercase
+4. Tableaux → style header pink sticky
+5. Supprimer border-radius résiduel sur les conteneurs principaux
+
+### Phase 3 — Chrome partagé
+
+- `AppSidebar.tsx` : passer en fond `zinc-950`, items en mono uppercase, accent pink sur item actif
+- `__root.tsx` / layouts : vérifier fond global `zinc-950`
+- `NotificationBell`, `CommandPalette`, `ThemeToggle` : aligner sur DA
+
+### Phase 4 — Public
+
+- `routes/index.tsx` (punkastik.com home) — déjà à priori dans la DA, vérification rapide
+- `candidature.tsx`, `login.tsx`, `legal.tsx`, `forbidden.tsx` : aligner
 
 ## Détails techniques
 
-**Nouvelles tables Supabase**
-- `paladium_tracked_players` : uuid (PK), username, search_count, first_searched_at, last_searched_at, last_synced_at
-- `paladium_player_listings_history` : id, player_uuid, item_name, item_display, quantity, price, price_pb, listed_at (createdAt API), expires_at, first_seen_at, last_seen_at, sold_at (null tant que présent)
+- **Pas de refonte de la logique** : que du JSX/className. Aucun changement de data-flow, server fn, requête, route.
+- **Pas de migration de design tokens CSS** : on garde `src/styles.css` tel quel (les classes Tailwind `bg-zinc-*` / `text-pink-*` sont utilisées directement par cohérence avec l'existant outils).
+- **shadcn `Card` / `Button`** restent dispos pour les composants tiers (dialogs, dropdowns) mais ne sont plus utilisés directement dans les pages — on passe par le kit DA.
+- Build vérifié à la fin de chaque phase.
 
-RLS : lecture pour `authenticated`, écriture via service role uniquement.
+## Découpage en livraisons
 
-**Server functions**
-- `trackPlayerSearch({ uuid, username })` — upsert + snapshot initial
-- `getTopSearchedPlayers()` — top 10 par `search_count`
-- `getPlayerSalesHistory({ uuid })` — listings actuels + historique des ventes
-- `syncTrackedPlayersListings()` — utilisée par la route cron, signature interne
+Vu l'ampleur, je propose de livrer en **3 PRs / 3 tours** :
 
-**Résolution UUID → pseudo**
-- Helper côté serveur via Mojang sessionserver (pas de clé) + cache mémoire request-scoped pour le leaderboard ; les UUID résolus sont aussi écrits dans `paladium_tracked_players` quand disponibles.
+1. **Tour 1** : Phase 1 (kit) + Phase 3 (chrome sidebar) + 5 pages les plus visibles (`dashboard`, `members`, `members.$id`, `donations`, `points`)
+2. **Tour 2** : Toutes les autres pages auth (polls, recruitment, blacklist, logs, admin, config, effectif, staff, objectives, absences, pdc, profile, me, welcome)
+3. **Tour 3** : Pages publiques + polish (login, candidature, legal, forbidden, NotificationBell, CommandPalette)
 
-**Cron pg_cron**
-```sql
-select cron.schedule(
-  'paladium-sync-listings',
-  '*/10 * * * *',
-  $$ select net.http_post(
-    url:='https://punkastik.com/api/public/hooks/paladium-sync',
-    headers:='{"Content-Type":"application/json","apikey":"<anon>"}'::jsonb,
-    body:='{}'::jsonb
-  ) $$
-);
-```
+## Questions avant de démarrer
 
-## À confirmer
-1. OK pour créer les 2 nouvelles tables ?
-2. La sync auto toutes les 10 min — OK pour limiter à ~30 joueurs par tick (pour ne pas exploser le rate limit profile 50/5min) ?
+1. **OK pour découper en 3 tours** ou tu veux que je tente tout d'un coup (risque de réponse incomplète) ?
+2. **`punkastik.com` (home `/`)** : à retoucher aussi ou elle est déjà nickel selon toi ?
+3. **Mode clair** : on garde le thème dark forcé (l'app est dark-only de toute façon) ou on supprime carrément `ThemeToggle` ?
