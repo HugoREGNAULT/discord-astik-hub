@@ -104,7 +104,57 @@ export const PALADIUM_ROUTES: RouteSpec[] = [
     limit: 300,
     windowMin: 5,
   },
+  {
+    template: "/v1/paladium/shop/admin/items",
+    match: /^\/v1\/paladium\/shop\/admin\/items(\?.*)?$/,
+    label: "Shop admin",
+    limit: 300,
+    windowMin: 5,
+  },
+  {
+    template: "/v1/paladium/events",
+    match: /^\/v1\/paladium\/events$/,
+    label: "Événements",
+    limit: 300,
+    windowMin: 5,
+  },
+  {
+    template: "/v1/paladium/events/upcoming",
+    match: /^\/v1\/paladium\/events\/upcoming$/,
+    label: "Événements à venir",
+    limit: 300,
+    windowMin: 5,
+  },
+  {
+    template: "/v1/paladium/faction/onyourmark",
+    match: /^\/v1\/paladium\/faction\/onyourmark$/,
+    label: "À vos marques",
+    limit: 300,
+    windowMin: 5,
+  },
+  {
+    template: "/v1/paladium/faction/quests",
+    match: /^\/v1\/paladium\/faction\/quests$/,
+    label: "Quêtes faction",
+    limit: 300,
+    windowMin: 5,
+  },
+  {
+    template: "/v1/paladium/trixium/leaderboard/players",
+    match: /^\/v1\/paladium\/trixium\/leaderboard\/players(\?.*)?$/,
+    label: "Trixium — joueurs",
+    limit: 300,
+    windowMin: 5,
+  },
+  {
+    template: "/v1/paladium/trixium/leaderboard/factions",
+    match: /^\/v1\/paladium\/trixium\/leaderboard\/factions(\?.*)?$/,
+    label: "Trixium — factions",
+    limit: 300,
+    windowMin: 5,
+  },
 ];
+
 
 export function routeFor(path: string): RouteSpec | null {
   return PALADIUM_ROUTES.find((r) => r.match.test(path)) ?? null;

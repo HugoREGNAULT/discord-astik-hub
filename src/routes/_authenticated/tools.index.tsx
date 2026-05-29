@@ -7,7 +7,11 @@ import {
   Trophy,
   MousePointerClick,
   Calculator,
+  Calendar,
+  LineChart,
+  Store,
 } from "lucide-react";
+
 import { ToolCard } from "@/components/tools/ToolCard";
 import { ToolHeader, MissingKeyBanner } from "@/components/tools/ToolsUi";
 import { PaladiumRateLimits } from "@/components/tools/PaladiumRateLimits";
@@ -95,6 +99,31 @@ function ToolsIndex() {
           description="Calcule l'XP et les ressources à farmer pour passer d'un niveau à un autre."
           accent="pink"
         />
+        <ToolCard
+          to="/tools/events"
+          code="[08]"
+          icon={Calendar}
+          title="Agenda événements"
+          description="KOTH, À vos marques et autres événements Paladium à venir, avec countdown."
+          accent="blurple"
+        />
+        <ToolCard
+          to="/tools/uptime"
+          code="[09]"
+          icon={LineChart}
+          title="Uptime serveurs"
+          description="Disponibilité et fréquentation des serveurs Paladium sur 7 jours."
+          accent="pink"
+        />
+        <ToolCard
+          to="/tools/shop-admin"
+          code="[10]"
+          icon={Store}
+          title="Shop admin"
+          description="Prix actuels du shop admin et historique quotidien par item."
+          accent="blurple"
+        />
+
       </div>
       <div className="mt-8">
         <PaladiumRateLimits />

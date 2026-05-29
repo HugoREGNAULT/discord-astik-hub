@@ -44,16 +44,21 @@ import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as AuthenticatedToolsXpCalculatorRouteImport } from './routes/_authenticated/tools.xp-calculator'
+import { Route as AuthenticatedToolsUptimeRouteImport } from './routes/_authenticated/tools.uptime'
 import { Route as AuthenticatedToolsStatusRouteImport } from './routes/_authenticated/tools.status'
+import { Route as AuthenticatedToolsShopAdminRouteImport } from './routes/_authenticated/tools.shop-admin'
 import { Route as AuthenticatedToolsPlayerRouteImport } from './routes/_authenticated/tools.player'
 import { Route as AuthenticatedToolsMarketRouteImport } from './routes/_authenticated/tools.market'
 import { Route as AuthenticatedToolsLeaderboardRouteImport } from './routes/_authenticated/tools.leaderboard'
 import { Route as AuthenticatedToolsFactionRouteImport } from './routes/_authenticated/tools.faction'
+import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenticated/tools.events'
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
+import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
+import { Route as ApiPublicHooksPaladiumAdminShopSyncRouteImport } from './routes/api/public/hooks/paladium-admin-shop-sync'
 import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/voice'
 import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
 import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot/message'
@@ -236,10 +241,22 @@ const AuthenticatedToolsXpCalculatorRoute =
     path: '/xp-calculator',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
+const AuthenticatedToolsUptimeRoute =
+  AuthenticatedToolsUptimeRouteImport.update({
+    id: '/uptime',
+    path: '/uptime',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
 const AuthenticatedToolsStatusRoute =
   AuthenticatedToolsStatusRouteImport.update({
     id: '/status',
     path: '/status',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsShopAdminRoute =
+  AuthenticatedToolsShopAdminRouteImport.update({
+    id: '/shop-admin',
+    path: '/shop-admin',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
 const AuthenticatedToolsPlayerRoute =
@@ -264,6 +281,12 @@ const AuthenticatedToolsFactionRoute =
   AuthenticatedToolsFactionRouteImport.update({
     id: '/faction',
     path: '/faction',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
+const AuthenticatedToolsEventsRoute =
+  AuthenticatedToolsEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
 const AuthenticatedToolsClickerRoute =
@@ -292,6 +315,18 @@ const ApiPublicHooksPaladiumSyncRoute =
   ApiPublicHooksPaladiumSyncRouteImport.update({
     id: '/api/public/hooks/paladium-sync',
     path: '/api/public/hooks/paladium-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksPaladiumStatusSyncRoute =
+  ApiPublicHooksPaladiumStatusSyncRouteImport.update({
+    id: '/api/public/hooks/paladium-status-sync',
+    path: '/api/public/hooks/paladium-status-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksPaladiumAdminShopSyncRoute =
+  ApiPublicHooksPaladiumAdminShopSyncRouteImport.update({
+    id: '/api/public/hooks/paladium-admin-shop-sync',
+    path: '/api/public/hooks/paladium-admin-shop-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicBotVoiceRoute = ApiPublicBotVoiceRouteImport.update({
@@ -349,11 +384,14 @@ export interface FileRoutesByFullPath {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
+  '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
   '/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
   '/tools/market': typeof AuthenticatedToolsMarketRoute
   '/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/tools/shop-admin': typeof AuthenticatedToolsShopAdminRoute
   '/tools/status': typeof AuthenticatedToolsStatusRoute
+  '/tools/uptime': typeof AuthenticatedToolsUptimeRoute
   '/tools/xp-calculator': typeof AuthenticatedToolsXpCalculatorRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
@@ -368,6 +406,8 @@ export interface FileRoutesByFullPath {
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
+  '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
@@ -398,11 +438,14 @@ export interface FileRoutesByTo {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
+  '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
   '/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
   '/tools/market': typeof AuthenticatedToolsMarketRoute
   '/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/tools/shop-admin': typeof AuthenticatedToolsShopAdminRoute
   '/tools/status': typeof AuthenticatedToolsStatusRoute
+  '/tools/uptime': typeof AuthenticatedToolsUptimeRoute
   '/tools/xp-calculator': typeof AuthenticatedToolsXpCalculatorRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
@@ -417,6 +460,8 @@ export interface FileRoutesByTo {
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
+  '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
@@ -451,11 +496,14 @@ export interface FileRoutesById {
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
+  '/_authenticated/tools/events': typeof AuthenticatedToolsEventsRoute
   '/_authenticated/tools/faction': typeof AuthenticatedToolsFactionRoute
   '/_authenticated/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
   '/_authenticated/tools/market': typeof AuthenticatedToolsMarketRoute
   '/_authenticated/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/_authenticated/tools/shop-admin': typeof AuthenticatedToolsShopAdminRoute
   '/_authenticated/tools/status': typeof AuthenticatedToolsStatusRoute
+  '/_authenticated/tools/uptime': typeof AuthenticatedToolsUptimeRoute
   '/_authenticated/tools/xp-calculator': typeof AuthenticatedToolsXpCalculatorRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
@@ -470,6 +518,8 @@ export interface FileRoutesById {
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
+  '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
@@ -504,11 +554,14 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/polls/$id'
     | '/tools/clicker'
+    | '/tools/events'
     | '/tools/faction'
     | '/tools/leaderboard'
     | '/tools/market'
     | '/tools/player'
+    | '/tools/shop-admin'
     | '/tools/status'
+    | '/tools/uptime'
     | '/tools/xp-calculator'
     | '/api/auth/callback'
     | '/api/auth/login'
@@ -523,6 +576,8 @@ export interface FileRouteTypes {
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
+    | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/sync-discord-presence'
   fileRoutesByTo: FileRoutesByTo
@@ -553,11 +608,14 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/polls/$id'
     | '/tools/clicker'
+    | '/tools/events'
     | '/tools/faction'
     | '/tools/leaderboard'
     | '/tools/market'
     | '/tools/player'
+    | '/tools/shop-admin'
     | '/tools/status'
+    | '/tools/uptime'
     | '/tools/xp-calculator'
     | '/api/auth/callback'
     | '/api/auth/login'
@@ -572,6 +630,8 @@ export interface FileRouteTypes {
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
+    | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/sync-discord-presence'
   id:
@@ -605,11 +665,14 @@ export interface FileRouteTypes {
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
     | '/_authenticated/tools/clicker'
+    | '/_authenticated/tools/events'
     | '/_authenticated/tools/faction'
     | '/_authenticated/tools/leaderboard'
     | '/_authenticated/tools/market'
     | '/_authenticated/tools/player'
+    | '/_authenticated/tools/shop-admin'
     | '/_authenticated/tools/status'
+    | '/_authenticated/tools/uptime'
     | '/_authenticated/tools/xp-calculator'
     | '/api/auth/callback'
     | '/api/auth/login'
@@ -624,6 +687,8 @@ export interface FileRouteTypes {
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
+    | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/sync-discord-presence'
   fileRoutesById: FileRoutesById
@@ -647,6 +712,8 @@ export interface RootRouteChildren {
   ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
   ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
   ApiPublicBotVoiceRoute: typeof ApiPublicBotVoiceRoute
+  ApiPublicHooksPaladiumAdminShopSyncRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
   ApiPublicHooksPaladiumSyncRoute: typeof ApiPublicHooksPaladiumSyncRoute
   ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
@@ -898,11 +965,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsXpCalculatorRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
+    '/_authenticated/tools/uptime': {
+      id: '/_authenticated/tools/uptime'
+      path: '/uptime'
+      fullPath: '/tools/uptime'
+      preLoaderRoute: typeof AuthenticatedToolsUptimeRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
     '/_authenticated/tools/status': {
       id: '/_authenticated/tools/status'
       path: '/status'
       fullPath: '/tools/status'
       preLoaderRoute: typeof AuthenticatedToolsStatusRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/shop-admin': {
+      id: '/_authenticated/tools/shop-admin'
+      path: '/shop-admin'
+      fullPath: '/tools/shop-admin'
+      preLoaderRoute: typeof AuthenticatedToolsShopAdminRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
     '/_authenticated/tools/player': {
@@ -931,6 +1012,13 @@ declare module '@tanstack/react-router' {
       path: '/faction'
       fullPath: '/tools/faction'
       preLoaderRoute: typeof AuthenticatedToolsFactionRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/tools/events': {
+      id: '/_authenticated/tools/events'
+      path: '/events'
+      fullPath: '/tools/events'
+      preLoaderRoute: typeof AuthenticatedToolsEventsRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
     '/_authenticated/tools/clicker': {
@@ -966,6 +1054,20 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/paladium-sync'
       fullPath: '/api/public/hooks/paladium-sync'
       preLoaderRoute: typeof ApiPublicHooksPaladiumSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/paladium-status-sync': {
+      id: '/api/public/hooks/paladium-status-sync'
+      path: '/api/public/hooks/paladium-status-sync'
+      fullPath: '/api/public/hooks/paladium-status-sync'
+      preLoaderRoute: typeof ApiPublicHooksPaladiumStatusSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/paladium-admin-shop-sync': {
+      id: '/api/public/hooks/paladium-admin-shop-sync'
+      path: '/api/public/hooks/paladium-admin-shop-sync'
+      fullPath: '/api/public/hooks/paladium-admin-shop-sync'
+      preLoaderRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/bot/voice': {
@@ -1032,22 +1134,28 @@ const AuthenticatedPollsRouteWithChildren =
 
 interface AuthenticatedToolsRouteChildren {
   AuthenticatedToolsClickerRoute: typeof AuthenticatedToolsClickerRoute
+  AuthenticatedToolsEventsRoute: typeof AuthenticatedToolsEventsRoute
   AuthenticatedToolsFactionRoute: typeof AuthenticatedToolsFactionRoute
   AuthenticatedToolsLeaderboardRoute: typeof AuthenticatedToolsLeaderboardRoute
   AuthenticatedToolsMarketRoute: typeof AuthenticatedToolsMarketRoute
   AuthenticatedToolsPlayerRoute: typeof AuthenticatedToolsPlayerRoute
+  AuthenticatedToolsShopAdminRoute: typeof AuthenticatedToolsShopAdminRoute
   AuthenticatedToolsStatusRoute: typeof AuthenticatedToolsStatusRoute
+  AuthenticatedToolsUptimeRoute: typeof AuthenticatedToolsUptimeRoute
   AuthenticatedToolsXpCalculatorRoute: typeof AuthenticatedToolsXpCalculatorRoute
   AuthenticatedToolsIndexRoute: typeof AuthenticatedToolsIndexRoute
 }
 
 const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
   AuthenticatedToolsClickerRoute: AuthenticatedToolsClickerRoute,
+  AuthenticatedToolsEventsRoute: AuthenticatedToolsEventsRoute,
   AuthenticatedToolsFactionRoute: AuthenticatedToolsFactionRoute,
   AuthenticatedToolsLeaderboardRoute: AuthenticatedToolsLeaderboardRoute,
   AuthenticatedToolsMarketRoute: AuthenticatedToolsMarketRoute,
   AuthenticatedToolsPlayerRoute: AuthenticatedToolsPlayerRoute,
+  AuthenticatedToolsShopAdminRoute: AuthenticatedToolsShopAdminRoute,
   AuthenticatedToolsStatusRoute: AuthenticatedToolsStatusRoute,
+  AuthenticatedToolsUptimeRoute: AuthenticatedToolsUptimeRoute,
   AuthenticatedToolsXpCalculatorRoute: AuthenticatedToolsXpCalculatorRoute,
   AuthenticatedToolsIndexRoute: AuthenticatedToolsIndexRoute,
 }
@@ -1122,6 +1230,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
   ApiPublicBotStatsRoute: ApiPublicBotStatsRoute,
   ApiPublicBotVoiceRoute: ApiPublicBotVoiceRoute,
+  ApiPublicHooksPaladiumAdminShopSyncRoute:
+    ApiPublicHooksPaladiumAdminShopSyncRoute,
+  ApiPublicHooksPaladiumStatusSyncRoute: ApiPublicHooksPaladiumStatusSyncRoute,
   ApiPublicHooksPaladiumSyncRoute: ApiPublicHooksPaladiumSyncRoute,
   ApiPublicHooksSyncDiscordPresenceRoute:
     ApiPublicHooksSyncDiscordPresenceRoute,
