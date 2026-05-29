@@ -47,6 +47,7 @@ import { Route as AuthenticatedToolsXpCalculatorRouteImport } from './routes/_au
 import { Route as AuthenticatedToolsUptimeRouteImport } from './routes/_authenticated/tools.uptime'
 import { Route as AuthenticatedToolsStatusRouteImport } from './routes/_authenticated/tools.status'
 import { Route as AuthenticatedToolsShopAdminRouteImport } from './routes/_authenticated/tools.shop-admin'
+import { Route as AuthenticatedToolsSalesRouteImport } from './routes/_authenticated/tools.sales'
 import { Route as AuthenticatedToolsPlayerRouteImport } from './routes/_authenticated/tools.player'
 import { Route as AuthenticatedToolsMarketRouteImport } from './routes/_authenticated/tools.market'
 import { Route as AuthenticatedToolsLeaderboardRouteImport } from './routes/_authenticated/tools.leaderboard'
@@ -259,6 +260,11 @@ const AuthenticatedToolsShopAdminRoute =
     path: '/shop-admin',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
+const AuthenticatedToolsSalesRoute = AuthenticatedToolsSalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => AuthenticatedToolsRoute,
+} as any)
 const AuthenticatedToolsPlayerRoute =
   AuthenticatedToolsPlayerRouteImport.update({
     id: '/player',
@@ -389,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
   '/tools/market': typeof AuthenticatedToolsMarketRoute
   '/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/tools/sales': typeof AuthenticatedToolsSalesRoute
   '/tools/shop-admin': typeof AuthenticatedToolsShopAdminRoute
   '/tools/status': typeof AuthenticatedToolsStatusRoute
   '/tools/uptime': typeof AuthenticatedToolsUptimeRoute
@@ -443,6 +450,7 @@ export interface FileRoutesByTo {
   '/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
   '/tools/market': typeof AuthenticatedToolsMarketRoute
   '/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/tools/sales': typeof AuthenticatedToolsSalesRoute
   '/tools/shop-admin': typeof AuthenticatedToolsShopAdminRoute
   '/tools/status': typeof AuthenticatedToolsStatusRoute
   '/tools/uptime': typeof AuthenticatedToolsUptimeRoute
@@ -501,6 +509,7 @@ export interface FileRoutesById {
   '/_authenticated/tools/leaderboard': typeof AuthenticatedToolsLeaderboardRoute
   '/_authenticated/tools/market': typeof AuthenticatedToolsMarketRoute
   '/_authenticated/tools/player': typeof AuthenticatedToolsPlayerRoute
+  '/_authenticated/tools/sales': typeof AuthenticatedToolsSalesRoute
   '/_authenticated/tools/shop-admin': typeof AuthenticatedToolsShopAdminRoute
   '/_authenticated/tools/status': typeof AuthenticatedToolsStatusRoute
   '/_authenticated/tools/uptime': typeof AuthenticatedToolsUptimeRoute
@@ -559,6 +568,7 @@ export interface FileRouteTypes {
     | '/tools/leaderboard'
     | '/tools/market'
     | '/tools/player'
+    | '/tools/sales'
     | '/tools/shop-admin'
     | '/tools/status'
     | '/tools/uptime'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/tools/leaderboard'
     | '/tools/market'
     | '/tools/player'
+    | '/tools/sales'
     | '/tools/shop-admin'
     | '/tools/status'
     | '/tools/uptime'
@@ -670,6 +681,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tools/leaderboard'
     | '/_authenticated/tools/market'
     | '/_authenticated/tools/player'
+    | '/_authenticated/tools/sales'
     | '/_authenticated/tools/shop-admin'
     | '/_authenticated/tools/status'
     | '/_authenticated/tools/uptime'
@@ -986,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsShopAdminRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
+    '/_authenticated/tools/sales': {
+      id: '/_authenticated/tools/sales'
+      path: '/sales'
+      fullPath: '/tools/sales'
+      preLoaderRoute: typeof AuthenticatedToolsSalesRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
     '/_authenticated/tools/player': {
       id: '/_authenticated/tools/player'
       path: '/player'
@@ -1139,6 +1158,7 @@ interface AuthenticatedToolsRouteChildren {
   AuthenticatedToolsLeaderboardRoute: typeof AuthenticatedToolsLeaderboardRoute
   AuthenticatedToolsMarketRoute: typeof AuthenticatedToolsMarketRoute
   AuthenticatedToolsPlayerRoute: typeof AuthenticatedToolsPlayerRoute
+  AuthenticatedToolsSalesRoute: typeof AuthenticatedToolsSalesRoute
   AuthenticatedToolsShopAdminRoute: typeof AuthenticatedToolsShopAdminRoute
   AuthenticatedToolsStatusRoute: typeof AuthenticatedToolsStatusRoute
   AuthenticatedToolsUptimeRoute: typeof AuthenticatedToolsUptimeRoute
@@ -1153,6 +1173,7 @@ const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
   AuthenticatedToolsLeaderboardRoute: AuthenticatedToolsLeaderboardRoute,
   AuthenticatedToolsMarketRoute: AuthenticatedToolsMarketRoute,
   AuthenticatedToolsPlayerRoute: AuthenticatedToolsPlayerRoute,
+  AuthenticatedToolsSalesRoute: AuthenticatedToolsSalesRoute,
   AuthenticatedToolsShopAdminRoute: AuthenticatedToolsShopAdminRoute,
   AuthenticatedToolsStatusRoute: AuthenticatedToolsStatusRoute,
   AuthenticatedToolsUptimeRoute: AuthenticatedToolsUptimeRoute,
