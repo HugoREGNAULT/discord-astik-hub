@@ -841,7 +841,41 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_leaderboard_timeseries: {
+        Row: {
+          astik_points: number | null
+          current_grade: string | null
+          discord_id: string | null
+          display_name: string | null
+          messages_7d: number | null
+          messages_total: number | null
+          taken_at: string | null
+          voice_7d_seconds: number | null
+          voice_total_seconds: number | null
+        }
+        Relationships: []
+      }
+      v_points_daily: {
+        Row: {
+          action_type: string | null
+          day: string | null
+          staff_discord_id: string | null
+          staff_username: string | null
+          total_amount: number | null
+          tx_count: number | null
+        }
+        Relationships: []
+      }
+      v_staff_activity_daily: {
+        Row: {
+          day: string | null
+          kind: string | null
+          n: number | null
+          staff_discord_id: string | null
+          staff_username: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       capture_leaderboard_snapshot: { Args: never; Returns: undefined }
