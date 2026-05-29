@@ -24,6 +24,8 @@ import { listPolls, createPoll, deletePoll } from "@/lib/data/polls.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { CardListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
+import { parsePollCsv } from "@/lib/csv/poll-csv";
+
 
 export const Route = createFileRoute("/_authenticated/polls")({
   head: () => ({ meta: [{ title: "Sondages · PunkAstik" }] }),
