@@ -102,11 +102,7 @@ function LeaderboardList({
               <div className="text-sm font-medium truncate">
                 {e.ig_name ?? e.discord_username ?? e.discord_id}
               </div>
-              {e.current_grade && (
-                <Badge variant="secondary" className="text-[10px] mt-0.5">
-                  {e.current_grade}
-                </Badge>
-              )}
+              {e.current_grade && <DaChip accent="blurple">{e.current_grade}</DaChip>}
             </div>
             <div className="font-mono text-sm font-semibold tabular-nums">
               {formatValue(value, metric)}
