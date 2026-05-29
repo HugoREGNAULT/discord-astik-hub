@@ -137,7 +137,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
 
   const items = data ?? [];
   const pageCount = Math.max(1, Math.ceil(items.length / PER_PAGE));
-  const paged = useMemo(() => usePagedSlice(items, page, PER_PAGE), [items, page]);
+  const paged = usePagedSlice(items, page, PER_PAGE);
 
   if (isLoading) {
     return <CardListSkeleton count={4} />;
