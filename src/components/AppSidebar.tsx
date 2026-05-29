@@ -111,7 +111,12 @@ const ITEMS: Item[] = [
 
 export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
   const path = useRouterState({ select: (r) => r.location.pathname });
+  const { setOpenMobile } = useSidebar();
   const items = ITEMS.filter((i) => hasPerm(user, i.perm));
+
+  const handleNavClick = () => {
+    setOpenMobile(false);
+  };
 
   return (
     <Sidebar
