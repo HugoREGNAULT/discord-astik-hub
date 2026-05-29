@@ -33,6 +33,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
@@ -166,6 +167,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedPollsRoute,
+} as any)
 const ApiAuthWhoamiRoute = ApiAuthWhoamiRouteImport.update({
   id: '/api/auth/whoami',
   path: '/api/auth/whoami',
@@ -258,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/polls/': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -283,7 +290,6 @@ export interface FileRoutesByTo {
   '/objectives': typeof AuthenticatedObjectivesRoute
   '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
-  '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/staff': typeof AuthenticatedStaffRoute
@@ -295,6 +301,7 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/polls': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -334,6 +341,7 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
@@ -373,6 +381,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/polls/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -398,7 +407,6 @@ export interface FileRouteTypes {
     | '/objectives'
     | '/pdc'
     | '/points'
-    | '/polls'
     | '/profile'
     | '/recruitment'
     | '/staff'
@@ -410,6 +418,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/polls'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -448,6 +457,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/_authenticated/polls/'
     | '/api/public/bot/import'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
@@ -646,6 +656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/polls/': {
+      id: '/_authenticated/polls/'
+      path: '/'
+      fullPath: '/polls/'
+      preLoaderRoute: typeof AuthenticatedPollsIndexRouteImport
+      parentRoute: typeof AuthenticatedPollsRoute
+    }
     '/api/auth/whoami': {
       id: '/api/auth/whoami'
       path: '/api/auth/whoami'
@@ -746,10 +763,12 @@ const AuthenticatedMembersRouteWithChildren =
 
 interface AuthenticatedPollsRouteChildren {
   AuthenticatedPollsIdRoute: typeof AuthenticatedPollsIdRoute
+  AuthenticatedPollsIndexRoute: typeof AuthenticatedPollsIndexRoute
 }
 
 const AuthenticatedPollsRouteChildren: AuthenticatedPollsRouteChildren = {
   AuthenticatedPollsIdRoute: AuthenticatedPollsIdRoute,
+  AuthenticatedPollsIndexRoute: AuthenticatedPollsIndexRoute,
 }
 
 const AuthenticatedPollsRouteWithChildren =
