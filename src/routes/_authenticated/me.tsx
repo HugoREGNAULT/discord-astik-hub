@@ -132,8 +132,15 @@ function MePage() {
             className="h-48 md:h-64 w-auto object-contain drop-shadow-2xl"
           />
           <div className="flex-1 text-center md:text-left">
-            <div className="text-pink-500"><MonoLabel>// profile</MonoLabel></div>
-            <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk'" }}>{m.ig_name}</h1>
+            <div className="text-pink-500">
+              <MonoLabel>// profile</MonoLabel>
+            </div>
+            <h1
+              className="text-4xl font-bold tracking-tight"
+              style={{ fontFamily: "'Space Grotesk'" }}
+            >
+              {m.ig_name}
+            </h1>
             <p className="text-muted-foreground">@{m.discord_username ?? "—"}</p>
             <div className="flex gap-2 mt-3 justify-center md:justify-start flex-wrap">
               {m.current_grade && (

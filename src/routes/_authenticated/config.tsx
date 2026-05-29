@@ -113,7 +113,11 @@ function ConfigPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader code="// config" title="Config valeurs (AstikPoints)" description="Barème des points attribués pour chaque action." />
+      <PageHeader
+        code="// config"
+        title="Config valeurs (AstikPoints)"
+        description="Barème des points attribués pour chaque action."
+      />
 
       <Card>
         <CardHeader>

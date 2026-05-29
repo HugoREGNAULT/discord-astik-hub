@@ -148,8 +148,12 @@ function MemberDetail() {
           <div className="size-16 rounded-full bg-muted" />
         )}
         <div>
-          <div className="text-pink-500 mb-1"><MonoLabel>// member</MonoLabel></div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>{m.ig_name ?? m.discord_username}</h1>
+          <div className="text-pink-500 mb-1">
+            <MonoLabel>// member</MonoLabel>
+          </div>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>
+            {m.ig_name ?? m.discord_username}
+          </h1>
           <p className="text-sm text-muted-foreground">
             @{m.discord_username}
             {data.canEdit && ` · ${m.discord_id}`}

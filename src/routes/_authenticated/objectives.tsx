@@ -49,7 +49,11 @@ function ObjectivesPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader code="// objectives" title="Objectifs faction" description="Les buts en cours pour la faction." />
+      <PageHeader
+        code="// objectives"
+        title="Objectifs faction"
+        description="Les buts en cours pour la faction."
+      />
 
       {canEdit && (
         <Card>
