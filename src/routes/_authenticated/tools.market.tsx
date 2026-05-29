@@ -135,6 +135,37 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
     retry: false,
     staleTime: 60_000,
   });
+
+  // Resolve seller UUIDs → MC pseudos via Mojang (batched).
+  const sellerUuids = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of detail.data?.listing ?? []) {
+      const candidate = l.seller ?? l.sellerName;
+      if (typeof candidate === "string" && /^[0-9a-f-]{32,36}$/i.test(candidate)) {
+        set.add(candidate);
+      }
+    }
+    return Array.from(set);
+  }, [detail.data]);
+
+  const namesQ = useQuery({
+    queryKey: ["mojang-names", ...sellerUuids],
+    queryFn: () => resolveUuidsToNames({ data: { uuids: sellerUuids } }),
+    enabled: sellerUuids.length > 0,
+    staleTime: 10 * 60_000,
+    retry: false,
+  });
+  const nameMap = namesQ.data ?? {};
+
+  function sellerLabel(l: { seller?: string; sellerName?: string }): string {
+    const raw = l.sellerName ?? l.seller;
+    if (!raw) return "—";
+    if (/^[0-9a-f-]{32,36}$/i.test(raw)) {
+      return nameMap[raw] ?? `${raw.slice(0, 8)}…`;
+    }
+    return raw;
+  }
+
   return (
     <>
       <tr
