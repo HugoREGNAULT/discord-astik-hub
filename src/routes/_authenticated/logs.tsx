@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Paginator, usePagedSlice } from "@/components/Paginator";
 import { listLogs, listLogActions } from "@/lib/data/logs.functions";
-import { FileText, RotateCw } from "lucide-react";
+import { Download, FileText, RotateCw } from "lucide-react";
 import { RowListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
 
@@ -31,28 +31,65 @@ export const Route = createFileRoute("/_authenticated/logs")({
 
 const PER_PAGE = 25;
 
+function toIsoStart(d: string) {
+  return d ? new Date(`${d}T00:00:00`).toISOString() : undefined;
+}
+function toIsoEnd(d: string) {
+  return d ? new Date(`${d}T23:59:59.999`).toISOString() : undefined;
+}
+
+function csvEscape(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  const s = typeof v === "string" ? v : JSON.stringify(v);
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
+  const headers = ["created_at", "level", "action", "actor_discord_id", "payload"];
+  const lines = [
+    headers.join(","),
+    ...rows.map((r) => headers.map((h) => csvEscape(r[h])).join(",")),
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function LogsPage() {
   const listFn = useServerFn(listLogs);
   const actionsFn = useServerFn(listLogActions);
 
   const [action, setAction] = useState<string>("all");
-  const [actor, setActor] = useState("");
+  const [memberQuery, setMemberQuery] = useState("");
   const [level, setLevel] = useState<"all" | "info" | "warn" | "error">("all");
   const [sinceDays, setSinceDays] = useState(30);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
 
+  const useRange = Boolean(dateFrom || dateTo);
+
+  const queryInput = useMemo(
+    () => ({
+      action: action === "all" ? undefined : action,
+      memberQuery: memberQuery.trim() || undefined,
+      level,
+      sinceDays: useRange ? 365 : sinceDays,
+      dateFrom: toIsoStart(dateFrom),
+      dateTo: toIsoEnd(dateTo),
+      limit: 1000,
+    }),
+    [action, memberQuery, level, sinceDays, dateFrom, dateTo, useRange],
+  );
+
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ["logs", action, actor, level, sinceDays],
-    queryFn: () =>
-      listFn({
-        data: {
-          action: action === "all" ? undefined : action,
-          actorDiscordId: actor.trim() || undefined,
-          level,
-          sinceDays,
-          limit: 500,
-        },
-      }),
+    queryKey: ["logs", queryInput],
+    queryFn: () => listFn({ data: queryInput }),
   });
 
   const { data: actionsData } = useQuery({
@@ -62,7 +99,22 @@ function LogsPage() {
 
   const logs = data?.logs ?? [];
   const pageCount = Math.max(1, Math.ceil(logs.length / PER_PAGE));
-  const paged = useMemo(() => usePagedSlice(logs, page, PER_PAGE), [logs, page]);
+  const paged = usePagedSlice(logs, page, PER_PAGE);
+
+  const resetFilters = () => {
+    setAction("all");
+    setMemberQuery("");
+    setLevel("all");
+    setSinceDays(30);
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+  };
+
+  const exportCsv = () => {
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`logs-${stamp}.csv`, logs as Array<Record<string, unknown>>);
+  };
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -75,14 +127,24 @@ function LogsPage() {
             Toutes les actions sensibles (admin, dons, points, candidatures…).
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-          <RotateCw className={`size-4 mr-1 ${isFetching ? "animate-spin" : ""}`} />
-          Rafraîchir
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportCsv}
+            disabled={logs.length === 0}
+          >
+            <Download className="size-4 mr-1" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+            <RotateCw className={`size-4 mr-1 ${isFetching ? "animate-spin" : ""}`} />
+            Rafraîchir
+          </Button>
+        </div>
       </div>
 
       <Card>
-        <CardContent className="py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="text-xs text-muted-foreground">Action</label>
             <Select value={action} onValueChange={(v) => { setAction(v); setPage(1); }}>
@@ -108,18 +170,19 @@ function LogsPage() {
             </Select>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Acteur (Discord ID)</label>
+            <label className="text-xs text-muted-foreground">Membre (ID, pseudo Discord ou IG)</label>
             <Input
-              value={actor}
-              onChange={(e) => { setActor(e.target.value); setPage(1); }}
-              placeholder="ID Discord"
+              value={memberQuery}
+              onChange={(e) => { setMemberQuery(e.target.value); setPage(1); }}
+              placeholder="ex: 1234567890 ou astik"
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Période (jours)</label>
+            <label className="text-xs text-muted-foreground">Période rapide</label>
             <Select
               value={String(sinceDays)}
-              onValueChange={(v) => { setSinceDays(Number(v)); setPage(1); }}
+              onValueChange={(v) => { setSinceDays(Number(v)); setDateFrom(""); setDateTo(""); setPage(1); }}
+              disabled={useRange}
             >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -130,6 +193,27 @@ function LogsPage() {
                 <SelectItem value="365">1 an</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Du</label>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Au</label>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+            />
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
+            <Button variant="ghost" size="sm" onClick={resetFilters}>
+              Réinitialiser les filtres
+            </Button>
           </div>
         </CardContent>
       </Card>
