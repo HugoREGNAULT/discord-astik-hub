@@ -124,8 +124,12 @@ function PollDetailError({ error, reset }: { error: Error; reset: () => void }) 
 
 function PollDetail() {
   const { id } = Route.useParams();
-  const { data: me } = useCurrentUser();
-  const canManage = hasPerm(me, "members.edit");
+  const { data: me, isLoading: meLoading } = useCurrentUser();
+  // Garde-fou d'autorisation explicite côté UI.
+  // Source de vérité = serveur (requireSession + isFactionMember), mais on
+  // vérifie aussi côté client pour masquer vote/édition aux rôles non autorisés.
+  const canVote = hasPerm(me, "profile.self"); // accordée aux membres faction
+  const canManage = hasPerm(me, "members.edit"); // staff faction uniquement
   const qc = useQueryClient();
 
   const getFn = useServerFn(getPoll);
@@ -137,7 +141,9 @@ function PollDetail() {
     queryKey: ["poll", id],
     queryFn: () => getFn({ data: { id } }),
     retry: false,
+    enabled: !meLoading && canVote,
   });
+
 
 
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});
