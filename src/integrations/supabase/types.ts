@@ -1041,6 +1041,7 @@ export type Database = {
           item_name: string
           last_triggered_at: string | null
           price_type: string
+          source: string
           threshold: number
           updated_at: string
           user_discord_id: string
@@ -1054,6 +1055,7 @@ export type Database = {
           item_name: string
           last_triggered_at?: string | null
           price_type?: string
+          source?: string
           threshold: number
           updated_at?: string
           user_discord_id: string
@@ -1067,6 +1069,7 @@ export type Database = {
           item_name?: string
           last_triggered_at?: string | null
           price_type?: string
+          source?: string
           threshold?: number
           updated_at?: string
           user_discord_id?: string
