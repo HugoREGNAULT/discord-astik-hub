@@ -198,7 +198,7 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                     .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
                     .map((l, i) => (
                       <tr key={i} className="border-t border-zinc-900">
-                        <td className="py-1 text-zinc-400">{l.sellerName ?? l.seller ?? "—"}</td>
+                        <td className="py-1 text-zinc-400">{sellerLabel(l)}</td>
                         <td className="py-1 text-right text-zinc-300">{fmtNum(l.quantity)}</td>
                         <td className="py-1 text-right text-pink-400 font-bold">
                           {fmtNum(l.price)}
