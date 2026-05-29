@@ -162,12 +162,48 @@ function ConfigPage() {
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Points</label>
-            <Input type="number" value={form.points} onChange={(e) => setForm({ ...form, points: Number(e.target.value) })} />
+            <label className="text-xs text-muted-foreground">Points (décimales OK)</label>
+            <Input
+              type="number"
+              step="any"
+              value={Number.isFinite(form.points) ? form.points : 0}
+              onChange={(e) => {
+                const v = e.target.value.replace(",", ".");
+                const n = parseFloat(v);
+                setForm({ ...form, points: Number.isFinite(n) ? n : 0 });
+              }}
+            />
           </div>
           <Button onClick={() => add.mutate()} disabled={!form.name || uploading || add.isPending}>
             Ajouter
           </Button>
+
+          {/* Preview */}
+          <div className="sm:col-span-6 pt-2">
+            <div className="text-xs text-muted-foreground mb-1">Aperçu</div>
+            <div className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-3 py-2">
+              <div className="size-9 rounded-md overflow-hidden bg-muted/40 flex items-center justify-center shrink-0">
+                {form.image_url ? (
+                  <img
+                    src={form.image_url}
+                    alt=""
+                    className="size-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                      toast.error("L'image ne se charge pas — réessayez l'upload.");
+                    }}
+                  />
+                ) : (
+                  <ImagePlus className="size-4 text-muted-foreground" />
+                )}
+              </div>
+              <span className="flex-1 truncate text-sm">{form.name || <span className="text-muted-foreground italic">nom…</span>}</span>
+              <span className="text-xs text-muted-foreground capitalize">{form.category}</span>
+              <span className="font-mono text-primary text-sm">
+                {form.points.toLocaleString("fr-FR", { maximumFractionDigits: 4 })} pts
+              </span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

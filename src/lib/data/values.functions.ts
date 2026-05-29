@@ -18,7 +18,7 @@ const valueSchema = z.object({
   id: z.string().uuid().optional(),
   category: z.enum(["item", "action", "other", "money"]),
   name: z.string().min(1).max(120),
-  points: z.number().int(),
+  points: z.number().finite(),
   active: z.boolean().default(true),
   tier: z.number().int().nullable().optional(),
   display_order: z.number().int().default(0),
