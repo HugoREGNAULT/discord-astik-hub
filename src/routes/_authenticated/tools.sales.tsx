@@ -260,6 +260,15 @@ function PlayerSales() {
             })()}
           </div>
 
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatTile label="Ventes en cours" value={fmtInt(open.length)} />
+            <StatTile label="Ventes passées" value={fmtInt(sold.length)} />
+            <StatTile label="$ listé (en cours)" value={fmtInt(totals.openTotal)} />
+            <StatTile label="$ vendu (historique)" value={fmtInt(totals.soldTotal)} />
+          </div>
+
+
+
 
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
             <div className="flex gap-1">
