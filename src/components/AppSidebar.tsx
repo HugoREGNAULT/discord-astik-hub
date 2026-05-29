@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   Grid3x3,
   Wrench,
+  Bell,
 } from "lucide-react";
 
 import {
