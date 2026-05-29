@@ -227,6 +227,8 @@ function PollDetail() {
   const nonVoters = useMemo(
     () => activeMembers.filter((m) => !voterIds.has(m.discord_id)),
     [activeMembers, voterIds],
+  );
+
   if (meLoading || (isLoading && canVote)) return <DetailPageSkeleton />;
 
   // Garde UI : utilisateur connecté mais sans le rôle requis.
