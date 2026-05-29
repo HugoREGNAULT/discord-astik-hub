@@ -262,7 +262,3 @@ function MoversList({
     </div>
   );
 }
-      )}
-    </div>
-  );
-}
