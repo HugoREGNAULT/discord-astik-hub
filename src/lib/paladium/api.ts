@@ -1,8 +1,9 @@
-// Paladium + Mojang API client (browser).
-// Key is read from VITE_PALADIUM_API_KEY (public — bundled in the client).
-// If an endpoint hits CORS, swap the base for a Supabase edge proxy later.
+// Paladium + Mojang API client.
+// Paladium calls go through a TanStack server function so the API key
+// (PALADIUM_API_KEY) stays server-side. Mojang is public and stays on the client.
 
-const PALADIUM_BASE = "https://api.paladium.games";
+import { callPaladium } from "./paladium.functions";
+
 const MOJANG_BASE = "https://api.mojang.com";
 
 export class PaladiumApiError extends Error {
@@ -14,43 +15,26 @@ export class PaladiumApiError extends Error {
   }
 }
 
-function getApiKey(): string | undefined {
-  return (import.meta.env.VITE_PALADIUM_API_KEY as string | undefined)?.trim() || undefined;
-}
-
+// Kept for backwards-compat with existing UI. The key now lives on the server,
+// so from the client's POV it is always "available".
 export function hasPaladiumKey() {
-  return Boolean(getApiKey());
+  return true;
 }
 
 export async function paladiumFetch<T = unknown>(path: string): Promise<T> {
-  const key = getApiKey();
-  const headers: Record<string, string> = { Accept: "application/json" };
-  if (key) headers["Authorization"] = `Bearer ${key}`;
-
-  let res: Response;
   try {
-    res = await fetch(`${PALADIUM_BASE}${path}`, { headers });
+    const data = await callPaladium({ data: { path } });
+    return data as T;
   } catch (err) {
-    throw new PaladiumApiError(
-      err instanceof Error ? err.message : "Network error reaching Paladium API",
-      0,
-    );
+    if (err instanceof PaladiumApiError) throw err;
+    const message = err instanceof Error ? err.message : "Paladium request failed";
+    // Try to recover an HTTP status from the error message (e.g. "Paladium API 404: ...")
+    const m = /Paladium API (\d{3})/.exec(message);
+    const status = m ? Number(m[1]) : 0;
+    throw new PaladiumApiError(message, status);
   }
-
-  if (!res.ok) {
-    let detail = "";
-    try {
-      detail = await res.text();
-    } catch {
-      /* ignore */
-    }
-    throw new PaladiumApiError(
-      `Paladium API ${res.status}${detail ? `: ${detail.slice(0, 200)}` : ""}`,
-      res.status,
-    );
-  }
-  return res.json() as Promise<T>;
 }
+
 
 /* ---------- Mojang ---------- */
 
