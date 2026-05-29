@@ -17,7 +17,6 @@ export const callPaladium = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  )
   .handler(async ({ data }) => {
     const result = await fetchPaladium(data.path);
     // Serialize as a JSON string to bypass strict structural serialization checks
