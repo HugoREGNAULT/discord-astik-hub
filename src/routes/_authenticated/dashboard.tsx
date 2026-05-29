@@ -124,7 +124,9 @@ function LeaderboardList({
   );
 }
 
-function LeaderboardPage() {
+  const fetchHist = useServerFn(getLeaderboardHistory);
+  const { data: currentUser } = useCurrentUser();
+  const canSeeCarts = hasPerm(currentUser, "donations.manage");
   const fetchLb = useServerFn(getLeaderboard);
   const fetchHist = useServerFn(getLeaderboardHistory);
   const { data, isLoading } = useQuery({
