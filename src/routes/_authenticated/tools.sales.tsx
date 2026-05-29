@@ -30,8 +30,7 @@ export const Route = createFileRoute("/_authenticated/tools/sales")({
   component: PlayerSales,
 });
 
-const UUID_RE =
-  /^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$/;
+const UUID_RE = /^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$/;
 
 function normalizeUuid(raw: string): string | null {
   const s = raw.trim();
@@ -76,9 +75,7 @@ function fmtDate(iso: string | null) {
 function PlayerSales() {
   const [input, setInput] = useState("");
   const [target, setTarget] = useState<
-    | { mode: "uuid"; uuid: string }
-    | { mode: "name"; username: string }
-    | null
+    { mode: "uuid"; uuid: string } | { mode: "name"; username: string } | null
   >(null);
 
   const [tab, setTab] = useState<Tab>("open");
@@ -97,19 +94,14 @@ function PlayerSales() {
 
   const uuidQ = useQuery({
     queryKey: ["mojang-resolve", target?.mode === "name" ? target.username : null],
-    queryFn: () =>
-      resolveUuid((target as { mode: "name"; username: string }).username),
+    queryFn: () => resolveUuid((target as { mode: "name"; username: string }).username),
     enabled: target?.mode === "name",
     retry: false,
     staleTime: 60_000,
   });
 
-  const uuid =
-    target?.mode === "uuid"
-      ? target.uuid
-      : uuidQ.data?.id ?? undefined;
-  const resolvedName =
-    target?.mode === "name" ? uuidQ.data?.name : undefined;
+  const uuid = target?.mode === "uuid" ? target.uuid : (uuidQ.data?.id ?? undefined);
+  const resolvedName = target?.mode === "name" ? uuidQ.data?.name : undefined;
 
   // Track search → triggers a background snapshot too.
   useEffect(() => {
@@ -176,13 +168,9 @@ function PlayerSales() {
     return { openTotal, soldTotal };
   }, [open, sold]);
 
-  const isLoading =
-    (target?.mode === "name" && uuidQ.isLoading) ||
-    (!!uuid && historyQ.isLoading);
+  const isLoading = (target?.mode === "name" && uuidQ.isLoading) || (!!uuid && historyQ.isLoading);
   const errorMsg =
-    (target?.mode === "name" && uuidQ.error
-      ? (uuidQ.error as Error).message
-      : null) ?? null;
+    (target?.mode === "name" && uuidQ.error ? (uuidQ.error as Error).message : null) ?? null;
 
   return (
     <div className="max-w-6xl space-y-6">
@@ -193,12 +181,12 @@ function PlayerSales() {
       />
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-          <SearchInput
-            value={input}
-            onChange={setInput}
-            onSubmit={() => onSubmit(input)}
-            placeholder="Pseudo Minecraft ou UUID…"
-          />
+        <SearchInput
+          value={input}
+          onChange={setInput}
+          onSubmit={() => onSubmit(input)}
+          placeholder="Pseudo Minecraft ou UUID…"
+        />
 
         {topQ.data?.players.length ? (
           <div className="flex flex-wrap gap-1.5 sm:max-w-[60%]">
@@ -222,9 +210,7 @@ function PlayerSales() {
 
       {errorMsg && <ErrorBlock message={errorMsg} />}
 
-      {!target && (
-        <EmptyBlock label="Entre un pseudo ou un UUID pour voir les ventes du joueur." />
-      )}
+      {!target && <EmptyBlock label="Entre un pseudo ou un UUID pour voir les ventes du joueur." />}
 
       {isLoading && <LoadingBlock label="Récupération…" />}
 
@@ -237,9 +223,7 @@ function PlayerSales() {
               className="w-12 h-12 rounded border border-zinc-800"
             />
             <div>
-              <div className="text-white text-lg">
-                {resolvedName ?? "Joueur"}
-              </div>
+              <div className="text-white text-lg">{resolvedName ?? "Joueur"}</div>
               <div
                 className="text-[10px] text-zinc-500 uppercase tracking-[0.25em]"
                 style={{ fontFamily: "'Space Mono'" }}
@@ -252,14 +236,8 @@ function PlayerSales() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatTile label="Ventes en cours" value={fmtInt(open.length)} />
             <StatTile label="Ventes passées" value={fmtInt(sold.length)} />
-            <StatTile
-              label="$ listé (en cours)"
-              value={fmtInt(totals.openTotal)}
-            />
-            <StatTile
-              label="$ vendu (historique)"
-              value={fmtInt(totals.soldTotal)}
-            />
+            <StatTile label="$ listé (en cours)" value={fmtInt(totals.openTotal)} />
+            <StatTile label="$ vendu (historique)" value={fmtInt(totals.soldTotal)} />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
@@ -327,28 +305,17 @@ function PlayerSales() {
                   {filtered.map((r) => {
                     const unit = r.quantity ? r.price / r.quantity : r.price;
                     return (
-                      <tr
-                        key={r.id}
-                        className="border-t border-zinc-900 hover:bg-zinc-950/60"
-                      >
+                      <tr key={r.id} className="border-t border-zinc-900 hover:bg-zinc-950/60">
                         <td className="px-3 py-2 text-white">{r.item_name}</td>
-                        <td className="px-3 py-2 text-right text-zinc-300">
-                          {fmtInt(r.quantity)}
-                        </td>
-                        <td className="px-3 py-2 text-right text-zinc-200">
-                          {fmtInt(r.price)}
-                        </td>
-                        <td className="px-3 py-2 text-right text-zinc-400">
-                          {fmtInt(unit)}
-                        </td>
+                        <td className="px-3 py-2 text-right text-zinc-300">{fmtInt(r.quantity)}</td>
+                        <td className="px-3 py-2 text-right text-zinc-200">{fmtInt(r.price)}</td>
+                        <td className="px-3 py-2 text-right text-zinc-400">{fmtInt(unit)}</td>
                         <td className="px-3 py-2 text-zinc-500">
                           {fmtDate(r.listed_at ?? r.first_seen_at)}
                         </td>
                         <td className="px-3 py-2">
                           {r.sold_at ? (
-                            <span className="text-emerald-400">
-                              vendu · {fmtDate(r.sold_at)}
-                            </span>
+                            <span className="text-emerald-400">vendu · {fmtDate(r.sold_at)}</span>
                           ) : (
                             <span className="text-pink-400">en cours</span>
                           )}

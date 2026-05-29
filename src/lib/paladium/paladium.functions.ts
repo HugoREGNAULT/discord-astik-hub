@@ -23,4 +23,3 @@ export const callPaladium = createServerFn({ method: "POST" })
     // (Paladium responses have dynamic shapes).
     return { json: JSON.stringify(result.data ?? null), rate: result.rate };
   });
-

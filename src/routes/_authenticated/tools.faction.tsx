@@ -93,11 +93,7 @@ function FactionLookup() {
               <StatTile label="Membres" value={q.data.players?.length ?? "—"} accent="pink" />
               <StatTile label="XP" value={q.data.level?.xp ?? "—"} />
               <StatTile label="Alliance" value={q.data.alliance ?? "—"} />
-              <StatTile
-                label="Accès"
-                value={q.data.access ?? "—"}
-                accent="blurple"
-              />
+              <StatTile label="Accès" value={q.data.access ?? "—"} accent="blurple" />
             </div>
           </ToolCard>
 
@@ -128,7 +124,6 @@ function FactionLookup() {
           )}
         </div>
       )}
-
     </div>
   );
 }

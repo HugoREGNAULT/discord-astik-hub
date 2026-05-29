@@ -18,7 +18,6 @@ import { ToolHeader, MissingKeyBanner } from "@/components/tools/ToolsUi";
 import { PaladiumRateLimits } from "@/components/tools/PaladiumRateLimits";
 import { hasPaladiumKey } from "@/lib/paladium/api";
 
-
 export const Route = createFileRoute("/_authenticated/tools/")({
   head: () => ({
     meta: [
@@ -133,7 +132,6 @@ function ToolsIndex() {
           description="Recherche un joueur (pseudo ou UUID) et consulte ses ventes HDV en cours et passées avec filtres."
           accent="pink"
         />
-
       </div>
       <div className="mt-8">
         <PaladiumRateLimits />

@@ -27,8 +27,7 @@ type PlayerItemsResponse = {
   totalCount?: number;
 };
 
-const UUID_RE =
-  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 function toIso(v: unknown): string | null {
   if (typeof v !== "number" || !Number.isFinite(v)) return null;
@@ -88,10 +87,13 @@ async function snapshotPlayerListings(uuid: string, username: string) {
     .eq("player_uuid", uuid)
     .is("sold_at", null);
 
-  const keyOf = (
-    r: { item_name: string; price: number | string; quantity: number; listed_at: string | null; first_seen_at?: string },
-  ) =>
-    `${r.item_name}|${Number(r.price)}|${r.quantity}|${r.listed_at ?? r.first_seen_at ?? ""}`;
+  const keyOf = (r: {
+    item_name: string;
+    price: number | string;
+    quantity: number;
+    listed_at: string | null;
+    first_seen_at?: string;
+  }) => `${r.item_name}|${Number(r.price)}|${r.quantity}|${r.listed_at ?? r.first_seen_at ?? ""}`;
 
   const existingMap = new Map<string, string>(); // key -> id
   for (const r of existingRows ?? []) {
@@ -199,28 +201,33 @@ export const trackPlayerSearch = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const getTopSearchedPlayers = createServerFn({ method: "GET" })
-  .handler(async () => {
-    const { data, error } = await supabaseAdmin
-      .from("paladium_tracked_players")
-      .select("uuid, username, search_count, last_searched_at")
-      .order("search_count", { ascending: false })
-      .limit(10);
-    if (error) return { players: [] as Array<{ uuid: string; username: string; search_count: number; last_searched_at: string }> };
+export const getTopSearchedPlayers = createServerFn({ method: "GET" }).handler(async () => {
+  const { data, error } = await supabaseAdmin
+    .from("paladium_tracked_players")
+    .select("uuid, username, search_count, last_searched_at")
+    .order("search_count", { ascending: false })
+    .limit(10);
+  if (error)
     return {
-      players: (data ?? []) as Array<{
+      players: [] as Array<{
         uuid: string;
         username: string;
         search_count: number;
         last_searched_at: string;
       }>,
     };
-  });
+  return {
+    players: (data ?? []) as Array<{
+      uuid: string;
+      username: string;
+      search_count: number;
+      last_searched_at: string;
+    }>,
+  };
+});
 
 export const getPlayerSalesHistory = createServerFn({ method: "POST" })
-  .inputValidator((input) =>
-    z.object({ uuid: z.string().regex(UUID_RE) }).parse(input),
-  )
+  .inputValidator((input) => z.object({ uuid: z.string().regex(UUID_RE) }).parse(input))
   .handler(async ({ data }) => {
     const { data: rows } = await supabaseAdmin
       .from("paladium_player_listings_history")
@@ -245,18 +252,17 @@ export const getPlayerSalesHistory = createServerFn({ method: "POST" })
     };
   });
 
-export const syncTrackedPlayersListings = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const { data } = await supabaseAdmin
-      .from("paladium_tracked_players")
-      .select("uuid, username")
-      .order("last_synced_at", { ascending: true, nullsFirst: true })
-      .limit(30);
-    const players = (data ?? []) as Array<{ uuid: string; username: string }>;
-    for (const p of players) {
-      await snapshotPlayerListings(p.uuid, p.username);
-      // Small delay to spread rate-limit usage
-      await new Promise((r) => setTimeout(r, 200));
-    }
-    return { processed: players.length };
-  });
+export const syncTrackedPlayersListings = createServerFn({ method: "POST" }).handler(async () => {
+  const { data } = await supabaseAdmin
+    .from("paladium_tracked_players")
+    .select("uuid, username")
+    .order("last_synced_at", { ascending: true, nullsFirst: true })
+    .limit(30);
+  const players = (data ?? []) as Array<{ uuid: string; username: string }>;
+  for (const p of players) {
+    await snapshotPlayerListings(p.uuid, p.username);
+    // Small delay to spread rate-limit usage
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  return { processed: players.length };
+});
