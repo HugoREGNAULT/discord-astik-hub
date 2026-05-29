@@ -209,7 +209,7 @@ function PollDetail() {
     );
   }
 
-  if (!data?.poll) return <p>Sondage introuvable.</p>;
+
 
   const p = data.poll;
   const isOpen = p.status === "open";
