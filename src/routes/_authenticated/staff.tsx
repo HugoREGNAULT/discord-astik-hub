@@ -1338,3 +1338,150 @@ function BulkDmCard() {
     </Card>
   );
 }
+
+type HistoryItem = {
+  id: string;
+  created_at: string;
+  actor_discord_id: string | null;
+  payload: { audience?: { kind?: AudienceKind }; sent?: number; total?: number; failed?: number } | null;
+};
+
+type StatusFilter = "all" | "success" | "with_failures" | "empty";
+
+const PER_PAGE = 8;
+
+function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
+  const [search, setSearch] = useState("");
+  const [audienceFilter, setAudienceFilter] = useState<AudienceKind | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [page, setPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    const needle = search.trim().toLowerCase();
+    return items.filter((l) => {
+      const p = l.payload ?? {};
+      const aud = p.audience?.kind;
+      if (audienceFilter !== "all" && aud !== audienceFilter) return false;
+      const sent = p.sent ?? 0;
+      const total = p.total ?? 0;
+      const failed = p.failed ?? 0;
+      if (statusFilter === "success" && (failed > 0 || sent === 0)) return false;
+      if (statusFilter === "with_failures" && failed === 0) return false;
+      if (statusFilter === "empty" && total > 0) return false;
+      if (needle) {
+        const label = aud ? AUDIENCE_LABELS[aud].toLowerCase() : "";
+        const actor = (l.actor_discord_id ?? "").toLowerCase();
+        if (!label.includes(needle) && !actor.includes(needle)) return false;
+      }
+      return true;
+    });
+  }, [items, search, audienceFilter, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const safePage = Math.min(page, pageCount);
+  const pageItems = getPagedSlice(filtered, safePage, PER_PAGE);
+
+  const resetPage = () => setPage(1);
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="pt-2 border-t border-border">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+        <History className="size-3" /> Dernières campagnes
+        <span className="ml-auto normal-case tracking-normal text-muted-foreground/80">
+          {filtered.length} / {items.length}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 mb-3">
+        <Input
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            resetPage();
+          }}
+          placeholder="Rechercher (audience, auteur)…"
+          className="h-8 text-xs"
+        />
+        <Select
+          value={audienceFilter}
+          onValueChange={(v) => {
+            setAudienceFilter(v as AudienceKind | "all");
+            resetPage();
+          }}
+        >
+          <SelectTrigger className="h-8 text-xs w-full sm:w-44">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes audiences</SelectItem>
+            {(Object.keys(AUDIENCE_LABELS) as AudienceKind[]).map((k) => (
+              <SelectItem key={k} value={k}>
+                {AUDIENCE_LABELS[k]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => {
+            setStatusFilter(v as StatusFilter);
+            resetPage();
+          }}
+        >
+          <SelectTrigger className="h-8 text-xs w-full sm:w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous statuts</SelectItem>
+            <SelectItem value="success">Sans échec</SelectItem>
+            <SelectItem value="with_failures">Avec échecs</SelectItem>
+            <SelectItem value="empty">Audience vide</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {pageItems.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-4 text-center">
+          Aucune campagne ne correspond aux filtres.
+        </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {pageItems.map((l) => {
+            const p = l.payload ?? {};
+            const aud = p.audience?.kind;
+            return (
+              <li key={l.id} className="py-2 flex items-center gap-3 text-xs">
+                <span className="font-mono tabular-nums w-20 text-muted-foreground">
+                  {new Date(l.created_at).toLocaleDateString("fr-FR")}{" "}
+                  {new Date(l.created_at).toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                <Badge variant="outline" className="font-normal">
+                  {aud ? AUDIENCE_LABELS[aud] : "?"}
+                </Badge>
+                <span className="ml-auto tabular-nums">
+                  <span className="text-primary font-semibold">{p.sent ?? 0}</span>
+                  <span className="text-muted-foreground">/{p.total ?? 0}</span>
+                  {(p.failed ?? 0) > 0 && (
+                    <span className="text-destructive ml-2">· {p.failed} échec(s)</span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {pageCount > 1 && (
+        <div className="mt-3">
+          <Paginator page={safePage} pageCount={pageCount} onPageChange={setPage} />
+        </div>
+      )}
+    </div>
+  );
+}
+
