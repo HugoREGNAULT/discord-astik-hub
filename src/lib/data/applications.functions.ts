@@ -100,6 +100,14 @@ export const submitApplication = createServerFn({ method: "POST" })
     // Validation du pseudo Minecraft
     const mojang = await fetchMojang(data.mcName);
 
+    // Détection blacklist (discord_id + pseudo MC + UUID)
+    const { findBlacklistMatches } = await import("@/lib/data/blacklist.server");
+    const blacklistMatches = await findBlacklistMatches({
+      discordId: user.discordId,
+      mcName: mojang.name,
+      mcUuid: mojang.id,
+    });
+
     const ins = await db
       .from("applications")
       .insert({
@@ -125,12 +133,33 @@ export const submitApplication = createServerFn({ method: "POST" })
     await logAction("application_submit", user.discordId, {
       application_id: ins.data.id,
       mc_name: mojang.name,
+      blacklist_hits: blacklistMatches.length,
     });
 
+    const blacklistField =
+      blacklistMatches.length > 0
+        ? [
+            {
+              name: "⚠️ BLACKLIST DÉTECTÉE",
+              value: blacklistMatches
+                .slice(0, 5)
+                .map(
+                  (m) =>
+                    `• matchs : ${m.matched_on.join(", ")} — *${m.reason || "sans motif"}* (par ${m.added_by_username ?? "?"})`,
+                )
+                .join("\n"),
+            },
+          ]
+        : [];
+
     await logToDiscord("site", {
-      title: "📝 Nouvelle candidature",
-      color: COLORS.info,
-      description: `**${user.username}** (<@${user.discordId}>) a candidaté à la PunkAstik.`,
+      title: blacklistMatches.length > 0 ? "⚠️ Candidature — BLACKLIST" : "📝 Nouvelle candidature",
+      color: blacklistMatches.length > 0 ? COLORS.danger : COLORS.info,
+      description: `**${user.username}** (<@${user.discordId}>) a candidaté à la PunkAstik.${
+        blacklistMatches.length > 0
+          ? `\n\n🚨 **${blacklistMatches.length} entrée(s) blacklist** correspondent à ce candidat.`
+          : ""
+      }`,
       fields: [
         { name: "Pseudo MC", value: mojang.name, inline: true },
         { name: "Âge", value: String(data.age), inline: true },
@@ -138,11 +167,12 @@ export const submitApplication = createServerFn({ method: "POST" })
         { name: "Grade IG", value: data.igGrade, inline: true },
         { name: "Temps de jeu", value: data.weeklyPlaytime, inline: true },
         { name: "Niveau /10", value: String(data.knowledgeLevel), inline: true },
+        ...blacklistField,
       ],
       footer: { text: `Application ${ins.data.id}` },
     });
 
-    return { ok: true, applicationId: ins.data.id };
+    return { ok: true, applicationId: ins.data.id, blacklistHits: blacklistMatches.length };
   });
 
 export const getMyApplication = createServerFn({ method: "GET" }).handler(async () => {
