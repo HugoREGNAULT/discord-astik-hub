@@ -218,11 +218,30 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
             {detail.isLoading && <LoadingBlock label="Listings…" />}
             {detail.error && <ErrorBlock message={(detail.error as Error).message} />}
 
-            <div
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-2"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
-              // prix moyen — 7 jours
+            <div className="flex items-center justify-between mb-2">
+              <div
+                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+                style={{ fontFamily: "'Space Mono'" }}
+              >
+                // prix moyen — {range === "24h" ? "24h" : "7 jours"}
+              </div>
+              <div className="flex gap-1">
+                {(["24h", "7d"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRange(r)}
+                    className={`px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] border ${
+                      range === r
+                        ? "border-pink-500 text-pink-400"
+                        : "border-zinc-800 text-zinc-500 hover:text-zinc-300"
+                    }`}
+                    style={{ fontFamily: "'Space Mono'" }}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
             {historySeries.length < 2 ? (
               <p className="text-zinc-600 text-xs mb-3">
@@ -236,9 +255,10 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                     <XAxis
                       dataKey="t"
                       tickFormatter={(t) =>
-                        new Date(t).toLocaleDateString("fr-FR", {
+                        new Date(t).toLocaleString("fr-FR", {
                           day: "2-digit",
                           month: "2-digit",
+                          ...(range === "24h" ? { hour: "2-digit", minute: "2-digit" } : {}),
                         })
                       }
                       stroke="#52525b"
