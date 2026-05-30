@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/auth/require.server";
 import { listAllGuildMembers, type DiscordGuildMember } from "@/lib/discord/api.server";
 import { GUILDS, EFFECTIF_GRADES } from "@/lib/discord/constants";
 import { db } from "@/lib/db.server";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 interface EffectifMember {
   discord_id: string;
@@ -54,8 +55,10 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     db.from("members").select("discord_id, ig_name").in("discord_id", allDiscordIds),
     db.from("blacklist").select("discord_id").not("discord_id", "is", null),
   ]);
+  const factionDbMembers = filterFactionMembers(dbMembers ?? []);
+  const factionIds = new Set(factionDbMembers.map((m: any) => m.discord_id));
   const igByDiscord = new Map<string, string | null>(
-    (dbMembers ?? []).map((m: any) => [m.discord_id, m.ig_name ?? null]),
+    factionDbMembers.map((m: any) => [m.discord_id, m.ig_name ?? null]),
   );
   const blacklisted = new Set<string>(
     (blacklistRows ?? []).map((b: any) => b.discord_id as string),
@@ -67,7 +70,7 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     for (const m of members) {
       const uid = m.user?.id;
       if (!uid || seen.has(uid)) continue;
-      if (g.roleIds.some((rid) => m.roles.includes(rid))) {
+      if (g.roleIds.some((rid) => m.roles.includes(rid)) && factionIds.has(uid)) {
         seen.add(uid);
         const igName = igByDiscord.get(uid) ?? null;
         // Priorité : IG name (DB) → nick Discord → global_name → username

@@ -12,6 +12,7 @@
  */
 
 import { db } from "@/lib/db.server";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const DEFAULT_MODEL = "google/gemini-3-flash-preview";
@@ -88,15 +89,18 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
     pointsLedger,
     logs,
   ] = await Promise.all([
-    db.from("members").select("discord_id", { count: "exact", head: true }).eq("status", "active"),
     db
       .from("members")
-      .select("discord_id, ig_name, discord_username, arrival_date, recruiter_discord_id")
+      .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
+      .eq("status", "active"),
+    db
+      .from("members")
+       .select("discord_id, ig_name, discord_username, arrival_date, recruiter_discord_id, current_grade, mc_uuid")
       .gte("arrival_date", weekStart)
       .lt("arrival_date", weekEndIso.slice(0, 10)),
     db
       .from("members")
-      .select("discord_id, ig_name, discord_username, updated_at")
+       .select("discord_id, ig_name, discord_username, updated_at, current_grade, arrival_date, mc_uuid")
       .eq("status", "former")
       .gte("updated_at", weekStartIso)
       .lt("updated_at", weekEndIso),
@@ -129,7 +133,10 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
   ]);
 
   // Agrégats
-  const apps = applications.data ?? [];
+   const factionActiveMembers = filterFactionMembers(activeMembers.data ?? []);
+   const factionArrivals = filterFactionMembers(arrivals.data ?? []);
+   const factionDepartures = filterFactionMembers(departures.data ?? []);
+   const apps = applications.data ?? [];
   const accepted = apps.filter((a: any) => a.status === "accepted").length;
   const rejected = apps.filter((a: any) => a.status === "rejected").length;
   const pending = apps.filter((a: any) => a.status === "pending").length;
@@ -159,8 +166,8 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
         "discord_id",
         topIds.map(([id]) => id),
       );
-    const byId = new Map((m ?? []).map((x: any) => [x.discord_id, x]));
-    topContribs = topIds.map(([id, points]) => ({
+     const byId = new Map(filterFactionMembers(m ?? []).map((x: any) => [x.discord_id, x]));
+     topContribs = topIds.filter(([id]) => byId.has(id)).map(([id, points]) => ({
       name: (byId.get(id) as any)?.ig_name ?? (byId.get(id) as any)?.discord_username ?? id,
       points,
     }));
@@ -174,9 +181,9 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
   const stats = {
     week_start: weekStart,
     week_end: weekEndIso.slice(0, 10),
-    active_members: activeMembers.count ?? 0,
-    arrivals: arrivals.data ?? [],
-    departures: departures.data ?? [],
+     active_members: factionActiveMembers.length,
+     arrivals: factionArrivals,
+     departures: factionDepartures,
     applications: {
       total: apps.length,
       accepted,
