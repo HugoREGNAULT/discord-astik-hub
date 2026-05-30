@@ -171,7 +171,6 @@ function StaffPage() {
       {/* Communication staff (DM massif) */}
       <BulkDmCard />
 
-
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
         timeline={data.applicationsTimeline ?? []}
@@ -1012,8 +1011,7 @@ const AUDIENCE_LABELS: Record<AudienceKind, string> = {
 };
 
 const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
-  all_active:
-    "Salut {ig_name} 👋\n\n[message à la faction]\n\n— Le staff PunkAstik",
+  all_active: "Salut {ig_name} 👋\n\n[message à la faction]\n\n— Le staff PunkAstik",
   inactive_7d:
     "Salut {ig_name} 👋\n\nOn ne t'a pas vu cette semaine sur le Discord ni en vocal. Tout va bien ? Donne-nous des nouvelles quand tu peux !",
   never_logged_in:
@@ -1043,11 +1041,7 @@ function BulkDmCard() {
   });
 
   const audience: DmAudience | null =
-    kind === "poll_not_voted"
-      ? pollId
-        ? { kind: "poll_not_voted", pollId }
-        : null
-      : { kind };
+    kind === "poll_not_voted" ? (pollId ? { kind: "poll_not_voted", pollId } : null) : { kind };
 
   const preview = useQuery({
     queryKey: ["bulk-dm-preview", JSON.stringify(audience)],
@@ -1208,9 +1202,8 @@ function BulkDmCard() {
           <DialogHeader>
             <DialogTitle>Confirmer l'envoi massif</DialogTitle>
             <DialogDescription>
-              Le bot va envoyer un DM Discord à{" "}
-              <span className="font-semibold">{targetCount}</span> membre(s) (
-              {AUDIENCE_LABELS[kind]}). L'envoi prendra environ{" "}
+              Le bot va envoyer un DM Discord à <span className="font-semibold">{targetCount}</span>{" "}
+              membre(s) ({AUDIENCE_LABELS[kind]}). L'envoi prendra environ{" "}
               {Math.ceil((targetCount * 0.25) / 60)} min. Confirmer ?
             </DialogDescription>
           </DialogHeader>
