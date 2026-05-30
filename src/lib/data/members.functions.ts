@@ -182,7 +182,7 @@ const memberPatch = z.object({
     recruiter_discord_id: z.string().max(32).nullable().optional(),
     last_rankup: z.string().nullable().optional(),
     current_grade: z.string().max(64).nullable().optional(),
-    status: z.enum(["active", "former"]).optional(),
+    status: z.enum(["active", "former", "away"]).optional(),
   }),
 });
 

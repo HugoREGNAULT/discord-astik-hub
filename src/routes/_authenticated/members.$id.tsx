@@ -3,7 +3,20 @@ import { MonoLabel } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId, useEffect } from "react";
-import { ShieldX, Coins, ShoppingCart, Activity, UserCheck, ChevronDown } from "lucide-react";
+import {
+  ShieldX,
+  Coins,
+  ShoppingCart,
+  Activity,
+  UserCheck,
+  ChevronDown,
+  MessageSquare,
+  Clock,
+  UserX,
+  UserPlus,
+  Copy,
+  ExternalLink,
+} from "lucide-react";
 
 import {
   getMemberDetail,
@@ -14,12 +27,22 @@ import {
   removeAlt,
   getMemberPointsHistory,
   getMemberDonations,
+  markMemberAway,
+  dmMember,
 } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
@@ -170,6 +193,9 @@ function MemberDetail() {
         <Stat label="Grade" value={m.current_grade ?? "—"} />
         <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
       </div>
+
+      {data.canEdit && <MemberActions member={m} onChanged={refresh} />}
+
 
       {data.canEdit && (
         <Card>
@@ -594,6 +620,7 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
           onChange={(e) => setP({ ...p, status: e.target.value })}
         >
           <option value="active">active</option>
+          <option value="away">away</option>
           <option value="former">former</option>
         </select>
       </div>
@@ -601,5 +628,144 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
         <Button onClick={() => onSave(p)}>Enregistrer</Button>
       </div>
     </div>
+  );
+}
+
+function MemberActions({ member, onChanged }: { member: any; onChanged: () => void }) {
+  const qc = useQueryClient();
+  const dmFn = useServerFn(dmMember);
+  const awayFn = useServerFn(markMemberAway);
+  const updateFn = useServerFn(updateMember);
+
+  const [dmOpen, setDmOpen] = useState(false);
+  const [dmContent, setDmContent] = useState(
+    `Salut ${member.ig_name ?? member.discord_username ?? ""} 👋\n\n`,
+  );
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["member", member.discord_id] });
+    onChanged();
+  };
+
+  const mDm = useMutation({
+    mutationFn: () =>
+      dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
+    onSuccess: () => {
+      toast.success("MP envoyé");
+      setDmOpen(false);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Échec de l'envoi"),
+  });
+
+  const mAway = useMutation({
+    mutationFn: () => awayFn({ data: { memberDiscordId: member.discord_id } }),
+    onSuccess: () => {
+      toast.success("Marqué en absence");
+      refresh();
+    },
+  });
+
+  const mStatus = useMutation({
+    mutationFn: (status: "active" | "away" | "former") =>
+      updateFn({ data: { discordId: member.discord_id, patch: { status } } }),
+    onSuccess: (_d, status) => {
+      toast.success(`Statut: ${status}`);
+      refresh();
+    },
+  });
+
+  const copyId = () => {
+    navigator.clipboard.writeText(member.discord_id);
+    toast.success("ID Discord copié");
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm text-muted-foreground">Actions staff</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-2">
+        <Dialog open={dmOpen} onOpenChange={setDmOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="default">
+              <MessageSquare className="size-4 mr-1.5" /> Envoyer un MP
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                MP à {member.ig_name ?? member.discord_username}
+              </DialogTitle>
+            </DialogHeader>
+            <Textarea
+              rows={8}
+              value={dmContent}
+              onChange={(e) => setDmContent(e.target.value)}
+              placeholder="Message…"
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDmOpen(false)}>
+                Annuler
+              </Button>
+              <Button onClick={() => mDm.mutate()} disabled={!dmContent.trim() || mDm.isPending}>
+                {mDm.isPending ? "Envoi…" : "Envoyer"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {member.status !== "away" && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              if (confirm("Marquer ce membre en absence ?")) mAway.mutate();
+            }}
+            disabled={mAway.isPending}
+          >
+            <Clock className="size-4 mr-1.5" /> Marquer en absence
+          </Button>
+        )}
+
+        {member.status !== "active" && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => mStatus.mutate("active")}
+            disabled={mStatus.isPending}
+          >
+            <UserPlus className="size-4 mr-1.5" /> Réactiver
+          </Button>
+        )}
+
+        {member.status !== "former" && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              if (confirm("Marquer ce membre comme ancien ?")) mStatus.mutate("former");
+            }}
+            disabled={mStatus.isPending}
+            className="text-destructive hover:text-destructive"
+          >
+            <UserX className="size-4 mr-1.5" /> Marquer ancien
+          </Button>
+        )}
+
+        <Button size="sm" variant="ghost" onClick={copyId}>
+          <Copy className="size-4 mr-1.5" /> Copier ID
+        </Button>
+
+        <Button size="sm" variant="ghost" asChild>
+          <a
+            href={`discord://discordapp.com/users/${member.discord_id}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <ExternalLink className="size-4 mr-1.5" /> Ouvrir dans Discord
+          </a>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
