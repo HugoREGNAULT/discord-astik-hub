@@ -1091,6 +1091,39 @@ function BulkDmCard() {
         `DM envoyé à ${res.sent}/${res.total} membre(s)${res.failed > 0 ? ` — ${res.failed} échec(s)` : ""}`,
       );
       setConfirmOpen(false);
+      qc.invalidateQueries({ queryKey: ["bulk-dm-history"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const history = useQuery({
+    queryKey: ["bulk-dm-history"],
+    queryFn: () => historyFn(),
+    enabled: canDm,
+    staleTime: 30_000,
+  });
+
+  const exportMut = useMutation({
+    mutationFn: () => exportFn({ data: { audience: audience! } }),
+    onSuccess: (res) => {
+      const header = "discord_id,ig_name,discord_username,current_grade\n";
+      const escape = (v: string | null) => {
+        const s = (v ?? "").replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      };
+      const body = res.rows
+        .map((r) =>
+          [r.discord_id, r.ig_name, r.discord_username, r.current_grade].map(escape).join(","),
+        )
+        .join("\n");
+      const blob = new Blob([header + body], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `audience-${kind}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`${res.rows.length} lignes exportées`);
     },
     onError: (e: Error) => toast.error(e.message),
   });
