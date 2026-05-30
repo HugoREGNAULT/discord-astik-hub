@@ -118,7 +118,9 @@ function ObjectivesPage() {
                   title={`Supprimer "${o.title}" ?`}
                   description="Cet objectif sera définitivement supprimé."
                   confirmLabel="Supprimer"
-                  onConfirm={() => delM.mutateAsync(o.id)}
+                  onConfirm={async () => {
+                    await delM.mutateAsync(o.id);
+                  }}
                   trigger={
                     <button
                       className="text-destructive disabled:opacity-50"
