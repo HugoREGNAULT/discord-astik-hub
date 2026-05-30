@@ -116,10 +116,10 @@ export const getMemberDetail = createServerFn({ method: "GET" })
     if (canViewStaffData && recruiterId) {
       const { data: r } = await db
         .from("members")
-        .select("discord_id, ig_name, discord_username")
+        .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid")
         .eq("discord_id", recruiterId)
         .maybeSingle();
-      recruiterInfo = (r as any) ?? null;
+      recruiterInfo = r && isFactionMember(r) ? ((r as any) ?? null) : null;
     }
     void recruiter;
 
