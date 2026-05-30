@@ -199,7 +199,8 @@ function XpCalculator() {
         >
           // ressources à farmer
         </h2>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-2 px-2">
+        <table className="w-full text-sm min-w-[420px]">
           <thead>
             <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
               <th className="py-2">Action</th>
