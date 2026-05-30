@@ -71,6 +71,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { ApplicationsChart } from "@/components/ApplicationsChart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   TrendingUp as TrendingUpIcon,
   UserPlus as UserPlusIcon,
@@ -549,19 +550,25 @@ function InactiveMemberRow({
         >
           <MessageCircle className="size-3.5" />
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={awayMut.isPending}
-          onClick={() => {
-            if (confirm(`Marquer ${member.ig_name ?? member.discord_username} en absence ?`)) {
-              awayMut.mutate();
-            }
+        <ConfirmDialog
+          title={`Marquer ${member.ig_name ?? member.discord_username} en absence ?`}
+          description="Le statut du membre passera à 'absent'."
+          confirmLabel="Marquer absent"
+          destructive={false}
+          onConfirm={async () => {
+            await awayMut.mutateAsync();
           }}
-          title="Marquer en absence"
-        >
-          <UserMinus className="size-3.5" />
-        </Button>
+          trigger={
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={awayMut.isPending}
+              title="Marquer en absence"
+            >
+              <UserMinus className="size-3.5" />
+            </Button>
+          }
+        />
       </div>
 
       <Dialog open={dmOpen} onOpenChange={setDmOpen}>

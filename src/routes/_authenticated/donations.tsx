@@ -16,6 +16,7 @@ import { listValues } from "@/lib/data/values.functions";
 import { listMembers } from "@/lib/data/members.functions";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   PageHeader,
   PageCard,
@@ -62,6 +63,7 @@ function DonationsPage() {
       toast.success("Panier créé");
       refresh();
     },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur création panier"),
   });
 
   return (
@@ -113,7 +115,7 @@ function DonationsPage() {
               className="w-full mt-1"
             />
           </div>
-          <DaButton onClick={() => mkCart.mutate()}>Créer</DaButton>
+          <DaButton onClick={() => mkCart.mutate()} disabled={mkCart.isPending}>Créer</DaButton>
         </div>
       </PageCard>
 
@@ -122,19 +124,31 @@ function DonationsPage() {
           key={c.id}
           cart={c}
           values={values.data?.values ?? []}
-          onAdd={(payload: any) => addLine({ data: { ...payload, cartId: c.id } }).then(refresh)}
-          onRemove={(lineId: string) => rmLine({ data: { lineId, cartId: c.id } }).then(refresh)}
+          onAdd={(payload: any) =>
+            addLine({ data: { ...payload, cartId: c.id } })
+              .then(refresh)
+              .catch((e: Error) => toast.error(e.message))
+          }
+          onRemove={(lineId: string) =>
+            rmLine({ data: { lineId, cartId: c.id } })
+              .then(refresh)
+              .catch((e: Error) => toast.error(e.message))
+          }
           onValidate={() =>
-            validate({ data: { cartId: c.id } }).then(() => {
-              toast.success("Validé");
-              refresh();
-            })
+            validate({ data: { cartId: c.id } })
+              .then(() => {
+                toast.success("Validé");
+                refresh();
+              })
+              .catch((e: Error) => toast.error(e.message))
           }
           onCancel={() =>
-            cancel({ data: { cartId: c.id } }).then(() => {
-              toast.info("Annulé");
-              refresh();
-            })
+            cancel({ data: { cartId: c.id } })
+              .then(() => {
+                toast.info("Annulé");
+                refresh();
+              })
+              .catch((e: Error) => toast.error(e.message))
           }
         />
       ))}
@@ -190,13 +204,20 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
               {l.label} × {l.quantity}
             </span>
             <span className="font-mono text-pink-400 font-bold">{l.subtotal} pts</span>
-            <button
-              onClick={() => onRemove(l.id)}
-              aria-label={`Supprimer ${l.label}`}
-              className="text-red-400 hover:text-red-300"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            <ConfirmDialog
+              title={`Supprimer "${l.label}" ?`}
+              description="Cette ligne sera retirée du panier."
+              confirmLabel="Supprimer"
+              onConfirm={() => onRemove(l.id)}
+              trigger={
+                <button
+                  aria-label={`Supprimer ${l.label}`}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              }
+            />
           </li>
         ))}
         {(!cart.donation_lines || cart.donation_lines.length === 0) && (

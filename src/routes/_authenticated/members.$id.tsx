@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   Dialog,
   DialogContent,
@@ -210,9 +211,13 @@ function MemberDetail() {
             <EditForm
               member={m}
               onSave={async (patch) => {
-                await update({ data: { discordId: id, patch } });
-                toast.success("Membre mis à jour");
-                refresh();
+                try {
+                  await update({ data: { discordId: id, patch } });
+                  toast.success("Membre mis à jour");
+                  refresh();
+                } catch (e) {
+                  toast.error((e as Error).message);
+                }
               }}
             />
           </CardContent>
@@ -234,15 +239,24 @@ function MemberDetail() {
               >
                 <span>{a.alt_name ?? a.alt_discord_id}</span>
                 {data.canEdit && (
-                  <button
-                    onClick={async () => {
-                      await altRmFn({ data: { id: a.id } });
-                      refresh();
+                  <ConfirmDialog
+                    title={`Retirer l'alt "${a.alt_name ?? a.alt_discord_id}" ?`}
+                    description="Le compte secondaire sera détaché de ce membre."
+                    confirmLabel="Retirer"
+                    onConfirm={async () => {
+                      try {
+                        await altRmFn({ data: { id: a.id } });
+                        toast.success("Alt retiré");
+                        refresh();
+                      } catch (e) {
+                        toast.error((e as Error).message);
+                        throw e;
+                      }
                     }}
-                    className="text-destructive text-xs"
-                  >
-                    Supprimer
-                  </button>
+                    trigger={
+                      <button className="text-destructive text-xs">Supprimer</button>
+                    }
+                  />
                 )}
               </li>
             ))}
@@ -754,16 +768,20 @@ function MemberActions({
         </Dialog>
 
         {member.status !== "away" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              if (confirm("Marquer ce membre en absence ?")) mAway.mutate();
+          <ConfirmDialog
+            title="Marquer ce membre en absence ?"
+            description="Le statut passera à 'absent'."
+            confirmLabel="Marquer absent"
+            destructive={false}
+            onConfirm={async () => {
+              await mAway.mutateAsync();
             }}
-            disabled={mAway.isPending}
-          >
-            <Clock className="size-4 mr-1.5" /> Marquer en absence
-          </Button>
+            trigger={
+              <Button size="sm" variant="outline" disabled={mAway.isPending}>
+                <Clock className="size-4 mr-1.5" /> Marquer en absence
+              </Button>
+            }
+          />
         )}
 
         {member.status !== "active" && (
@@ -778,17 +796,24 @@ function MemberActions({
         )}
 
         {member.status !== "former" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              if (confirm("Marquer ce membre comme ancien ?")) mStatus.mutate("former");
+          <ConfirmDialog
+            title="Marquer ce membre comme ancien ?"
+            description="Le membre sera déplacé dans la liste des anciens."
+            confirmLabel="Marquer ancien"
+            onConfirm={async () => {
+              await mStatus.mutateAsync("former");
             }}
-            disabled={mStatus.isPending}
-            className="text-destructive hover:text-destructive"
-          >
-            <UserX className="size-4 mr-1.5" /> Marquer ancien
-          </Button>
+            trigger={
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={mStatus.isPending}
+                className="text-destructive hover:text-destructive"
+              >
+                <UserX className="size-4 mr-1.5" /> Marquer ancien
+              </Button>
+            }
+          />
         )}
 
         <Button size="sm" variant="ghost" onClick={copyId}>

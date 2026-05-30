@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/pdc")({
   head: () => ({ meta: [{ title: "Plans de coupe · PunkAstik" }] }),
@@ -622,18 +623,20 @@ function PdcPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        if (!confirm(`Vider la couche ${currentLayer + 1} ?`)) return;
+                    <ConfirmDialog
+                      title={`Vider la couche ${currentLayer + 1} ?`}
+                      description="Tous les blocs de cette couche seront retirés."
+                      confirmLabel="Vider"
+                      onConfirm={() => {
                         setLayers((p) => ({ ...p, [String(currentLayer)]: {} }));
                         setDirty(true);
                       }}
-                    >
-                      Vider cette couche
-                    </Button>
+                      trigger={
+                        <Button size="sm" variant="outline" className="w-full">
+                          Vider cette couche
+                        </Button>
+                      }
+                    />
                   </CardContent>
                 </Card>
 
@@ -793,15 +796,17 @@ function PdcPage() {
                   <Button size="sm" variant="outline" onClick={() => loadPlan(p.id)}>
                     Ouvrir
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (confirm(`Supprimer "${p.name}" ?`)) removePlan.mutate(p.id);
-                    }}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
+                  <ConfirmDialog
+                    title={`Supprimer "${p.name}" ?`}
+                    description="Ce plan de coupe sera définitivement supprimé."
+                    confirmLabel="Supprimer"
+                    onConfirm={() => removePlan.mutateAsync(p.id).then(() => undefined)}
+                    trigger={
+                      <Button size="sm" variant="ghost" disabled={removePlan.isPending}>
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    }
+                  />
                 </div>
               ))}
             </CardContent>
@@ -876,13 +881,17 @@ function PdcPage() {
                     <span className="flex-1 text-sm">{b.name}</span>
                     <span className="text-[10px] text-muted-foreground font-mono">{b.color}</span>
                     {b.kind === "liquid" && <Droplet className="size-3 text-cyan-400" />}
-                    <button
-                      onClick={() => {
-                        if (confirm(`Supprimer ${b.name} ?`)) removeBlock.mutate(b.id);
-                      }}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </button>
+                    <ConfirmDialog
+                      title={`Supprimer ${b.name} ?`}
+                      description="Ce bloc sera retiré de la palette."
+                      confirmLabel="Supprimer"
+                      onConfirm={() => removeBlock.mutateAsync(b.id).then(() => undefined)}
+                      trigger={
+                        <button disabled={removeBlock.isPending} className="disabled:opacity-50">
+                          <Trash2 className="size-4 text-destructive" />
+                        </button>
+                      }
+                    />
                   </div>
                 ))}
               </CardContent>

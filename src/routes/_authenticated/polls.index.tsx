@@ -50,6 +50,7 @@ function PollsPage() {
       toast.success("Sondage supprimé");
       qc.invalidateQueries({ queryKey: ["polls"] });
     },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur suppression sondage"),
   });
 
   return (

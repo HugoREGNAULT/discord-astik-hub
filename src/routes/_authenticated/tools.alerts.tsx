@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Bell, Pencil, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   ToolHeader,
   ToolCard,
@@ -227,16 +228,23 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
         >
           <Pencil className="size-4" />
         </button>
-        <button
-          onClick={() => {
-            if (confirm("Supprimer cette alerte ?")) del.mutate();
+        <ConfirmDialog
+          title="Supprimer cette alerte ?"
+          description="L'alerte sera définitivement supprimée."
+          confirmLabel="Supprimer"
+          onConfirm={async () => {
+            await del.mutateAsync();
           }}
-          disabled={del.isPending}
-          className="text-zinc-500 hover:text-red-400 p-1 disabled:opacity-50"
-          title="Supprimer"
-        >
-          <Trash2 className="size-4" />
-        </button>
+          trigger={
+            <button
+              disabled={del.isPending}
+              className="text-zinc-500 hover:text-red-400 p-1 disabled:opacity-50"
+              title="Supprimer"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          }
+        />
       </div>
     </li>
   );

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Brush, Eraser, Trash2, Droplet } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export type SliceBlock = {
   id: string;
@@ -217,16 +218,17 @@ export function PdcSliceCalculator({ blocks }: Props) {
             >
               <Eraser className="size-4" /> Gomme
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="col-span-2"
-              onClick={() => {
-                if (confirm("Vider la tranche ?")) setCells({});
-              }}
-            >
-              <Trash2 className="size-4" /> Vider
-            </Button>
+            <ConfirmDialog
+              title="Vider la tranche ?"
+              description="Tous les blocs placés sur cette tranche seront retirés."
+              confirmLabel="Vider"
+              onConfirm={() => setCells({})}
+              trigger={
+                <Button size="sm" variant="outline" className="col-span-2">
+                  <Trash2 className="size-4" /> Vider
+                </Button>
+              }
+            />
           </CardContent>
         </Card>
 
