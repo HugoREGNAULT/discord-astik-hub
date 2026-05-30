@@ -1154,6 +1154,30 @@ function BulkDmCard() {
               </Select>
             </div>
           )}
+
+          {(kind === "role_all" || kind === "role_never_logged_in") && (
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Rôle Discord (serveur faction)
+              </label>
+              <Select value={roleId} onValueChange={setRoleId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choisir un rôle…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(rolesData?.roles ?? []).length === 0 ? (
+                    <div className="p-3 text-xs text-muted-foreground">Chargement des rôles…</div>
+                  ) : (
+                    (rolesData?.roles ?? []).map((r: { id: string; name: string }) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div>
