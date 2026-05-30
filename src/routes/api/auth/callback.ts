@@ -87,8 +87,9 @@ export const Route = createFileRoute("/api/auth/callback")({
           headers.append("Set-Cookie", "oauth_next=; Path=/; Max-Age=0");
           return new Response(null, { status: 302, headers });
         } catch (e) {
-          console.error("[oauth callback]", e);
-          return new Response("Authentication failed. Please try again.", { status: 500 });
+          const msg = e instanceof Error ? e.message : String(e);
+          console.error("[oauth callback]", msg, e);
+          return new Response(`Authentication failed: ${msg}`, { status: 500 });
         }
       },
     },
