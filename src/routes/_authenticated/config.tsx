@@ -243,12 +243,23 @@ function ConfigPage() {
                   key={v.id}
                   value={v}
                   onToggle={async (c) => {
-                    await tog({ data: { id: v.id, active: c } });
-                    refresh();
+                    try {
+                      await tog({ data: { id: v.id, active: c } });
+                      refresh();
+                    } catch (e) {
+                      toast.error((e as Error).message);
+                      throw e;
+                    }
                   }}
                   onDelete={async () => {
-                    await del({ data: { id: v.id } });
-                    refresh();
+                    try {
+                      await del({ data: { id: v.id } });
+                      toast.success("Supprimé");
+                      refresh();
+                    } catch (e) {
+                      toast.error((e as Error).message);
+                      throw e;
+                    }
                   }}
                   onUpdateImage={async (url) => {
                     await up({ data: { ...v, image_url: url } });
@@ -323,9 +334,17 @@ function ValueRowItem({
       <span className="flex-1 truncate">{value.name}</span>
       <span className="font-mono text-primary">{value.points} pts</span>
       <Switch checked={value.active} onCheckedChange={onToggle} />
-      <button onClick={onDelete} className="text-destructive" aria-label="Supprimer">
-        <Trash2 className="size-4" />
-      </button>
+      <ConfirmDialog
+        title={`Supprimer "${value.name}" ?`}
+        description="Cette valeur sera définitivement supprimée de la configuration."
+        confirmLabel="Supprimer"
+        onConfirm={onDelete}
+        trigger={
+          <button className="text-destructive" aria-label="Supprimer">
+            <Trash2 className="size-4" />
+          </button>
+        }
+      />
     </li>
   );
 }

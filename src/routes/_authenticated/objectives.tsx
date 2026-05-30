@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Target } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { toast } from "sonner";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/objectives")({
@@ -43,8 +45,23 @@ function ObjectivesPage() {
     onSuccess: () => {
       setTitle("");
       setDesc("");
+      toast.success("Objectif créé");
       refresh();
     },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur création objectif"),
+  });
+  const togM = useMutation({
+    mutationFn: (vars: { id: string; done: boolean }) => tog({ data: vars }),
+    onSuccess: () => refresh(),
+    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+  });
+  const delM = useMutation({
+    mutationFn: (id: string) => del({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Objectif supprimé");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur suppression"),
   });
 
   return (
@@ -67,7 +84,7 @@ function ObjectivesPage() {
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
             />
-            <Button onClick={() => add.mutate()} disabled={!title}>
+            <Button onClick={() => add.mutate()} disabled={!title || add.isPending}>
               Créer
             </Button>
           </CardContent>
@@ -80,11 +97,8 @@ function ObjectivesPage() {
             <CardContent className="flex items-start gap-3 py-3">
               <Checkbox
                 checked={o.done}
-                disabled={!canEdit}
-                onCheckedChange={async (c) => {
-                  await tog({ data: { id: o.id, done: !!c } });
-                  refresh();
-                }}
+                disabled={!canEdit || togM.isPending}
+                onCheckedChange={(c) => togM.mutate({ id: o.id, done: !!c })}
               />
               <div className="flex-1 min-w-0">
                 <div className={`font-medium ${o.done ? "line-through" : ""}`}>{o.title}</div>
@@ -100,15 +114,21 @@ function ObjectivesPage() {
                 )}
               </div>
               {canEdit && (
-                <button
-                  onClick={async () => {
-                    await del({ data: { id: o.id } });
-                    refresh();
-                  }}
-                  className="text-destructive"
-                >
-                  <Trash2 className="size-4" />
-                </button>
+                <ConfirmDialog
+                  title={`Supprimer "${o.title}" ?`}
+                  description="Cet objectif sera définitivement supprimé."
+                  confirmLabel="Supprimer"
+                  onConfirm={() => delM.mutateAsync(o.id)}
+                  trigger={
+                    <button
+                      className="text-destructive disabled:opacity-50"
+                      disabled={delM.isPending}
+                      aria-label="Supprimer l'objectif"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  }
+                />
               )}
             </CardContent>
           </Card>
