@@ -65,13 +65,6 @@ export const getPoll = createServerFn({ method: "GET" })
     ]);
     if (pollR.error) throw new Error(pollR.error.message);
     if (!pollR.data) {
-      console.warn(
-        JSON.stringify({
-          tag: "poll_not_found",
-          pollId: data.id,
-          userId: user.discordId,
-        }),
-      );
       throw new Error("NOT_FOUND");
     }
 
