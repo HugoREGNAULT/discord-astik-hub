@@ -5,7 +5,6 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { buildAuthorizeUrl } from "@/lib/discord/api.server";
-import { randomBytes } from "crypto";
 import { rateLimit, getClientIp } from "@/lib/rate-limit.server";
 
 export const Route = createFileRoute("/api/auth/login")({
@@ -29,7 +28,7 @@ export const Route = createFileRoute("/api/auth/login")({
 
         const url = new URL(request.url);
         const redirectUri = `${url.origin}/api/auth/callback`;
-        const state = randomBytes(16).toString("hex");
+        const state = crypto.randomUUID().replace(/-/g, "");
         const authorizeUrl = buildAuthorizeUrl(redirectUri, state);
 
         const rawNext = url.searchParams.get("next") || "";
