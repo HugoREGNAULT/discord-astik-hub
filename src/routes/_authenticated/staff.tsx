@@ -1216,7 +1216,9 @@ function BulkDmCard() {
                 </>
               )
             ) : (
-              <span className="text-muted-foreground">Sélectionne un sondage</span>
+              <span className="text-muted-foreground">
+                {kind === "poll_not_voted" ? "Sélectionne un sondage" : "Sélectionne un rôle"}
+              </span>
             )}
           </div>
           <Button
