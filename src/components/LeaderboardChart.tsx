@@ -21,19 +21,26 @@ interface Snapshot {
   messages_7d: number;
 }
 
+type Period = "all" | "24h" | "7d" | "30d";
+
 interface Props {
   snapshots: Snapshot[];
   topEntries: LeaderboardEntry[]; // already sorted top-3
   metric: LeaderboardMetric;
-  period: "all" | "7d";
+  period: Period;
 }
 
 const COLORS = ["hsl(var(--primary))", "#facc15", "#f97316"];
+const PERIOD_HOURS: Record<Exclude<Period, "all">, number> = {
+  "24h": 24,
+  "7d": 24 * 7,
+  "30d": 24 * 30,
+};
 
-function pickValue(s: Snapshot, metric: LeaderboardMetric, period: "all" | "7d") {
+function pickTotal(s: Snapshot, metric: LeaderboardMetric) {
   if (metric === "points") return Number(s.astik_points);
-  if (metric === "voice") return period === "7d" ? s.voice_7d_seconds : s.voice_total_seconds;
-  return period === "7d" ? s.messages_7d : s.messages_total;
+  if (metric === "voice") return s.voice_total_seconds;
+  return s.messages_total;
 }
 
 function formatTick(value: number, metric: LeaderboardMetric) {
@@ -51,16 +58,36 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
   const data = useMemo(() => {
     if (top3.length === 0) return [];
     const allowed = new Set(top3.map((e) => e.discord_id));
+    // Filtre la fenêtre temporelle
+    const cutoff = period === "all" ? 0 : Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
+    // Baseline par membre = dernière valeur connue <= cutoff
+    const baseline = new Map<string, number>();
+    if (period !== "all") {
+      const best = new Map<string, { t: number; v: number }>();
+      for (const s of snapshots) {
+        if (!allowed.has(s.discord_id)) continue;
+        const t = new Date(s.taken_at).getTime();
+        if (t > cutoff) continue;
+        const v = pickTotal(s, metric);
+        const cur = best.get(s.discord_id);
+        if (!cur || t > cur.t) best.set(s.discord_id, { t, v });
+      }
+      for (const [k, v] of best) baseline.set(k, v.v);
+    }
+
     const byTime = new Map<string, Record<string, number | string>>();
     for (const s of snapshots) {
       if (!allowed.has(s.discord_id)) continue;
+      const t = new Date(s.taken_at).getTime();
+      if (t < cutoff) continue;
       const bucket = new Date(s.taken_at).toISOString().slice(0, 13); // hour bucket
       let row = byTime.get(bucket);
       if (!row) {
         row = { t: bucket };
         byTime.set(bucket, row);
       }
-      row[s.discord_id] = pickValue(s, metric, period);
+      const total = pickTotal(s, metric);
+      row[s.discord_id] = period === "all" ? total : Math.max(0, total - (baseline.get(s.discord_id) ?? total));
     }
     return Array.from(byTime.values()).sort((a, b) => String(a.t).localeCompare(String(b.t)));
   }, [snapshots, top3, metric, period]);
