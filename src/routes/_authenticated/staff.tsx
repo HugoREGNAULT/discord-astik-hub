@@ -1041,12 +1041,10 @@ const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
     "Salut {ig_name} 👋\n\nPetit rappel : connecte-toi au dashboard de la faction au moins une fois pour qu'on puisse te suivre. À très vite !",
   poll_not_voted:
     "Salut {ig_name} 👋\n\nIl reste un sondage en attente de ta réponse — un petit clic suffit. Merci !",
-  role_all:
-    "Salut 👋\n\n[message ciblé pour ce rôle]\n\n— Le staff PunkAstik",
+  role_all: "Salut 👋\n\n[message ciblé pour ce rôle]\n\n— Le staff PunkAstik",
   role_never_logged_in:
     "Salut 👋\n\nTu as bien ton rôle sur le Discord faction mais tu ne t'es jamais connecté au dashboard. Petit rappel : connecte-toi une fois pour qu'on puisse te suivre proprement. Merci !",
 };
-
 
 function BulkDmCard() {
   const { data: me } = useCurrentUser();
@@ -1314,7 +1312,6 @@ function BulkDmCard() {
         )}
 
         <BulkDmHistoryList items={(history.data?.items ?? []) as unknown as HistoryItem[]} />
-
       </CardContent>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
@@ -1353,7 +1350,12 @@ type HistoryItem = {
   id: string;
   created_at: string;
   actor_discord_id: string | null;
-  payload: { audience?: { kind?: AudienceKind }; sent?: number; total?: number; failed?: number } | null;
+  payload: {
+    audience?: { kind?: AudienceKind };
+    sent?: number;
+    total?: number;
+    failed?: number;
+  } | null;
 };
 
 type StatusFilter = "all" | "success" | "with_failures" | "empty";
@@ -1441,7 +1443,6 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 mb-2">
-
         <Input
           value={search}
           onChange={(e) => {
@@ -1513,7 +1514,6 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
         </Button>
       </div>
 
-
       {pageItems.length === 0 ? (
         <p className="text-xs text-muted-foreground py-4 text-center">
           Aucune campagne ne correspond aux filtres.
@@ -1556,4 +1556,3 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
     </div>
   );
 }
-
