@@ -35,6 +35,20 @@ import {
 } from "recharts";
 import { Sparkles, HeartPulse, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
+import {
+  listOpenPollsForDm,
+  previewDmAudience,
+  sendBulkDm,
+  type DmAudience,
+} from "@/lib/data/bulk-dm.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Send, Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
