@@ -812,6 +812,71 @@ function MemberActions({
             <ExternalLink className="size-4 mr-1.5" /> Ouvrir dans Discord
           </a>
         </Button>
+
+        <div className="w-full flex flex-wrap items-end gap-2 pt-3 mt-2 border-t border-border">
+          <div className="flex-1 min-w-[180px]">
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Grade
+            </label>
+            <Input
+              value={grade}
+              onChange={(e) => setGrade(e.target.value)}
+              placeholder="ex: Vétéran"
+              className="h-9"
+            />
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => mGrade.mutate()}
+            disabled={mGrade.isPending || grade === (member.current_grade ?? "")}
+          >
+            {mGrade.isPending ? "…" : "Changer grade"}
+          </Button>
+        </div>
+
+        {canManagePoints && (
+          <div className="w-full flex flex-wrap items-end gap-2">
+            <div className="w-28">
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Points
+              </label>
+              <Input
+                type="number"
+                value={pointsAmount}
+                onChange={(e) => setPointsAmount(e.target.value)}
+                placeholder="±N"
+                className="h-9"
+              />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Raison
+              </label>
+              <Input
+                value={pointsReason}
+                onChange={(e) => setPointsReason(e.target.value)}
+                placeholder="optionnel"
+                className="h-9"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                const n = parseInt(pointsAmount, 10);
+                if (!Number.isFinite(n) || n === 0) {
+                  toast.error("Montant invalide");
+                  return;
+                }
+                mPoints.mutate(n);
+              }}
+              disabled={mPoints.isPending || !pointsAmount}
+            >
+              <Coins className="size-4 mr-1.5" />
+              {mPoints.isPending ? "…" : "Appliquer"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
