@@ -1039,11 +1039,14 @@ function BulkDmCard() {
   const canDm = hasPerm(me, "members.edit");
 
   const pollsFn = useServerFn(listOpenPollsForDm);
+  const rolesFn = useServerFn(listFactionRoles);
   const previewFn = useServerFn(previewDmAudience);
   const sendFn = useServerFn(sendBulkDm);
 
   const [kind, setKind] = useState<AudienceKind>("inactive_7d");
   const [pollId, setPollId] = useState<string>("");
+  // Pré-rempli sur le rôle "Membre faction" (1503030823174148216) par défaut.
+  const [roleId, setRoleId] = useState<string>("1503030823174148216");
   const [content, setContent] = useState<string>(DEFAULT_TEMPLATES.inactive_7d);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -1054,8 +1057,20 @@ function BulkDmCard() {
     staleTime: 60_000,
   });
 
-  const audience: DmAudience | null =
-    kind === "poll_not_voted" ? (pollId ? { kind: "poll_not_voted", pollId } : null) : { kind };
+  const { data: rolesData } = useQuery({
+    queryKey: ["bulk-dm-faction-roles"],
+    queryFn: () => rolesFn(),
+    enabled: canDm,
+    staleTime: 5 * 60_000,
+  });
+
+  const audience: DmAudience | null = (() => {
+    if (kind === "poll_not_voted") return pollId ? { kind: "poll_not_voted", pollId } : null;
+    if (kind === "role_all") return roleId ? { kind: "role_all", roleId } : null;
+    if (kind === "role_never_logged_in")
+      return roleId ? { kind: "role_never_logged_in", roleId } : null;
+    return { kind };
+  })();
 
   const preview = useQuery({
     queryKey: ["bulk-dm-preview", JSON.stringify(audience)],
