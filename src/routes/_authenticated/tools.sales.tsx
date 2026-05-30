@@ -321,8 +321,8 @@ function PlayerSales() {
           {filtered.length === 0 ? (
             <EmptyBlock label="Aucune vente à afficher." />
           ) : (
-            <div className="border border-zinc-800 overflow-hidden">
-              <table className="w-full text-xs">
+            <div className="border border-zinc-800 overflow-x-auto">
+              <table className="w-full text-xs min-w-[640px]">
                 <thead className="bg-zinc-950/60 text-zinc-500">
                   <tr style={{ fontFamily: "'Space Mono'" }}>
                     <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Item</th>
