@@ -3,7 +3,20 @@ import { MonoLabel } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId, useEffect } from "react";
-import { ShieldX, Coins, ShoppingCart, Activity, UserCheck, ChevronDown } from "lucide-react";
+import {
+  ShieldX,
+  Coins,
+  ShoppingCart,
+  Activity,
+  UserCheck,
+  ChevronDown,
+  MessageSquare,
+  Clock,
+  UserX,
+  UserPlus,
+  Copy,
+  ExternalLink,
+} from "lucide-react";
 
 import {
   getMemberDetail,
@@ -14,12 +27,22 @@ import {
   removeAlt,
   getMemberPointsHistory,
   getMemberDonations,
+  markMemberAway,
+  dmMember,
 } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
