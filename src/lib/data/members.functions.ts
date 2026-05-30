@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, requireSession, logAction } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 /* ---------- Lecture ---------- */
 
@@ -23,9 +24,7 @@ export const listMembers = createServerFn({ method: "GET" })
     // Exclure les rows synchronisés depuis le serveur public sans aucune donnée
     // faction (ni grade, ni pseudo IG, ni date d'arrivée, ni UUID MC).
     // Ce sont des membres Discord du serveur public, pas des membres de la faction.
-    const factionOnly = (rows ?? []).filter(
-      (m) => m.ig_name || m.current_grade || m.arrival_date || m.mc_uuid,
-    );
+    const factionOnly = filterFactionMembers(rows ?? []);
     const filtered = needle
       ? factionOnly.filter(
           (m) =>
