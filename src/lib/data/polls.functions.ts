@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
-import { isFactionMember, canAccess, listPermissions } from "@/lib/auth/permissions";
+import { isFactionMember, canAccess } from "@/lib/auth/permissions";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
 
 const choiceSchema = z.enum(["yes", "maybe", "no"]);
