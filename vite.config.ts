@@ -7,6 +7,21 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  nitro: {
+    rollupConfig: {
+      onwarn(warning, defaultHandler) {
+        if (
+          warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+          typeof warning.message === "string" &&
+          warning.message.includes('"use client"')
+        ) {
+          return;
+        }
+
+        defaultHandler(warning);
+      },
+    },
+  },
   vite: {
     build: {
       rollupOptions: {
