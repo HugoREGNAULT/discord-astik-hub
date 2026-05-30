@@ -2,6 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
 
+function isFactionMember(member: {
+  ig_name?: string | null;
+  current_grade?: string | null;
+  arrival_date?: string | null;
+  mc_uuid?: string | null;
+}) {
+  return Boolean(member.ig_name || member.current_grade || member.arrival_date || member.mc_uuid);
+}
+
 /**
  * Tableau de bord staff : KPIs et activité récente, accessible à tout
  * staff faction / staff points (perm members.view).
@@ -30,12 +39,18 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     db.from("applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
 
     db.from("donations").select("id", { count: "exact", head: true }).eq("status", "active"),
-    db.from("members").select("discord_id", { count: "exact", head: true }).eq("status", "active"),
-    db.from("members").select("discord_id", { count: "exact", head: true }).eq("status", "former"),
+    db
+      .from("members")
+      .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
+      .eq("status", "active"),
+    db
+      .from("members")
+      .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
+      .eq("status", "former"),
     db
       .from("members")
       .select(
-        "discord_id, discord_username, ig_name, avatar_url, current_grade, messages_7d, voice_7d_seconds",
+        "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid, messages_7d, voice_7d_seconds",
       )
       .eq("status", "active")
       .eq("messages_7d", 0)
@@ -97,13 +112,19 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
   if (topIds.length > 0) {
     const { data: members } = await db
       .from("members")
-      .select("discord_id, ig_name, discord_username, avatar_url")
+      .select("discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid")
       .in(
         "discord_id",
         topIds.map(([id]) => id),
       );
-    const byId = new Map((members ?? []).map((m: any) => [m.discord_id, m]));
-    topContributors = topIds.map(([id, points]) => {
+    const byId = new Map(
+      (members ?? [])
+        .filter((member: any) => isFactionMember(member))
+        .map((member: any) => [member.discord_id, member]),
+    );
+    topContributors = topIds
+      .filter(([id]) => byId.has(id))
+      .map(([id, points]) => {
       const m: any = byId.get(id) ?? {};
       return {
         discord_id: id,
@@ -112,7 +133,7 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
         avatar_url: m.avatar_url ?? null,
         points,
       };
-    });
+      });
   }
 
   // Applications timeline: daily counts over the last 90 days
@@ -157,15 +178,21 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
       ? Math.round((totalAccepted / (totalAccepted + totalRejected)) * 100)
       : 0;
 
+  const activeFactionMembers = (activeMembers.data ?? []).filter((member: any) => isFactionMember(member));
+  const formerFactionMembers = (formerMembers.data ?? []).filter((member: any) => isFactionMember(member));
+  const inactiveFactionMembers = (inactiveMembers.data ?? []).filter((member: any) =>
+    isFactionMember(member),
+  );
+
   return {
     kpis: {
-      activeMembers: activeMembers.count ?? 0,
-      formerMembers: formerMembers.count ?? 0,
+      activeMembers: activeFactionMembers.length,
+      formerMembers: formerFactionMembers.length,
       pendingApplications: pendingApps.count ?? 0,
       activeDonations: activeDonations.count ?? 0,
-      inactiveCount: (inactiveMembers.data ?? []).length,
+      inactiveCount: inactiveFactionMembers.length,
     },
-    inactiveMembers: inactiveMembers.data ?? [],
+    inactiveMembers: inactiveFactionMembers,
     recentWarnings: recentWarnings.data ?? [],
     recentApplications: recentApps.data ?? [],
     recentDonations: recentDonations.data ?? [],
