@@ -638,16 +638,28 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
   );
 }
 
-function MemberActions({ member, onChanged }: { member: any; onChanged: () => void }) {
+function MemberActions({
+  member,
+  canManagePoints,
+  onChanged,
+}: {
+  member: any;
+  canManagePoints: boolean;
+  onChanged: () => void;
+}) {
   const qc = useQueryClient();
   const dmFn = useServerFn(dmMember);
   const awayFn = useServerFn(markMemberAway);
   const updateFn = useServerFn(updateMember);
+  const pointsFn = useServerFn(addPoints);
 
   const [dmOpen, setDmOpen] = useState(false);
   const [dmContent, setDmContent] = useState(
     `Salut ${member.ig_name ?? member.discord_username ?? ""} 👋\n\n`,
   );
+  const [pointsAmount, setPointsAmount] = useState<string>("");
+  const [pointsReason, setPointsReason] = useState<string>("");
+  const [grade, setGrade] = useState<string>(member.current_grade ?? "");
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["member", member.discord_id] });
