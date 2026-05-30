@@ -81,7 +81,36 @@ async function buildRowsForDiscordIds(discordIds: string[]): Promise<MemberRow[]
   });
 }
 
+/** Renvoie l'ensemble des discord_id (humains, non bots) actuellement sur la guild faction. */
+async function factionGuildMemberIds(): Promise<Set<string>> {
+  const gm = await listAllGuildMembers(GUILDS.FACTION);
+  const ids = new Set<string>();
+  for (const m of gm) {
+    const uid = m.user?.id;
+    if (!uid) continue;
+    if ((m.user as { bot?: boolean } | undefined)?.bot) continue;
+    ids.add(uid);
+  }
+  return ids;
+}
+
 async function resolveTargets(audience: DmAudience): Promise<MemberRow[]> {
+  // Filet de sécurité : pour toute audience basée sur la DB, on intersecte avec
+  // la liste réelle des membres présents sur le serveur FACTION (privé).
+  // Empêche d'envoyer un DM à un membre du serveur public encore présent en DB.
+  const dbBased =
+    audience.kind === "all_active" ||
+    audience.kind === "inactive_7d" ||
+    audience.kind === "never_logged_in" ||
+    audience.kind === "poll_not_voted";
+
+  const rows = await resolveTargetsRaw(audience);
+  if (!dbBased) return rows;
+  const factionIds = await factionGuildMemberIds();
+  return rows.filter((r) => factionIds.has(r.discord_id));
+}
+
+async function resolveTargetsRaw(audience: DmAudience): Promise<MemberRow[]> {
   if (audience.kind === "all_active") return listActiveMembers();
 
   if (audience.kind === "inactive_7d") {
