@@ -87,7 +87,8 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
         byTime.set(bucket, row);
       }
       const total = pickTotal(s, metric);
-      row[s.discord_id] = period === "all" ? total : Math.max(0, total - (baseline.get(s.discord_id) ?? total));
+      row[s.discord_id] =
+        period === "all" ? total : Math.max(0, total - (baseline.get(s.discord_id) ?? total));
     }
     return Array.from(byTime.values()).sort((a, b) => String(a.t).localeCompare(String(b.t)));
   }, [snapshots, top3, metric, period]);

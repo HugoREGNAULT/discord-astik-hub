@@ -195,10 +195,7 @@ function LeaderboardPage() {
 
   const entries = data?.entries ?? [];
   const baseline = useMemo(
-    () =>
-      period === "all"
-        ? null
-        : buildBaseline(histData?.snapshots ?? [], metric, period),
+    () => (period === "all" ? null : buildBaseline(histData?.snapshots ?? [], metric, period)),
     [histData?.snapshots, metric, period],
   );
   const sortedAll = useMemo(

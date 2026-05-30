@@ -196,13 +196,8 @@ function MemberDetail() {
       </div>
 
       {data.canEdit && (
-        <MemberActions
-          member={m}
-          canManagePoints={!!data.canManagePoints}
-          onChanged={refresh}
-        />
+        <MemberActions member={m} canManagePoints={!!data.canManagePoints} onChanged={refresh} />
       )}
-
 
       {data.canEdit && (
         <Card>
@@ -667,8 +662,7 @@ function MemberActions({
   };
 
   const mDm = useMutation({
-    mutationFn: () =>
-      dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
+    mutationFn: () => dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
     onSuccess: () => {
       toast.success("MP envoyé");
       setDmOpen(false);
@@ -740,9 +734,7 @@ function MemberActions({
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                MP à {member.ig_name ?? member.discord_username}
-              </DialogTitle>
+              <DialogTitle>MP à {member.ig_name ?? member.discord_username}</DialogTitle>
             </DialogHeader>
             <Textarea
               rows={8}
