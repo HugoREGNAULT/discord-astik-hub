@@ -35,6 +35,20 @@ import {
 } from "recharts";
 import { Sparkles, HeartPulse, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
+import {
+  listOpenPollsForDm,
+  previewDmAudience,
+  sendBulkDm,
+  type DmAudience,
+} from "@/lib/data/bulk-dm.functions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Send, Megaphone } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -153,6 +167,10 @@ function StaffPage() {
 
       {/* Digest IA hebdo */}
       <WeeklyDigestSection />
+
+      {/* Communication staff (DM massif) */}
+      <BulkDmCard />
+
 
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
@@ -980,4 +998,240 @@ function renderInline(text: string): string {
       /`([^`]+)`/g,
       '<code class="font-mono text-xs bg-muted px-1 py-0.5 rounded">$1</code>',
     );
+}
+
+// ----------------- DM massif staff -----------------
+
+type AudienceKind = "all_active" | "inactive_7d" | "never_logged_in" | "poll_not_voted";
+
+const AUDIENCE_LABELS: Record<AudienceKind, string> = {
+  all_active: "Tous les membres actifs",
+  inactive_7d: "Inactifs 7j (0 msg & 0 vocal)",
+  never_logged_in: "Jamais connectés au dashboard",
+  poll_not_voted: "N'ont pas voté à un sondage",
+};
+
+const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
+  all_active:
+    "Salut {ig_name} 👋\n\n[message à la faction]\n\n— Le staff PunkAstik",
+  inactive_7d:
+    "Salut {ig_name} 👋\n\nOn ne t'a pas vu cette semaine sur le Discord ni en vocal. Tout va bien ? Donne-nous des nouvelles quand tu peux !",
+  never_logged_in:
+    "Salut {ig_name} 👋\n\nPetit rappel : connecte-toi au dashboard de la faction au moins une fois pour qu'on puisse te suivre. À très vite !",
+  poll_not_voted:
+    "Salut {ig_name} 👋\n\nIl reste un sondage en attente de ta réponse — un petit clic suffit. Merci !",
+};
+
+function BulkDmCard() {
+  const { data: me } = useCurrentUser();
+  const canDm = hasPerm(me, "members.edit");
+
+  const pollsFn = useServerFn(listOpenPollsForDm);
+  const previewFn = useServerFn(previewDmAudience);
+  const sendFn = useServerFn(sendBulkDm);
+
+  const [kind, setKind] = useState<AudienceKind>("inactive_7d");
+  const [pollId, setPollId] = useState<string>("");
+  const [content, setContent] = useState<string>(DEFAULT_TEMPLATES.inactive_7d);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const { data: pollsData } = useQuery({
+    queryKey: ["bulk-dm-open-polls"],
+    queryFn: () => pollsFn(),
+    enabled: canDm,
+    staleTime: 60_000,
+  });
+
+  const audience: DmAudience | null =
+    kind === "poll_not_voted"
+      ? pollId
+        ? { kind: "poll_not_voted", pollId }
+        : null
+      : { kind };
+
+  const preview = useQuery({
+    queryKey: ["bulk-dm-preview", JSON.stringify(audience)],
+    queryFn: () => previewFn({ data: { audience: audience! } }),
+    enabled: canDm && !!audience,
+    staleTime: 30_000,
+  });
+
+  const sendMut = useMutation({
+    mutationFn: () => sendFn({ data: { audience: audience!, content } }),
+    onSuccess: (res) => {
+      toast.success(
+        `DM envoyé à ${res.sent}/${res.total} membre(s)${res.failed > 0 ? ` — ${res.failed} échec(s)` : ""}`,
+      );
+      setConfirmOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (!canDm) return null;
+
+  const targetCount = preview.data?.count ?? 0;
+
+  return (
+    <Card className="border-[#5865F2]/30">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Megaphone className="size-4 text-[#5865F2]" />
+          Communication staff — DM Discord
+          <span className="text-[11px] text-muted-foreground font-normal ml-2">
+            Envoi en DM via le bot · ~4/sec · max 500
+          </span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Audience
+            </label>
+            <Select
+              value={kind}
+              onValueChange={(v: AudienceKind) => {
+                setKind(v);
+                setContent(DEFAULT_TEMPLATES[v]);
+              }}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(AUDIENCE_LABELS) as AudienceKind[]).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {AUDIENCE_LABELS[k]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {kind === "poll_not_voted" && (
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Sondage
+              </label>
+              <Select value={pollId} onValueChange={setPollId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choisir un sondage ouvert…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(pollsData?.polls ?? []).length === 0 ? (
+                    <div className="p-3 text-xs text-muted-foreground">Aucun sondage ouvert</div>
+                  ) : (
+                    (pollsData?.polls ?? []).map((p: any) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.title}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Message
+            </label>
+            <span className="text-[11px] text-muted-foreground">
+              Variables : <code className="font-mono">{"{ig_name}"}</code>,{" "}
+              <code className="font-mono">{"{discord_username}"}</code>,{" "}
+              <code className="font-mono">{"{grade}"}</code>
+            </span>
+          </div>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={6}
+            maxLength={1800}
+          />
+          <div className="text-[11px] text-muted-foreground text-right mt-1">
+            {content.length}/1800
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 flex-wrap rounded-md border border-border bg-card/40 p-3">
+          <div className="text-sm">
+            {audience ? (
+              preview.isLoading ? (
+                <span className="text-muted-foreground">Calcul de l'audience…</span>
+              ) : (
+                <>
+                  <span className="font-semibold tabular-nums">{targetCount}</span>{" "}
+                  <span className="text-muted-foreground">
+                    destinataire{targetCount > 1 ? "s" : ""}
+                  </span>
+                </>
+              )
+            ) : (
+              <span className="text-muted-foreground">Sélectionne un sondage</span>
+            )}
+          </div>
+          <Button
+            disabled={!audience || targetCount === 0 || content.trim().length === 0}
+            onClick={() => setConfirmOpen(true)}
+            className="gap-1.5"
+          >
+            <Send className="size-3.5" />
+            Envoyer
+          </Button>
+        </div>
+
+        {(preview.data?.sample ?? []).length > 0 && (
+          <div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+              Aperçu (max 20)
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {preview.data!.sample.map((m) => (
+                <Badge key={m.discord_id} variant="outline" className="font-normal">
+                  {m.ig_name ?? m.discord_username ?? m.discord_id}
+                </Badge>
+              ))}
+              {targetCount > (preview.data?.sample.length ?? 0) && (
+                <Badge variant="secondary">
+                  + {targetCount - (preview.data?.sample.length ?? 0)} autres
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer l'envoi massif</DialogTitle>
+            <DialogDescription>
+              Le bot va envoyer un DM Discord à{" "}
+              <span className="font-semibold">{targetCount}</span> membre(s) (
+              {AUDIENCE_LABELS[kind]}). L'envoi prendra environ{" "}
+              {Math.ceil((targetCount * 0.25) / 60)} min. Confirmer ?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded border border-border bg-muted/30 p-3 text-sm whitespace-pre-wrap max-h-48 overflow-y-auto">
+            {content}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => sendMut.mutate()}
+              disabled={sendMut.isPending}
+              className="gap-1.5"
+            >
+              <Send className="size-3.5" />
+              {sendMut.isPending ? "Envoi en cours…" : `Envoyer à ${targetCount}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
 }
