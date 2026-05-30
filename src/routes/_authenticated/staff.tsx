@@ -1350,15 +1350,30 @@ type StatusFilter = "all" | "success" | "with_failures" | "empty";
 
 const PER_PAGE = 8;
 
+type SortKey = "date" | "audience" | "status";
+type SortDir = "asc" | "desc";
+
+function statusRank(p: HistoryItem["payload"]): number {
+  const sent = p?.sent ?? 0;
+  const total = p?.total ?? 0;
+  const failed = p?.failed ?? 0;
+  if (total === 0) return 0; // vide
+  if (failed > 0) return 1; // avec échecs
+  if (sent === 0) return 2; // rien envoyé
+  return 3; // succès
+}
+
 function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
   const [search, setSearch] = useState("");
   const [audienceFilter, setAudienceFilter] = useState<AudienceKind | "all">("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("date");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    return items.filter((l) => {
+    const out = items.filter((l) => {
       const p = l.payload ?? {};
       const aud = p.audience?.kind;
       if (audienceFilter !== "all" && aud !== audienceFilter) return false;
@@ -1375,7 +1390,21 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
       }
       return true;
     });
-  }, [items, search, audienceFilter, statusFilter]);
+
+    const dir = sortDir === "asc" ? 1 : -1;
+    out.sort((a, b) => {
+      if (sortKey === "date") {
+        return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * dir;
+      }
+      if (sortKey === "audience") {
+        const la = a.payload?.audience?.kind ? AUDIENCE_LABELS[a.payload.audience.kind] : "";
+        const lb = b.payload?.audience?.kind ? AUDIENCE_LABELS[b.payload.audience.kind] : "";
+        return la.localeCompare(lb, "fr") * dir;
+      }
+      return (statusRank(a.payload) - statusRank(b.payload)) * dir;
+    });
+    return out;
+  }, [items, search, audienceFilter, statusFilter, sortKey, sortDir]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const safePage = Math.min(page, pageCount);
@@ -1394,7 +1423,8 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 mb-2">
+
         <Input
           value={search}
           onChange={(e) => {
@@ -1441,6 +1471,31 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
           </SelectContent>
         </Select>
       </div>
+
+      <div className="flex items-center gap-2 mb-3 text-xs">
+        <span className="text-muted-foreground">Trier par</span>
+        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+          <SelectTrigger className="h-7 text-xs w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="audience">Audience</SelectItem>
+            <SelectItem value="status">Statut</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          title={sortDir === "asc" ? "Croissant" : "Décroissant"}
+        >
+          {sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+        </Button>
+      </div>
+
 
       {pageItems.length === 0 ? (
         <p className="text-xs text-muted-foreground py-4 text-center">
