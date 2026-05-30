@@ -693,6 +693,34 @@ function MemberActions({
     },
   });
 
+  const mPoints = useMutation({
+    mutationFn: (amount: number) =>
+      pointsFn({
+        data: {
+          memberDiscordId: member.discord_id,
+          amount,
+          reason: pointsReason || undefined,
+          bonusPct: 0,
+        },
+      }),
+    onSuccess: (_r, amount) => {
+      toast.success(`${amount > 0 ? "+" : ""}${amount} points`);
+      setPointsAmount("");
+      setPointsReason("");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+  });
+
+  const mGrade = useMutation({
+    mutationFn: () =>
+      updateFn({ data: { discordId: member.discord_id, patch: { current_grade: grade || null } } }),
+    onSuccess: () => {
+      toast.success("Grade mis à jour");
+      refresh();
+    },
+  });
+
   const copyId = () => {
     navigator.clipboard.writeText(member.discord_id);
     toast.success("ID Discord copié");
