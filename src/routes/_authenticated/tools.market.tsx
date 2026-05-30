@@ -152,9 +152,11 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
 
   const fetchHistory = useServerFn(getMarketPriceHistory);
   const fetchNames = useServerFn(resolveUuidsToNames);
+  const [range, setRange] = useState<"24h" | "7d">("7d");
+  const rangeHours = range === "24h" ? 24 : 168;
   const history = useQuery({
-    queryKey: ["pala-market-history", it.name],
-    queryFn: () => fetchHistory({ data: { itemName: it.name } }),
+    queryKey: ["pala-market-history", it.name, range],
+    queryFn: () => fetchHistory({ data: { itemName: it.name, rangeHours } }),
     enabled: expanded,
     staleTime: 5 * 60_000,
     retry: false,
