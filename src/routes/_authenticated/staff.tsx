@@ -1472,6 +1472,31 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
         </Select>
       </div>
 
+      <div className="flex items-center gap-2 mb-3 text-xs">
+        <span className="text-muted-foreground">Trier par</span>
+        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+          <SelectTrigger className="h-7 text-xs w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="audience">Audience</SelectItem>
+            <SelectItem value="status">Statut</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          title={sortDir === "asc" ? "Croissant" : "Décroissant"}
+        >
+          {sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+        </Button>
+      </div>
+
+
       {pageItems.length === 0 ? (
         <p className="text-xs text-muted-foreground py-4 text-center">
           Aucune campagne ne correspond aux filtres.
