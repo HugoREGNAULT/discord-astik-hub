@@ -87,7 +87,13 @@ function MembersPage() {
 
       <div className="grid gap-2">
         {paged.map((m, i) => (
-          <Link key={m.discord_id} to="/members/$id" params={{ id: m.discord_id }}>
+          <Link
+            key={m.discord_id}
+            to="/members/$id"
+            params={{ id: m.discord_id }}
+            className="block"
+          >
+
             <div className="relative bg-zinc-900/70 border border-zinc-800 backdrop-blur p-3 flex items-center gap-3 hover:border-pink-500/60 transition">
               <span
                 className="text-[9px] text-zinc-600 w-8 shrink-0"
