@@ -40,6 +40,8 @@ import {
   listFactionRoles,
   previewDmAudience,
   sendBulkDm,
+  exportDmAudience,
+  listBulkDmHistory,
   type DmAudience,
 } from "@/lib/data/bulk-dm.functions";
 import {
@@ -49,7 +51,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Send, Megaphone } from "lucide-react";
+import { Send, Megaphone, Download, History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1042,6 +1044,9 @@ function BulkDmCard() {
   const rolesFn = useServerFn(listFactionRoles);
   const previewFn = useServerFn(previewDmAudience);
   const sendFn = useServerFn(sendBulkDm);
+  const exportFn = useServerFn(exportDmAudience);
+  const historyFn = useServerFn(listBulkDmHistory);
+  const qc = useQueryClient();
 
   const [kind, setKind] = useState<AudienceKind>("inactive_7d");
   const [pollId, setPollId] = useState<string>("");
@@ -1086,6 +1091,39 @@ function BulkDmCard() {
         `DM envoyé à ${res.sent}/${res.total} membre(s)${res.failed > 0 ? ` — ${res.failed} échec(s)` : ""}`,
       );
       setConfirmOpen(false);
+      qc.invalidateQueries({ queryKey: ["bulk-dm-history"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const history = useQuery({
+    queryKey: ["bulk-dm-history"],
+    queryFn: () => historyFn(),
+    enabled: canDm,
+    staleTime: 30_000,
+  });
+
+  const exportMut = useMutation({
+    mutationFn: () => exportFn({ data: { audience: audience! } }),
+    onSuccess: (res) => {
+      const header = "discord_id,ig_name,discord_username,current_grade\n";
+      const escape = (v: string | null) => {
+        const s = (v ?? "").replace(/"/g, '""');
+        return /[",\n]/.test(s) ? `"${s}"` : s;
+      };
+      const body = res.rows
+        .map((r) =>
+          [r.discord_id, r.ig_name, r.discord_username, r.current_grade].map(escape).join(","),
+        )
+        .join("\n");
+      const blob = new Blob([header + body], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `audience-${kind}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`${res.rows.length} lignes exportées`);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -1221,14 +1259,26 @@ function BulkDmCard() {
               </span>
             )}
           </div>
-          <Button
-            disabled={!audience || targetCount === 0 || content.trim().length === 0}
-            onClick={() => setConfirmOpen(true)}
-            className="gap-1.5"
-          >
-            <Send className="size-3.5" />
-            Envoyer
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!audience || targetCount === 0 || exportMut.isPending}
+              onClick={() => exportMut.mutate()}
+              className="gap-1.5"
+            >
+              <Download className="size-3.5" />
+              {exportMut.isPending ? "Export…" : "CSV"}
+            </Button>
+            <Button
+              disabled={!audience || targetCount === 0 || content.trim().length === 0}
+              onClick={() => setConfirmOpen(true)}
+              className="gap-1.5"
+            >
+              <Send className="size-3.5" />
+              Envoyer
+            </Button>
+          </div>
         </div>
 
         {(preview.data?.sample ?? []).length > 0 && (
@@ -1248,6 +1298,41 @@ function BulkDmCard() {
                 </Badge>
               )}
             </div>
+          </div>
+        )}
+
+        {(history.data?.items ?? []).length > 0 && (
+          <div className="pt-2 border-t border-border">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+              <History className="size-3" /> Dernières campagnes
+            </div>
+            <ul className="divide-y divide-border max-h-56 overflow-y-auto">
+              {history.data!.items.map((l: any) => {
+                const p = l.payload ?? {};
+                const aud = p.audience?.kind as AudienceKind | undefined;
+                return (
+                  <li key={l.id} className="py-2 flex items-center gap-3 text-xs">
+                    <span className="font-mono tabular-nums w-20 text-muted-foreground">
+                      {new Date(l.created_at).toLocaleDateString("fr-FR")}{" "}
+                      {new Date(l.created_at).toLocaleTimeString("fr-FR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    <Badge variant="outline" className="font-normal">
+                      {aud ? AUDIENCE_LABELS[aud] : "?"}
+                    </Badge>
+                    <span className="ml-auto tabular-nums">
+                      <span className="text-primary font-semibold">{p.sent ?? 0}</span>
+                      <span className="text-muted-foreground">/{p.total ?? 0}</span>
+                      {p.failed > 0 && (
+                        <span className="text-destructive ml-2">· {p.failed} échec(s)</span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         )}
       </CardContent>

@@ -30,6 +30,7 @@ import {
   markMemberAway,
   dmMember,
 } from "@/lib/data/members.functions";
+import { addPoints } from "@/lib/data/points.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -194,7 +195,13 @@ function MemberDetail() {
         <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
       </div>
 
-      {data.canEdit && <MemberActions member={m} onChanged={refresh} />}
+      {data.canEdit && (
+        <MemberActions
+          member={m}
+          canManagePoints={!!data.canManagePoints}
+          onChanged={refresh}
+        />
+      )}
 
 
       {data.canEdit && (
@@ -631,16 +638,28 @@ function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void })
   );
 }
 
-function MemberActions({ member, onChanged }: { member: any; onChanged: () => void }) {
+function MemberActions({
+  member,
+  canManagePoints,
+  onChanged,
+}: {
+  member: any;
+  canManagePoints: boolean;
+  onChanged: () => void;
+}) {
   const qc = useQueryClient();
   const dmFn = useServerFn(dmMember);
   const awayFn = useServerFn(markMemberAway);
   const updateFn = useServerFn(updateMember);
+  const pointsFn = useServerFn(addPoints);
 
   const [dmOpen, setDmOpen] = useState(false);
   const [dmContent, setDmContent] = useState(
     `Salut ${member.ig_name ?? member.discord_username ?? ""} 👋\n\n`,
   );
+  const [pointsAmount, setPointsAmount] = useState<string>("");
+  const [pointsReason, setPointsReason] = useState<string>("");
+  const [grade, setGrade] = useState<string>(member.current_grade ?? "");
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["member", member.discord_id] });
@@ -670,6 +689,34 @@ function MemberActions({ member, onChanged }: { member: any; onChanged: () => vo
       updateFn({ data: { discordId: member.discord_id, patch: { status } } }),
     onSuccess: (_d, status) => {
       toast.success(`Statut: ${status}`);
+      refresh();
+    },
+  });
+
+  const mPoints = useMutation({
+    mutationFn: (amount: number) =>
+      pointsFn({
+        data: {
+          memberDiscordId: member.discord_id,
+          amount,
+          reason: pointsReason || undefined,
+          bonusPct: 0,
+        },
+      }),
+    onSuccess: (_r, amount) => {
+      toast.success(`${amount > 0 ? "+" : ""}${amount} points`);
+      setPointsAmount("");
+      setPointsReason("");
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+  });
+
+  const mGrade = useMutation({
+    mutationFn: () =>
+      updateFn({ data: { discordId: member.discord_id, patch: { current_grade: grade || null } } }),
+    onSuccess: () => {
+      toast.success("Grade mis à jour");
       refresh();
     },
   });
@@ -765,6 +812,71 @@ function MemberActions({ member, onChanged }: { member: any; onChanged: () => vo
             <ExternalLink className="size-4 mr-1.5" /> Ouvrir dans Discord
           </a>
         </Button>
+
+        <div className="w-full flex flex-wrap items-end gap-2 pt-3 mt-2 border-t border-border">
+          <div className="flex-1 min-w-[180px]">
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+              Grade
+            </label>
+            <Input
+              value={grade}
+              onChange={(e) => setGrade(e.target.value)}
+              placeholder="ex: Vétéran"
+              className="h-9"
+            />
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => mGrade.mutate()}
+            disabled={mGrade.isPending || grade === (member.current_grade ?? "")}
+          >
+            {mGrade.isPending ? "…" : "Changer grade"}
+          </Button>
+        </div>
+
+        {canManagePoints && (
+          <div className="w-full flex flex-wrap items-end gap-2">
+            <div className="w-28">
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Points
+              </label>
+              <Input
+                type="number"
+                value={pointsAmount}
+                onChange={(e) => setPointsAmount(e.target.value)}
+                placeholder="±N"
+                className="h-9"
+              />
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Raison
+              </label>
+              <Input
+                value={pointsReason}
+                onChange={(e) => setPointsReason(e.target.value)}
+                placeholder="optionnel"
+                className="h-9"
+              />
+            </div>
+            <Button
+              size="sm"
+              onClick={() => {
+                const n = parseInt(pointsAmount, 10);
+                if (!Number.isFinite(n) || n === 0) {
+                  toast.error("Montant invalide");
+                  return;
+                }
+                mPoints.mutate(n);
+              }}
+              disabled={mPoints.isPending || !pointsAmount}
+            >
+              <Coins className="size-4 mr-1.5" />
+              {mPoints.isPending ? "…" : "Appliquer"}
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
