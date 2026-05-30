@@ -204,13 +204,20 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
               {l.label} × {l.quantity}
             </span>
             <span className="font-mono text-pink-400 font-bold">{l.subtotal} pts</span>
-            <button
-              onClick={() => onRemove(l.id)}
-              aria-label={`Supprimer ${l.label}`}
-              className="text-red-400 hover:text-red-300"
-            >
-              <Trash2 className="size-4" />
-            </button>
+            <ConfirmDialog
+              title={`Supprimer "${l.label}" ?`}
+              description="Cette ligne sera retirée du panier."
+              confirmLabel="Supprimer"
+              onConfirm={() => onRemove(l.id)}
+              trigger={
+                <button
+                  aria-label={`Supprimer ${l.label}`}
+                  className="text-red-400 hover:text-red-300"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              }
+            />
           </li>
         ))}
         {(!cart.donation_lines || cart.donation_lines.length === 0) && (
