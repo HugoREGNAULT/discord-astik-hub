@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 export type LeaderboardMetric = "points" | "voice" | "messages";
 
@@ -23,11 +24,12 @@ export const getLeaderboard = createServerFn({ method: "GET" }).handler(async ()
   const { data, error } = await db
     .from("members")
     .select(
-      "discord_id, discord_username, ig_name, avatar_url, current_grade, astik_points, voice_total_seconds, voice_7d_seconds, messages_total, messages_7d",
+      "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid, astik_points, voice_total_seconds, voice_7d_seconds, messages_total, messages_7d",
     )
     .eq("status", "active");
   if (error) throw new Error(error.message);
-  return { entries: (data ?? []) as LeaderboardEntry[] };
+  const entries = filterFactionMembers(data ?? []);
+  return { entries: entries as LeaderboardEntry[] };
 });
 
 export interface LeaderboardHistoryPoint {
@@ -39,14 +41,22 @@ export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(a
   await requirePermission("profile.self");
   // 30 derniers jours de snapshots
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-  const { data, error } = await db
-    .from("leaderboard_snapshots")
-    .select(
-      "taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d",
-    )
-    .gte("taken_at", since)
-    .order("taken_at", { ascending: true })
-    .limit(20000);
+  const [{ data: snapshots, error }, { data: members, error: membersError }] = await Promise.all([
+    db
+      .from("leaderboard_snapshots")
+      .select(
+        "taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d",
+      )
+      .gte("taken_at", since)
+      .order("taken_at", { ascending: true })
+      .limit(20000),
+    db
+      .from("members")
+      .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
+      .eq("status", "active"),
+  ]);
   if (error) throw new Error(error.message);
-  return { snapshots: data ?? [] };
+  if (membersError) throw new Error(membersError.message);
+  const allowedIds = new Set(filterFactionMembers(members ?? []).map((member: any) => member.discord_id));
+  return { snapshots: (snapshots ?? []).filter((snapshot) => allowedIds.has(snapshot.discord_id)) };
 });

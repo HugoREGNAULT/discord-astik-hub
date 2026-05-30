@@ -1,11 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 export const getAdminOverview = createServerFn({ method: "GET" }).handler(async () => {
   await requirePermission("admin.access");
-  const [profilesCount, activeCarts, recentLogs, recentErrors, lastRefresh] = await Promise.all([
-    db.from("members").select("discord_id", { count: "exact", head: true }),
+  const [membersRes, activeCarts, recentLogs, recentErrors, lastRefresh] = await Promise.all([
+    db.from("members").select("discord_id, ig_name, current_grade, arrival_date, mc_uuid"),
     db.from("donations").select("id", { count: "exact", head: true }).eq("status", "active"),
     db.from("logs").select("*").order("created_at", { ascending: false }).limit(20),
     db
@@ -34,7 +35,7 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(async 
   }
 
   return {
-    profilesCount: profilesCount.count ?? 0,
+    profilesCount: filterFactionMembers(membersRes.data ?? []).length,
     activeCarts: activeCarts.count ?? 0,
     recentLogs: recentLogs.data ?? [],
     recentErrors: recentErrors.data ?? [],

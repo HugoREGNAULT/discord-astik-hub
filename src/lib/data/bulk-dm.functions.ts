@@ -17,6 +17,7 @@ import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 import { listAllGuildMembers } from "@/lib/discord/api.server";
 import { GUILDS } from "@/lib/discord/constants";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 type MemberRow = {
   discord_id: string;
@@ -24,14 +25,16 @@ type MemberRow = {
   ig_name: string | null;
   avatar_url: string | null;
   current_grade: string | null;
+  arrival_date?: string | null;
+  mc_uuid?: string | null;
 };
 
-const SELECT = "discord_id, discord_username, ig_name, avatar_url, current_grade";
+const SELECT = "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid";
 
 async function listActiveMembers(): Promise<MemberRow[]> {
   const { data, error } = await db.from("members").select(SELECT).eq("status", "active");
   if (error) throw new Error(error.message);
-  return (data ?? []) as MemberRow[];
+  return filterFactionMembers((data ?? []) as MemberRow[]);
 }
 
 const audienceSchema = z.discriminatedUnion("kind", [
@@ -67,7 +70,7 @@ async function buildRowsForDiscordIds(discordIds: string[]): Promise<MemberRow[]
   for (let i = 0; i < discordIds.length; i += chunkSize) {
     const chunk = discordIds.slice(i, i + chunkSize);
     const { data } = await db.from("members").select(SELECT).in("discord_id", chunk);
-    for (const m of (data ?? []) as MemberRow[]) dbMap.set(m.discord_id, m);
+    for (const m of filterFactionMembers((data ?? []) as MemberRow[])) dbMap.set(m.discord_id, m);
   }
   return discordIds.map((id) => {
     const row = dbMap.get(id);

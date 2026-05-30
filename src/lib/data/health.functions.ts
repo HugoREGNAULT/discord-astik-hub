@@ -1,15 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
-
-function isFactionMember(member: {
-  ig_name?: string | null;
-  current_grade?: string | null;
-  arrival_date?: string | null;
-  mc_uuid?: string | null;
-}) {
-  return Boolean(member.ig_name || member.current_grade || member.arrival_date || member.mc_uuid);
-}
+import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
 
 /**
  * Dashboard "Santé faction" : indicateurs synthétiques de l'activité et
@@ -118,10 +110,8 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
     .sort((a, b) => b.count_90d - a.count_90d)
     .slice(0, 6);
 
-  const factionArrivals = (recentArrivals.data ?? []).filter((member: any) => isFactionMember(member));
-  const factionDepartures = (recentDepartures.data ?? []).filter((member: any) =>
-    isFactionMember(member),
-  );
+  const factionArrivals = filterFactionMembers(recentArrivals.data ?? []);
+  const factionDepartures = filterFactionMembers(recentDepartures.data ?? []);
   const arrivals30 = factionArrivals.length;
   const departures30 = factionDepartures.length;
   const turnoverRate = total > 0 ? Math.round(((arrivals30 + departures30) / total) * 100) : 0;

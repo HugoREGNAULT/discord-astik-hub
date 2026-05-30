@@ -7,6 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
+import { isFactionMember } from "@/lib/data/faction-members";
 
 /** Récupère (ou crée) la fiche `members` du user connecté + données d'accueil. */
 export const getMyOverview = createServerFn({ method: "GET" }).handler(async () => {
@@ -66,10 +67,10 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
   if (member.recruiter_discord_id) {
     const r = await db
       .from("members")
-      .select("discord_id, ig_name, discord_username")
+      .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid")
       .eq("discord_id", member.recruiter_discord_id)
       .maybeSingle();
-    recruiter = r.data ?? null;
+    recruiter = r.data && isFactionMember(r.data) ? r.data : null;
   }
 
   return {
