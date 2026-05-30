@@ -215,7 +215,8 @@ function PlayerLookup() {
                 <p className="text-zinc-600 text-xs mt-2">Aucune vente active enregistrée.</p>
               )}
               {salesQ.data && salesQ.data.open.length > 0 && (
-                <table className="w-full text-sm mt-2">
+                <div className="overflow-x-auto -mx-2 px-2">
+                <table className="w-full text-sm mt-2 min-w-[480px]">
                   <thead>
                     <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
                       <th className="py-2">Item</th>
@@ -239,6 +240,7 @@ function PlayerLookup() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </ToolCard>
 
