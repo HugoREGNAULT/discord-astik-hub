@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/pdc")({
   head: () => ({ meta: [{ title: "Plans de coupe · PunkAstik" }] }),

@@ -71,6 +71,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { ApplicationsChart } from "@/components/ApplicationsChart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   TrendingUp as TrendingUpIcon,
   UserPlus as UserPlusIcon,
