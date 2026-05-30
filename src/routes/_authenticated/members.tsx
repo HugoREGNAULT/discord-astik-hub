@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -23,6 +23,7 @@ function MembersPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<"active" | "former" | "away" | "all">("active");
   const [page, setPage] = useState(1);
+  const navigate = useNavigate({ from: Route.fullPath });
   const fn = useServerFn(listMembers);
   const { data, isLoading } = useQuery({
     queryKey: ["members", q, status],
@@ -94,6 +95,21 @@ function MembersPage() {
             preload="intent"
             aria-label={`Ouvrir le profil de ${m.ig_name ?? m.discord_username ?? m.discord_id}`}
             className="relative flex items-center gap-3 border border-zinc-800 bg-zinc-900/70 p-3 backdrop-blur transition hover:border-pink-500/60 active:border-pink-500/80 active:bg-zinc-900 touch-manipulation"
+            onClick={(event) => {
+              if (
+                event.defaultPrevented ||
+                event.button !== 0 ||
+                event.metaKey ||
+                event.altKey ||
+                event.ctrlKey ||
+                event.shiftKey
+              ) {
+                return;
+              }
+
+              event.preventDefault();
+              navigate({ to: "/members/$id", params: { id: m.discord_id } });
+            }}
           >
             <span
               className="text-[9px] text-zinc-600 w-8 shrink-0"
