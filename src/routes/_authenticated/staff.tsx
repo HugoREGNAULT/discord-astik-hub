@@ -40,6 +40,8 @@ import {
   listFactionRoles,
   previewDmAudience,
   sendBulkDm,
+  exportDmAudience,
+  listBulkDmHistory,
   type DmAudience,
 } from "@/lib/data/bulk-dm.functions";
 import {
