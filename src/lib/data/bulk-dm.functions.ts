@@ -116,7 +116,7 @@ async function resolveTargets(audience: DmAudience): Promise<MemberRow[]> {
   for (const gm of guildMembers) {
     const uid = gm.user?.id;
     if (!uid) continue;
-    if (gm.user?.bot) continue;
+    if ((gm.user as { bot?: boolean } | undefined)?.bot) continue;
     if (gm.roles.includes(audience.roleId)) targetIds.push(uid);
   }
   let rows = await buildRowsForDiscordIds(targetIds);
