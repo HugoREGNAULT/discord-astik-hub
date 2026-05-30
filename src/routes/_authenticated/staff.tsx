@@ -1377,8 +1377,15 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
   const [search, setSearch] = useState("");
   const [audienceFilter, setAudienceFilter] = useState<AudienceKind | "all">("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("date");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const { bdmSort: sortKey, bdmDir: sortDir } = useSearch({ from: "/_authenticated/staff" });
+  const navigate = useNavigate({ from: "/_authenticated/staff" });
+  const setSortKey = (v: SortKey) =>
+    navigate({ search: (prev) => ({ ...prev, bdmSort: v }), replace: true });
+  const setSortDir = (updater: (d: SortDir) => SortDir) =>
+    navigate({
+      search: (prev) => ({ ...prev, bdmDir: updater(prev.bdmDir ?? "desc") }),
+      replace: true,
+    });
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
