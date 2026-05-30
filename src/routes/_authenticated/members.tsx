@@ -91,46 +91,45 @@ function MembersPage() {
             key={m.discord_id}
             to="/members/$id"
             params={{ id: m.discord_id }}
-            className="block"
+            preload="intent"
+            aria-label={`Ouvrir le profil de ${m.ig_name ?? m.discord_username ?? m.discord_id}`}
+            className="relative flex items-center gap-3 border border-zinc-800 bg-zinc-900/70 p-3 backdrop-blur transition hover:border-pink-500/60 active:border-pink-500/80 active:bg-zinc-900 touch-manipulation"
           >
-
-            <div className="relative bg-zinc-900/70 border border-zinc-800 backdrop-blur p-3 flex items-center gap-3 hover:border-pink-500/60 transition">
-              <span
-                className="text-[9px] text-zinc-600 w-8 shrink-0"
+            <span
+              className="text-[9px] text-zinc-600 w-8 shrink-0"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              [{String((page - 1) * PER_PAGE + i + 1).padStart(2, "0")}]
+            </span>
+            {m.avatar_url ? (
+              <img src={m.avatar_url} className="size-10 border border-zinc-700" alt="" />
+            ) : (
+              <div className="size-10 bg-zinc-800 border border-zinc-700" />
+            )}
+            <div className="flex-1 min-w-0">
+              <div
+                className="text-sm font-bold uppercase tracking-tight text-white truncate"
+                style={{ fontFamily: "'Space Grotesk'" }}
+              >
+                {m.ig_name ?? m.discord_username ?? m.discord_id}
+              </div>
+              <div className="text-[10px] text-zinc-500 truncate flex items-center gap-2 mt-0.5">
+                <span className="font-mono">@{m.discord_username}</span>
+                {m.current_grade && <DaChip accent="blurple">{m.current_grade}</DaChip>}
+              </div>
+            </div>
+            <div className="text-right">
+              <div
+                className="text-pink-400 font-bold text-lg"
+                style={{ fontFamily: "'Space Grotesk'" }}
+              >
+                {m.astik_points}
+              </div>
+              <div
+                className="text-[9px] text-zinc-500 uppercase tracking-[0.2em]"
                 style={{ fontFamily: "'Space Mono'" }}
               >
-                [{String((page - 1) * PER_PAGE + i + 1).padStart(2, "0")}]
-              </span>
-              {m.avatar_url ? (
-                <img src={m.avatar_url} className="size-10 border border-zinc-700" alt="" />
-              ) : (
-                <div className="size-10 bg-zinc-800 border border-zinc-700" />
-              )}
-              <div className="flex-1 min-w-0">
-                <div
-                  className="text-sm font-bold uppercase tracking-tight text-white truncate"
-                  style={{ fontFamily: "'Space Grotesk'" }}
-                >
-                  {m.ig_name ?? m.discord_username ?? m.discord_id}
-                </div>
-                <div className="text-[10px] text-zinc-500 truncate flex items-center gap-2 mt-0.5">
-                  <span className="font-mono">@{m.discord_username}</span>
-                  {m.current_grade && <DaChip accent="blurple">{m.current_grade}</DaChip>}
-                </div>
-              </div>
-              <div className="text-right">
-                <div
-                  className="text-pink-400 font-bold text-lg"
-                  style={{ fontFamily: "'Space Grotesk'" }}
-                >
-                  {m.astik_points}
-                </div>
-                <div
-                  className="text-[9px] text-zinc-500 uppercase tracking-[0.2em]"
-                  style={{ fontFamily: "'Space Mono'" }}
-                >
-                  AstikPoints
-                </div>
+                AstikPoints
               </div>
             </div>
           </Link>
