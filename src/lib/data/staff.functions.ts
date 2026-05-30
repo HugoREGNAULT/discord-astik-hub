@@ -1,15 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
-
-function isFactionMember(member: {
-  ig_name?: string | null;
-  current_grade?: string | null;
-  arrival_date?: string | null;
-  mc_uuid?: string | null;
-}) {
-  return Boolean(member.ig_name || member.current_grade || member.arrival_date || member.mc_uuid);
-}
+import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
 
 /**
  * Tableau de bord staff : KPIs et activité récente, accessible à tout
@@ -178,15 +170,9 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
       ? Math.round((totalAccepted / (totalAccepted + totalRejected)) * 100)
       : 0;
 
-  const activeFactionMembers = (activeMembers.data ?? []).filter((member: any) =>
-    isFactionMember(member),
-  );
-  const formerFactionMembers = (formerMembers.data ?? []).filter((member: any) =>
-    isFactionMember(member),
-  );
-  const inactiveFactionMembers = (inactiveMembers.data ?? []).filter((member: any) =>
-    isFactionMember(member),
-  );
+  const activeFactionMembers = filterFactionMembers(activeMembers.data ?? []);
+  const formerFactionMembers = filterFactionMembers(formerMembers.data ?? []);
+  const inactiveFactionMembers = filterFactionMembers(inactiveMembers.data ?? []);
 
   return {
     kpis: {

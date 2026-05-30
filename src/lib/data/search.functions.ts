@@ -11,6 +11,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 export type SearchHit =
   | {
@@ -103,7 +104,7 @@ export const globalSearch = createServerFn({ method: "GET" })
         extraMembers = extraR.data ?? [];
       }
 
-      for (const m of r.data ?? []) {
+      for (const m of filterFactionMembers(r.data ?? [])) {
         hits.push({
           kind: "member",
           id: m.discord_id,
@@ -116,7 +117,7 @@ export const globalSearch = createServerFn({ method: "GET" })
         });
       }
 
-      for (const m of extraMembers) {
+      for (const m of filterFactionMembers(extraMembers)) {
         const alt = altMap.get(m.discord_id)!;
         hits.push({
           kind: "member",
