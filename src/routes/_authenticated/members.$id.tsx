@@ -769,9 +769,3 @@ function MemberActions({ member, onChanged }: { member: any; onChanged: () => vo
     </Card>
   );
 }
-      <div className="sm:col-span-2">
-        <Button onClick={() => onSave(p)}>Enregistrer</Button>
-      </div>
-    </div>
-  );
-}
