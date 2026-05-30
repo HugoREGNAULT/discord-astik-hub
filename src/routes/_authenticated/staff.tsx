@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -79,8 +79,18 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from "lucide-react";
 
+type StaffSearch = { bdmSort: SortKey; bdmDir: SortDir };
+
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
+  validateSearch: (search: Record<string, unknown>): StaffSearch => {
+    const sort = search.bdmSort;
+    const dir = search.bdmDir;
+    return {
+      bdmSort: sort === "audience" || sort === "status" ? sort : "date",
+      bdmDir: dir === "asc" ? "asc" : "desc",
+    };
+  },
   component: () => (
     <Guard perm="members.view">
       <StaffPage />
@@ -1367,8 +1377,15 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
   const [search, setSearch] = useState("");
   const [audienceFilter, setAudienceFilter] = useState<AudienceKind | "all">("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("date");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const { bdmSort: sortKey, bdmDir: sortDir } = useSearch({ from: "/_authenticated/staff" });
+  const navigate = useNavigate({ from: "/_authenticated/staff" });
+  const setSortKey = (v: SortKey) =>
+    navigate({ search: (prev: StaffSearch) => ({ ...prev, bdmSort: v }), replace: true });
+  const setSortDir = (updater: (d: SortDir) => SortDir) =>
+    navigate({
+      search: (prev: StaffSearch) => ({ ...prev, bdmDir: updater(prev.bdmDir ?? "desc") }),
+      replace: true,
+    });
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
