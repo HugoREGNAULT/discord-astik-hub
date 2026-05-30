@@ -20,14 +20,20 @@ export const listMembers = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     const needle = data.q?.trim().toLowerCase();
+    // Exclure les rows synchronisés depuis le serveur public sans aucune donnée
+    // faction (ni grade, ni pseudo IG, ni date d'arrivée, ni UUID MC).
+    // Ce sont des membres Discord du serveur public, pas des membres de la faction.
+    const factionOnly = (rows ?? []).filter(
+      (m) => m.ig_name || m.current_grade || m.arrival_date || m.mc_uuid,
+    );
     const filtered = needle
-      ? (rows ?? []).filter(
+      ? factionOnly.filter(
           (m) =>
             m.discord_id.includes(needle) ||
             (m.discord_username ?? "").toLowerCase().includes(needle) ||
             (m.ig_name ?? "").toLowerCase().includes(needle),
         )
-      : (rows ?? []);
+      : factionOnly;
     return { members: filtered };
   });
 
