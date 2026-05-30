@@ -125,14 +125,14 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     topContributors = topIds
       .filter(([id]) => byId.has(id))
       .map(([id, points]) => {
-      const m: any = byId.get(id) ?? {};
-      return {
-        discord_id: id,
-        ig_name: m.ig_name ?? null,
-        discord_username: m.discord_username ?? null,
-        avatar_url: m.avatar_url ?? null,
-        points,
-      };
+        const m: any = byId.get(id) ?? {};
+        return {
+          discord_id: id,
+          ig_name: m.ig_name ?? null,
+          discord_username: m.discord_username ?? null,
+          avatar_url: m.avatar_url ?? null,
+          points,
+        };
       });
   }
 
@@ -178,8 +178,12 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
       ? Math.round((totalAccepted / (totalAccepted + totalRejected)) * 100)
       : 0;
 
-  const activeFactionMembers = (activeMembers.data ?? []).filter((member: any) => isFactionMember(member));
-  const formerFactionMembers = (formerMembers.data ?? []).filter((member: any) => isFactionMember(member));
+  const activeFactionMembers = (activeMembers.data ?? []).filter((member: any) =>
+    isFactionMember(member),
+  );
+  const formerFactionMembers = (formerMembers.data ?? []).filter((member: any) =>
+    isFactionMember(member),
+  );
   const inactiveFactionMembers = (inactiveMembers.data ?? []).filter((member: any) =>
     isFactionMember(member),
   );
