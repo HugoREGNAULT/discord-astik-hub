@@ -180,6 +180,7 @@ function PollDetail() {
       toast.success("Sondage clôturé");
       qc.invalidateQueries({ queryKey: ["poll", id] });
     },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur clôture sondage"),
   });
 
   const mReopen = useMutation({
@@ -188,6 +189,7 @@ function PollDetail() {
       toast.success("Sondage rouvert");
       qc.invalidateQueries({ queryKey: ["poll", id] });
     },
+    onError: (e: any) => toast.error(e?.message ?? "Erreur réouverture sondage"),
   });
 
   const tallies = useMemo(() => {
@@ -366,11 +368,21 @@ function PollDetail() {
               />
             )}
             {isOpen ? (
-              <Button variant="outline" size="sm" onClick={() => mClose.mutate(null)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => mClose.mutate(null)}
+                disabled={mClose.isPending}
+              >
                 <Lock className="size-4" /> Clôturer
               </Button>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => mReopen.mutate()}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => mReopen.mutate()}
+                disabled={mReopen.isPending}
+              >
                 <RefreshCw className="size-4" /> Rouvrir
               </Button>
             )}
@@ -454,7 +466,12 @@ function PollDetail() {
                       {!isOpen && canManage && (
                         <td className="py-2 pl-3 text-right">
                           {!isWinner && (
-                            <Button size="sm" variant="ghost" onClick={() => mClose.mutate(o.id)}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => mClose.mutate(o.id)}
+                              disabled={mClose.isPending}
+                            >
                               <Crown className="size-4" /> Choisir
                             </Button>
                           )}
