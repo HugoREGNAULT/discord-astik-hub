@@ -76,7 +76,7 @@ export const globalSearch = createServerFn({ method: "GET" })
     if ((!filter || filter === "member") && canAccess(user, "members.view")) {
       const r = await db
         .from("members")
-        .select("discord_id, discord_username, ig_name, avatar_url, current_grade, status")
+        .select("discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid, status")
         .or(`discord_id.ilike.${like},discord_username.ilike.${like},ig_name.ilike.${like}`)
         .limit(8);
 
@@ -99,7 +99,7 @@ export const globalSearch = createServerFn({ method: "GET" })
       if (missingIds.length > 0) {
         const extraR = await db
           .from("members")
-          .select("discord_id, discord_username, ig_name, avatar_url, current_grade, status")
+          .select("discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid, status")
           .in("discord_id", missingIds);
         extraMembers = extraR.data ?? [];
       }

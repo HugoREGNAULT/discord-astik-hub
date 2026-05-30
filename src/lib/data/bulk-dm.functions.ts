@@ -25,9 +25,11 @@ type MemberRow = {
   ig_name: string | null;
   avatar_url: string | null;
   current_grade: string | null;
+  arrival_date?: string | null;
+  mc_uuid?: string | null;
 };
 
-const SELECT = "discord_id, discord_username, ig_name, avatar_url, current_grade";
+const SELECT = "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid";
 
 async function listActiveMembers(): Promise<MemberRow[]> {
   const { data, error } = await db.from("members").select(SELECT).eq("status", "active");

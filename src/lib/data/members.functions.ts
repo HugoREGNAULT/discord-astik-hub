@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, requireSession, logAction } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
-import { filterFactionMembers } from "@/lib/data/faction-members";
+import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
 
 /* ---------- Lecture ---------- */
 
@@ -92,6 +92,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
         Promise.resolve(null),
       ]);
     if (member.error) throw new Error(member.error.message);
+    if (member.data && !isSelf && !isFactionMember(member.data)) throw new Error("NOT_FOUND");
 
     // Staff activity on this member (logs whose payload.target === discordId)
     let staffActivity: any[] = [];
