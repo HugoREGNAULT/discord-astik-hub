@@ -234,11 +234,6 @@ function PollDetail() {
 
   // Garde UI : utilisateur connecté mais sans le rôle requis.
   if (!canVote) {
-    console.warn("[polls/$id] permission denied (client)", {
-      pollId: id,
-      userId: me?.discordId,
-      permissions: me?.permissions,
-    });
     return (
       <div className="max-w-xl mx-auto">
         <Card>
