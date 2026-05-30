@@ -104,18 +104,20 @@ function LeaderboardList({
   entries,
   metric,
   period,
+  baseline,
   query,
   rankOffset = 0,
 }: {
   entries: LeaderboardEntry[];
   metric: LeaderboardMetric;
-  period: "all" | "7d";
+  period: LeaderboardPeriod;
+  baseline: Map<string, number> | null;
   query: string;
   rankOffset?: number;
 }) {
   const sorted = useMemo(() => {
     const arr = [...entries].sort(
-      (a, b) => getValue(b, metric, period) - getValue(a, metric, period),
+      (a, b) => getValue(b, metric, period, baseline) - getValue(a, metric, period, baseline),
     );
     const needle = query.trim().toLowerCase();
     if (!needle) return arr;
@@ -124,13 +126,13 @@ function LeaderboardList({
         (e.ig_name ?? "").toLowerCase().includes(needle) ||
         (e.discord_username ?? "").toLowerCase().includes(needle),
     );
-  }, [entries, metric, period, query]);
+  }, [entries, metric, period, baseline, query]);
 
   return (
     <div className="space-y-1">
       {sorted.map((e, i) => {
         const rank = i + 1 + rankOffset;
-        const value = getValue(e, metric, period);
+        const value = getValue(e, metric, period, baseline);
 
         return (
           <div
