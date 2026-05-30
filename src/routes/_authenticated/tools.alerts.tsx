@@ -232,7 +232,9 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
           title="Supprimer cette alerte ?"
           description="L'alerte sera définitivement supprimée."
           confirmLabel="Supprimer"
-          onConfirm={() => del.mutateAsync()}
+          onConfirm={async () => {
+            await del.mutateAsync();
+          }}
           trigger={
             <button
               disabled={del.isPending}
