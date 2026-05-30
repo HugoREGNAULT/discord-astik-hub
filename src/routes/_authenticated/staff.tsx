@@ -1380,10 +1380,10 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
   const { bdmSort: sortKey, bdmDir: sortDir } = useSearch({ from: "/_authenticated/staff" });
   const navigate = useNavigate({ from: "/_authenticated/staff" });
   const setSortKey = (v: SortKey) =>
-    navigate({ search: (prev) => ({ ...prev, bdmSort: v }), replace: true });
+    navigate({ search: (prev: StaffSearch) => ({ ...prev, bdmSort: v }), replace: true });
   const setSortDir = (updater: (d: SortDir) => SortDir) =>
     navigate({
-      search: (prev) => ({ ...prev, bdmDir: updater(prev.bdmDir ?? "desc") }),
+      search: (prev: StaffSearch) => ({ ...prev, bdmDir: updater(prev.bdmDir ?? "desc") }),
       replace: true,
     });
   const [page, setPage] = useState(1);
