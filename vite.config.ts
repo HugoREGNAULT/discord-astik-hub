@@ -5,21 +5,35 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import type { RollupLog, WarningHandlerWithDefault } from "rollup";
+
+function ignoreUseClientDirectiveWarning(
+  warning: RollupLog,
+  defaultHandler: Parameters<WarningHandlerWithDefault>[1],
+) {
+  if (
+    warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+    warning.message.includes('"use client"')
+  ) {
+    return;
+  }
+
+  defaultHandler(warning);
+}
 
 export default defineConfig({
+  nitro: {
+    rollupConfig: {
+      onwarn(warning: RollupLog, defaultHandler: Parameters<WarningHandlerWithDefault>[1]) {
+        ignoreUseClientDirectiveWarning(warning, defaultHandler);
+      },
+    },
+  } as any,
   vite: {
     build: {
       rollupOptions: {
-        onwarn(warning, defaultHandler) {
-          if (
-            warning.code === "MODULE_LEVEL_DIRECTIVE" &&
-            typeof warning.message === "string" &&
-            warning.message.includes('"use client"')
-          ) {
-            return;
-          }
-
-          defaultHandler(warning);
+        onwarn(warning: RollupLog, defaultHandler: Parameters<WarningHandlerWithDefault>[1]) {
+          ignoreUseClientDirectiveWarning(warning, defaultHandler);
         },
       },
     },
