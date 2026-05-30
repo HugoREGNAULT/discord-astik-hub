@@ -309,7 +309,8 @@ function PlayerLookup() {
               <SectionTitle>Métiers</SectionTitle>
               {jobsQ.isLoading && <LoadingBlock />}
               {jobs.length > 0 && (
-                <table className="w-full text-sm mt-2">
+                <div className="overflow-x-auto -mx-2 px-2">
+                <table className="w-full text-sm mt-2 min-w-[360px]">
                   <thead>
                     <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
                       <th className="py-2">Métier</th>
@@ -327,6 +328,7 @@ function PlayerLookup() {
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
               {jobs.length === 0 && !jobsQ.isLoading && (
                 <p className="text-zinc-600 text-xs mt-2">Aucun métier.</p>
