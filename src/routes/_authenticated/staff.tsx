@@ -1303,7 +1303,7 @@ function BulkDmCard() {
           </div>
         )}
 
-        <BulkDmHistoryList items={history.data?.items ?? []} />
+        <BulkDmHistoryList items={(history.data?.items ?? []) as unknown as HistoryItem[]} />
 
       </CardContent>
 
