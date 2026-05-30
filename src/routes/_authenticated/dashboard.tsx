@@ -190,13 +190,23 @@ function LeaderboardPage() {
     refetchInterval: 60_000,
   });
   const [metric, setMetric] = useState<LeaderboardMetric>("points");
-  const [period, setPeriod] = useState<"all" | "7d">("all");
+  const [period, setPeriod] = useState<LeaderboardPeriod>("all");
   const [query, setQuery] = useState("");
 
   const entries = data?.entries ?? [];
+  const baseline = useMemo(
+    () =>
+      period === "all"
+        ? null
+        : buildBaseline(histData?.snapshots ?? [], metric, period),
+    [histData?.snapshots, metric, period],
+  );
   const sortedAll = useMemo(
-    () => [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period)),
-    [entries, metric, period],
+    () =>
+      [...entries].sort(
+        (a, b) => getValue(b, metric, period, baseline) - getValue(a, metric, period, baseline),
+      ),
+    [entries, metric, period, baseline],
   );
   const top3 = sortedAll.slice(0, 3);
   const rest = sortedAll.slice(3);
@@ -219,23 +229,23 @@ function LeaderboardPage() {
             value={metric}
             onChange={(v) => setMetric(v as LeaderboardMetric)}
           />
-          {metric !== "points" && (
-            <MetricTabs
-              options={[
-                { value: "all", label: "Total" },
-                { value: "7d", label: "7 jours" },
-              ]}
-              value={period}
-              onChange={(v) => setPeriod(v as "all" | "7d")}
-            />
-          )}
+          <MetricTabs
+            options={[
+              { value: "24h", label: "24h" },
+              { value: "7d", label: "7 jours" },
+              { value: "30d", label: "30 jours" },
+              { value: "all", label: "Total" },
+            ]}
+            value={period}
+            onChange={(v) => setPeriod(v as LeaderboardPeriod)}
+          />
         </div>
 
         <div className="space-y-5">
           <div className="grid sm:grid-cols-3 gap-2">
             {top3.map((e, i) => {
               const rank = i + 1;
-              const value = getValue(e, metric, period);
+              const value = getValue(e, metric, period, baseline);
               return (
                 <div
                   key={e.discord_id}
