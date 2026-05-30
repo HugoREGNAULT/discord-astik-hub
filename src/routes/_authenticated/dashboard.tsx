@@ -310,6 +310,7 @@ function LeaderboardPage() {
                 entries={rest}
                 metric={metric}
                 period={period}
+                baseline={baseline}
                 query={query}
                 rankOffset={3}
               />
