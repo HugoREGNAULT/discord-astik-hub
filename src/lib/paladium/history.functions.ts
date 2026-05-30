@@ -333,9 +333,12 @@ export const snapshotMarketPrices = createServerFn({ method: "POST" }).handler(a
 });
 
 export const getMarketPriceHistory = createServerFn({ method: "POST" })
-  .inputValidator((d: { itemName: string }) => d)
+  .inputValidator((d: { itemName: string; rangeHours?: number }) => ({
+    itemName: d.itemName,
+    rangeHours: Math.min(Math.max(Number(d.rangeHours ?? 168), 1), 24 * 30),
+  }))
   .handler(async ({ data }) => {
-    const since = new Date(Date.now() - 7 * 86400000).toISOString();
+    const since = new Date(Date.now() - data.rangeHours * 3600_000).toISOString();
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_market_price_history")
       .select("captured_at, price_average, count_listings, quantity_available")
