@@ -168,6 +168,10 @@ function StaffPage() {
       {/* Digest IA hebdo */}
       <WeeklyDigestSection />
 
+      {/* Communication staff (DM massif) */}
+      <BulkDmCard />
+
+
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
         timeline={data.applicationsTimeline ?? []}
