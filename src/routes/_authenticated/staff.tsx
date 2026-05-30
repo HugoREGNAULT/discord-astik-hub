@@ -37,6 +37,7 @@ import { Sparkles, HeartPulse, ArrowUpRight, ArrowDownRight, RefreshCw } from "l
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
 import {
   listOpenPollsForDm,
+  listFactionRoles,
   previewDmAudience,
   sendBulkDm,
   type DmAudience,
@@ -1001,13 +1002,21 @@ function renderInline(text: string): string {
 
 // ----------------- DM massif staff -----------------
 
-type AudienceKind = "all_active" | "inactive_7d" | "never_logged_in" | "poll_not_voted";
+type AudienceKind =
+  | "all_active"
+  | "inactive_7d"
+  | "never_logged_in"
+  | "poll_not_voted"
+  | "role_all"
+  | "role_never_logged_in";
 
 const AUDIENCE_LABELS: Record<AudienceKind, string> = {
   all_active: "Tous les membres actifs",
   inactive_7d: "Inactifs 7j (0 msg & 0 vocal)",
   never_logged_in: "Jamais connectés au dashboard",
   poll_not_voted: "N'ont pas voté à un sondage",
+  role_all: "Par rôle Discord (tous)",
+  role_never_logged_in: "Par rôle Discord — jamais connectés",
 };
 
 const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
@@ -1018,18 +1027,26 @@ const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
     "Salut {ig_name} 👋\n\nPetit rappel : connecte-toi au dashboard de la faction au moins une fois pour qu'on puisse te suivre. À très vite !",
   poll_not_voted:
     "Salut {ig_name} 👋\n\nIl reste un sondage en attente de ta réponse — un petit clic suffit. Merci !",
+  role_all:
+    "Salut 👋\n\n[message ciblé pour ce rôle]\n\n— Le staff PunkAstik",
+  role_never_logged_in:
+    "Salut 👋\n\nTu as bien ton rôle sur le Discord faction mais tu ne t'es jamais connecté au dashboard. Petit rappel : connecte-toi une fois pour qu'on puisse te suivre proprement. Merci !",
 };
+
 
 function BulkDmCard() {
   const { data: me } = useCurrentUser();
   const canDm = hasPerm(me, "members.edit");
 
   const pollsFn = useServerFn(listOpenPollsForDm);
+  const rolesFn = useServerFn(listFactionRoles);
   const previewFn = useServerFn(previewDmAudience);
   const sendFn = useServerFn(sendBulkDm);
 
   const [kind, setKind] = useState<AudienceKind>("inactive_7d");
   const [pollId, setPollId] = useState<string>("");
+  // Pré-rempli sur le rôle "Membre faction" (1503030823174148216) par défaut.
+  const [roleId, setRoleId] = useState<string>("1503030823174148216");
   const [content, setContent] = useState<string>(DEFAULT_TEMPLATES.inactive_7d);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -1040,8 +1057,20 @@ function BulkDmCard() {
     staleTime: 60_000,
   });
 
-  const audience: DmAudience | null =
-    kind === "poll_not_voted" ? (pollId ? { kind: "poll_not_voted", pollId } : null) : { kind };
+  const { data: rolesData } = useQuery({
+    queryKey: ["bulk-dm-faction-roles"],
+    queryFn: () => rolesFn(),
+    enabled: canDm,
+    staleTime: 5 * 60_000,
+  });
+
+  const audience: DmAudience | null = (() => {
+    if (kind === "poll_not_voted") return pollId ? { kind: "poll_not_voted", pollId } : null;
+    if (kind === "role_all") return roleId ? { kind: "role_all", roleId } : null;
+    if (kind === "role_never_logged_in")
+      return roleId ? { kind: "role_never_logged_in", roleId } : null;
+    return { kind };
+  })();
 
   const preview = useQuery({
     queryKey: ["bulk-dm-preview", JSON.stringify(audience)],
@@ -1125,6 +1154,30 @@ function BulkDmCard() {
               </Select>
             </div>
           )}
+
+          {(kind === "role_all" || kind === "role_never_logged_in") && (
+            <div>
+              <label className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                Rôle Discord (serveur faction)
+              </label>
+              <Select value={roleId} onValueChange={setRoleId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choisir un rôle…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(rolesData?.roles ?? []).length === 0 ? (
+                    <div className="p-3 text-xs text-muted-foreground">Chargement des rôles…</div>
+                  ) : (
+                    (rolesData?.roles ?? []).map((r: { id: string; name: string }) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div>
@@ -1163,7 +1216,9 @@ function BulkDmCard() {
                 </>
               )
             ) : (
-              <span className="text-muted-foreground">Sélectionne un sondage</span>
+              <span className="text-muted-foreground">
+                {kind === "poll_not_voted" ? "Sélectionne un sondage" : "Sélectionne un rôle"}
+              </span>
             )}
           </div>
           <Button

@@ -1,14 +1,22 @@
 /**
  * Outils de DM massif Discord pour le staff.
  *
- * Permet de cibler des audiences (jamais connectés au dashboard, sondage non
- * voté, inactifs 7j, tous actifs) et d'envoyer un DM Discord à tout le monde
- * avec un throttle pour respecter le rate limit du bot.
+ * Audiences supportées :
+ *  - all_active        : membres actifs (table members)
+ *  - inactive_7d       : 0 message & 0 vocal sur 7j
+ *  - never_logged_in   : aucun "login" dans les logs
+ *  - poll_not_voted    : n'ont pas voté à un sondage donné
+ *  - role_all          : tous les membres du serveur faction ayant un rôle Discord donné
+ *  - role_never_logged_in : ceux qui ont le rôle ET ne se sont jamais connectés au dashboard
+ *
+ * Throttle : ~4 DM/s. Cap dur : 500 destinataires par appel.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
+import { listAllGuildMembers } from "@/lib/discord/api.server";
+import { GUILDS } from "@/lib/discord/constants";
 
 type MemberRow = {
   discord_id: string;
@@ -31,13 +39,50 @@ const audienceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("inactive_7d") }),
   z.object({ kind: z.literal("never_logged_in") }),
   z.object({ kind: z.literal("poll_not_voted"), pollId: z.string().uuid() }),
+  z.object({ kind: z.literal("role_all"), roleId: z.string().regex(/^\d{5,32}$/) }),
+  z.object({
+    kind: z.literal("role_never_logged_in"),
+    roleId: z.string().regex(/^\d{5,32}$/),
+  }),
 ]);
 
 export type DmAudience = z.infer<typeof audienceSchema>;
 
+/** Récupère les discord_id ayant un "login" dans les logs. */
+async function loggedInIds(): Promise<Set<string>> {
+  const { data } = await db
+    .from("logs")
+    .select("actor_discord_id")
+    .eq("action", "login")
+    .not("actor_discord_id", "is", null);
+  return new Set((data ?? []).map((l) => l.actor_discord_id as string));
+}
+
+/** Construit une MemberRow depuis l'API Discord + complète via DB si dispo. */
+async function buildRowsForDiscordIds(discordIds: string[]): Promise<MemberRow[]> {
+  if (discordIds.length === 0) return [];
+  // Map enrichissement via DB (par chunks pour éviter URL trop longues)
+  const dbMap = new Map<string, Partial<MemberRow>>();
+  const chunkSize = 200;
+  for (let i = 0; i < discordIds.length; i += chunkSize) {
+    const chunk = discordIds.slice(i, i + chunkSize);
+    const { data } = await db.from("members").select(SELECT).in("discord_id", chunk);
+    for (const m of (data ?? []) as MemberRow[]) dbMap.set(m.discord_id, m);
+  }
+  return discordIds.map((id) => {
+    const row = dbMap.get(id);
+    return {
+      discord_id: id,
+      discord_username: row?.discord_username ?? null,
+      ig_name: row?.ig_name ?? null,
+      avatar_url: row?.avatar_url ?? null,
+      current_grade: row?.current_grade ?? null,
+    };
+  });
+}
+
 async function resolveTargets(audience: DmAudience): Promise<MemberRow[]> {
-  const members = await listActiveMembers();
-  if (audience.kind === "all_active") return members;
+  if (audience.kind === "all_active") return listActiveMembers();
 
   if (audience.kind === "inactive_7d") {
     const { data } = await db
@@ -50,22 +95,48 @@ async function resolveTargets(audience: DmAudience): Promise<MemberRow[]> {
   }
 
   if (audience.kind === "never_logged_in") {
-    const { data: logs } = await db
-      .from("logs")
-      .select("actor_discord_id")
-      .eq("action", "login")
-      .not("actor_discord_id", "is", null);
-    const seen = new Set((logs ?? []).map((l) => l.actor_discord_id as string));
+    const members = await listActiveMembers();
+    const seen = await loggedInIds();
     return members.filter((m) => !seen.has(m.discord_id));
   }
 
-  // poll_not_voted
-  const { data: votes } = await db
-    .from("poll_votes")
-    .select("voter_discord_id")
-    .eq("poll_id", audience.pollId);
-  const voted = new Set((votes ?? []).map((v) => v.voter_discord_id as string));
-  return members.filter((m) => !voted.has(m.discord_id));
+  if (audience.kind === "poll_not_voted") {
+    const members = await listActiveMembers();
+    const { data: votes } = await db
+      .from("poll_votes")
+      .select("voter_discord_id")
+      .eq("poll_id", audience.pollId);
+    const voted = new Set((votes ?? []).map((v) => v.voter_discord_id as string));
+    return members.filter((m) => !voted.has(m.discord_id));
+  }
+
+  // role_all / role_never_logged_in : on s'appuie sur la liste Discord du serveur faction
+  const guildMembers = await listAllGuildMembers(GUILDS.FACTION);
+  const targetIds: string[] = [];
+  for (const gm of guildMembers) {
+    const uid = gm.user?.id;
+    if (!uid) continue;
+    if ((gm.user as { bot?: boolean } | undefined)?.bot) continue;
+    if (gm.roles.includes(audience.roleId)) targetIds.push(uid);
+  }
+  let rows = await buildRowsForDiscordIds(targetIds);
+  // Compléter le username Discord depuis la guild si manquant (utiles aux gens
+  // pas encore dans `members`).
+  const nameByDiscord = new Map<string, string>();
+  for (const gm of guildMembers) {
+    const uid = gm.user?.id;
+    if (!uid) continue;
+    nameByDiscord.set(uid, gm.nick || gm.user?.global_name || gm.user?.username || uid);
+  }
+  rows = rows.map((r) => ({
+    ...r,
+    discord_username: r.discord_username ?? nameByDiscord.get(r.discord_id) ?? null,
+  }));
+  if (audience.kind === "role_never_logged_in") {
+    const seen = await loggedInIds();
+    rows = rows.filter((r) => !seen.has(r.discord_id));
+  }
+  return rows;
 }
 
 /** Récupère les sondages ouverts (pour cibler "n'ont pas voté"). */
@@ -79,6 +150,22 @@ export const listOpenPollsForDm = createServerFn({ method: "GET" }).handler(asyn
     .limit(30);
   if (error) throw new Error(error.message);
   return { polls: data ?? [] };
+});
+
+/** Liste les rôles du serveur faction (pour cibler par rôle). */
+export const listFactionRoles = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.edit");
+  const res = await fetch(`https://discord.com/api/v10/guilds/${GUILDS.FACTION}/roles`, {
+    headers: { Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN!}` },
+  });
+  if (!res.ok) throw new Error(`Discord roles failed: ${res.status}`);
+  const roles: { id: string; name: string; position: number; managed?: boolean }[] =
+    await res.json();
+  const filtered = roles
+    .filter((r) => !r.managed && r.name !== "@everyone")
+    .sort((a, b) => b.position - a.position)
+    .map((r) => ({ id: r.id, name: r.name }));
+  return { roles: filtered };
 });
 
 /** Prévisualisation de l'audience (sans envoyer). */
