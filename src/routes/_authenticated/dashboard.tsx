@@ -30,10 +30,62 @@ function formatVoice(seconds: number) {
   return `${m}m`;
 }
 
-function getValue(e: LeaderboardEntry, metric: LeaderboardMetric, period: "all" | "7d") {
+export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
+
+const PERIOD_HOURS: Record<Exclude<LeaderboardPeriod, "all">, number> = {
+  "24h": 24,
+  "7d": 24 * 7,
+  "30d": 24 * 30,
+};
+
+/** Baseline par discord_id : dernière valeur de snapshot <= cutoff (sinon 0). */
+function buildBaseline(
+  snapshots: Array<{
+    taken_at: string;
+    discord_id: string;
+    astik_points: number;
+    voice_total_seconds: number;
+    messages_total: number;
+  }>,
+  metric: LeaderboardMetric,
+  period: Exclude<LeaderboardPeriod, "all">,
+): Map<string, number> {
+  const cutoff = Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
+  // dernière valeur connue <= cutoff
+  const best = new Map<string, { t: number; v: number }>();
+  for (const s of snapshots) {
+    const t = new Date(s.taken_at).getTime();
+    if (t > cutoff) continue;
+    const v =
+      metric === "points"
+        ? Number(s.astik_points)
+        : metric === "voice"
+          ? s.voice_total_seconds
+          : s.messages_total;
+    const cur = best.get(s.discord_id);
+    if (!cur || t > cur.t) best.set(s.discord_id, { t, v });
+  }
+  const out = new Map<string, number>();
+  for (const [k, v] of best) out.set(k, v.v);
+  return out;
+}
+
+function getCurrentTotal(e: LeaderboardEntry, metric: LeaderboardMetric) {
   if (metric === "points") return e.astik_points;
-  if (metric === "voice") return period === "7d" ? e.voice_7d_seconds : e.voice_total_seconds;
-  return period === "7d" ? e.messages_7d : e.messages_total;
+  if (metric === "voice") return e.voice_total_seconds;
+  return e.messages_total;
+}
+
+function getValue(
+  e: LeaderboardEntry,
+  metric: LeaderboardMetric,
+  period: LeaderboardPeriod,
+  baseline: Map<string, number> | null,
+) {
+  const total = getCurrentTotal(e, metric);
+  if (period === "all" || !baseline) return total;
+  const base = baseline.get(e.discord_id) ?? 0;
+  return Math.max(0, total - base);
 }
 
 function formatValue(value: number, metric: LeaderboardMetric) {
