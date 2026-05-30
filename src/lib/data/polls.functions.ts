@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
-import { isFactionMember, canAccess, listPermissions } from "@/lib/auth/permissions";
+import { isFactionMember, canAccess } from "@/lib/auth/permissions";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
 
 const choiceSchema = z.enum(["yes", "maybe", "no"]);
@@ -50,30 +50,7 @@ export const getPoll = createServerFn({ method: "GET" })
     const user = await requireSession();
     const allowed = isFactionMember(user);
     const canEdit = canAccess(user, "members.edit");
-    // Journal d'accès — diagnostic des redirections inattendues sur /polls/:id
-    console.log(
-      JSON.stringify({
-        tag: "poll_access",
-        route: "/polls/:id",
-        pollId: data.id,
-        userId: user.discordId,
-        username: user.username,
-        roleIds: user.roleIds,
-        permissions: listPermissions(user),
-        isFactionMember: allowed,
-        canManage: canEdit,
-        at: new Date().toISOString(),
-      }),
-    );
     if (!allowed) {
-      console.warn(
-        JSON.stringify({
-          tag: "poll_access_denied",
-          pollId: data.id,
-          userId: user.discordId,
-          roleIds: user.roleIds,
-        }),
-      );
       throw new Error("FORBIDDEN");
     }
 
@@ -88,13 +65,6 @@ export const getPoll = createServerFn({ method: "GET" })
     ]);
     if (pollR.error) throw new Error(pollR.error.message);
     if (!pollR.data) {
-      console.warn(
-        JSON.stringify({
-          tag: "poll_not_found",
-          pollId: data.id,
-          userId: user.discordId,
-        }),
-      );
       throw new Error("NOT_FOUND");
     }
 
