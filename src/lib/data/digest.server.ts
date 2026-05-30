@@ -161,7 +161,7 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
   if (topIds.length > 0) {
     const { data: m } = await db
       .from("members")
-      .select("discord_id, ig_name, discord_username")
+       .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid")
       .in(
         "discord_id",
         topIds.map(([id]) => id),

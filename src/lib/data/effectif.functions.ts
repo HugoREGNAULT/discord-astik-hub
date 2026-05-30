@@ -52,7 +52,10 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
   // Récupère les IG names et la blacklist en une fois
   const allDiscordIds = members.map((m) => m.user?.id).filter(Boolean) as string[];
   const [{ data: dbMembers }, { data: blacklistRows }] = await Promise.all([
-    db.from("members").select("discord_id, ig_name").in("discord_id", allDiscordIds),
+    db
+      .from("members")
+      .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
+      .in("discord_id", allDiscordIds),
     db.from("blacklist").select("discord_id").not("discord_id", "is", null),
   ]);
   const factionDbMembers = filterFactionMembers(dbMembers ?? []);
