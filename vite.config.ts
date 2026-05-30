@@ -7,14 +7,21 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { RollupLog, WarningHandlerWithDefault } from "rollup";
 
+const IGNORED_WARNING_CODES = new Set([
+  "MODULE_LEVEL_DIRECTIVE",
+  "UNUSED_EXTERNAL_IMPORT",
+  "EMPTY_BUNDLE",
+  "CIRCULAR_DEPENDENCY",
+  "THIS_IS_UNDEFINED",
+  "EVAL",
+  "SOURCEMAP_ERROR",
+]);
+
 function ignoreUseClientDirectiveWarning(
   warning: RollupLog,
   defaultHandler: Parameters<WarningHandlerWithDefault>[1],
 ) {
-  if (
-    warning.code === "MODULE_LEVEL_DIRECTIVE" &&
-    warning.message.includes('"use client"')
-  ) {
+  if (warning.code && IGNORED_WARNING_CODES.has(warning.code)) {
     return;
   }
 
