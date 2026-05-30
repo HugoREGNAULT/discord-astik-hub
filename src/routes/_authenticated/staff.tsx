@@ -79,8 +79,18 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from "lucide-react";
 
+type StaffSearch = { bdmSort: SortKey; bdmDir: SortDir };
+
 export const Route = createFileRoute("/_authenticated/staff")({
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
+  validateSearch: (search: Record<string, unknown>): StaffSearch => {
+    const sort = search.bdmSort;
+    const dir = search.bdmDir;
+    return {
+      bdmSort: sort === "audience" || sort === "status" ? sort : "date",
+      bdmDir: dir === "asc" ? "asc" : "desc",
+    };
+  },
   component: () => (
     <Guard perm="members.view">
       <StaffPage />
