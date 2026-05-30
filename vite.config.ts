@@ -12,18 +12,12 @@ const IGNORED_WARNING_CODES = new Set([
   "MODULE_LEVEL_DIRECTIVE",
   "UNUSED_EXTERNAL_IMPORT",
   "EMPTY_BUNDLE",
-  "CIRCULAR_DEPENDENCY",
-  "THIS_IS_UNDEFINED",
-  "EVAL",
   "SOURCEMAP_ERROR",
 ]);
 
 const IGNORED_VITE_WARNING_SNIPPETS = [
   'Module level directives cause errors when bundled, "use client"',
   "Generated an empty chunk",
-  "Some chunks are larger than",
-  'imported from external module "',
-  'but never used in "',
 ];
 
 function shouldIgnoreRollupWarning(warning: RollupLog) {
