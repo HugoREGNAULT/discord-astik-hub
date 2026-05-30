@@ -623,18 +623,20 @@ function PdcPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        if (!confirm(`Vider la couche ${currentLayer + 1} ?`)) return;
+                    <ConfirmDialog
+                      title={`Vider la couche ${currentLayer + 1} ?`}
+                      description="Tous les blocs de cette couche seront retirés."
+                      confirmLabel="Vider"
+                      onConfirm={() => {
                         setLayers((p) => ({ ...p, [String(currentLayer)]: {} }));
                         setDirty(true);
                       }}
-                    >
-                      Vider cette couche
-                    </Button>
+                      trigger={
+                        <Button size="sm" variant="outline" className="w-full">
+                          Vider cette couche
+                        </Button>
+                      }
+                    />
                   </CardContent>
                 </Card>
 
