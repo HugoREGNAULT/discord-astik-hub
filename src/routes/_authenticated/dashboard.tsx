@@ -30,10 +30,62 @@ function formatVoice(seconds: number) {
   return `${m}m`;
 }
 
-function getValue(e: LeaderboardEntry, metric: LeaderboardMetric, period: "all" | "7d") {
+export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
+
+const PERIOD_HOURS: Record<Exclude<LeaderboardPeriod, "all">, number> = {
+  "24h": 24,
+  "7d": 24 * 7,
+  "30d": 24 * 30,
+};
+
+/** Baseline par discord_id : dernière valeur de snapshot <= cutoff (sinon 0). */
+function buildBaseline(
+  snapshots: Array<{
+    taken_at: string;
+    discord_id: string;
+    astik_points: number;
+    voice_total_seconds: number;
+    messages_total: number;
+  }>,
+  metric: LeaderboardMetric,
+  period: Exclude<LeaderboardPeriod, "all">,
+): Map<string, number> {
+  const cutoff = Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
+  // dernière valeur connue <= cutoff
+  const best = new Map<string, { t: number; v: number }>();
+  for (const s of snapshots) {
+    const t = new Date(s.taken_at).getTime();
+    if (t > cutoff) continue;
+    const v =
+      metric === "points"
+        ? Number(s.astik_points)
+        : metric === "voice"
+          ? s.voice_total_seconds
+          : s.messages_total;
+    const cur = best.get(s.discord_id);
+    if (!cur || t > cur.t) best.set(s.discord_id, { t, v });
+  }
+  const out = new Map<string, number>();
+  for (const [k, v] of best) out.set(k, v.v);
+  return out;
+}
+
+function getCurrentTotal(e: LeaderboardEntry, metric: LeaderboardMetric) {
   if (metric === "points") return e.astik_points;
-  if (metric === "voice") return period === "7d" ? e.voice_7d_seconds : e.voice_total_seconds;
-  return period === "7d" ? e.messages_7d : e.messages_total;
+  if (metric === "voice") return e.voice_total_seconds;
+  return e.messages_total;
+}
+
+function getValue(
+  e: LeaderboardEntry,
+  metric: LeaderboardMetric,
+  period: LeaderboardPeriod,
+  baseline: Map<string, number> | null,
+) {
+  const total = getCurrentTotal(e, metric);
+  if (period === "all" || !baseline) return total;
+  const base = baseline.get(e.discord_id) ?? 0;
+  return Math.max(0, total - base);
 }
 
 function formatValue(value: number, metric: LeaderboardMetric) {
@@ -52,18 +104,20 @@ function LeaderboardList({
   entries,
   metric,
   period,
+  baseline,
   query,
   rankOffset = 0,
 }: {
   entries: LeaderboardEntry[];
   metric: LeaderboardMetric;
-  period: "all" | "7d";
+  period: LeaderboardPeriod;
+  baseline: Map<string, number> | null;
   query: string;
   rankOffset?: number;
 }) {
   const sorted = useMemo(() => {
     const arr = [...entries].sort(
-      (a, b) => getValue(b, metric, period) - getValue(a, metric, period),
+      (a, b) => getValue(b, metric, period, baseline) - getValue(a, metric, period, baseline),
     );
     const needle = query.trim().toLowerCase();
     if (!needle) return arr;
@@ -72,13 +126,13 @@ function LeaderboardList({
         (e.ig_name ?? "").toLowerCase().includes(needle) ||
         (e.discord_username ?? "").toLowerCase().includes(needle),
     );
-  }, [entries, metric, period, query]);
+  }, [entries, metric, period, baseline, query]);
 
   return (
     <div className="space-y-1">
       {sorted.map((e, i) => {
         const rank = i + 1 + rankOffset;
-        const value = getValue(e, metric, period);
+        const value = getValue(e, metric, period, baseline);
 
         return (
           <div
@@ -136,13 +190,23 @@ function LeaderboardPage() {
     refetchInterval: 60_000,
   });
   const [metric, setMetric] = useState<LeaderboardMetric>("points");
-  const [period, setPeriod] = useState<"all" | "7d">("all");
+  const [period, setPeriod] = useState<LeaderboardPeriod>("all");
   const [query, setQuery] = useState("");
 
   const entries = data?.entries ?? [];
+  const baseline = useMemo(
+    () =>
+      period === "all"
+        ? null
+        : buildBaseline(histData?.snapshots ?? [], metric, period),
+    [histData?.snapshots, metric, period],
+  );
   const sortedAll = useMemo(
-    () => [...entries].sort((a, b) => getValue(b, metric, period) - getValue(a, metric, period)),
-    [entries, metric, period],
+    () =>
+      [...entries].sort(
+        (a, b) => getValue(b, metric, period, baseline) - getValue(a, metric, period, baseline),
+      ),
+    [entries, metric, period, baseline],
   );
   const top3 = sortedAll.slice(0, 3);
   const rest = sortedAll.slice(3);
@@ -165,23 +229,23 @@ function LeaderboardPage() {
             value={metric}
             onChange={(v) => setMetric(v as LeaderboardMetric)}
           />
-          {metric !== "points" && (
-            <MetricTabs
-              options={[
-                { value: "all", label: "Total" },
-                { value: "7d", label: "7 jours" },
-              ]}
-              value={period}
-              onChange={(v) => setPeriod(v as "all" | "7d")}
-            />
-          )}
+          <MetricTabs
+            options={[
+              { value: "24h", label: "24h" },
+              { value: "7d", label: "7 jours" },
+              { value: "30d", label: "30 jours" },
+              { value: "all", label: "Total" },
+            ]}
+            value={period}
+            onChange={(v) => setPeriod(v as LeaderboardPeriod)}
+          />
         </div>
 
         <div className="space-y-5">
           <div className="grid sm:grid-cols-3 gap-2">
             {top3.map((e, i) => {
               const rank = i + 1;
-              const value = getValue(e, metric, period);
+              const value = getValue(e, metric, period, baseline);
               return (
                 <div
                   key={e.discord_id}
@@ -246,6 +310,7 @@ function LeaderboardPage() {
                 entries={rest}
                 metric={metric}
                 period={period}
+                baseline={baseline}
                 query={query}
                 rankOffset={3}
               />
