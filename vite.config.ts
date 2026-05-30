@@ -6,35 +6,39 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+type DirectiveWarning = {
+  code?: string;
+  message?: string;
+};
+
+function ignoreUseClientDirectiveWarning(
+  warning: DirectiveWarning,
+  defaultHandler: (warning: DirectiveWarning) => void,
+) {
+  if (
+    warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+    typeof warning.message === "string" &&
+    warning.message.includes('"use client"')
+  ) {
+    return;
+  }
+
+  defaultHandler(warning);
+}
+
 export default defineConfig({
   nitro: {
     rollupConfig: {
-      onwarn(warning, defaultHandler) {
-        if (
-          warning.code === "MODULE_LEVEL_DIRECTIVE" &&
-          typeof warning.message === "string" &&
-          warning.message.includes('"use client"')
-        ) {
-          return;
-        }
-
-        defaultHandler(warning);
+      onwarn(warning: DirectiveWarning, defaultHandler: (warning: DirectiveWarning) => void) {
+        ignoreUseClientDirectiveWarning(warning, defaultHandler);
       },
     },
-  },
+  } as any,
   vite: {
     build: {
       rollupOptions: {
-        onwarn(warning, defaultHandler) {
-          if (
-            warning.code === "MODULE_LEVEL_DIRECTIVE" &&
-            typeof warning.message === "string" &&
-            warning.message.includes('"use client"')
-          ) {
-            return;
-          }
-
-          defaultHandler(warning);
+        onwarn(warning: DirectiveWarning, defaultHandler: (warning: DirectiveWarning) => void) {
+          ignoreUseClientDirectiveWarning(warning, defaultHandler);
         },
       },
     },
