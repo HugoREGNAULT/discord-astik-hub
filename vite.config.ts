@@ -6,6 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { RollupLog, WarningHandlerWithDefault } from "rollup";
+import { createLogger } from "vite";
 
 const IGNORED_WARNING_CODES = new Set([
   "MODULE_LEVEL_DIRECTIVE",
@@ -17,11 +18,38 @@ const IGNORED_WARNING_CODES = new Set([
   "SOURCEMAP_ERROR",
 ]);
 
+const IGNORED_VITE_WARNING_SNIPPETS = [
+  'Module level directives cause errors when bundled, "use client"',
+  "Generated an empty chunk",
+  "Some chunks are larger than",
+  'imported from external module "',
+  'but never used in "',
+];
+
+function shouldIgnoreRollupWarning(warning: RollupLog) {
+  return !!(warning.code && IGNORED_WARNING_CODES.has(warning.code));
+}
+
+function shouldIgnoreViteWarning(message: string) {
+  return IGNORED_VITE_WARNING_SNIPPETS.some((snippet) => message.includes(snippet));
+}
+
+const viteLogger = createLogger("info", { allowClearScreen: false });
+const defaultWarn = viteLogger.warn.bind(viteLogger);
+
+viteLogger.warn = (message, options) => {
+  if (shouldIgnoreViteWarning(message)) {
+    return;
+  }
+
+  defaultWarn(message, options);
+};
+
 function ignoreUseClientDirectiveWarning(
   warning: RollupLog,
   defaultHandler: Parameters<WarningHandlerWithDefault>[1],
 ) {
-  if (warning.code && IGNORED_WARNING_CODES.has(warning.code)) {
+  if (shouldIgnoreRollupWarning(warning)) {
     return;
   }
 
@@ -40,7 +68,9 @@ export default defineConfig({
     },
   } as any,
   vite: {
+    customLogger: viteLogger,
     build: {
+      chunkSizeWarningLimit: 1200,
       rollupOptions: {
         onwarn(warning: RollupLog, defaultHandler: Parameters<WarningHandlerWithDefault>[1]) {
           ignoreUseClientDirectiveWarning(warning, defaultHandler);
