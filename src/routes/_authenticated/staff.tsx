@@ -37,6 +37,7 @@ import { Sparkles, HeartPulse, ArrowUpRight, ArrowDownRight, RefreshCw } from "l
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
 import {
   listOpenPollsForDm,
+  listFactionRoles,
   previewDmAudience,
   sendBulkDm,
   type DmAudience,
@@ -1001,13 +1002,21 @@ function renderInline(text: string): string {
 
 // ----------------- DM massif staff -----------------
 
-type AudienceKind = "all_active" | "inactive_7d" | "never_logged_in" | "poll_not_voted";
+type AudienceKind =
+  | "all_active"
+  | "inactive_7d"
+  | "never_logged_in"
+  | "poll_not_voted"
+  | "role_all"
+  | "role_never_logged_in";
 
 const AUDIENCE_LABELS: Record<AudienceKind, string> = {
   all_active: "Tous les membres actifs",
   inactive_7d: "Inactifs 7j (0 msg & 0 vocal)",
   never_logged_in: "Jamais connectés au dashboard",
   poll_not_voted: "N'ont pas voté à un sondage",
+  role_all: "Par rôle Discord (tous)",
+  role_never_logged_in: "Par rôle Discord — jamais connectés",
 };
 
 const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
@@ -1018,7 +1027,12 @@ const DEFAULT_TEMPLATES: Record<AudienceKind, string> = {
     "Salut {ig_name} 👋\n\nPetit rappel : connecte-toi au dashboard de la faction au moins une fois pour qu'on puisse te suivre. À très vite !",
   poll_not_voted:
     "Salut {ig_name} 👋\n\nIl reste un sondage en attente de ta réponse — un petit clic suffit. Merci !",
+  role_all:
+    "Salut 👋\n\n[message ciblé pour ce rôle]\n\n— Le staff PunkAstik",
+  role_never_logged_in:
+    "Salut 👋\n\nTu as bien ton rôle sur le Discord faction mais tu ne t'es jamais connecté au dashboard. Petit rappel : connecte-toi une fois pour qu'on puisse te suivre proprement. Merci !",
 };
+
 
 function BulkDmCard() {
   const { data: me } = useCurrentUser();
