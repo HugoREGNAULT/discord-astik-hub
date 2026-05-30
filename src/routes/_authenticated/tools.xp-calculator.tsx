@@ -199,7 +199,8 @@ function XpCalculator() {
         >
           // ressources à farmer
         </h2>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-2 px-2">
+        <table className="w-full text-sm min-w-[420px]">
           <thead>
             <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
               <th className="py-2">Action</th>
@@ -219,6 +220,7 @@ function XpCalculator() {
             ))}
           </tbody>
         </table>
+        </div>
         <p className="text-[10px] text-zinc-600 mt-3" style={{ fontFamily: "'Space Mono'" }}>
           // les courbes d'XP et rendements sont des approximations — ajuste les fichiers xp-curves
           / xp-rates si besoin. Édition: {edition}.
