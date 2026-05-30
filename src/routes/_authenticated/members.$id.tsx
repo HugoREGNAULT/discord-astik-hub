@@ -768,16 +768,20 @@ function MemberActions({
         </Dialog>
 
         {member.status !== "away" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              if (confirm("Marquer ce membre en absence ?")) mAway.mutate();
+          <ConfirmDialog
+            title="Marquer ce membre en absence ?"
+            description="Le statut passera à 'absent'."
+            confirmLabel="Marquer absent"
+            destructive={false}
+            onConfirm={async () => {
+              await mAway.mutateAsync();
             }}
-            disabled={mAway.isPending}
-          >
-            <Clock className="size-4 mr-1.5" /> Marquer en absence
-          </Button>
+            trigger={
+              <Button size="sm" variant="outline" disabled={mAway.isPending}>
+                <Clock className="size-4 mr-1.5" /> Marquer en absence
+              </Button>
+            }
+          />
         )}
 
         {member.status !== "active" && (
@@ -792,17 +796,24 @@ function MemberActions({
         )}
 
         {member.status !== "former" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              if (confirm("Marquer ce membre comme ancien ?")) mStatus.mutate("former");
+          <ConfirmDialog
+            title="Marquer ce membre comme ancien ?"
+            description="Le membre sera déplacé dans la liste des anciens."
+            confirmLabel="Marquer ancien"
+            onConfirm={async () => {
+              await mStatus.mutateAsync("former");
             }}
-            disabled={mStatus.isPending}
-            className="text-destructive hover:text-destructive"
-          >
-            <UserX className="size-4 mr-1.5" /> Marquer ancien
-          </Button>
+            trigger={
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={mStatus.isPending}
+                className="text-destructive hover:text-destructive"
+              >
+                <UserX className="size-4 mr-1.5" /> Marquer ancien
+              </Button>
+            }
+          />
         )}
 
         <Button size="sm" variant="ghost" onClick={copyId}>
