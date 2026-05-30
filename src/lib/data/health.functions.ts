@@ -2,6 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
 
+function isFactionMember(member: {
+  ig_name?: string | null;
+  current_grade?: string | null;
+  arrival_date?: string | null;
+  mc_uuid?: string | null;
+}) {
+  return Boolean(member.ig_name || member.current_grade || member.arrival_date || member.mc_uuid);
+}
+
 /**
  * Dashboard "Santé faction" : indicateurs synthétiques de l'activité et
  * du turnover, plus les top recruteurs sur la période.
@@ -19,7 +28,7 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   const [activeMembers, snapshots, recentArrivals, recentDepartures] = await Promise.all([
     db
       .from("members")
-      .select("discord_id, recruiter_discord_id, messages_7d, voice_7d_seconds, arrival_date")
+      .select("discord_id, recruiter_discord_id, messages_7d, voice_7d_seconds, arrival_date, ig_name, current_grade, mc_uuid")
       .eq("status", "active"),
     db
       .from("leaderboard_snapshots")
@@ -30,19 +39,19 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
     db
       .from("members")
       .select(
-        "discord_id, ig_name, discord_username, avatar_url, arrival_date, recruiter_discord_id",
+        "discord_id, ig_name, discord_username, avatar_url, arrival_date, recruiter_discord_id, current_grade, mc_uuid",
       )
       .gte("arrival_date", since30dDate)
       .order("arrival_date", { ascending: false }),
     db
       .from("members")
-      .select("discord_id, ig_name, discord_username, updated_at, status")
+      .select("discord_id, ig_name, discord_username, updated_at, status, current_grade, arrival_date, mc_uuid")
       .eq("status", "former")
       .gte("updated_at", since30dIso)
       .order("updated_at", { ascending: false }),
   ]);
 
-  const active = activeMembers.data ?? [];
+  const active = (activeMembers.data ?? []).filter((member: any) => isFactionMember(member));
   const total = active.length;
   const activeCount = active.filter(
     (m: any) => (m.messages_7d ?? 0) > 0 || (m.voice_7d_seconds ?? 0) > 0,
@@ -87,13 +96,15 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   if (topRecruiterIds.length > 0) {
     const { data: recs } = await db
       .from("members")
-      .select("discord_id, ig_name, discord_username, avatar_url")
+      .select("discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid")
       .in("discord_id", topRecruiterIds);
     recruiterMap = new Map(
-      (recs ?? []).map((r: any) => [
-        r.discord_id,
-        { ig_name: r.ig_name, discord_username: r.discord_username, avatar_url: r.avatar_url },
-      ]),
+      (recs ?? [])
+        .filter((member: any) => isFactionMember(member))
+        .map((r: any) => [
+          r.discord_id,
+          { ig_name: r.ig_name, discord_username: r.discord_username, avatar_url: r.avatar_url },
+        ]),
     );
   }
   const topRecruiters = Array.from(recruiters90.entries())
@@ -103,11 +114,16 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
       count_90d: count90,
       ...recruiterMap.get(id),
     }))
+    .filter((recruiter) => recruiter.ig_name || recruiter.discord_username)
     .sort((a, b) => b.count_90d - a.count_90d)
     .slice(0, 6);
 
-  const arrivals30 = (recentArrivals.data ?? []).length;
-  const departures30 = (recentDepartures.data ?? []).length;
+  const factionArrivals = (recentArrivals.data ?? []).filter((member: any) => isFactionMember(member));
+  const factionDepartures = (recentDepartures.data ?? []).filter((member: any) =>
+    isFactionMember(member),
+  );
+  const arrivals30 = factionArrivals.length;
+  const departures30 = factionDepartures.length;
   const turnoverRate = total > 0 ? Math.round(((arrivals30 + departures30) / total) * 100) : 0;
   const netGrowth30 = arrivals30 - departures30;
 
@@ -122,7 +138,7 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
     },
     evolution,
     topRecruiters,
-    recentArrivals: (recentArrivals.data ?? []).slice(0, 8),
-    recentDepartures: (recentDepartures.data ?? []).slice(0, 8),
+    recentArrivals: factionArrivals.slice(0, 8),
+    recentDepartures: factionDepartures.slice(0, 8),
   };
 });
