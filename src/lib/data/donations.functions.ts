@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 /** Marque les paniers expirés. Appelé en best-effort à chaque listing. */
 async function expireOldCarts() {
@@ -49,10 +50,10 @@ export const listRecentCarts = createServerFn({ method: "GET" })
     if (memberIds.length > 0) {
       const { data: ms } = await db
         .from("members")
-        .select("discord_id, ig_name, discord_username, avatar_url")
+        .select("discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid")
         .in("discord_id", memberIds);
       members = Object.fromEntries(
-        (ms ?? []).map((m) => [
+        filterFactionMembers(ms ?? []).map((m) => [
           m.discord_id,
           { ig_name: m.ig_name, discord_username: m.discord_username, avatar_url: m.avatar_url },
         ]),
