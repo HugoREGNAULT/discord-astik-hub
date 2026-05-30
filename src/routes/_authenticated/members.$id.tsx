@@ -211,9 +211,13 @@ function MemberDetail() {
             <EditForm
               member={m}
               onSave={async (patch) => {
-                await update({ data: { discordId: id, patch } });
-                toast.success("Membre mis à jour");
-                refresh();
+                try {
+                  await update({ data: { discordId: id, patch } });
+                  toast.success("Membre mis à jour");
+                  refresh();
+                } catch (e) {
+                  toast.error((e as Error).message);
+                }
               }}
             />
           </CardContent>
@@ -235,15 +239,24 @@ function MemberDetail() {
               >
                 <span>{a.alt_name ?? a.alt_discord_id}</span>
                 {data.canEdit && (
-                  <button
-                    onClick={async () => {
-                      await altRmFn({ data: { id: a.id } });
-                      refresh();
+                  <ConfirmDialog
+                    title={`Retirer l'alt "${a.alt_name ?? a.alt_discord_id}" ?`}
+                    description="Le compte secondaire sera détaché de ce membre."
+                    confirmLabel="Retirer"
+                    onConfirm={async () => {
+                      try {
+                        await altRmFn({ data: { id: a.id } });
+                        toast.success("Alt retiré");
+                        refresh();
+                      } catch (e) {
+                        toast.error((e as Error).message);
+                        throw e;
+                      }
                     }}
-                    className="text-destructive text-xs"
-                  >
-                    Supprimer
-                  </button>
+                    trigger={
+                      <button className="text-destructive text-xs">Supprimer</button>
+                    }
+                  />
                 )}
               </li>
             ))}
