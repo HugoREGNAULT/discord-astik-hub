@@ -1044,6 +1044,9 @@ function BulkDmCard() {
   const rolesFn = useServerFn(listFactionRoles);
   const previewFn = useServerFn(previewDmAudience);
   const sendFn = useServerFn(sendBulkDm);
+  const exportFn = useServerFn(exportDmAudience);
+  const historyFn = useServerFn(listBulkDmHistory);
+  const qc = useQueryClient();
 
   const [kind, setKind] = useState<AudienceKind>("inactive_7d");
   const [pollId, setPollId] = useState<string>("");
