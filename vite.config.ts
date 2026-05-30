@@ -23,6 +23,9 @@ function ignoreUseClientDirectiveWarning(
 
 export default defineConfig({
   nitro: {
+    cloudflare: {
+      nodeCompat: false,
+    },
     rollupConfig: {
       onwarn(warning: RollupLog, defaultHandler: Parameters<WarningHandlerWithDefault>[1]) {
         ignoreUseClientDirectiveWarning(warning, defaultHandler);
