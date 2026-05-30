@@ -188,6 +188,38 @@ export const previewDmAudience = createServerFn({ method: "POST" })
     };
   });
 
+/** Export complet de l'audience pour CSV (jusqu'à 500 lignes). */
+export const exportDmAudience = createServerFn({ method: "POST" })
+  .inputValidator((input: { audience: DmAudience }) =>
+    z.object({ audience: audienceSchema }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    await requirePermission("members.edit");
+    const targets = await resolveTargets(data.audience);
+    return {
+      rows: targets.slice(0, 500).map((t) => ({
+        discord_id: t.discord_id,
+        ig_name: t.ig_name,
+        discord_username: t.discord_username,
+        current_grade: t.current_grade,
+      })),
+      total: targets.length,
+    };
+  });
+
+/** Historique des campagnes de DM massif (lecture depuis `logs`). */
+export const listBulkDmHistory = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.edit");
+  const { data, error } = await db
+    .from("logs")
+    .select("id, created_at, actor_discord_id, payload")
+    .eq("action", "bulk_dm")
+    .order("created_at", { ascending: false })
+    .limit(20);
+  if (error) throw new Error(error.message);
+  return { items: data ?? [] };
+});
+
 /** Remplace {ig_name} / {discord_username} / {grade} dans le contenu. */
 function personalize(template: string, m: MemberRow): string {
   return template
