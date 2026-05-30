@@ -194,6 +194,9 @@ function MemberDetail() {
         <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
       </div>
 
+      {data.canEdit && <MemberActions member={m} onChanged={refresh} />}
+
+
       {data.canEdit && (
         <Card>
           <CardHeader>
