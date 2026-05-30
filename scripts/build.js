@@ -14,7 +14,7 @@ async function main() {
     mode === "development" ? ["vite", "build", "--mode", "development"] : ["vite", "build"];
 
   const tscCode = await run("TypeScript", "npx", ["tsc", "--noEmit"]);
-  const eslintCode = await run("ESLint", "npx", ["eslint", "."]);
+  const eslintCode = await run("ESLint", "npx", ["eslint", ".", "--max-warnings", "-1"]);
   const viteCode = await run("Vite", "npx", viteArgs);
 
   console.log("\n========== BUILD SUMMARY ==========");
