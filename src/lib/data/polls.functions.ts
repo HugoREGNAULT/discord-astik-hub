@@ -50,30 +50,7 @@ export const getPoll = createServerFn({ method: "GET" })
     const user = await requireSession();
     const allowed = isFactionMember(user);
     const canEdit = canAccess(user, "members.edit");
-    // Journal d'accès — diagnostic des redirections inattendues sur /polls/:id
-    console.log(
-      JSON.stringify({
-        tag: "poll_access",
-        route: "/polls/:id",
-        pollId: data.id,
-        userId: user.discordId,
-        username: user.username,
-        roleIds: user.roleIds,
-        permissions: listPermissions(user),
-        isFactionMember: allowed,
-        canManage: canEdit,
-        at: new Date().toISOString(),
-      }),
-    );
     if (!allowed) {
-      console.warn(
-        JSON.stringify({
-          tag: "poll_access_denied",
-          pollId: data.id,
-          userId: user.discordId,
-          roleIds: user.roleIds,
-        }),
-      );
       throw new Error("FORBIDDEN");
     }
 
