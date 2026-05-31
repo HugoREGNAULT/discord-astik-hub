@@ -83,6 +83,10 @@ import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/s
 import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot/message'
 import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
+import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
+import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
+import { Route as ApiPublicBotQueryDonValiderRouteImport } from './routes/api/public/bot/query/don-valider'
+import { Route as ApiPublicBotQueryCandidaturesRouteImport } from './routes/api/public/bot/query/candidatures'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -485,6 +489,28 @@ const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
   path: '/api/public/bot/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBotQueryProfilRoute = ApiPublicBotQueryProfilRouteImport.update({
+  id: '/api/public/bot/query/profil',
+  path: '/api/public/bot/query/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBotQueryPointsRoute = ApiPublicBotQueryPointsRouteImport.update({
+  id: '/api/public/bot/query/points',
+  path: '/api/public/bot/query/points',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBotQueryDonValiderRoute =
+  ApiPublicBotQueryDonValiderRouteImport.update({
+    id: '/api/public/bot/query/don-valider',
+    path: '/api/public/bot/query/don-valider',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicBotQueryCandidaturesRoute =
+  ApiPublicBotQueryCandidaturesRouteImport.update({
+    id: '/api/public/bot/query/candidatures',
+    path: '/api/public/bot/query/candidatures',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -560,6 +586,10 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
+  '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
+  '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
+  '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
+  '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -632,6 +662,10 @@ export interface FileRoutesByTo {
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
+  '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
+  '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
+  '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
+  '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -709,6 +743,10 @@ export interface FileRoutesById {
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
+  '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
+  '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
+  '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
+  '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -786,6 +824,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
+    | '/api/public/bot/query/candidatures'
+    | '/api/public/bot/query/don-valider'
+    | '/api/public/bot/query/points'
+    | '/api/public/bot/query/profil'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -858,6 +900,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
+    | '/api/public/bot/query/candidatures'
+    | '/api/public/bot/query/don-valider'
+    | '/api/public/bot/query/points'
+    | '/api/public/bot/query/profil'
   id:
     | '__root__'
     | '/'
@@ -934,6 +980,10 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-sync'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
+    | '/api/public/bot/query/candidatures'
+    | '/api/public/bot/query/don-valider'
+    | '/api/public/bot/query/points'
+    | '/api/public/bot/query/profil'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -963,6 +1013,10 @@ export interface RootRouteChildren {
   ApiPublicHooksPaladiumSyncRoute: typeof ApiPublicHooksPaladiumSyncRoute
   ApiPublicHooksScanAnomaliesRoute: typeof ApiPublicHooksScanAnomaliesRoute
   ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
+  ApiPublicBotQueryCandidaturesRoute: typeof ApiPublicBotQueryCandidaturesRoute
+  ApiPublicBotQueryDonValiderRoute: typeof ApiPublicBotQueryDonValiderRoute
+  ApiPublicBotQueryPointsRoute: typeof ApiPublicBotQueryPointsRoute
+  ApiPublicBotQueryProfilRoute: typeof ApiPublicBotQueryProfilRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1485,6 +1539,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBotImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/bot/query/profil': {
+      id: '/api/public/bot/query/profil'
+      path: '/api/public/bot/query/profil'
+      fullPath: '/api/public/bot/query/profil'
+      preLoaderRoute: typeof ApiPublicBotQueryProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/query/points': {
+      id: '/api/public/bot/query/points'
+      path: '/api/public/bot/query/points'
+      fullPath: '/api/public/bot/query/points'
+      preLoaderRoute: typeof ApiPublicBotQueryPointsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/query/don-valider': {
+      id: '/api/public/bot/query/don-valider'
+      path: '/api/public/bot/query/don-valider'
+      fullPath: '/api/public/bot/query/don-valider'
+      preLoaderRoute: typeof ApiPublicBotQueryDonValiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/query/candidatures': {
+      id: '/api/public/bot/query/candidatures'
+      path: '/api/public/bot/query/candidatures'
+      fullPath: '/api/public/bot/query/candidatures'
+      preLoaderRoute: typeof ApiPublicBotQueryCandidaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1669,6 +1751,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksScanAnomaliesRoute: ApiPublicHooksScanAnomaliesRoute,
   ApiPublicHooksSyncDiscordPresenceRoute:
     ApiPublicHooksSyncDiscordPresenceRoute,
+  ApiPublicBotQueryCandidaturesRoute: ApiPublicBotQueryCandidaturesRoute,
+  ApiPublicBotQueryDonValiderRoute: ApiPublicBotQueryDonValiderRoute,
+  ApiPublicBotQueryPointsRoute: ApiPublicBotQueryPointsRoute,
+  ApiPublicBotQueryProfilRoute: ApiPublicBotQueryProfilRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

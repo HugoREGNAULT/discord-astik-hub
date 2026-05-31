@@ -172,6 +172,24 @@ export const submitApplication = createServerFn({ method: "POST" })
       footer: { text: `Application ${ins.data.id}` },
     });
 
+    // Notif cross-post dans le salon recrutement (silencieux si non configuré).
+    const { postNotify } = await import("@/lib/discord/log.server");
+    const { NOTIFY_CHANNELS } = await import("@/lib/discord/constants");
+    void postNotify(NOTIFY_CHANNELS.RECRUIT, {
+      title: "📝 Nouvelle candidature à examiner",
+      color: blacklistMatches.length > 0 ? COLORS.danger : COLORS.info,
+      description: `**${user.username}** (<@${user.discordId}>) — \`${mojang.name}\``,
+      fields: [
+        { name: "Âge", value: String(data.age), inline: true },
+        { name: "Pays", value: data.country, inline: true },
+        { name: "Temps de jeu", value: data.weeklyPlaytime, inline: true },
+        ...(blacklistMatches.length > 0
+          ? [{ name: "⚠️ Blacklist", value: `${blacklistMatches.length} match(s)` }]
+          : []),
+      ],
+      footer: { text: `Application ${ins.data.id}` },
+    });
+
     return { ok: true, applicationId: ins.data.id, blacklistHits: blacklistMatches.length };
   });
 

@@ -307,6 +307,22 @@ export const addWarning = createServerFn({ method: "POST" })
       data.memberDiscordId,
       `⚠️ **Avertissement (${data.severity})** : ${data.body}\n\nTu peux contester depuis ta page /me sur le site.`,
     );
+    // Récap dans le salon staff (corps tronqué pour éviter de divulguer du sensible)
+    const { postNotify, COLORS } = await import("@/lib/discord/log.server");
+    const { NOTIFY_CHANNELS } = await import("@/lib/discord/constants");
+    const severityColor =
+      data.severity === "severe" || data.severity === "major" ? COLORS.danger : COLORS.warn;
+    void postNotify(NOTIFY_CHANNELS.STAFF, {
+      title: "⚠️ Nouvel avertissement",
+      color: severityColor,
+      description: `Membre <@${data.memberDiscordId}> — par **${user.username}**`,
+      fields: [
+        { name: "Gravité", value: data.severity, inline: true },
+        { name: "Points", value: String(points), inline: true },
+        ...(data.category ? [{ name: "Catégorie", value: data.category, inline: true }] : []),
+        { name: "Extrait", value: data.body.slice(0, 120) + (data.body.length > 120 ? "…" : "") },
+      ],
+    });
     return { ok: true };
   });
 
