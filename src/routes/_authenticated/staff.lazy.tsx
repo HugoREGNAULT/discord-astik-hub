@@ -83,6 +83,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { LazyApplicationsChart as ApplicationsChart } from "@/components/LazyApplicationsChart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { StaffPresence } from "@/components/StaffPresence";
 
 export const Route = createLazyFileRoute("/_authenticated/staff")({
   component: () => (
@@ -94,11 +96,21 @@ export const Route = createLazyFileRoute("/_authenticated/staff")({
 
 function StaffPage() {
   const fn = useServerFn(getStaffDashboard);
+  const { data: me } = useCurrentUser();
   const { data, isLoading } = useQuery({
     queryKey: ["staff-dashboard"],
     queryFn: () => fn(),
-    refetchInterval: 60_000,
   });
+
+  // Realtime — invalide les caches dépendant des tables applications/donations/warnings.
+  // Le push ne sert qu'à invalider : aucune donnée sensible ne transite côté client.
+  const invalidatedKeys = [
+    ["staff-dashboard"],
+    ["faction-health"],
+  ];
+  useRealtimeChannel("applications", "*", invalidatedKeys);
+  useRealtimeChannel("donations", "*", invalidatedKeys);
+  useRealtimeChannel("warnings", "*", invalidatedKeys);
 
   if (isLoading || !data) {
     return (
@@ -128,11 +140,21 @@ function StaffPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <PageHeader
-        code="// staff"
-        title="Dashboard staff"
-        description="Vue d'ensemble de la faction : alertes, files d'attente et activité récente."
-      />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader
+          code="// staff"
+          title="Dashboard staff"
+          description="Vue d'ensemble de la faction : alertes, files d'attente et activité récente."
+        />
+        {me ? (
+          <StaffPresence
+            discordId={me.discordId}
+            username={me.username}
+            avatar={me.avatarUrl ?? me.avatar ?? null}
+          />
+        ) : null}
+      </div>
+
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -659,7 +681,6 @@ function FactionHealthSection() {
   const { data, isLoading } = useQuery({
     queryKey: ["faction-health"],
     queryFn: () => fn(),
-    refetchInterval: 5 * 60_000,
   });
 
   if (isLoading || !data) {
@@ -810,7 +831,6 @@ function WeeklyDigestSection() {
   const { data, isLoading } = useQuery({
     queryKey: ["latest-digest"],
     queryFn: () => fn(),
-    refetchInterval: 10 * 60_000,
   });
 
   const genMut = useMutation({
@@ -1510,7 +1530,6 @@ function InactivityCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["inactivity-buckets"],
     queryFn: () => fn(),
-    refetchInterval: 5 * 60_000,
   });
   const [tab, setTab] = useState<"d7" | "d14" | "d30">("d7");
 
@@ -1560,8 +1579,7 @@ function NeverConnectedCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["never-connected"],
     queryFn: () => fn(),
-    refetchInterval: 10 * 60_000,
-  });
+    });
 
   return (
     <Card>
@@ -1715,8 +1733,7 @@ function InactivityQueueCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["inactivity-queue"],
     queryFn: () => fn(),
-    refetchInterval: 5 * 60_000,
-  });
+    });
 
   const rows: InactivityRow[] = (data?.rows ?? []) as InactivityRow[];
 
@@ -1904,8 +1921,7 @@ function AnomaliesCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["anomaly-flags-open"],
     queryFn: () => fn(),
-    refetchInterval: 120_000,
-  });
+    });
 
   const mut = useMutation({
     mutationFn: (vars: { id: string; status: "reviewed" | "dismissed" }) =>
