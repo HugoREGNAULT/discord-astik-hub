@@ -1480,30 +1480,98 @@ export type Database = {
           },
         ]
       }
+      warning_appeals: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by_discord_id: string | null
+          decided_by_username: string | null
+          decision_note: string | null
+          id: string
+          member_discord_id: string
+          message: string
+          status: string
+          warning_id: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          decision_note?: string | null
+          id?: string
+          member_discord_id: string
+          message: string
+          status?: string
+          warning_id: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          decision_note?: string | null
+          id?: string
+          member_discord_id?: string
+          message?: string
+          status?: string
+          warning_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warning_appeals_warning_id_fkey"
+            columns: ["warning_id"]
+            isOneToOne: false
+            referencedRelation: "warnings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       warnings: {
         Row: {
           body: string
+          category: string | null
           created_at: string
+          expires_at: string | null
           id: string
           member_discord_id: string
+          points: number
+          revoked_by_discord_id: string | null
+          revoked_reason: string | null
+          severity: string
           staff_discord_id: string
           staff_username: string | null
+          status: string
         }
         Insert: {
           body: string
+          category?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           member_discord_id: string
+          points?: number
+          revoked_by_discord_id?: string | null
+          revoked_reason?: string | null
+          severity?: string
           staff_discord_id: string
           staff_username?: string | null
+          status?: string
         }
         Update: {
           body?: string
+          category?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           member_discord_id?: string
+          points?: number
+          revoked_by_discord_id?: string | null
+          revoked_reason?: string | null
+          severity?: string
           staff_discord_id?: string
           staff_username?: string | null
+          status?: string
         }
         Relationships: [
           {
