@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/effectif")({
   head: () => ({ meta: [{ title: "Effectif · PunkAstik" }] }),
   component: () => (
-    <Guard perm="members.view">
+    <Guard perm="profile.self">
       <EffectifPage />
     </Guard>
   ),

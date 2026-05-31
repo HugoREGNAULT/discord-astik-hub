@@ -162,7 +162,7 @@ function MemberDetail() {
             Tu n'as pas les permissions pour consulter ce profil membre.
           </p>
           <Button asChild variant="outline" size="sm">
-            <Link to="/me">Retour à mon profil</Link>
+            <Link to="/dashboard">Retour au classement</Link>
           </Button>
         </CardContent>
       </Card>
