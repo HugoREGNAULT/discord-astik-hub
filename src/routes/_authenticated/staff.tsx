@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 import { Guard } from "@/components/Guard";
-import { getStaffDashboard } from "@/lib/data/staff.functions";
+import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers } from "@/lib/data/staff.functions";
 import { getFactionHealth } from "@/lib/data/health.functions";
 import { getLatestDigest, generateDigestManually } from "@/lib/data/digest.functions";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
@@ -194,29 +194,10 @@ function StaffPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Inactifs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <AlertTriangle className="size-4 text-pink-500" />
-                Membres inactifs (7 jours)
-              </span>
-              <Badge variant="outline">{data.inactiveMembers.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 max-h-80 overflow-y-auto">
-            {data.inactiveMembers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Tout le monde s'est manifesté cette semaine ✨
-              </p>
-            ) : (
-              data.inactiveMembers.map((m: any) => (
-                <InactiveMemberRow key={m.discord_id} member={m} />
-              ))
-            )}
-          </CardContent>
-        </Card>
+        {/* Inactifs multi-seuils */}
+        <InactivityCard />
+
+
 
         {/* Top contributeurs */}
         <Card>
@@ -499,7 +480,7 @@ function InactiveMemberRow({
   const dmFn = useServerFn(dmMember);
   const [dmOpen, setDmOpen] = useState(false);
   const [dmContent, setDmContent] = useState(
-    `Salut ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nOn ne t'a pas vu cette semaine sur le Discord ni en vocal. Tout va bien ? Donne-nous des nouvelles quand tu peux !`,
+    `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nApparemment tu serais absent ? Si c'est le cas, merci de poser une absence ici : https://punkastik.com/absences\n\nSinon on risque de te sanctionner sans savoir que tu étais absent. Donne-nous des nouvelles 🙏`,
   );
 
   const awayMut = useMutation({
