@@ -233,6 +233,50 @@ Les nouvelles tables ne sont **pas** automatiquement ouvertes à
 
 ---
 
+## Base de données & backups
+
+### Point-in-Time Recovery (PITR)
+
+Le PITR est **activé côté dashboard Lovable Cloud / Supabase** (plan payant
+requis). Fenêtre de rétention : **7 jours** par défaut (ajustable selon le
+plan). Pendant cette fenêtre, on peut restaurer la base à n'importe quel
+instant (granularité ~minute).
+
+### Procédure de restauration (sans écraser la prod)
+
+Règle d'or : **ne JAMAIS restaurer en place sur le projet de prod**. On
+restaure toujours vers un projet/branche neuf, on valide, puis on re-pointe.
+
+1. Dans le dashboard Supabase → *Database* → *Backups* → *Point in Time*,
+   choisir l'instant cible et **restaurer vers un nouveau projet** (ou une
+   branche Supabase si activée).
+2. Récupérer les credentials du nouveau projet (`SUPABASE_URL`,
+   `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PUBLISHABLE_KEY`,
+   `DATABASE_URL`).
+3. Re-pointer les variables d'env (Lovable Cloud → Secrets, ou `.env` local)
+   sur le nouveau projet et redéployer.
+4. Vérifier l'intégrité (auth, rôles Discord, points, donations) AVANT toute
+   bascule DNS / promotion.
+5. Une fois validé, archiver/supprimer l'ancien projet.
+
+### Reproductibilité locale
+
+Le stack Supabase local rejoue toutes les migrations depuis zéro :
+
+```bash
+supabase start          # démarre Postgres + Auth + Studio en local (ports dans supabase/config.toml)
+supabase db reset       # drop + recreate + applique toutes les migrations supabase/migrations/*.sql
+```
+
+`supabase db reset` rejoue les 23 migrations dans l'ordre, ce qui garantit
+que le schéma local est identique à celui décrit par le code versionné.
+Les secrets locaux se mettent dans un `.env` (voir `.env.example`) — jamais
+commité.
+
+---
+
+
+
 ## Import des JSON existants
 
 À faire plus tard : créer `src/lib/import-json.server.ts` qui prend les
