@@ -641,3 +641,61 @@ function PointsTimeline({ gains }: { gains: Gain[] }) {
     </div>
   );
 }
+
+function MyTrialCard({ trialUntil }: { trialUntil: string | null }) {
+  const qc = useQueryClient();
+  const ls = useServerFn(listMyOnboardingTasks);
+  const tg = useServerFn(toggleMyOnboardingTask);
+  const { data } = useQuery({
+    queryKey: ["my-onboarding"],
+    queryFn: () => ls(),
+  });
+  const toggle = useMutation({
+    mutationFn: (vars: { id: string; done: boolean }) => tg({ data: vars }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["my-onboarding"] }),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+  const tasks = data?.tasks ?? [];
+  if (!trialUntil && tasks.length === 0) return null;
+  const daysLeft = trialUntil
+    ? Math.ceil((new Date(trialUntil).getTime() - Date.now()) / (24 * 3600 * 1000))
+    : null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Calendar className="h-4 w-4" /> Ma période d'essai
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {trialUntil && (
+          <div className="text-sm">
+            <span className="font-bold">{daysLeft}</span> jours restants
+            <span className="text-muted-foreground text-xs ml-2">
+              (jusqu'au {new Date(trialUntil).toLocaleDateString("fr-FR")})
+            </span>
+          </div>
+        )}
+        {tasks.length > 0 && (
+          <ul className="space-y-1.5 text-sm">
+            {tasks.map((t: any) => (
+              <li key={t.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={t.done}
+                  onChange={(e) =>
+                    toggle.mutate({ id: t.id, done: e.target.checked })
+                  }
+                  className="h-4 w-4"
+                />
+                <span className={t.done ? "line-through text-muted-foreground" : ""}>
+                  {t.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
