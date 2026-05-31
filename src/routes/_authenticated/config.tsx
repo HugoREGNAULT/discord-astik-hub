@@ -61,7 +61,7 @@ function ConfigPage() {
   const tog = useServerFn(toggleValueActive);
   const del = useServerFn(deleteValue);
 
-  const { data } = useQuery({ queryKey: ["values"], queryFn: () => lv() });
+  const { data, error } = useQuery({ queryKey: ["values"], queryFn: () => lv() });
 
   const [form, setForm] = useState<{
     category: Cat;
