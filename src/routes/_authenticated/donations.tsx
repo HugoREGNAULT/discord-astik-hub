@@ -30,6 +30,7 @@ import {
   DaSelect,
   DaChip,
   EmptyBlock,
+  ErrorBlock,
 } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/donations")({
@@ -124,6 +125,10 @@ function DonationsPage() {
         </div>
       </PageCard>
 
+      {carts.error && (
+        <ErrorBlock message={(carts.error as Error).message} hint="Réessaie dans un instant." />
+      )}
+
       {carts.data?.carts.map((c: any) => (
         <Cart
           key={c.id}
@@ -157,7 +162,7 @@ function DonationsPage() {
           }
         />
       ))}
-      {carts.data?.carts.length === 0 && (
+      {!carts.error && carts.data?.carts.length === 0 && (
         <PageCard>
           <EmptyBlock label="Aucun panier actif — crée-en un" />
         </PageCard>

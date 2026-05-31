@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { listMembers } from "@/lib/data/members.functions";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { MemberRowsSkeleton } from "@/components/Skeletons";
-import { PageHeader, PageCard, EmptyBlock, DaChip } from "@/components/tools/ToolsUi";
+import { PageHeader, PageCard, EmptyBlock, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
@@ -25,7 +25,7 @@ function MembersPage() {
   const [page, setPage] = useState(1);
   const navigate = useNavigate({ from: Route.fullPath });
   const fn = useServerFn(listMembers);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["members", q, status],
     queryFn: () => fn({ data: { q, status } }),
   });
@@ -85,6 +85,8 @@ function MembersPage() {
       </PageCard>
 
       {isLoading && <MemberRowsSkeleton count={8} />}
+
+      {error && <ErrorBlock message={(error as Error).message} hint="Réessaie dans un instant." />}
 
       <div className="grid gap-2">
         {paged.map((m, i) => (
@@ -150,7 +152,7 @@ function MembersPage() {
             </div>
           </Link>
         ))}
-        {members.length === 0 && !isLoading && <EmptyBlock label="Aucun membre — ajuste filtres" />}
+        {members.length === 0 && !isLoading && !error && <EmptyBlock label="Aucun membre — ajuste filtres" />}
       </div>
 
       <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />

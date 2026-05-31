@@ -17,7 +17,7 @@ import {
 import { LeaderboardChart } from "@/components/LeaderboardChart";
 import { RecentCartsPanel } from "@/components/RecentCartsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
-import { PageHeader, PageCard, DaChip } from "@/components/tools/ToolsUi";
+import { PageHeader, PageCard, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   errorComponent: RouteError,
@@ -181,7 +181,7 @@ function LeaderboardPage() {
   const fetchHist = useServerFn(getLeaderboardHistory);
   const { data: currentUser } = useCurrentUser();
   const canSeeCarts = hasPerm(currentUser, "donations.manage");
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
     refetchInterval: 60_000,
@@ -302,7 +302,9 @@ function LeaderboardPage() {
                 className="max-w-xs bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
               />
             </div>
-            {isLoading ? (
+            {error ? (
+              <ErrorBlock message={(error as Error).message} hint="Réessaie dans un instant." />
+            ) : isLoading ? (
               <LeaderboardRowsSkeleton count={10} />
             ) : (
               <LeaderboardList

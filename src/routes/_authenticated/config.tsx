@@ -61,7 +61,7 @@ function ConfigPage() {
   const tog = useServerFn(toggleValueActive);
   const del = useServerFn(deleteValue);
 
-  const { data } = useQuery({ queryKey: ["values"], queryFn: () => lv() });
+  const { data, error } = useQuery({ queryKey: ["values"], queryFn: () => lv() });
 
   const [form, setForm] = useState<{
     category: Cat;
@@ -232,6 +232,14 @@ function ConfigPage() {
           </div>
         </CardContent>
       </Card>
+
+      {error && (
+        <Card className="border-destructive/40 bg-destructive/5">
+          <CardContent className="py-4 text-sm text-destructive">
+            Impossible de charger les valeurs : {(error as Error).message}. Réessaie dans un instant.
+          </CardContent>
+        </Card>
+      )}
 
       {grouped.map((g) => (
         <Card key={g.cat}>
