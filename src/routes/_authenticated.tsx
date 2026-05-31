@@ -139,8 +139,8 @@ function AuthLayout() {
                           {c.label}
                         </BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink asChild className="text-zinc-500 hover:text-pink-500">
-                          <Link to={c.href}>{c.label}</Link>
+                        <BreadcrumbLink href={c.href} className="text-zinc-500 hover:text-pink-500">
+                          {c.label}
                         </BreadcrumbLink>
                       )}
                     </BreadcrumbItem>
