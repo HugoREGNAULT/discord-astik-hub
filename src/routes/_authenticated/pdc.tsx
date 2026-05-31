@@ -50,6 +50,7 @@ import {
   Calculator,
 } from "lucide-react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
@@ -393,7 +394,7 @@ function PdcPage() {
       await loadPlan(plan.id);
       toast.success("Plan créé");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const save = useMutation({
@@ -408,7 +409,7 @@ function PdcPage() {
       qc.invalidateQueries({ queryKey: ["pdc-plans"] });
       toast.success("Plan sauvegardé");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const removePlan = useMutation({
@@ -442,7 +443,7 @@ function PdcPage() {
       qc.invalidateQueries({ queryKey: ["pdc-blocks"] });
       toast.success("Bloc ajouté");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
   const removeBlock = useMutation({
     mutationFn: async (id: string) => {

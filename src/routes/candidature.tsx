@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { ArrowLeft, LogIn, Send, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { submitApplication, getMyApplication } from "@/lib/data/applications.functions";
@@ -176,7 +177,7 @@ function ApplicationForm() {
       toast.success("Candidature envoyée ! Tu seras notifié·e en DM.");
       refetch();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   // Si pending, on affiche le statut

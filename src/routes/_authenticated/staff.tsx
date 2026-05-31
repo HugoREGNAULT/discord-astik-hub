@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import {
   LayoutDashboard,
   Users,
@@ -492,7 +493,7 @@ function InactiveMemberRow({
       toast.success("Membre marqué en absence");
       qc.invalidateQueries({ queryKey: ["staff-dashboard"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const dmMut = useMutation({
@@ -501,7 +502,7 @@ function InactiveMemberRow({
       toast.success("DM envoyé");
       setDmOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -869,7 +870,7 @@ function WeeklyDigestSection() {
         toast.error(res?.error ?? "Échec de la génération");
       }
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const digest = data?.digest;
@@ -1094,7 +1095,7 @@ function BulkDmCard() {
       setConfirmOpen(false);
       qc.invalidateQueries({ queryKey: ["bulk-dm-history"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const history = useQuery({
@@ -1126,7 +1127,7 @@ function BulkDmCard() {
       URL.revokeObjectURL(url);
       toast.success(`${res.rows.length} lignes exportées`);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   if (!canDm) return null;
@@ -1665,7 +1666,7 @@ function NeverConnectedRow({
       toast.success("DM envoyé");
       setDmOpen(false);
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (

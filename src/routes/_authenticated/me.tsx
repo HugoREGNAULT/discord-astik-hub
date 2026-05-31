@@ -28,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { EmptyState } from "@/components/EmptyState";
 import {
   AlertDialog,
@@ -299,7 +300,7 @@ function DangerZone() {
       qc.clear();
       window.location.href = "/";
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import {
   CheckCircle2,
   XCircle,
@@ -224,7 +225,7 @@ function ApplicationDetail({ app }: { app: Application }) {
       setReason("");
       qc.invalidateQueries({ queryKey: ["applications"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -342,7 +343,7 @@ function AiReview({ applicationId }: { applicationId: string }) {
   const reviewFn = useServerFn(reviewApplication);
   const mutation = useMutation({
     mutationFn: () => reviewFn({ data: { applicationId } }),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ToolHeader,
@@ -479,7 +480,7 @@ function MarketAlertForm({ itemName }: { itemName: string }) {
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["my-shop-alerts"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const onSubmit = (e: React.FormEvent) => {

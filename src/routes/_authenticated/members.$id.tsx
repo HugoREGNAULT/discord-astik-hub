@@ -46,6 +46,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
@@ -216,7 +217,7 @@ function MemberDetail() {
                   toast.success("Membre mis à jour");
                   refresh();
                 } catch (e) {
-                  toast.error((e as Error).message);
+                  toast.error(toUserMessage(e));
                 }
               }}
             />
@@ -249,7 +250,7 @@ function MemberDetail() {
                         toast.success("Alt retiré");
                         refresh();
                       } catch (e) {
-                        toast.error((e as Error).message);
+                        toast.error(toUserMessage(e));
                         throw e;
                       }
                     }}
@@ -681,7 +682,7 @@ function MemberActions({
       toast.success("MP envoyé");
       setDmOpen(false);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Échec de l'envoi"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   const mAway = useMutation({
@@ -717,7 +718,7 @@ function MemberActions({
       setPointsReason("");
       refresh();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   const mGrade = useMutation({

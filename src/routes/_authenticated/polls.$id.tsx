@@ -15,6 +15,7 @@ import {
   UserX,
 } from "lucide-react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -170,7 +171,7 @@ function PollDetail() {
       toast.success("Vote enregistré");
       qc.invalidateQueries({ queryKey: ["poll", id] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   const mClose = useMutation({
@@ -180,7 +181,7 @@ function PollDetail() {
       toast.success("Sondage clôturé");
       qc.invalidateQueries({ queryKey: ["poll", id] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur clôture sondage"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   const mReopen = useMutation({
@@ -189,7 +190,7 @@ function PollDetail() {
       toast.success("Sondage rouvert");
       qc.invalidateQueries({ queryKey: ["poll", id] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur réouverture sondage"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   const tallies = useMemo(() => {
@@ -691,7 +692,7 @@ function VotesImportDialog({
       reset();
       onDone();
     } catch (e: any) {
-      toast.error(e?.message ?? "Erreur");
+      toast.error(toUserMessage(e));
     } finally {
       setSubmitting(false);
     }
