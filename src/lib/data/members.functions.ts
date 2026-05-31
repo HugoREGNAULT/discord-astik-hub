@@ -323,6 +323,15 @@ export const addWarning = createServerFn({ method: "POST" })
         { name: "Extrait", value: data.body.slice(0, 120) + (data.body.length > 120 ? "…" : "") },
       ],
     });
+    // Notif persistée — membre destinataire
+    const { notify } = await import("@/lib/data/notify.server");
+    void notify({
+      recipientDiscordId: data.memberDiscordId,
+      kind: "warning",
+      title: `Nouvel avertissement (${data.severity})`,
+      detail: data.body.slice(0, 200),
+      href: "/me",
+    });
     return { ok: true };
   });
 
