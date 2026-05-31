@@ -147,15 +147,17 @@ function ConfigPage() {
                 )}
               </button>
               {form.image_url && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setForm((f) => ({ ...f, image_url: null }))}
-                  className="text-destructive"
                   aria-label="Retirer l'icône"
                 >
                   <X className="size-4" />
-                </button>
+                </Button>
               )}
+
               <input
                 ref={fileRef}
                 type="file"
@@ -342,9 +344,10 @@ function ValueRowItem({
         confirmLabel="Supprimer"
         onConfirm={onDelete}
         trigger={
-          <button className="text-destructive" aria-label="Supprimer">
+          <Button variant="ghost" size="icon" className="text-destructive" aria-label="Supprimer">
             <Trash2 className="size-4" />
-          </button>
+          </Button>
+
         }
       />
     </li>

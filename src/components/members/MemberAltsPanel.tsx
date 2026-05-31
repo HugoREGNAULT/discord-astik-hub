@@ -45,7 +45,7 @@ export function MemberAltsPanel({
                   onConfirm={async () => {
                     await onRemove(a);
                   }}
-                  trigger={<button className="text-destructive text-xs">Supprimer</button>}
+                  trigger={<Button variant="ghost" size="sm" className="text-destructive">Supprimer</Button>}
                 />
               )}
             </li>
