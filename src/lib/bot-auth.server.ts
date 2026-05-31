@@ -2,6 +2,8 @@
  * Auth + CORS helpers for /api/public/bot/* endpoints.
  * Bot calls authenticate via the `x-bot-key` header matching BOT_API_KEY.
  */
+import { timingSafeEqual } from "node:crypto";
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -26,6 +28,22 @@ export function requireBotAuth(request: Request): Response | null {
   const provided = request.headers.get("x-bot-key");
   const expected = process.env.BOT_API_KEY;
   if (!expected) return json({ error: "BOT_API_KEY not configured" }, 500);
-  if (!provided || provided !== expected) return json({ error: "Unauthorized" }, 401);
+  if (!provided) return json({ error: "Unauthorized" }, 401);
+
+  const providedBuf = Buffer.from(provided, "utf8");
+  const expectedBuf = Buffer.from(expected, "utf8");
+
+  // timingSafeEqual requires equal-length buffers. To avoid leaking the
+  // expected key's length, perform an equivalent-cost dummy comparison
+  // when lengths differ and still return 401.
+  if (providedBuf.length !== expectedBuf.length) {
+    timingSafeEqual(expectedBuf, expectedBuf);
+    return json({ error: "Unauthorized" }, 401);
+  }
+
+  if (!timingSafeEqual(providedBuf, expectedBuf)) {
+    return json({ error: "Unauthorized" }, 401);
+  }
   return null;
 }
+
