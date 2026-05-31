@@ -15,7 +15,7 @@ export interface RetryOptions {
   bucket?: "discord";
 }
 
-const DEFAULTS: Required<Omit<RetryOptions, "retryOn">> = {
+const DEFAULTS: Required<Omit<RetryOptions, "retryOn" | "bucket">> = {
   retries: 3,
   baseDelayMs: 300,
   maxDelayMs: 4000,
