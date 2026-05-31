@@ -14,7 +14,7 @@ import {
   type LeaderboardEntry,
   type LeaderboardMetric,
 } from "@/lib/data/leaderboard.functions";
-import { LeaderboardChart } from "@/components/LeaderboardChart";
+import { LazyLeaderboardChart as LeaderboardChart } from "@/components/LazyLeaderboardChart";
 import { RecentCartsPanel } from "@/components/RecentCartsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 import { PageHeader, PageCard, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
