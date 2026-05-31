@@ -123,7 +123,6 @@ function StaffBoardPage() {
     mutationFn: (id: string) => deleteFn({ data: { id } }),
     onSuccess: () => {
       toast.success("Supprimée");
-      setToDelete(null);
       invalidate();
     },
     onError: (e) => toast.error(toUserMessage(e)),
