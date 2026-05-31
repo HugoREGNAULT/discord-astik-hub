@@ -36,8 +36,8 @@ interface ChatMessage {
 
 export interface ToolResultEntry {
   name: string;
-  args: unknown;
-  result: unknown;
+  argsJson: string;
+  resultJson: string;
   error?: string;
 }
 
