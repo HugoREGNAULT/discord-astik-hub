@@ -197,3 +197,156 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
     },
   };
 });
+
+// ============================================================
+// Inactivité multi-seuils (7/14/30j) via snapshots
+// ============================================================
+
+type InactiveBucketMember = {
+  discord_id: string;
+  discord_username: string | null;
+  ig_name: string | null;
+  avatar_url: string | null;
+  current_grade: string | null;
+  arrival_date: string | null;
+  mc_uuid: string | null;
+  messages_total: number;
+  voice_total_seconds: number;
+  last_activity_at: string | null;
+};
+
+export const getInactivityBuckets = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
+
+  const now = Date.now();
+  const since30dIso = new Date(now - 31 * 86_400_000).toISOString();
+
+  const [activeRes, snapshotsRes] = await Promise.all([
+    db
+      .from("members")
+      .select(
+        "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid, messages_7d, voice_7d_seconds, messages_total, voice_total_seconds, updated_at",
+      )
+      .eq("status", "active"),
+    db
+      .from("leaderboard_snapshots")
+      .select("discord_id, taken_at, messages_total, voice_total_seconds")
+      .gte("taken_at", since30dIso)
+      .order("taken_at", { ascending: true })
+      .limit(200_000),
+  ]);
+
+  const active = filterFactionMembers(activeRes.data ?? []) as any[];
+
+  // For each member, keep the EARLIEST snapshot at or after each threshold.
+  // We want the oldest snapshot within the last 14d (to detect 14j inactivity)
+  // and the oldest within the last 30d.
+  const cutoff14 = now - 14 * 86_400_000;
+  const cutoff30 = now - 30 * 86_400_000;
+  const earliest14 = new Map<string, { messages: number; voice: number }>();
+  const earliest30 = new Map<string, { messages: number; voice: number }>();
+
+  for (const row of (snapshotsRes.data ?? []) as Array<{
+    discord_id: string;
+    taken_at: string;
+    messages_total: number;
+    voice_total_seconds: number;
+  }>) {
+    const t = new Date(row.taken_at).getTime();
+    if (t >= cutoff30 && !earliest30.has(row.discord_id)) {
+      earliest30.set(row.discord_id, {
+        messages: row.messages_total,
+        voice: row.voice_total_seconds,
+      });
+    }
+    if (t >= cutoff14 && !earliest14.has(row.discord_id)) {
+      earliest14.set(row.discord_id, {
+        messages: row.messages_total,
+        voice: row.voice_total_seconds,
+      });
+    }
+  }
+
+  const d7: InactiveBucketMember[] = [];
+  const d14: InactiveBucketMember[] = [];
+  const d30: InactiveBucketMember[] = [];
+
+  for (const m of active) {
+    const base: InactiveBucketMember = {
+      discord_id: m.discord_id,
+      discord_username: m.discord_username ?? null,
+      ig_name: m.ig_name ?? null,
+      avatar_url: m.avatar_url ?? null,
+      current_grade: m.current_grade ?? null,
+      arrival_date: m.arrival_date ?? null,
+      mc_uuid: m.mc_uuid ?? null,
+      messages_total: m.messages_total ?? 0,
+      voice_total_seconds: m.voice_total_seconds ?? 0,
+      last_activity_at: m.updated_at ?? null,
+    };
+
+    const inactive7 = (m.messages_7d ?? 0) === 0 && (m.voice_7d_seconds ?? 0) === 0;
+    if (!inactive7) continue;
+    d7.push(base);
+
+    const ref14 = earliest14.get(m.discord_id);
+    if (ref14) {
+      const dMsg = (m.messages_total ?? 0) - ref14.messages;
+      const dVoice = (m.voice_total_seconds ?? 0) - ref14.voice;
+      if (dMsg <= 0 && dVoice <= 0) d14.push(base);
+    }
+    const ref30 = earliest30.get(m.discord_id);
+    if (ref30) {
+      const dMsg = (m.messages_total ?? 0) - ref30.messages;
+      const dVoice = (m.voice_total_seconds ?? 0) - ref30.voice;
+      if (dMsg <= 0 && dVoice <= 0) d30.push(base);
+    }
+  }
+
+  const sortByName = (a: InactiveBucketMember, b: InactiveBucketMember) =>
+    (a.ig_name ?? a.discord_username ?? "").localeCompare(b.ig_name ?? b.discord_username ?? "");
+  d7.sort(sortByName);
+  d14.sort(sortByName);
+  d30.sort(sortByName);
+
+  return { d7, d14, d30 };
+});
+
+// ============================================================
+// Membres faction privée jamais connectés au site
+// ============================================================
+
+export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
+
+  const [membersRes, loginsRes] = await Promise.all([
+    db
+      .from("members")
+      .select(
+        "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid",
+      )
+      .eq("status", "active"),
+    db
+      .from("logs")
+      .select("actor_discord_id")
+      .eq("action", "login")
+      .not("actor_discord_id", "is", null)
+      .limit(100_000),
+  ]);
+
+  const connected = new Set<string>();
+  for (const row of (loginsRes.data ?? []) as Array<{ actor_discord_id: string | null }>) {
+    if (row.actor_discord_id) connected.add(row.actor_discord_id);
+  }
+
+  const factionMembers = filterFactionMembers(membersRes.data ?? []) as any[];
+  const neverConnected = factionMembers
+    .filter((m) => !connected.has(m.discord_id))
+    .sort((a, b) =>
+      (a.ig_name ?? a.discord_username ?? "").localeCompare(
+        b.ig_name ?? b.discord_username ?? "",
+      ),
+    );
+
+  return { members: neverConnected, total: neverConnected.length };
+});

@@ -370,6 +370,48 @@ export type Database = {
           },
         ]
       }
+      faction_bc_checks: {
+        Row: {
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string
+          updated_by_discord_id: string | null
+          updated_by_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by_discord_id?: string | null
+          updated_by_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          updated_by_discord_id?: string | null
+          updated_by_username?: string | null
+        }
+        Relationships: []
+      }
       leaderboard_snapshots: {
         Row: {
           astik_points: number

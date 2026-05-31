@@ -54,6 +54,7 @@ import { Route as AuthenticatedToolsLeaderboardRouteImport } from './routes/_aut
 import { Route as AuthenticatedToolsFactionRouteImport } from './routes/_authenticated/tools.faction'
 import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenticated/tools.events'
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
+import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authenticated/tools.check-bc'
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
@@ -304,6 +305,12 @@ const AuthenticatedToolsClickerRoute =
     path: '/clicker',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
+const AuthenticatedToolsCheckBcRoute =
+  AuthenticatedToolsCheckBcRouteImport.update({
+    id: '/check-bc',
+    path: '/check-bc',
+    getParentRoute: () => AuthenticatedToolsRoute,
+  } as any)
 const AuthenticatedToolsAlertsRoute =
   AuthenticatedToolsAlertsRouteImport.update({
     id: '/alerts',
@@ -411,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
+  '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -469,6 +477,7 @@ export interface FileRoutesByTo {
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
+  '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -531,6 +540,7 @@ export interface FileRoutesById {
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
+  '/_authenticated/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/_authenticated/tools/events': typeof AuthenticatedToolsEventsRoute
   '/_authenticated/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -593,6 +603,7 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/polls/$id'
     | '/tools/alerts'
+    | '/tools/check-bc'
     | '/tools/clicker'
     | '/tools/events'
     | '/tools/faction'
@@ -651,6 +662,7 @@ export interface FileRouteTypes {
     | '/members/$id'
     | '/polls/$id'
     | '/tools/alerts'
+    | '/tools/check-bc'
     | '/tools/clicker'
     | '/tools/events'
     | '/tools/faction'
@@ -712,6 +724,7 @@ export interface FileRouteTypes {
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
     | '/_authenticated/tools/alerts'
+    | '/_authenticated/tools/check-bc'
     | '/_authenticated/tools/clicker'
     | '/_authenticated/tools/events'
     | '/_authenticated/tools/faction'
@@ -1088,6 +1101,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsClickerRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
+    '/_authenticated/tools/check-bc': {
+      id: '/_authenticated/tools/check-bc'
+      path: '/check-bc'
+      fullPath: '/tools/check-bc'
+      preLoaderRoute: typeof AuthenticatedToolsCheckBcRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
+    }
     '/_authenticated/tools/alerts': {
       id: '/_authenticated/tools/alerts'
       path: '/alerts'
@@ -1215,6 +1235,7 @@ const AuthenticatedPollsRouteWithChildren =
 
 interface AuthenticatedToolsRouteChildren {
   AuthenticatedToolsAlertsRoute: typeof AuthenticatedToolsAlertsRoute
+  AuthenticatedToolsCheckBcRoute: typeof AuthenticatedToolsCheckBcRoute
   AuthenticatedToolsClickerRoute: typeof AuthenticatedToolsClickerRoute
   AuthenticatedToolsEventsRoute: typeof AuthenticatedToolsEventsRoute
   AuthenticatedToolsFactionRoute: typeof AuthenticatedToolsFactionRoute
@@ -1231,6 +1252,7 @@ interface AuthenticatedToolsRouteChildren {
 
 const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
   AuthenticatedToolsAlertsRoute: AuthenticatedToolsAlertsRoute,
+  AuthenticatedToolsCheckBcRoute: AuthenticatedToolsCheckBcRoute,
   AuthenticatedToolsClickerRoute: AuthenticatedToolsClickerRoute,
   AuthenticatedToolsEventsRoute: AuthenticatedToolsEventsRoute,
   AuthenticatedToolsFactionRoute: AuthenticatedToolsFactionRoute,
@@ -1327,13 +1349,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

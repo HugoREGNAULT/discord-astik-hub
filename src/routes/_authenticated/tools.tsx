@@ -9,6 +9,7 @@ import {
   Calculator,
   ArrowLeft,
   Receipt,
+  Shield,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/tools")({
@@ -25,6 +26,7 @@ const TABS = [
   { to: "/tools/player", label: "Player", icon: UserIcon },
   { to: "/tools/sales", label: "Ventes", icon: Receipt },
   { to: "/tools/faction", label: "Faction", icon: Users },
+  { to: "/tools/check-bc", label: "Check BC", icon: Shield },
   { to: "/tools/status", label: "Status", icon: Activity },
   { to: "/tools/market", label: "Market", icon: ShoppingBag },
   { to: "/tools/leaderboard", label: "Leaderboard", icon: Trophy },
