@@ -8,15 +8,21 @@
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.js",
     "build:dev": "node scripts/build.js --mode=development",
+    "build:ci": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "prepare": "husky",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test -c playwright.e2e.config.ts",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
     "test:visual:report": "playwright show-report"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,css,md}": ["prettier --write"]
   },
   "dependencies": {
     "@fontsource/space-grotesk": "^5.2.10",
@@ -90,6 +96,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.6",
     "nitro": "3.0.260429-beta",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
