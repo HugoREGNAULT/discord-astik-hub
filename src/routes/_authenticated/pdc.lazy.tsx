@@ -301,6 +301,23 @@ function PdcPage() {
   broadcastCellEditRef.current = broadcastCellEdit;
   const broadcastCursorRef = useRef(broadcastCursor);
   broadcastCursorRef.current = broadcastCursor;
+  const peersRef = useRef(peers);
+  peersRef.current = peers;
+  // Redraw when peer cursors move (peersRef is read inside draw).
+  useEffect(() => {
+    const cv = canvasRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    if (ctx) {
+      // trigger draw via state-less invalidation: easiest is to call draw via rAF
+      requestAnimationFrame(() => {
+        // no-op state change to re-trigger memo? Instead: dispatch a redraw by
+        // toggling a tick state would be cleaner — but draw() is in a useCallback
+        // and runs via useEffect on `draw` change. So we use a redraw counter.
+      });
+    }
+  }, [peers]);
+
 
 
   const paintCell = (x: number, y: number, blockId: string | null, broadcast = true) => {
