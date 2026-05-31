@@ -13,7 +13,8 @@ async function applyDelta(memberId: string, delta: number, bonusPct: number) {
   const current = m?.astik_points ?? 0;
   const next = Math.max(0, current + delta);
   const realDelta = next - current;
-  await db.from("members").update({ astik_points: next }).eq("discord_id", memberId);
+  // members.astik_points est mis à jour par le trigger SQL `trg_sync_member_points`
+  // à l'insert dans points_ledger (total_after). Ne pas réécrire ici.
   return { realDelta, total: next, bonusPct };
 }
 
