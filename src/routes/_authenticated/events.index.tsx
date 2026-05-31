@@ -96,75 +96,74 @@ function EventsPage() {
         code="// events"
         title="Événements faction"
         description="Raids, défenses et briefings. Inscris-toi pour qu'on sache qui sera là."
-        right={
-          canManage ? (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <DaButton>
-                  <Plus className="size-4" /> Créer
-                </DaButton>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Nouvel événement</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label>Titre</Label>
-                    <DaInput
-                      value={form.title}
-                      onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Type</Label>
-                    <DaSelect
-                      value={form.type}
-                      onChange={(e) => setForm({ ...form, type: e.target.value })}
-                    >
-                      {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                        <option key={k} value={k}>
-                          {v}
-                        </option>
-                      ))}
-                    </DaSelect>
-                  </div>
-                  <div>
-                    <Label>Date & heure</Label>
-                    <DaInput
-                      type="datetime-local"
-                      value={form.startsAt}
-                      onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Lieu</Label>
-                    <DaInput
-                      value={form.location}
-                      onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <Label>Description</Label>
-                    <Textarea
-                      value={form.description}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DaButton
-                    disabled={!form.title || !form.startsAt || createMut.isPending}
-                    onClick={() => createMut.mutate()}
-                  >
-                    {createMut.isPending ? "Création…" : "Créer"}
-                  </DaButton>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          ) : null
-        }
       />
+
+      {canManage && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <DaButton>
+              <Plus className="size-4" /> Créer un événement
+            </DaButton>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nouvel événement</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>Titre</Label>
+                <DaInput
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Type</Label>
+                <DaSelect
+                  value={form.type}
+                  onChange={(e) => setForm({ ...form, type: e.target.value })}
+                >
+                  {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </DaSelect>
+              </div>
+              <div>
+                <Label>Date & heure</Label>
+                <DaInput
+                  type="datetime-local"
+                  value={form.startsAt}
+                  onChange={(e) => setForm({ ...form, startsAt: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Lieu</Label>
+                <DaInput
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <DaButton
+                disabled={!form.title || !form.startsAt || createMut.isPending}
+                onClick={() => createMut.mutate()}
+              >
+                {createMut.isPending ? "Création…" : "Créer"}
+              </DaButton>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {eventsQ.isLoading ? (
         <LoadingBlock />
