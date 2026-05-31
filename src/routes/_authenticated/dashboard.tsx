@@ -217,6 +217,9 @@ function LeaderboardPage() {
         title="Classement"
         description="Le top de la faction — AstikPoints, vocal et messages."
       />
+      <UnreadAnnouncementsBanner />
+
+
 
       <PageCard>
         <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
