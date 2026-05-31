@@ -244,6 +244,8 @@ function MemberDetail() {
         />
       )}
 
+      <GamificationCard scope="member" discordId={data.member.discord_id} />
+
       {data.canViewStaffData && data.recruiter && (
         <Card>
           <CardHeader>
