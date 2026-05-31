@@ -19,6 +19,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
+import { Route as AuthenticatedStaffBoardRouteImport } from './routes/_authenticated/staff-board'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedSalariesRouteImport } from './routes/_authenticated/salaries'
@@ -128,6 +129,11 @@ const AuthenticatedTrialsRoute = AuthenticatedTrialsRouteImport.update({
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStaffBoardRoute = AuthenticatedStaffBoardRouteImport.update({
+  id: '/staff-board',
+  path: '/staff-board',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
@@ -494,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/staff-board': typeof AuthenticatedStaffBoardRoute
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
@@ -564,6 +571,7 @@ export interface FileRoutesByTo {
   '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/staff-board': typeof AuthenticatedStaffBoardRoute
   '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
@@ -637,6 +645,7 @@ export interface FileRoutesById {
   '/_authenticated/salaries': typeof AuthenticatedSalariesRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/_authenticated/staff-board': typeof AuthenticatedStaffBoardRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
@@ -711,6 +720,7 @@ export interface FileRouteTypes {
     | '/salaries'
     | '/shop'
     | '/staff'
+    | '/staff-board'
     | '/tools'
     | '/trials'
     | '/welcome'
@@ -781,6 +791,7 @@ export interface FileRouteTypes {
     | '/salaries'
     | '/shop'
     | '/staff'
+    | '/staff-board'
     | '/trials'
     | '/welcome'
     | '/api/health'
@@ -853,6 +864,7 @@ export interface FileRouteTypes {
     | '/_authenticated/salaries'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
+    | '/_authenticated/staff-board'
     | '/_authenticated/tools'
     | '/_authenticated/trials'
     | '/_authenticated/welcome'
@@ -996,6 +1008,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/staff-board': {
+      id: '/_authenticated/staff-board'
+      path: '/staff-board'
+      fullPath: '/staff-board'
+      preLoaderRoute: typeof AuthenticatedStaffBoardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/staff': {
@@ -1538,6 +1557,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSalariesRoute: typeof AuthenticatedSalariesRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
+  AuthenticatedStaffBoardRoute: typeof AuthenticatedStaffBoardRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
@@ -1566,6 +1586,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSalariesRoute: AuthenticatedSalariesRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
+  AuthenticatedStaffBoardRoute: AuthenticatedStaffBoardRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
