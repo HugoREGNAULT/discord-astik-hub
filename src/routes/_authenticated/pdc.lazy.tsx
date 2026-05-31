@@ -56,8 +56,6 @@ import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createLazyFileRoute("/_authenticated/pdc")({
-  errorComponent: RouteError,
-  head: () => ({ meta: [{ title: "Plans de coupe · PunkAstik" }] }),
   component: PdcPage,
 });
 
