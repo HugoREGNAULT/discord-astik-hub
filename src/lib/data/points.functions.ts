@@ -126,11 +126,8 @@ export const getPointsHistory = createServerFn({ method: "GET" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const { requireSession } = await import("@/lib/auth/require.server");
-    const { canAccess } = await import("@/lib/auth/permissions");
-    const user = await requireSession();
-    const isSelf = user.discordId === data.memberDiscordId;
-    if (!isSelf && !canAccess(user, "points.manage")) throw new Error("FORBIDDEN");
+    const { requireSelfOrPermission } = await import("@/lib/auth/require.server");
+    await requireSelfOrPermission(data.memberDiscordId, "points.manage");
     const { data: rows, error } = await db
       .from("points_ledger")
       .select("*")
