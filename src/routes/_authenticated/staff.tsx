@@ -20,6 +20,20 @@ import {
   TrendingUp,
   MessageCircle,
   UserMinus,
+  Sparkles,
+  HeartPulse,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCw,
+  Send,
+  Megaphone,
+  Download,
+  History,
+  TrendingUp as TrendingUpIcon,
+  UserPlus as UserPlusIcon,
+  ShieldAlert as ShieldAlertIcon,
+  Activity as ActivityIcon,
+  ShoppingCart as ShoppingCartIcon,
 } from "lucide-react";
 
 import { Guard } from "@/components/Guard";
@@ -36,7 +50,7 @@ import {
   ResponsiveContainer,
   CartesianGrid as RGrid,
 } from "recharts";
-import { Sparkles, HeartPulse, ArrowUpRight, ArrowDownRight, RefreshCw } from "lucide-react";
+
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
 import {
   listOpenPollsForDm,
@@ -54,7 +68,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Send, Megaphone, Download, History } from "lucide-react";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,13 +87,6 @@ import { EmptyState } from "@/components/EmptyState";
 import { ApplicationsChart } from "@/components/ApplicationsChart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import {
-  TrendingUp as TrendingUpIcon,
-  UserPlus as UserPlusIcon,
-  ShieldAlert as ShieldAlertIcon,
-  Activity as ActivityIcon,
-  ShoppingCart as ShoppingCartIcon,
-} from "lucide-react";
 
 type StaffSearch = { bdmSort: SortKey; bdmDir: SortDir };
 

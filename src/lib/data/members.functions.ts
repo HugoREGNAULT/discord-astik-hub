@@ -46,7 +46,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
 
     const canViewStaffData = canAccess(user, "members.view");
 
-    const [member, alts, recent, notes, warnings, pointsLedger, donations, recruiter] =
+    const [member, alts, recent, notes, warnings, pointsLedger, donations] =
       await Promise.all([
         db.from("members").select("*").eq("discord_id", data.discordId).maybeSingle(),
         db.from("member_alts").select("*").eq("member_discord_id", data.discordId),
@@ -88,7 +88,6 @@ export const getMemberDetail = createServerFn({ method: "GET" })
               .order("created_at", { ascending: false })
               .limit(10)
           : Promise.resolve({ data: [] as never[], error: null }),
-        Promise.resolve(null),
       ]);
     if (member.error) throw new Error(member.error.message);
     if (member.data && !isSelf && !isFactionMember(member.data)) throw new Error("NOT_FOUND");
@@ -133,7 +132,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
           ? { discord_id: r.discord_id, ig_name: r.ig_name, discord_username: r.discord_username }
           : null;
     }
-    void recruiter;
+    
 
     return {
       member: member.data,
