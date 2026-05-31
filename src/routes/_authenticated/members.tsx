@@ -129,7 +129,7 @@ function MembersPage() {
               >
                 {m.ig_name ?? m.discord_username ?? m.discord_id}
               </div>
-              <div className="text-[10px] text-zinc-500 truncate flex items-center gap-2 mt-0.5">
+              <div className="text-[11px] text-zinc-400 truncate flex items-center gap-2 mt-0.5">
                 <span className="font-mono">@{m.discord_username}</span>
                 {m.current_grade && <DaChip accent="blurple">{m.current_grade}</DaChip>}
               </div>
@@ -142,7 +142,7 @@ function MembersPage() {
                 {m.astik_points}
               </div>
               <div
-                className="text-[9px] text-zinc-500 uppercase tracking-[0.2em]"
+                className="text-[11px] text-zinc-400 uppercase tracking-[0.2em]"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 AstikPoints

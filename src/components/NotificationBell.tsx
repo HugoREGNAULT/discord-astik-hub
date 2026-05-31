@@ -124,7 +124,7 @@ export function NotificationBell() {
                       {n.detail && (
                         <div className="text-[11px] text-zinc-500 truncate">{n.detail}</div>
                       )}
-                      <div className="text-[10px] text-zinc-600 mt-0.5">
+                      <div className="text-[11px] text-zinc-400 mt-0.5">
                         {new Date(n.createdAt).toLocaleString("fr-FR")}
                       </div>
                     </div>
