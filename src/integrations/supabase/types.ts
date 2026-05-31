@@ -614,6 +614,42 @@ export type Database = {
         }
         Relationships: []
       }
+      inactivity_pings: {
+        Row: {
+          channel: string
+          created_at: string
+          dm_error: string | null
+          dm_ok: boolean | null
+          id: string
+          member_discord_id: string
+          message: string | null
+          sent_by_discord_id: string | null
+          sent_by_username: string | null
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          dm_error?: string | null
+          dm_ok?: boolean | null
+          id?: string
+          member_discord_id: string
+          message?: string | null
+          sent_by_discord_id?: string | null
+          sent_by_username?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          dm_error?: string | null
+          dm_ok?: boolean | null
+          id?: string
+          member_discord_id?: string
+          message?: string | null
+          sent_by_discord_id?: string | null
+          sent_by_username?: string | null
+        }
+        Relationships: []
+      }
       leaderboard_snapshots: {
         Row: {
           astik_points: number
