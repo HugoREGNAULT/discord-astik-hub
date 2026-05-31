@@ -109,6 +109,11 @@ function MarketPage() {
       {q.isLoading && <LoadingBlock label="Chargement du catalogue HDV…" />}
       {q.error && <ErrorBlock message={(q.error as Error).message} />}
 
+      <div aria-live="polite" aria-busy={q.isLoading}>
+        <p className="sr-only" aria-live="polite">
+          {q.isLoading ? "Chargement du catalogue…" : `${items.length} item(s)`}
+        </p>
+      </div>
       {items.length > 0 && (
         <ToolCard className="!p-0 overflow-x-auto">
           <table className="w-full text-sm">
