@@ -169,10 +169,7 @@ export const validateCart = createServerFn({ method: "POST" })
       .eq("discord_id", cart.member_discord_id)
       .single();
     const next = (m?.astik_points ?? 0) + totals.final;
-    await db
-      .from("members")
-      .update({ astik_points: next })
-      .eq("discord_id", cart.member_discord_id);
+    // members.astik_points est synchronisé par le trigger SQL via points_ledger.total_after.
     await db.from("points_ledger").insert({
       member_discord_id: cart.member_discord_id,
       staff_discord_id: user.discordId,
