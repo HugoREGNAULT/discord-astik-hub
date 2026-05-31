@@ -241,8 +241,7 @@ function PdcPage() {
     hoverCell,
     tool,
     rectStart,
-    // re-render when peer set/cursor changes (read via ref to avoid stale closure)
-    peersTick,
+    peersVersion,
   ]);
 
   useEffect(() => {
