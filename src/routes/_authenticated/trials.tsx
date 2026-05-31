@@ -183,7 +183,7 @@ function TrialPanel({ memberDiscordId }: { memberDiscordId: string }) {
       }),
     onSuccess: () => {
       toast.success("Mentor mis à jour");
-      setMentor("");
+      setMentorVal("");
       refresh();
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
