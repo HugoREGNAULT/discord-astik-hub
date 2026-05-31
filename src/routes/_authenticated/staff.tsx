@@ -725,56 +725,9 @@ function FactionHealthSection() {
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
             Évolution effectif (90 jours)
           </div>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.evolution} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="#ec4899" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <RGrid strokeDasharray="3 3" stroke="#27272a" />
-                <RXAxis
-                  dataKey="date"
-                  stroke="#52525b"
-                  tick={{ fill: "#e4e4e7", fontSize: 11 }}
-                  tickFormatter={(d: string) =>
-                    new Date(d).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "short",
-                    })
-                  }
-                  minTickGap={30}
-                />
-                <RYAxis
-                  stroke="#52525b"
-                  tick={{ fill: "#e4e4e7", fontSize: 11 }}
-                  width={32}
-                  allowDecimals={false}
-                />
-                <RTooltip
-                  contentStyle={{
-                    background: "#18181b",
-                    border: "1px solid #3f3f46",
-                    borderRadius: 6,
-                    fontSize: 12,
-                    color: "#e4e4e7",
-                  }}
-                  labelStyle={{ color: "#fafafa" }}
-                  labelFormatter={(l: string) => new Date(l).toLocaleDateString("fr-FR")}
-                  formatter={(v: number) => [`${v} membres`, "Effectif"]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#ec4899"
-                  strokeWidth={2}
-                  fill="url(#healthGrad)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <Suspense fallback={<div className="h-48 animate-pulse rounded-md bg-muted" />}>
+            <StaffHealthChart evolution={data.evolution} />
+          </Suspense>
         </div>
 
         {data.topRecruiters.length > 0 && (
