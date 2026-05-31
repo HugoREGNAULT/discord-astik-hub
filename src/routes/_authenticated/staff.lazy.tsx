@@ -180,6 +180,11 @@ function StaffPage() {
       {/* Communication staff (DM massif) */}
       <BulkDmCard />
 
+      {/* Anomalies à examiner (détection stat. + explication IA, décision humaine) */}
+      <AnomaliesCard />
+
+
+
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
         timeline={data.applicationsTimeline ?? []}
