@@ -255,7 +255,7 @@ function PdcPage() {
   const isPanningRef = useRef(false);
   const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
-  const paintCell = (x: number, y: number, blockId: string | null) => {
+  const paintCell = (x: number, y: number, blockId: string | null, broadcast = true) => {
     if (x < 0 || y < 0 || x >= wCells || y >= hCells) return;
     setLayers((prev) => {
       const key = String(currentLayer);
@@ -266,6 +266,9 @@ function PdcPage() {
       return { ...prev, [key]: layer };
     });
     setDirty(true);
+    if (broadcast) {
+      broadcastCellEditRef.current?.({ layer: currentLayer, x, y, block_id: blockId });
+    }
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLCanvasElement>) => {
