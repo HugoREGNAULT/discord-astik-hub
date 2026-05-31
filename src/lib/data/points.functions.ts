@@ -6,7 +6,7 @@ import { requirePermission, logAction } from "@/lib/auth/require.server";
 async function applyDelta(memberId: string, delta: number, bonusPct: number) {
   // UPDATE atomique via RPC : évite la race condition lecture-puis-écriture.
   // Le trigger SQL `trg_sync_member_points` reste maître à l'insert ledger
-  // (idempotent, écrit la même valeur).
+  // (idempotent : il réécrit la même valeur via total_after).
   const { data: next, error } = await db.rpc("apply_points_delta", {
     p_discord_id: memberId,
     p_delta: delta,
@@ -14,11 +14,10 @@ async function applyDelta(memberId: string, delta: number, bonusPct: number) {
   if (error) throw new Error(error.message);
   if (next === null || next === undefined) throw new Error("Membre introuvable");
   const total = next as number;
-  // realDelta n'est pas directement connu (clamp à 0 côté SQL) — on le déduit
-  // en relisant via le résultat : on ne connaît pas current, mais pour les
-  // appels positifs realDelta == delta. Pour le cas remove, on borne au total
-  // retiré effectivement (total ne peut pas devenir négatif).
-  const realDelta = delta >= 0 ? delta : -(Math.min(-delta, total + -delta));
+  // Pour le ledger : si le delta a été clampé (total == 0 et delta < 0),
+  // realDelta est -(montant effectivement retiré) = -(total_before).
+  // Sinon realDelta == delta. On déduit total_before = total - delta (sans clamp).
+  const realDelta = delta < 0 && total === 0 ? -(total - delta) : delta;
   return { realDelta, total, bonusPct };
 }
 
