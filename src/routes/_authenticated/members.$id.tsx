@@ -205,155 +205,42 @@ function MemberDetail() {
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2 className="text-lg font-semibold m-0">Comptes alts</h2>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <ul className="space-y-1">
-            {data.alts.map((a: any) => (
-              <li
-                key={a.id}
-                className="flex items-center justify-between text-sm border border-border rounded px-3 py-2"
-              >
-                <span>{a.alt_name ?? a.alt_discord_id}</span>
-                {data.canEdit && (
-                  <ConfirmDialog
-                    title={`Retirer l'alt "${a.alt_name ?? a.alt_discord_id}" ?`}
-                    description="Le compte secondaire sera détaché de ce membre."
-                    confirmLabel="Retirer"
-                    onConfirm={async () => {
-                      try {
-                        await altRmFn({ data: { id: a.id } });
-                        toast.success("Alt retiré");
-                        refresh();
-                      } catch (e) {
-                        toast.error(toUserMessage(e));
-                        throw e;
-                      }
-                    }}
-                    trigger={
-                      <button className="text-destructive text-xs">Supprimer</button>
-                    }
-                  />
-                )}
-              </li>
-            ))}
-            {data.alts.length === 0 && (
-              <li>
-                <EmptyState
-                  title="Aucun alt"
-                  description="Aucun compte secondaire déclaré."
-                  variant="compact"
-                />
-              </li>
-            )}
-          </ul>
-          {data.canEdit && (
-            <div className="flex gap-2">
-              <Input placeholder="Nom alt" value={alt} onChange={(e) => setAlt(e.target.value)} />
-              <Button onClick={() => mAlt.mutate()} disabled={!alt}>
-                Ajouter
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <MemberAltsPanel
+        alts={data.alts}
+        canEdit={!!data.canEdit}
+        altInput={alt}
+        onAltInputChange={setAlt}
+        onAdd={() => mAlt.mutate()}
+        onRemove={async (a) => {
+          try {
+            await altRmFn({ data: { id: a.id } });
+            toast.success("Alt retiré");
+            refresh();
+          } catch (e) {
+            toast.error(toUserMessage(e));
+            throw e;
+          }
+        }}
+      />
 
       {canViewNotes && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2 className="text-lg font-semibold m-0">Notes staff</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <ul className="space-y-2">
-              {data.notes.map((n: any) => (
-                <li key={n.id} className="text-sm border border-border rounded p-3">
-                  <div className="text-[11px] text-muted-foreground">
-                    {new Date(n.created_at).toLocaleString()} · {n.staff_username}
-                  </div>
-                  <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
-                </li>
-              ))}
-              {data.notes.length === 0 && (
-                <li>
-                  <EmptyState
-                    title="Aucune note"
-                    description="Les notes staff sur ce membre apparaîtront ici."
-                    variant="compact"
-                  />
-                </li>
-              )}
-            </ul>
-            {canWriteNotes && (
-              <div className="flex flex-col gap-2">
-                <Textarea
-                  placeholder="Nouvelle note…"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                />
-                <Button onClick={() => mNote.mutate()} disabled={!note} className="self-end">
-                  Ajouter
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MemberNotesPanel
+          notes={data.notes}
+          canWrite={canWriteNotes}
+          noteInput={note}
+          onNoteInputChange={setNote}
+          onAdd={() => mNote.mutate()}
+        />
       )}
 
       {canViewWarnings && (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2 className="text-lg font-semibold m-0">Avertissements</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <ul className="space-y-2">
-              {data.warnings.map((w: any) => (
-                <li
-                  key={w.id}
-                  className="text-sm border border-destructive/50 bg-destructive/10 rounded p-3"
-                >
-                  <div className="text-[11px] text-muted-foreground">
-                    {new Date(w.created_at).toLocaleString()} · {w.staff_username}
-                  </div>
-                  <div className="mt-1 whitespace-pre-wrap">{w.body}</div>
-                </li>
-              ))}
-              {data.warnings.length === 0 && (
-                <li>
-                  <EmptyState
-                    title="Aucun avertissement"
-                    description="Aucune sanction enregistrée."
-                    variant="compact"
-                  />
-                </li>
-              )}
-            </ul>
-            {canWriteWarnings && (
-              <div className="flex flex-col gap-2">
-                <Textarea
-                  placeholder="Nouvel avertissement…"
-                  value={warn}
-                  onChange={(e) => setWarn(e.target.value)}
-                />
-                <Button
-                  variant="destructive"
-                  onClick={() => mWarn.mutate()}
-                  disabled={!warn}
-                  className="self-end"
-                >
-                  Avertir
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MemberWarningsPanel
+          warnings={data.warnings}
+          canWrite={canWriteWarnings}
+          warnInput={warn}
+          onWarnInputChange={setWarn}
+          onAdd={() => mWarn.mutate()}
+        />
       )}
 
       {data.canViewStaffData && data.recruiter && (
@@ -381,136 +268,21 @@ function MemberDetail() {
       )}
 
       {data.canViewStaffData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between text-base">
-              <span className="flex items-center gap-2">
-                <Coins className="size-4 text-primary" /> Historique points
-              </span>
-              <Badge variant="outline">{ledger.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {ledger.length === 0 ? (
-              <div className="p-4">
-                <EmptyState
-                  icon={Coins}
-                  title="Aucun mouvement"
-                  description="L'historique de points apparaîtra ici."
-                  variant="compact"
-                />
-              </div>
-            ) : (
-              <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {ledger.map((p: any) => (
-                  <li key={p.id} className="px-4 py-2 text-sm flex items-center gap-3">
-                    <span
-                      className={`font-mono font-semibold w-16 text-right ${
-                        p.amount >= 0 ? "text-primary" : "text-destructive"
-                      }`}
-                    >
-                      {p.amount >= 0 ? "+" : ""}
-                      {p.amount}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs">
-                        {p.action_type}
-                        {p.reason ? ` · ${p.reason}` : ""}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        Par {p.staff_username ?? p.staff_discord_id} ·{" "}
-                        {new Date(p.created_at).toLocaleString("fr-FR")}
-                      </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      → {p.total_after}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {ledgerHasMore && (
-              <div className="p-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => loadMorePoints.mutate()}
-                  disabled={loadMorePoints.isPending}
-                >
-                  <ChevronDown className="size-4 mr-1" />
-                  {loadMorePoints.isPending ? "Chargement…" : "Charger plus"}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MemberPointsHistory
+          items={ledger}
+          hasMore={ledgerHasMore}
+          onLoadMore={() => loadMorePoints.mutate()}
+          isLoadingMore={loadMorePoints.isPending}
+        />
       )}
 
       {data.canViewStaffData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between text-base">
-              <span className="flex items-center gap-2">
-                <ShoppingCart className="size-4 text-primary" /> Donations
-              </span>
-              <Badge variant="outline">{donations.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {donations.length === 0 ? (
-              <div className="p-4">
-                <EmptyState
-                  icon={ShoppingCart}
-                  title="Aucune donation"
-                  description="Les donations valides s'afficheront ici."
-                  variant="compact"
-                />
-              </div>
-            ) : (
-              <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                {donations.map((d: any) => (
-                  <li key={d.id} className="px-4 py-2 text-sm flex items-center gap-3">
-                    <Badge
-                      variant={
-                        d.status === "validated"
-                          ? "secondary"
-                          : d.status === "active"
-                            ? "default"
-                            : "outline"
-                      }
-                    >
-                      {d.status}
-                    </Badge>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs">
-                        Brut {d.total_brut} · Bonus {Number(d.bonus_pct ?? 0)}% → final{" "}
-                        <span className="font-semibold text-primary">{d.total_final}</span>
-                      </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {d.staff_username ?? "?"} · {new Date(d.created_at).toLocaleString("fr-FR")}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {donationsHasMore && (
-              <div className="p-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => loadMoreDonations.mutate()}
-                  disabled={loadMoreDonations.isPending}
-                >
-                  <ChevronDown className="size-4 mr-1" />
-                  {loadMoreDonations.isPending ? "Chargement…" : "Charger plus"}
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MemberDonationsPanel
+          items={donations}
+          hasMore={donationsHasMore}
+          onLoadMore={() => loadMoreDonations.mutate()}
+          isLoadingMore={loadMoreDonations.isPending}
+        />
       )}
 
       {data.canViewStaffData && (
