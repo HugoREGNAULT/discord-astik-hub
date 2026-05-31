@@ -147,7 +147,7 @@ function StaffBoardPage() {
   if (!canAccess) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Board staff" />
+        <PageHeader code="staff/board" title="Board staff" description="Accès staff requis." />
         <EmptyState title="Accès refusé" description="Permission staff requise." />
       </div>
     );
