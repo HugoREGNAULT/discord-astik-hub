@@ -71,6 +71,7 @@ import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
+import { Route as ApiPublicHooksScanAnomaliesRouteImport } from './routes/api/public/hooks/scan-anomalies'
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
 import { Route as ApiPublicHooksPaladiumMarketSyncRouteImport } from './routes/api/public/hooks/paladium-market-sync'
@@ -417,6 +418,12 @@ const ApiPublicHooksSyncDiscordPresenceRoute =
     path: '/api/public/hooks/sync-discord-presence',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksScanAnomaliesRoute =
+  ApiPublicHooksScanAnomaliesRouteImport.update({
+    id: '/api/public/hooks/scan-anomalies',
+    path: '/api/public/hooks/scan-anomalies',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksPaladiumSyncRoute =
   ApiPublicHooksPaladiumSyncRouteImport.update({
     id: '/api/public/hooks/paladium-sync',
@@ -551,6 +558,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
+  '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 export interface FileRoutesByTo {
@@ -622,6 +630,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
+  '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 export interface FileRoutesById {
@@ -698,6 +707,7 @@ export interface FileRoutesById {
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
+  '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 export interface FileRouteTypes {
@@ -774,6 +784,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
+    | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -845,6 +856,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
+    | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
   id:
     | '__root__'
@@ -920,6 +932,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
+    | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
   fileRoutesById: FileRoutesById
 }
@@ -948,6 +961,7 @@ export interface RootRouteChildren {
   ApiPublicHooksPaladiumMarketSyncRoute: typeof ApiPublicHooksPaladiumMarketSyncRoute
   ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
   ApiPublicHooksPaladiumSyncRoute: typeof ApiPublicHooksPaladiumSyncRoute
+  ApiPublicHooksScanAnomaliesRoute: typeof ApiPublicHooksScanAnomaliesRoute
   ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
 }
 
@@ -1387,6 +1401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSyncDiscordPresenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/scan-anomalies': {
+      id: '/api/public/hooks/scan-anomalies'
+      path: '/api/public/hooks/scan-anomalies'
+      fullPath: '/api/public/hooks/scan-anomalies'
+      preLoaderRoute: typeof ApiPublicHooksScanAnomaliesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/paladium-sync': {
       id: '/api/public/hooks/paladium-sync'
       path: '/api/public/hooks/paladium-sync'
@@ -1645,6 +1666,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
   ApiPublicHooksPaladiumStatusSyncRoute: ApiPublicHooksPaladiumStatusSyncRoute,
   ApiPublicHooksPaladiumSyncRoute: ApiPublicHooksPaladiumSyncRoute,
+  ApiPublicHooksScanAnomaliesRoute: ApiPublicHooksScanAnomaliesRoute,
   ApiPublicHooksSyncDiscordPresenceRoute:
     ApiPublicHooksSyncDiscordPresenceRoute,
 }
