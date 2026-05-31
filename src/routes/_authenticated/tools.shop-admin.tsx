@@ -4,15 +4,8 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
 import { Bell, Trash2 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import { lazy, Suspense } from "react";
+const ShopAdminHistoryChart = lazy(() => import("./-tools.shop-admin.chart"));
 import {
   ToolHeader,
   ToolCard,
