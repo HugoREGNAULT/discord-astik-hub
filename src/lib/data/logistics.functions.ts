@@ -234,7 +234,14 @@ export const decideMaterialRequest = createServerFn({ method: "POST" })
     if (e1) throw new Error(e1.message);
     if (!req) throw new Error("NOT_FOUND");
 
-    const patch: Record<string, unknown> = {
+    const patch: {
+      status: string;
+      decided_by_discord_id: string;
+      decided_by_username: string | null;
+      decided_at: string;
+      stock_item_id?: string | null;
+      delivered_at?: string;
+    } = {
       status: data.decision,
       decided_by_discord_id: user.discordId,
       decided_by_username: user.username ?? null,
