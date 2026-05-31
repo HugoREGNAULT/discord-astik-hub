@@ -18,6 +18,7 @@ import { Trash2, Target } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/objectives")({
@@ -48,12 +49,12 @@ function ObjectivesPage() {
       toast.success("Objectif créé");
       refresh();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur création objectif"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
   const togM = useMutation({
     mutationFn: (vars: { id: string; done: boolean }) => tog({ data: vars }),
     onSuccess: () => refresh(),
-    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
   const delM = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
@@ -61,7 +62,7 @@ function ObjectivesPage() {
       toast.success("Objectif supprimé");
       refresh();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur suppression"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   return (

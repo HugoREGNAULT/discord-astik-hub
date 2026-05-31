@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Ban, Plus, Trash2, Pencil, Copy, Check } from "lucide-react";
 import {
   listBlacklist,
@@ -152,7 +153,7 @@ function BlacklistPage() {
         qc.invalidateQueries({ queryKey: ["blacklist"] });
         qc.invalidateQueries({ queryKey: ["applications"] });
       },
-      onError: (e: Error) => toast.error(e.message),
+      onError: (e: Error) => toast.error(toUserMessage(e)),
     });
 
     const headId = entry.mc_uuid || entry.mc_name;
@@ -278,7 +279,7 @@ function BlacklistPage() {
         qc.invalidateQueries({ queryKey: ["blacklist"] });
         qc.invalidateQueries({ queryKey: ["applications"] });
       },
-      onError: (e: Error) => toast.error(e.message),
+      onError: (e: Error) => toast.error(toUserMessage(e)),
     });
 
     const canSubmit = Boolean(discordId.trim() || mcName.trim() || mcUuid.trim());
@@ -385,7 +386,7 @@ function AddEntryDialog() {
       qc.invalidateQueries({ queryKey: ["blacklist"] });
       qc.invalidateQueries({ queryKey: ["applications"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const canSubmit = Boolean(discordId.trim() || mcName.trim() || mcUuid.trim());

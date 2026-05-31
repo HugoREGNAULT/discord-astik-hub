@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { completeOnboarding, getMyOverview } from "@/lib/data/me.functions";
 
 export const Route = createFileRoute("/_authenticated/welcome")({
@@ -55,7 +56,7 @@ function WelcomePage() {
       queryClient.invalidateQueries({ queryKey: ["me-overview"] });
       navigate({ to: "/me" });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   // Déjà onboardé → on renvoie sur /me

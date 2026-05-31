@@ -15,6 +15,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -338,7 +339,7 @@ function AbsenceList({
       toast.success("Absence supprimée");
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -424,7 +425,7 @@ function CreateOrEditDialog({
       setOpen(false);
       onDone();
     } catch (e: any) {
-      toast.error(e?.message ?? "Erreur");
+      toast.error(toUserMessage(e));
     } finally {
       setSubmitting(false);
     }

@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { ImagePlus, Loader2, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -82,7 +83,7 @@ function ConfigPage() {
       toast.success("Valeur ajoutée");
       refresh();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const onPick = async (file: File | null) => {
@@ -101,7 +102,7 @@ function ConfigPage() {
       setForm((f) => ({ ...f, image_url: url }));
       toast.success("Icône uploadée");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(toUserMessage(e));
     } finally {
       setUploading(false);
     }
@@ -248,7 +249,7 @@ function ConfigPage() {
                       await tog({ data: { id: v.id, active: c } });
                       refresh();
                     } catch (e) {
-                      toast.error((e as Error).message);
+                      toast.error(toUserMessage(e));
                       throw e;
                     }
                   }}
@@ -258,7 +259,7 @@ function ConfigPage() {
                       toast.success("Supprimé");
                       refresh();
                     } catch (e) {
-                      toast.error((e as Error).message);
+                      toast.error(toUserMessage(e));
                       throw e;
                     }
                   }}
@@ -303,7 +304,7 @@ function ValueRowItem({
       await onUpdateImage(url);
       toast.success("Icône mise à jour");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(toUserMessage(e));
     } finally {
       setBusy(false);
     }

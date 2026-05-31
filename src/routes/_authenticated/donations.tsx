@@ -15,6 +15,7 @@ import {
 import { listValues } from "@/lib/data/values.functions";
 import { listMembers } from "@/lib/data/members.functions";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Trash2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
@@ -63,7 +64,7 @@ function DonationsPage() {
       toast.success("Panier créé");
       refresh();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur création panier"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -127,12 +128,12 @@ function DonationsPage() {
           onAdd={(payload: any) =>
             addLine({ data: { ...payload, cartId: c.id } })
               .then(refresh)
-              .catch((e: Error) => toast.error(e.message))
+              .catch((e: Error) => toast.error(toUserMessage(e)))
           }
           onRemove={(lineId: string) =>
             rmLine({ data: { lineId, cartId: c.id } })
               .then(refresh)
-              .catch((e: Error) => toast.error(e.message))
+              .catch((e: Error) => toast.error(toUserMessage(e)))
           }
           onValidate={() =>
             validate({ data: { cartId: c.id } })
@@ -140,7 +141,7 @@ function DonationsPage() {
                 toast.success("Validé");
                 refresh();
               })
-              .catch((e: Error) => toast.error(e.message))
+              .catch((e: Error) => toast.error(toUserMessage(e)))
           }
           onCancel={() =>
             cancel({ data: { cartId: c.id } })
@@ -148,7 +149,7 @@ function DonationsPage() {
                 toast.info("Annulé");
                 refresh();
               })
-              .catch((e: Error) => toast.error(e.message))
+              .catch((e: Error) => toast.error(toUserMessage(e)))
           }
         />
       ))}

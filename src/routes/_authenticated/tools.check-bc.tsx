@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Plus, Shield, Trash2, MapPin, Clock, Pencil } from "lucide-react";
 import {
   ToolHeader,
@@ -148,7 +149,7 @@ function BcRow({ bc }: { bc: BcCheck }) {
       toast.success("Statut mis à jour");
       qc.invalidateQueries({ queryKey: ["bc-checks"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const delMut = useMutation({
@@ -157,7 +158,7 @@ function BcRow({ bc }: { bc: BcCheck }) {
       toast.success("BC supprimée");
       qc.invalidateQueries({ queryKey: ["bc-checks"] });
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -283,7 +284,7 @@ function BcEditorDialog({
         setNotes("");
       }
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   return (

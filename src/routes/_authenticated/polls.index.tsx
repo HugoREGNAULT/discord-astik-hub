@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { Plus, Calendar, Lock, Trash2, ExternalLink, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +51,7 @@ function PollsPage() {
       toast.success("Sondage supprimé");
       qc.invalidateQueries({ queryKey: ["polls"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur suppression sondage"),
+    onError: (e: any) => toast.error(toUserMessage(e)),
   });
 
   return (
@@ -181,7 +182,7 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
       ]);
       onCreated();
     } catch (e: any) {
-      toast.error(e?.message ?? "Erreur");
+      toast.error(toUserMessage(e));
     } finally {
       setSubmitting(false);
     }

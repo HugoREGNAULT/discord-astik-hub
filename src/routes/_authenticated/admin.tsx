@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { Pencil, ExternalLink } from "lucide-react";
 
 import { getAdminOverview } from "@/lib/data/admin.functions";
@@ -218,7 +219,7 @@ function EditMemberDialog({ member, onClose }: { member: MemberRow | null; onClo
       qc.invalidateQueries({ queryKey: ["member", member?.discord_id] });
       onClose();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   if (!member) return null;

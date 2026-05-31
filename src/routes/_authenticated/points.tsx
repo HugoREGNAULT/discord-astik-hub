@@ -7,6 +7,7 @@ import { useState, useId } from "react";
 import { listMembers } from "@/lib/data/members.functions";
 import { addPoints, removePoints, setPoints, getPointsHistory } from "@/lib/data/points.functions";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import {
   PageHeader,
   PageCard,
@@ -80,7 +81,7 @@ function PointsPage() {
       setReason("");
       refresh();
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur");
+      toast.error(toUserMessage(e));
     }
   };
 

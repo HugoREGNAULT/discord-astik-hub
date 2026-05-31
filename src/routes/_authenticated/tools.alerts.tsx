@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Bell, Pencil, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { toUserMessage } from "@/lib/errors";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   ToolHeader,
@@ -140,7 +141,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
       setEditing(false);
       onChange();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const del = useMutation({
@@ -149,7 +150,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
       toast.success("Alerte supprimée");
       onChange();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
   const kindLabel =
