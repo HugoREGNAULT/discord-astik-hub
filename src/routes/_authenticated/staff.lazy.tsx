@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
+import { getChurnRisk, getRetentionCohorts, type ChurnRow, type CohortRow } from "@/lib/data/churn.functions";
 import {
   LayoutDashboard,
   Users,
@@ -2041,7 +2042,7 @@ function AnomaliesCard() {
 // ==========================================================
 // ChurnSection : risque de départ + cohortes de rétention
 // ==========================================================
-import { getChurnRisk, getRetentionCohorts, type ChurnRow } from "@/lib/data/churn.functions";
+
 
 function ChurnSection() {
   const fnRisk = useServerFn(getChurnRisk);
@@ -2149,7 +2150,7 @@ function ChurnSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {cohorts!.cohorts.map((c) => (
+                  {cohorts!.cohorts.map((c: CohortRow) => (
                     <tr key={c.month} className="border-t border-border">
                       <td className="py-1 pr-2 font-mono">{c.month}</td>
                       <td className="py-1 pr-2 text-right">{c.arrived}</td>
