@@ -307,6 +307,25 @@ export const getMemberBadges = createServerFn({ method: "GET" })
     return { badges: rows ?? [] };
   });
 
+export const listMyBadges = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const { data: rows, error } = await db
+    .from("member_badges")
+    .select("badge_id, awarded_at, badges:badge_id(id, code, name, description, icon, color)")
+    .eq("member_discord_id", user.discordId);
+  if (error) throw new Error(error.message);
+  return { badges: rows ?? [] };
+});
+
+export const listAllMemberBadges = createServerFn({ method: "GET" }).handler(async () => {
+  await requireSession();
+  const { data, error } = await db
+    .from("member_badges")
+    .select("member_discord_id, badges:badge_id(id, code, name, icon, color)");
+  if (error) throw new Error(error.message);
+  return { rows: data ?? [] };
+});
+
 export const runAutoBadges = createServerFn({ method: "POST" }).handler(async () => {
   const user = await requirePermission("members.edit");
   const { data: badges, error: bErr } = await db
