@@ -141,18 +141,6 @@ function ShopPage() {
         )}
       </section>
 
-      <ConfirmDialog
-        open={!!confirmId}
-        onOpenChange={(v) => !v && setConfirmId(null)}
-        title="Confirmer l'échange"
-        description="Ta demande sera mise en attente de validation par le staff. Les points ne sont débités qu'après approbation."
-        confirmLabel={pending ? "Envoi…" : "Confirmer"}
-        onConfirm={() => {
-          if (!confirmId) return;
-          setPending(true);
-          mut.mutate(confirmId);
-        }}
-      />
     </div>
   );
 }
