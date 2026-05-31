@@ -52,7 +52,7 @@ function MembersPage() {
             placeholder="Rechercher (pseudo, IG, ID)…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="flex-1 min-w-[200px] max-w-md bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none font-mono"
+            className="flex-1 min-w-[200px] max-w-md bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
           />
           <div className="flex gap-1">
             {(["active", "away", "former", "all"] as const).map((s) => {

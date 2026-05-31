@@ -299,7 +299,7 @@ function LeaderboardPage() {
                 placeholder="Rechercher un membre…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="max-w-xs bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none font-mono"
+                className="max-w-xs bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
               />
             </div>
             {isLoading ? (
