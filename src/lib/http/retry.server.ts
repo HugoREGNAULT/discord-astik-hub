@@ -3,15 +3,19 @@
  * Conçu pour les APIs externes capricieuses (Mojang, Discord).
  */
 
+import { discordLimiter } from "./semaphore.server";
+
 export interface RetryOptions {
   retries?: number; // tentatives au-delà de la première
   baseDelayMs?: number; // base du backoff
   maxDelayMs?: number; // plafond
   timeoutMs?: number; // timeout par tentative
   retryOn?: (status: number) => boolean;
+  /** Si défini, sérialise les tentatives à travers le limiteur correspondant. */
+  bucket?: "discord";
 }
 
-const DEFAULTS: Required<Omit<RetryOptions, "retryOn">> = {
+const DEFAULTS: Required<Omit<RetryOptions, "retryOn" | "bucket">> = {
   retries: 3,
   baseDelayMs: 300,
   maxDelayMs: 4000,
@@ -31,6 +35,18 @@ export async function fetchWithRetry(
   input: RequestInfo | URL,
   init: RequestInit = {},
   opts: RetryOptions = {},
+): Promise<Response> {
+  const run = () => doFetchWithRetry(input, init, opts);
+  if (opts.bucket === "discord") {
+    return discordLimiter.run(run);
+  }
+  return run();
+}
+
+async function doFetchWithRetry(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  opts: RetryOptions,
 ): Promise<Response> {
   const o = { ...DEFAULTS, ...opts };
   const retryOn = opts.retryOn ?? defaultRetryOn;

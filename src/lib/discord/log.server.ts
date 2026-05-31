@@ -22,14 +22,18 @@ async function postToChannel(
 ): Promise<void> {
   try {
     if (!process.env.DISCORD_BOT_TOKEN) return;
-    const res = await fetchWithRetry(`${DISCORD_API}/channels/${channelId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bot ${BOT_TOKEN()}`,
-        "Content-Type": "application/json",
+    const res = await fetchWithRetry(
+      `${DISCORD_API}/channels/${channelId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bot ${BOT_TOKEN()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       },
-      body: JSON.stringify(payload),
-    });
+      { bucket: "discord" },
+    );
     if (!res.ok) {
       console.error("[discord log] failed", channelId, res.status, await res.text());
     }

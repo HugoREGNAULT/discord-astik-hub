@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
 import { filterFactionMembers } from "@/lib/data/faction-members";
+import { pingDiscord } from "@/lib/discord/api.server";
 
 export const getAdminOverview = createServerFn({ method: "GET" }).handler(async () => {
   await requirePermission("admin.access");
@@ -22,17 +23,8 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(async 
       .limit(1),
   ]);
 
-  // Ping Discord API
-  let discordOk = false;
-  let discordLatency = 0;
-  try {
-    const t0 = Date.now();
-    const r = await fetch("https://discord.com/api/v10/gateway");
-    discordLatency = Date.now() - t0;
-    discordOk = r.ok;
-  } catch {
-    discordOk = false;
-  }
+  // Ping Discord API (cache mémoire 30 s, sémaphore + retry)
+  const ping = await pingDiscord();
 
   return {
     profilesCount: filterFactionMembers(membersRes.data ?? []).length,
@@ -40,6 +32,6 @@ export const getAdminOverview = createServerFn({ method: "GET" }).handler(async 
     recentLogs: recentLogs.data ?? [],
     recentErrors: recentErrors.data ?? [],
     lastRoleRefresh: lastRefresh.data?.[0]?.refreshed_at ?? null,
-    discord: { ok: discordOk, latencyMs: discordLatency },
+    discord: { ok: ping.ok, latencyMs: ping.latencyMs },
   };
 });
