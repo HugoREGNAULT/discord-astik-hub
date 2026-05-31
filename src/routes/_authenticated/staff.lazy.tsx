@@ -82,19 +82,7 @@ import { LazyApplicationsChart as ApplicationsChart } from "@/components/LazyApp
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
-type StaffSearch = { bdmSort: SortKey; bdmDir: SortDir };
-
 export const Route = createLazyFileRoute("/_authenticated/staff")({
-  errorComponent: RouteError,
-  head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
-  validateSearch: (search: Record<string, unknown>): StaffSearch => {
-    const sort = search.bdmSort;
-    const dir = search.bdmDir;
-    return {
-      bdmSort: sort === "audience" || sort === "status" ? sort : "date",
-      bdmDir: dir === "asc" ? "asc" : "desc",
-    };
-  },
   component: () => (
     <Guard perm="members.view">
       <StaffPage />
