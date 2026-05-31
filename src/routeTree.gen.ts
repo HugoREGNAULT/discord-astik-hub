@@ -61,6 +61,7 @@ import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authent
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
+import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
@@ -352,6 +353,11 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMembersRoute,
 } as any)
+const AuthenticatedEventsIdRoute = AuthenticatedEventsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedEventsRoute,
+} as any)
 const ApiPublicHooksSyncDiscordPresenceRoute =
   ApiPublicHooksSyncDiscordPresenceRouteImport.update({
     id: '/api/public/hooks/sync-discord-presence',
@@ -442,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -503,6 +510,7 @@ export interface FileRoutesByTo {
   '/staff': typeof AuthenticatedStaffRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -569,6 +577,7 @@ export interface FileRoutesById {
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -635,6 +644,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/welcome'
     | '/api/health'
+    | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
     | '/tools/alerts'
@@ -696,6 +706,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/welcome'
     | '/api/health'
+    | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
     | '/tools/alerts'
@@ -761,6 +772,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tools'
     | '/_authenticated/welcome'
     | '/api/health'
+    | '/_authenticated/events/$id'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
     | '/_authenticated/tools/alerts'
@@ -1191,6 +1203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembersIdRouteImport
       parentRoute: typeof AuthenticatedMembersRoute
     }
+    '/_authenticated/events/$id': {
+      id: '/_authenticated/events/$id'
+      path: '/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof AuthenticatedEventsIdRouteImport
+      parentRoute: typeof AuthenticatedEventsRoute
+    }
     '/api/public/hooks/sync-discord-presence': {
       id: '/api/public/hooks/sync-discord-presence'
       path: '/api/public/hooks/sync-discord-presence'
@@ -1272,10 +1291,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedEventsRouteChildren {
+  AuthenticatedEventsIdRoute: typeof AuthenticatedEventsIdRoute
   AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
 }
 
 const AuthenticatedEventsRouteChildren: AuthenticatedEventsRouteChildren = {
+  AuthenticatedEventsIdRoute: AuthenticatedEventsIdRoute,
   AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
 }
 

@@ -71,6 +71,13 @@ const SECTIONS: Section[] = [
         accent: "blurple",
       },
       {
+        title: "Événements",
+        url: "/events",
+        icon: CalendarCheck,
+        perm: "profile.self",
+        accent: "pink",
+      },
+      {
         title: "Absences",
         url: "/absences",
         icon: CalendarCheck,
