@@ -73,12 +73,15 @@ function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        code="// projects"
-        title="Projets de faction"
-        description="Suivez l'avancement des projets en cours, les ressources qu'il reste à fournir, et les valeurs en points par item."
-        right={canEdit ? <NewProjectDialog onDone={refresh} /> : undefined}
-      />
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <PageHeader
+          code="// projects"
+          title="Projets de faction"
+          description="Suivez l'avancement des projets en cours, les ressources qu'il reste à fournir, et les valeurs en points par item."
+        />
+        {canEdit && <NewProjectDialog onDone={refresh} />}
+      </div>
+
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Chargement…</div>
