@@ -1193,7 +1193,19 @@ export type Database = {
       }
     }
     Functions: {
+      apply_points_delta: {
+        Args: { p_delta: number; p_discord_id: string }
+        Returns: number
+      }
       capture_leaderboard_snapshot: { Args: never; Returns: undefined }
+      increment_messages_total: {
+        Args: { p_discord_id: string; p_inc: number }
+        Returns: number
+      }
+      set_member_points: {
+        Args: { p_discord_id: string; p_total: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
