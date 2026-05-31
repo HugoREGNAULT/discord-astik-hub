@@ -236,7 +236,7 @@ export const getInactivityBuckets = createServerFn({ method: "GET" }).handler(as
       .limit(200_000),
   ]);
 
-  const active = filterFactionMembers(activeRes.data ?? []) as any[];
+  const active = filterFactionMembers(activeRes.data ?? []);
 
   // For each member, keep the EARLIEST snapshot at or after each threshold.
   // We want the oldest snapshot within the last 14d (to detect 14j inactivity)
