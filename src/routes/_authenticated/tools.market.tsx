@@ -431,6 +431,30 @@ function fmtNum(n: unknown): string {
   return Math.round(n).toLocaleString("fr-FR");
 }
 
+function PriceTile({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number | null;
+  color: string;
+}) {
+  return (
+    <div className="border border-zinc-800 bg-zinc-900/60 p-2">
+      <div
+        className="text-[9px] uppercase tracking-[0.25em] text-zinc-500 mb-0.5"
+        style={{ fontFamily: "'Space Mono'" }}
+      >
+        {label}
+      </div>
+      <div className={`text-sm font-bold ${color}`} style={{ fontFamily: "'Space Grotesk'" }}>
+        {fmtNum(value)}
+      </div>
+    </div>
+  );
+}
+
 function MarketAlertForm({ itemName }: { itemName: string }) {
   const qc = useQueryClient();
   const createFn = useServerFn(createShopAlert);
