@@ -210,11 +210,13 @@ function ChestsSection({ isStaff }: { isStaff: boolean }) {
                       title="Supprimer le coffre ?"
                       description="Les stocks liés seront dissociés."
                       onConfirm={() => mDel.mutate(c.id)}
-                    >
-                      <Button size="icon" variant="ghost">
-                        <Trash2 className="w-4 h-4 text-rose-400" />
-                      </Button>
-                    </ConfirmDialog>
+                      trigger={
+                        <Button size="icon" variant="ghost">
+                          <Trash2 className="w-4 h-4 text-rose-400" />
+                        </Button>
+                      }
+                    />
+
                   </div>
                 )}
               </div>
