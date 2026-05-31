@@ -50,7 +50,6 @@ import { parsePollCsv, type MatrixResult, type Choice as CsvChoice } from "@/lib
 type Choice = "yes" | "maybe" | "no";
 
 export const Route = createLazyFileRoute("/_authenticated/polls/$id")({
-  head: () => ({ meta: [{ title: "Sondage · PunkAstik" }] }),
   component: PollDetail,
   errorComponent: PollDetailError,
   notFoundComponent: () => {
