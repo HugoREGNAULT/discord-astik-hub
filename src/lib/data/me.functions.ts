@@ -241,7 +241,7 @@ export const submitWarningAppeal = createServerFn({ method: "POST" })
     const { logToDiscord, COLORS } = await import("@/lib/discord/log.server");
     void logToDiscord("site", {
       title: "📨 Nouvel appel d'avertissement",
-      color: COLORS.warning,
+      color: COLORS.warn,
       description: w.body.slice(0, 200),
       fields: [
         { name: "Membre", value: user.username, inline: true },
