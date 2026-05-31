@@ -179,7 +179,7 @@ function PointsPage() {
               <li key={e.id} className="py-2 flex justify-between text-sm gap-3">
                 <div className="min-w-0">
                   <div
-                    className="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+                    className="text-[11px] uppercase tracking-[0.2em] text-zinc-400"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {new Date(e.created_at).toLocaleString("fr-FR")} · {e.staff_username ?? "—"}
