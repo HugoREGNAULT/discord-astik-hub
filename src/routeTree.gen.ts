@@ -72,6 +72,7 @@ import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authentica
 import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksScanAnomaliesRouteImport } from './routes/api/public/hooks/scan-anomalies'
+import { Route as ApiPublicHooksProcessApplicationReviewsRouteImport } from './routes/api/public/hooks/process-application-reviews'
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
 import { Route as ApiPublicHooksPaladiumMarketSyncRouteImport } from './routes/api/public/hooks/paladium-market-sync'
@@ -428,6 +429,12 @@ const ApiPublicHooksScanAnomaliesRoute =
     path: '/api/public/hooks/scan-anomalies',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProcessApplicationReviewsRoute =
+  ApiPublicHooksProcessApplicationReviewsRouteImport.update({
+    id: '/api/public/hooks/process-application-reviews',
+    path: '/api/public/hooks/process-application-reviews',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksPaladiumSyncRoute =
   ApiPublicHooksPaladiumSyncRouteImport.update({
     id: '/api/public/hooks/paladium-sync',
@@ -584,6 +591,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
+  '/api/public/hooks/process-application-reviews': typeof ApiPublicHooksProcessApplicationReviewsRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
   '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
@@ -660,6 +668,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
+  '/api/public/hooks/process-application-reviews': typeof ApiPublicHooksProcessApplicationReviewsRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
   '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
@@ -741,6 +750,7 @@ export interface FileRoutesById {
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
+  '/api/public/hooks/process-application-reviews': typeof ApiPublicHooksProcessApplicationReviewsRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
   '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
@@ -822,6 +832,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
+    | '/api/public/hooks/process-application-reviews'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
     | '/api/public/bot/query/candidatures'
@@ -898,6 +909,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
+    | '/api/public/hooks/process-application-reviews'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
     | '/api/public/bot/query/candidatures'
@@ -978,6 +990,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
+    | '/api/public/hooks/process-application-reviews'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
     | '/api/public/bot/query/candidatures'
@@ -1011,6 +1024,7 @@ export interface RootRouteChildren {
   ApiPublicHooksPaladiumMarketSyncRoute: typeof ApiPublicHooksPaladiumMarketSyncRoute
   ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
   ApiPublicHooksPaladiumSyncRoute: typeof ApiPublicHooksPaladiumSyncRoute
+  ApiPublicHooksProcessApplicationReviewsRoute: typeof ApiPublicHooksProcessApplicationReviewsRoute
   ApiPublicHooksScanAnomaliesRoute: typeof ApiPublicHooksScanAnomaliesRoute
   ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
   ApiPublicBotQueryCandidaturesRoute: typeof ApiPublicBotQueryCandidaturesRoute
@@ -1462,6 +1476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksScanAnomaliesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-application-reviews': {
+      id: '/api/public/hooks/process-application-reviews'
+      path: '/api/public/hooks/process-application-reviews'
+      fullPath: '/api/public/hooks/process-application-reviews'
+      preLoaderRoute: typeof ApiPublicHooksProcessApplicationReviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/paladium-sync': {
       id: '/api/public/hooks/paladium-sync'
       path: '/api/public/hooks/paladium-sync'
@@ -1748,6 +1769,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
   ApiPublicHooksPaladiumStatusSyncRoute: ApiPublicHooksPaladiumStatusSyncRoute,
   ApiPublicHooksPaladiumSyncRoute: ApiPublicHooksPaladiumSyncRoute,
+  ApiPublicHooksProcessApplicationReviewsRoute:
+    ApiPublicHooksProcessApplicationReviewsRoute,
   ApiPublicHooksScanAnomaliesRoute: ApiPublicHooksScanAnomaliesRoute,
   ApiPublicHooksSyncDiscordPresenceRoute:
     ApiPublicHooksSyncDiscordPresenceRoute,
