@@ -43,30 +43,21 @@ export const Route = createFileRoute("/api/public/bot/import")({
           counts.set(e.discord_id, (counts.get(e.discord_id) ?? 0) + 1);
         }
 
-        // Fetch current totals for all touched members
-        const ids = Array.from(counts.keys());
-        const { data: members, error: eRead } = await db
-          .from("members")
-          .select("discord_id, messages_total")
-          .in("discord_id", ids);
-        if (eRead) return json({ error: eRead.message }, 500);
-
-        const totals = new Map(members?.map((m) => [m.discord_id, m.messages_total ?? 0]) ?? []);
-
-        // Update one by one (Supabase has no bulk-conditional-update)
+        // Increment atomique par membre via RPC (évite la race condition).
+        // Si la fonction retourne NULL, le membre n'existe pas → skipped.
         let updated = 0;
         let skipped = 0;
         for (const [discord_id, inc] of counts) {
-          if (!totals.has(discord_id)) {
+          const { data: newTotal, error } = await db.rpc("increment_messages_total", {
+            p_discord_id: discord_id,
+            p_inc: inc,
+          });
+          if (error) continue;
+          if (newTotal === null || newTotal === undefined) {
             skipped++;
             continue;
           }
-          const next = (totals.get(discord_id) ?? 0) + inc;
-          const { error } = await db
-            .from("members")
-            .update({ messages_total: next })
-            .eq("discord_id", discord_id);
-          if (!error) updated++;
+          updated++;
         }
 
         return json({
