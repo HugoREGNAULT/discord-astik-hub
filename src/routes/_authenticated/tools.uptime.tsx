@@ -1,15 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import { lazy, Suspense, useMemo, useState } from "react";
+const UptimePlayersChart = lazy(() =>
+  import("./-tools.uptime.chart").then((m) => ({ default: m.UptimePlayersChart })),
+);
+const UptimeStatusChart = lazy(() =>
+  import("./-tools.uptime.chart").then((m) => ({ default: m.UptimeStatusChart })),
+);
 import {
   ToolHeader,
   ToolCard,
