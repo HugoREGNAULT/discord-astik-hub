@@ -54,9 +54,10 @@ async function uploadIcon(file: File): Promise<string> {
     binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
   }
   const dataBase64 = btoa(binary);
-  const res = await uploadValueIconFn({
+  const res = await uploadValueIcon({
     data: { filename: file.name, contentType: file.type, dataBase64 },
   });
+
   return res.url;
 }
 
