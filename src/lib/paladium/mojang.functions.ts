@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession } from "@/lib/auth/require.server";
+import { rateLimit } from "@/lib/rate-limit.server";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
