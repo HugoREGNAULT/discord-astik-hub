@@ -105,6 +105,7 @@ export function listPermissions(user: SessionUser | null): Permission[] {
     "config.manage",
     "recruit.access",
     "objectives.edit",
+    "shop.manage",
     "admin.access",
   ];
   return all.filter((p) => canAccess(user, p));
