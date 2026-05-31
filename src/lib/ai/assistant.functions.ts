@@ -193,8 +193,8 @@ export const askAssistant = createServerFn({ method: "POST" })
           const errPayload = { error: `Outil inconnu ou non autorisé: ${call.function.name}` };
           toolResults.push({
             name: call.function.name,
-            args: parsedArgs,
-            result: errPayload,
+            argsJson: JSON.stringify(parsedArgs),
+            resultJson: JSON.stringify(errPayload),
             error: errPayload.error,
           });
           messages.push({
@@ -209,7 +209,11 @@ export const askAssistant = createServerFn({ method: "POST" })
         try {
           const validated = tool.zod.parse(parsedArgs);
           const result = await tool.run(validated, user);
-          toolResults.push({ name: tool.name, args: validated, result });
+          toolResults.push({
+            name: tool.name,
+            argsJson: JSON.stringify(validated),
+            resultJson: JSON.stringify(result),
+          });
           messages.push({
             role: "tool",
             tool_call_id: call.id,
@@ -220,8 +224,8 @@ export const askAssistant = createServerFn({ method: "POST" })
           const errorMsg = err instanceof Error ? err.message : "tool failed";
           toolResults.push({
             name: tool.name,
-            args: parsedArgs,
-            result: { error: errorMsg },
+            argsJson: JSON.stringify(parsedArgs),
+            resultJson: JSON.stringify({ error: errorMsg }),
             error: errorMsg,
           });
           messages.push({
