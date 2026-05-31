@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/points")({
 });
 
 function PointsPage() {
-  const me = useCurrentUser();
+  const { data: me } = useCurrentUser();
   const canDonations = hasPerm(me, "donations.manage");
 
   return (
