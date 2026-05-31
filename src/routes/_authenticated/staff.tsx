@@ -1547,3 +1547,187 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
     </div>
   );
 }
+
+// ----------------- Inactivité multi-seuils (7/14/30j) -----------------
+
+function InactivityCard() {
+  const fn = useServerFn(getInactivityBuckets);
+  const { data, isLoading } = useQuery({
+    queryKey: ["inactivity-buckets"],
+    queryFn: () => fn(),
+    refetchInterval: 5 * 60_000,
+  });
+  const [tab, setTab] = useState<"d7" | "d14" | "d30">("d7");
+
+  const buckets = data ?? { d7: [], d14: [], d30: [] };
+  const current = buckets[tab];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+          <span className="flex items-center gap-2">
+            <AlertTriangle className="size-4 text-pink-500" />
+            Membres inactifs
+          </span>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as "d7" | "d14" | "d30")}>
+            <TabsList>
+              <TabsTrigger value="d7">7j ({buckets.d7.length})</TabsTrigger>
+              <TabsTrigger value="d14">14j ({buckets.d14.length})</TabsTrigger>
+              <TabsTrigger value="d30">30j ({buckets.d30.length})</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+        {isLoading ? (
+          <RowListSkeleton count={4} />
+        ) : current.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {tab === "d7"
+              ? "Tout le monde s'est manifesté cette semaine ✨"
+              : tab === "d14"
+                ? "Aucun membre inactif depuis 14 jours."
+                : "Aucun membre inactif depuis 30 jours."}
+          </p>
+        ) : (
+          current.map((m: any) => <InactiveMemberRow key={m.discord_id} member={m} />)
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ----------------- Jamais connectés au site -----------------
+
+function NeverConnectedCard() {
+  const fn = useServerFn(getNeverConnectedMembers);
+  const { data, isLoading } = useQuery({
+    queryKey: ["never-connected"],
+    queryFn: () => fn(),
+    refetchInterval: 10 * 60_000,
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <UserPlus className="size-4 text-amber-500" />
+            Jamais connectés au site
+          </span>
+          <Badge variant="outline">{data?.total ?? 0}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+        {isLoading ? (
+          <RowListSkeleton count={4} />
+        ) : (data?.members ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            Tous les membres de la faction se sont déjà connectés au site ✨
+          </p>
+        ) : (
+          <>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Membres de la faction privée qui n'ont jamais ouvert le site. Envoie-leur un DM
+              pour les inviter à se connecter.
+            </p>
+            {(data?.members ?? []).map((m: any) => (
+              <NeverConnectedRow key={m.discord_id} member={m} />
+            ))}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function NeverConnectedRow({
+  member,
+}: {
+  member: {
+    discord_id: string;
+    ig_name?: string | null;
+    discord_username?: string | null;
+    avatar_url?: string | null;
+    current_grade?: string | null;
+  };
+}) {
+  const dmFn = useServerFn(dmMember);
+  const [dmOpen, setDmOpen] = useState(false);
+  const [dmContent, setDmContent] = useState(
+    `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nT'as toujours pas activé ton compte sur le site de la faction ! Va faire un tour ici : https://punkastik.com\n\nTu pourras y voir tes points, poser des absences, suivre les classements, etc. 🚀`,
+  );
+
+  const dmMut = useMutation({
+    mutationFn: () => dmFn({ data: { memberDiscordId: member.discord_id, content: dmContent } }),
+    onSuccess: () => {
+      toast.success("DM envoyé");
+      setDmOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div className="flex items-center gap-2 border border-border rounded p-2 hover:border-primary/40 transition">
+      <Link
+        to="/members/$id"
+        params={{ id: member.discord_id }}
+        className="flex items-center gap-3 flex-1 min-w-0"
+      >
+        {member.avatar_url ? (
+          <img src={member.avatar_url} alt="" className="size-8 rounded-full" />
+        ) : (
+          <div className="size-8 rounded-full bg-muted" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">
+            {member.ig_name ?? member.discord_username ?? member.discord_id}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate">
+            @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
+          </div>
+        </div>
+      </Link>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => setDmOpen(true)}
+        title="Relancer par DM Discord"
+      >
+        <MessageCircle className="size-3.5" />
+      </Button>
+
+      <Dialog open={dmOpen} onOpenChange={setDmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Relancer {member.ig_name ?? member.discord_username}</DialogTitle>
+            <DialogDescription>
+              Le message sera envoyé en DM Discord depuis le bot de la faction.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={dmContent}
+            onChange={(e) => setDmContent(e.target.value)}
+            rows={6}
+            maxLength={1800}
+          />
+          <div className="text-[11px] text-muted-foreground text-right">
+            {dmContent.length}/1800
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDmOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => dmMut.mutate()}
+              disabled={dmMut.isPending || dmContent.trim().length === 0}
+            >
+              {dmMut.isPending ? "Envoi…" : "Envoyer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
