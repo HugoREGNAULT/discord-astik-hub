@@ -80,12 +80,14 @@ import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
 import { Route as ApiPublicHooksPaladiumMarketSyncRouteImport } from './routes/api/public/hooks/paladium-market-sync'
 import { Route as ApiPublicHooksPaladiumAdminShopSyncRouteImport } from './routes/api/public/hooks/paladium-admin-shop-sync'
+import { Route as ApiPublicHooksImportMcStatsRouteImport } from './routes/api/public/hooks/import-mc-stats'
 import { Route as ApiPublicHooksGenerateSalaryPreviewRouteImport } from './routes/api/public/hooks/generate-salary-preview'
 import { Route as ApiPublicHooksGenerateDigestRouteImport } from './routes/api/public/hooks/generate-digest'
 import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/voice'
 import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
 import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot/message'
 import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
+import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/public/bot/mc-link-confirm'
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
@@ -479,6 +481,12 @@ const ApiPublicHooksPaladiumAdminShopSyncRoute =
     path: '/api/public/hooks/paladium-admin-shop-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksImportMcStatsRoute =
+  ApiPublicHooksImportMcStatsRouteImport.update({
+    id: '/api/public/hooks/import-mc-stats',
+    path: '/api/public/hooks/import-mc-stats',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksGenerateSalaryPreviewRoute =
   ApiPublicHooksGenerateSalaryPreviewRouteImport.update({
     id: '/api/public/hooks/generate-salary-preview',
@@ -511,6 +519,12 @@ const ApiPublicBotMemberRoute = ApiPublicBotMemberRouteImport.update({
   path: '/api/public/bot/member',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBotMcLinkConfirmRoute =
+  ApiPublicBotMcLinkConfirmRouteImport.update({
+    id: '/api/public/bot/mc-link-confirm',
+    path: '/api/public/bot/mc-link-confirm',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
   id: '/api/public/bot/import',
   path: '/api/public/bot/import',
@@ -603,12 +617,14 @@ export interface FileRoutesByFullPath {
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/generate-digest': typeof ApiPublicHooksGenerateDigestRoute
   '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
+  '/api/public/hooks/import-mc-stats': typeof ApiPublicHooksImportMcStatsRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -683,12 +699,14 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/generate-digest': typeof ApiPublicHooksGenerateDigestRoute
   '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
+  '/api/public/hooks/import-mc-stats': typeof ApiPublicHooksImportMcStatsRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -768,12 +786,14 @@ export interface FileRoutesById {
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/generate-digest': typeof ApiPublicHooksGenerateDigestRoute
   '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
+  '/api/public/hooks/import-mc-stats': typeof ApiPublicHooksImportMcStatsRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -853,12 +873,14 @@ export interface FileRouteTypes {
     | '/polls/'
     | '/tools/'
     | '/api/public/bot/import'
+    | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/generate-digest'
     | '/api/public/hooks/generate-salary-preview'
+    | '/api/public/hooks/import-mc-stats'
     | '/api/public/hooks/paladium-admin-shop-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
@@ -933,12 +955,14 @@ export interface FileRouteTypes {
     | '/polls'
     | '/tools'
     | '/api/public/bot/import'
+    | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/generate-digest'
     | '/api/public/hooks/generate-salary-preview'
+    | '/api/public/hooks/import-mc-stats'
     | '/api/public/hooks/paladium-admin-shop-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
@@ -1017,12 +1041,14 @@ export interface FileRouteTypes {
     | '/_authenticated/polls/'
     | '/_authenticated/tools/'
     | '/api/public/bot/import'
+    | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/generate-digest'
     | '/api/public/hooks/generate-salary-preview'
+    | '/api/public/hooks/import-mc-stats'
     | '/api/public/hooks/paladium-admin-shop-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
@@ -1052,12 +1078,14 @@ export interface RootRouteChildren {
   ApiTestLoginRoute: typeof ApiTestLoginRoute
   ApiTestSeedPollRoute: typeof ApiTestSeedPollRoute
   ApiPublicBotImportRoute: typeof ApiPublicBotImportRoute
+  ApiPublicBotMcLinkConfirmRoute: typeof ApiPublicBotMcLinkConfirmRoute
   ApiPublicBotMemberRoute: typeof ApiPublicBotMemberRoute
   ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
   ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
   ApiPublicBotVoiceRoute: typeof ApiPublicBotVoiceRoute
   ApiPublicHooksGenerateDigestRoute: typeof ApiPublicHooksGenerateDigestRoute
   ApiPublicHooksGenerateSalaryPreviewRoute: typeof ApiPublicHooksGenerateSalaryPreviewRoute
+  ApiPublicHooksImportMcStatsRoute: typeof ApiPublicHooksImportMcStatsRoute
   ApiPublicHooksPaladiumAdminShopSyncRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   ApiPublicHooksPaladiumMarketSyncRoute: typeof ApiPublicHooksPaladiumMarketSyncRoute
   ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -1571,6 +1599,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/import-mc-stats': {
+      id: '/api/public/hooks/import-mc-stats'
+      path: '/api/public/hooks/import-mc-stats'
+      fullPath: '/api/public/hooks/import-mc-stats'
+      preLoaderRoute: typeof ApiPublicHooksImportMcStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/generate-salary-preview': {
       id: '/api/public/hooks/generate-salary-preview'
       path: '/api/public/hooks/generate-salary-preview'
@@ -1611,6 +1646,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/bot/member'
       fullPath: '/api/public/bot/member'
       preLoaderRoute: typeof ApiPublicBotMemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/bot/mc-link-confirm': {
+      id: '/api/public/bot/mc-link-confirm'
+      path: '/api/public/bot/mc-link-confirm'
+      fullPath: '/api/public/bot/mc-link-confirm'
+      preLoaderRoute: typeof ApiPublicBotMcLinkConfirmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/bot/import': {
@@ -1821,6 +1863,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTestLoginRoute: ApiTestLoginRoute,
   ApiTestSeedPollRoute: ApiTestSeedPollRoute,
   ApiPublicBotImportRoute: ApiPublicBotImportRoute,
+  ApiPublicBotMcLinkConfirmRoute: ApiPublicBotMcLinkConfirmRoute,
   ApiPublicBotMemberRoute: ApiPublicBotMemberRoute,
   ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
   ApiPublicBotStatsRoute: ApiPublicBotStatsRoute,
@@ -1828,6 +1871,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksGenerateDigestRoute: ApiPublicHooksGenerateDigestRoute,
   ApiPublicHooksGenerateSalaryPreviewRoute:
     ApiPublicHooksGenerateSalaryPreviewRoute,
+  ApiPublicHooksImportMcStatsRoute: ApiPublicHooksImportMcStatsRoute,
   ApiPublicHooksPaladiumAdminShopSyncRoute:
     ApiPublicHooksPaladiumAdminShopSyncRoute,
   ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
