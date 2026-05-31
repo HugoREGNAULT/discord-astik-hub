@@ -682,7 +682,6 @@ function FactionHealthSection() {
     queryKey: ["faction-health"],
     queryFn: () => fn(),
   });
-  });
 
   if (isLoading || !data) {
     return (
@@ -832,7 +831,6 @@ function WeeklyDigestSection() {
   const { data, isLoading } = useQuery({
     queryKey: ["latest-digest"],
     queryFn: () => fn(),
-  });
   });
 
   const genMut = useMutation({
@@ -1533,7 +1531,6 @@ function InactivityCard() {
     queryKey: ["inactivity-buckets"],
     queryFn: () => fn(),
   });
-  });
   const [tab, setTab] = useState<"d7" | "d14" | "d30">("d7");
 
   const buckets = data ?? { d7: [], d14: [], d30: [] };
@@ -1583,7 +1580,6 @@ function NeverConnectedCard() {
     queryKey: ["never-connected"],
     queryFn: () => fn(),
     });
-  });
 
   return (
     <Card>
@@ -1738,7 +1734,6 @@ function InactivityQueueCard() {
     queryKey: ["inactivity-queue"],
     queryFn: () => fn(),
     });
-  });
 
   const rows: InactivityRow[] = (data?.rows ?? []) as InactivityRow[];
 
@@ -1927,7 +1922,6 @@ function AnomaliesCard() {
     queryKey: ["anomaly-flags-open"],
     queryFn: () => fn(),
     });
-  });
 
   const mut = useMutation({
     mutationFn: (vars: { id: string; status: "reviewed" | "dismissed" }) =>
