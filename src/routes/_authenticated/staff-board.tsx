@@ -292,14 +292,6 @@ function StaffBoardPage() {
         </div>
       )}
 
-      <ConfirmDialog
-        open={!!toDelete}
-        onOpenChange={(o) => !o && setToDelete(null)}
-        title="Supprimer la tâche ?"
-        description={toDelete?.title}
-        confirmText="Supprimer"
-        onConfirm={() => toDelete && deleteMut.mutate(toDelete.id)}
-      />
     </div>
   );
 }
