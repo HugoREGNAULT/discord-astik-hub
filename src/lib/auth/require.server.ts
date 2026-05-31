@@ -16,7 +16,7 @@ export async function requireSession(): Promise<SessionUser> {
   if (!data) throw new AppError("UNAUTHENTICATED", 401, ERROR_MESSAGES.UNAUTHENTICATED);
   if (Date.now() - data.rolesRefreshedAt > ROLE_CACHE_TTL_MS) {
     try {
-      const roles = await fetchAggregatedRoles(data.discordId);
+      const roles = await getAggregatedRolesCached(data.discordId);
       data.roleIds = roles;
       data.rolesRefreshedAt = Date.now();
       await setSessionData(data);
