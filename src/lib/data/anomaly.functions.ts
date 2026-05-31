@@ -325,7 +325,7 @@ export type OpenAnomalyRow = {
   kind: AnomalyKind;
   severity: Severity;
   score: number | null;
-  evidence: Record<string, unknown>;
+  evidence: unknown;
   ai_explanation: string | null;
   created_at: string;
 };
