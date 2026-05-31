@@ -96,7 +96,7 @@ function ShopPage() {
                       title="Confirmer l'échange"
                       description="Ta demande sera mise en attente de validation par le staff. Les points ne sont débités qu'après approbation."
                       destructive={false}
-                      onConfirm={() => mut.mutateAsync(r.id)}
+                      onConfirm={async () => { await mut.mutateAsync(r.id); }}
                       trigger={
                         <DaButton
                           className="mt-2"
