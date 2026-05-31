@@ -6,6 +6,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
 
+type Json = string | number | boolean | null | { [k: string]: Json } | Json[];
+
 export type IntegrityCheck = {
   id: string;
   checked_at: string;
