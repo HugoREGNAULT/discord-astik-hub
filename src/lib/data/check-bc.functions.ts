@@ -71,9 +71,10 @@ export const updateBcCheck = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("members.view");
-    const patch: Record<string, unknown> = {
+    const patch: any = {
       updated_by_discord_id: user.discordId,
       updated_by_username: user.username,
+      updated_at: new Date().toISOString(),
     };
     if (data.name !== undefined) patch.name = data.name;
     if (data.location !== undefined) patch.location = data.location;
