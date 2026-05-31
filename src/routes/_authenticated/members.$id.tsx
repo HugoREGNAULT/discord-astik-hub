@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { RouteError } from "@/components/RouteError";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId, useEffect } from "react";
@@ -59,6 +60,7 @@ import type {
 } from "@/components/members/types";
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Profil membre · PunkAstik" }] }),
   component: MemberDetail,
 });

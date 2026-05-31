@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteError } from "@/components/RouteError";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -19,6 +20,7 @@ import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 import { PageHeader, PageCard, DaChip } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
   component: LeaderboardPage,
 });

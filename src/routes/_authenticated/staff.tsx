@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { RouteError } from "@/components/RouteError";
 import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -91,6 +92,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 type StaffSearch = { bdmSort: SortKey; bdmDir: SortDir };
 
 export const Route = createFileRoute("/_authenticated/staff")({
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Dashboard staff · PunkAstik" }] }),
   validateSearch: (search: Record<string, unknown>): StaffSearch => {
     const sort = search.bdmSort;
