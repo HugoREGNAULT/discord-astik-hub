@@ -281,7 +281,7 @@ function StaffBoardPage() {
                           t.assignee_discord_id ? membersMap[t.assignee_discord_id] : null
                         }
                         onStatus={(s) => statusMut.mutate({ id: t.id, status: s })}
-                        onDelete={() => setToDelete(t)}
+                        onDelete={() => deleteMut.mutate(t.id)}
                       />
                     ))
                   )}
