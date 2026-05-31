@@ -1,17 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { preflight, requireBotAuth } from "@/lib/bot-auth.server";
 import { generateWeeklyDigest } from "@/lib/data/digest.server";
 
 /**
  * Hook public déclenché par pg_cron (lundi 10h Europe/Paris).
  * Génère le digest IA de la semaine précédente s'il n'existe pas déjà.
  *
- * Sécurité : la route ne fait QUE lire/écrire en base via service_role et
- * appeler l'AI Gateway côté serveur. Aucune donnée sensible n'est renvoyée.
+ * Auth : header `x-bot-key` (BOT_API_KEY).
  */
 export const Route = createFileRoute("/api/public/hooks/generate-digest")({
   server: {
     handlers: {
-      POST: async () => {
+      OPTIONS: preflight,
+      POST: async ({ request }) => {
+        const unauth = requireBotAuth(request);
+        if (unauth) return unauth;
+
         try {
           const result = await generateWeeklyDigest({ generatedBy: "cron" });
           return Response.json(result);
