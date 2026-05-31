@@ -115,7 +115,13 @@ export const updateEvent = createServerFn({ method: "POST" })
   .inputValidator((input) => updateSchema.parse(input))
   .handler(async ({ data }) => {
     const user = await requirePermission("members.edit");
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      title?: string;
+      type?: string;
+      description?: string | null;
+      location?: string | null;
+      starts_at?: string;
+    } = {};
     if (data.title !== undefined) patch.title = data.title;
     if (data.type !== undefined) patch.type = data.type;
     if (data.description !== undefined) patch.description = data.description ?? null;
