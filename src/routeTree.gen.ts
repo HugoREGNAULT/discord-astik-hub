@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
@@ -113,6 +114,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTrialsRoute = AuthenticatedTrialsRouteImport.update({
+  id: '/trials',
+  path: '/trials',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
@@ -460,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/tools': typeof AuthenticatedToolsRouteWithChildren
+  '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/events/$id': typeof AuthenticatedEventsIdRoute
@@ -524,6 +531,7 @@ export interface FileRoutesByTo {
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/events/$id': typeof AuthenticatedEventsIdRoute
@@ -593,6 +601,7 @@ export interface FileRoutesById {
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
+  '/_authenticated/trials': typeof AuthenticatedTrialsRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
@@ -662,6 +671,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/staff'
     | '/tools'
+    | '/trials'
     | '/welcome'
     | '/api/health'
     | '/events/$id'
@@ -726,6 +736,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/shop'
     | '/staff'
+    | '/trials'
     | '/welcome'
     | '/api/health'
     | '/events/$id'
@@ -794,6 +805,7 @@ export interface FileRouteTypes {
     | '/_authenticated/shop'
     | '/_authenticated/staff'
     | '/_authenticated/tools'
+    | '/_authenticated/trials'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/events/$id'
@@ -919,6 +931,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/trials': {
+      id: '/_authenticated/trials'
+      path: '/trials'
+      fullPath: '/trials'
+      preLoaderRoute: typeof AuthenticatedTrialsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tools': {
@@ -1438,6 +1457,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
+  AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -1462,6 +1482,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
+  AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 

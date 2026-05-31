@@ -250,3 +250,40 @@ export const submitWarningAppeal = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/* ---------- Période d'essai : onboarding tasks (vue membre) ---------- */
+
+export const listMyOnboardingTasks = createServerFn({ method: "GET" }).handler(
+  async () => {
+    const user = await requireSession();
+    const { data, error } = await db
+      .from("onboarding_tasks")
+      .select("*")
+      .eq("member_discord_id", user.discordId)
+      .order("display_order");
+    if (error) throw new Error(error.message);
+    return { tasks: data ?? [] };
+  },
+);
+
+export const toggleMyOnboardingTask = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({ id: z.string().uuid(), done: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const { data: row, error: fetchErr } = await db
+      .from("onboarding_tasks")
+      .select("id, member_discord_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (fetchErr) throw new Error(fetchErr.message);
+    if (!row) throw new Error("NOT_FOUND");
+    if (row.member_discord_id !== user.discordId) throw new Error("FORBIDDEN");
+    const { error } = await db
+      .from("onboarding_tasks")
+      .update({ done: data.done, done_at: data.done ? new Date().toISOString() : null })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

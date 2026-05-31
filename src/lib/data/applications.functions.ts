@@ -311,9 +311,10 @@ export const decideApplication = createServerFn({ method: "POST" })
       .eq("id", data.applicationId);
     if (upd.error) throw new Error(upd.error.message);
 
-    // Sur acceptation : on ne crée PAS encore la fiche membre (entretien à passer).
-    // On donne juste le rôle "entretien en attente" sur le serveur public.
+    // Sur acceptation : on crée la fiche membre en période d'essai (14j)
+    // + insertion d'un set standard de tâches d'onboarding.
     let roleAssigned: { ok: boolean; error?: string } = { ok: false };
+    let trialUntilIso: string | null = null;
     if (data.decision === "accepted") {
       const r = await addGuildMemberRole(
         GUILDS.PUBLIC,
@@ -321,12 +322,71 @@ export const decideApplication = createServerFn({ method: "POST" })
         ROLES.INTERVIEW_PENDING_PUBLIC,
       );
       roleAssigned = { ok: r.ok, error: r.error };
+
+      const trialUntil = new Date(Date.now() + 14 * 24 * 3600 * 1000);
+      trialUntilIso = trialUntil.toISOString();
+
+      // Upsert fiche membre en status 'trial'
+      const existing = await db
+        .from("members")
+        .select("discord_id")
+        .eq("discord_id", app.discord_id)
+        .maybeSingle();
+      if (existing.data) {
+        await db
+          .from("members")
+          .update({
+            discord_username: app.discord_username,
+            ig_name: app.mc_name,
+            status: "trial",
+            trial_until: trialUntilIso,
+            arrival_date: new Date().toISOString().slice(0, 10),
+          })
+          .eq("discord_id", app.discord_id);
+      } else {
+        await db.from("members").insert({
+          discord_id: app.discord_id,
+          discord_username: app.discord_username,
+          ig_name: app.mc_name,
+          status: "trial",
+          trial_until: trialUntilIso,
+          arrival_date: new Date().toISOString().slice(0, 10),
+          recruiter_discord_id: staff.discordId,
+        });
+      }
+
+      // Tâches d'onboarding standard (idempotent : on évite les doublons si on
+      // réaccepte une candidature)
+      const existingTasks = await db
+        .from("onboarding_tasks")
+        .select("id")
+        .eq("member_discord_id", app.discord_id)
+        .limit(1);
+      if (!existingTasks.data || existingTasks.data.length === 0) {
+        const defaults = [
+          { key: "discord_faction", label: "Rejoindre le Discord faction" },
+          { key: "base_setup", label: "Configurer sa base / claim" },
+          { key: "first_raid", label: "Participer à un 1er raid" },
+          { key: "rules_read", label: "Lire le règlement" },
+        ];
+        await db.from("onboarding_tasks").insert(
+          defaults.map((t, i) => ({
+            member_discord_id: app.discord_id,
+            label: t.label,
+            template_key: t.key,
+            display_order: i,
+          })),
+        );
+      }
     }
 
     // Notification DM Discord
+    const trialDateStr = trialUntilIso
+      ? new Date(trialUntilIso).toLocaleDateString("fr-FR")
+      : "";
     const message =
       data.decision === "accepted"
-        ? `✅ **Première étape validée !**\n\nTa candidature à la PunkAstik a été retenue par **${staff.username}**.\n\n📅 **Prochaine étape : entretien**\nTu vas être contacté(e) prochainement par un recruteur pour fixer un rendez-vous. Tu as reçu un rôle sur le serveur public pour suivre la suite du process.\n\n⚠️ Tu n'as **pas encore** accès à l'espace membre du site — ça viendra une fois l'entretien passé.${
+        ? `✅ **Bienvenue en période d'essai !**\n\nTa candidature à la PunkAstik a été retenue par **${staff.username}**.\n\n⏳ Tu es en **période d'essai jusqu'au ${trialDateStr}**. Pendant cette période, complète les tâches d'onboarding sur ton espace perso et fais bonne impression — le staff votera ensuite pour ta titularisation.${
             data.reason ? `\n\n💬 ${data.reason}` : ""
           }`
         : `❌ **Candidature refusée**\n\nDésolé, ta candidature à la PunkAstik n'a pas été retenue par **${staff.username}**.${
