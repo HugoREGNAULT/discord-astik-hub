@@ -124,7 +124,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: React.ReactNode }) {
-  // Inline script applies the saved theme before first paint to avoid flash
+  // Inline script applies the saved theme before first paint to avoid flash.
+  // IMPORTANT: ce script est autorisé par la CSP via un hash SHA-256 dans src/start.ts.
+  // Si vous modifiez le contenu de `themeInit`, recalculez le hash (SHA-256, base64)
+  // et mettez à jour la directive `script-src 'sha256-...='` dans src/start.ts.
   const themeInit = `(function(){try{var t=localStorage.getItem('punkastik:theme')||'dark';document.documentElement.classList.add(t);}catch(e){document.documentElement.classList.add('dark');}})();`;
   return (
     <html lang="en" className="dark">
