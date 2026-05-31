@@ -29,7 +29,7 @@ interface EMember {
 
 function EffectifPage() {
   const fn = useServerFn(getEffectif);
-  const { data, isLoading } = useQuery({ queryKey: ["effectif"], queryFn: () => fn() });
+  const { data, isLoading, error } = useQuery({ queryKey: ["effectif"], queryFn: () => fn() });
 
   return (
     <div className="space-y-4">
@@ -40,6 +40,7 @@ function EffectifPage() {
           data ? `${data.total} membres au total.` : "Vue d'ensemble des membres par groupe."
         }
       />
+      {error && <ErrorBlock message={(error as Error).message} hint="Réessaie dans un instant." />}
       {isLoading && <GroupGridSkeleton count={6} />}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data?.groups.map((g: { label: string; members: EMember[] }) => (
