@@ -49,11 +49,14 @@ import {
   FilePlus2,
   Droplet,
   Calculator,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
 import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { usePdcCollab, type CellEdit } from "@/hooks/usePdcCollab";
+import { useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createLazyFileRoute("/_authenticated/pdc")({
   component: PdcPage,
