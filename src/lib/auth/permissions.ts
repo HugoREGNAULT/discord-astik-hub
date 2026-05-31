@@ -23,6 +23,7 @@ export type Permission =
   | "config.manage"
   | "recruit.access"
   | "objectives.edit"
+  | "shop.manage"
   | "admin.access";
 
 export interface SessionUser {
