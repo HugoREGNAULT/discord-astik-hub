@@ -66,6 +66,8 @@ export const globalSearch = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }): Promise<{ hits: SearchHit[] }> => {
     const user = await requireSession();
+    const { ok } = rateLimit(`search:${user.discordId}`, 30, 10000);
+    if (!ok) throw new Error("RATE_LIMITED");
     const raw = data.q.trim();
     if (raw.length < 1) return { hits: [] };
     const needle = raw.toLowerCase();
