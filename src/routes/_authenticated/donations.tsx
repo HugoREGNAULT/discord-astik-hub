@@ -125,6 +125,10 @@ function DonationsPage() {
         </div>
       </PageCard>
 
+      {carts.error && (
+        <ErrorBlock message={(carts.error as Error).message} hint="Réessaie dans un instant." />
+      )}
+
       {carts.data?.carts.map((c: any) => (
         <Cart
           key={c.id}
