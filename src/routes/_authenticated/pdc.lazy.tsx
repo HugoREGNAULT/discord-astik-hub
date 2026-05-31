@@ -255,6 +255,43 @@ function PdcPage() {
   const isPanningRef = useRef(false);
   const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
+  // ---------------- Collaboration ----------------
+  const { data: currentUser } = useCurrentUser();
+  const me = useMemo(
+    () =>
+      currentUser
+        ? { discordId: currentUser.discordId, username: currentUser.username }
+        : null,
+    [currentUser],
+  );
+
+  // Apply a remote edit locally (last-write-wins per cell — we don't compare ts
+  // because Broadcast is ordered per channel and the LAST event for a given
+  // cell is by definition the latest write).
+  const applyRemoteEdit = useCallback((d: CellEdit) => {
+    setLayers((prev) => {
+      const key = String(d.layer);
+      const layer = { ...(prev[key] ?? {}) };
+      const ck = `${d.x},${d.y}`;
+      if (d.block_id === null) delete layer[ck];
+      else layer[ck] = d.block_id;
+      return { ...prev, [key]: layer };
+    });
+    setDirty(true);
+  }, []);
+
+  const { peers, connected, broadcastCellEdit, broadcastCursor } = usePdcCollab({
+    planId,
+    me,
+    onRemoteEdit: applyRemoteEdit,
+  });
+
+  const broadcastCellEditRef = useRef(broadcastCellEdit);
+  broadcastCellEditRef.current = broadcastCellEdit;
+  const broadcastCursorRef = useRef(broadcastCursor);
+  broadcastCursorRef.current = broadcastCursor;
+
+
   const paintCell = (x: number, y: number, blockId: string | null, broadcast = true) => {
     if (x < 0 || y < 0 || x >= wCells || y >= hCells) return;
     setLayers((prev) => {
