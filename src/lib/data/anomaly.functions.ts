@@ -358,7 +358,7 @@ export const getOpenAnomalies = createServerFn({ method: "GET" }).handler(async 
     kind: AnomalyKind;
     severity: Severity;
     score: number | null;
-    evidence: Record<string, unknown>;
+    evidence: AnomalyEvidence;
     ai_explanation: string | null;
     created_at: string;
   }>;
