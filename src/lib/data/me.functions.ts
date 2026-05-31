@@ -165,3 +165,88 @@ export const completeOnboarding = createServerFn({ method: "POST" })
     });
     return { ok: true, igName: mojang.name, mcUuid: mojang.id };
   });
+
+/* ---------- Sanctions & appeals (vue membre) ---------- */
+
+export const listMyWarnings = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const { data: warnings, error } = await db
+    .from("warnings")
+    .select("*")
+    .eq("member_discord_id", user.discordId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  const ids = (warnings ?? []).map((w) => w.id);
+  let appeals: Array<{
+    id: string;
+    warning_id: string;
+    status: string;
+    message: string;
+    decision_note: string | null;
+    created_at: string;
+    decided_at: string | null;
+  }> = [];
+  if (ids.length) {
+    const { data: ap } = await db
+      .from("warning_appeals")
+      .select("id, warning_id, status, message, decision_note, created_at, decided_at")
+      .in("warning_id", ids)
+      .order("created_at", { ascending: false });
+    appeals = ap ?? [];
+  }
+  const byWarning = new Map<string, (typeof appeals)[number]>();
+  for (const a of appeals) {
+    if (!byWarning.has(a.warning_id)) byWarning.set(a.warning_id, a);
+  }
+  return {
+    warnings: (warnings ?? []).map((w) => ({ ...w, appeal: byWarning.get(w.id) ?? null })),
+  };
+});
+
+export const submitWarningAppeal = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({ warningId: z.string().uuid(), message: z.string().min(10).max(2000) })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const { data: w, error: wErr } = await db
+      .from("warnings")
+      .select("id, member_discord_id, status, body, severity")
+      .eq("id", data.warningId)
+      .maybeSingle();
+    if (wErr) throw new Error(wErr.message);
+    if (!w) throw new Error("NOT_FOUND");
+    if (w.member_discord_id !== user.discordId) throw new Error("FORBIDDEN");
+    if (w.status !== "active") throw new Error("Cet avertissement ne peut plus être contesté");
+
+    const { data: existing } = await db
+      .from("warning_appeals")
+      .select("id")
+      .eq("warning_id", data.warningId)
+      .eq("status", "pending")
+      .maybeSingle();
+    if (existing) throw new Error("Un appel est déjà en cours");
+
+    const { error } = await db.from("warning_appeals").insert({
+      warning_id: data.warningId,
+      member_discord_id: user.discordId,
+      message: data.message,
+      status: "pending",
+    });
+    if (error) throw new Error(error.message);
+    await logAction("warning_appeal_submit", user.discordId, { warningId: data.warningId });
+
+    const { logToDiscord, COLORS } = await import("@/lib/discord/log.server");
+    void logToDiscord("site", {
+      title: "📨 Nouvel appel d'avertissement",
+      color: COLORS.warning,
+      description: w.body.slice(0, 200),
+      fields: [
+        { name: "Membre", value: user.username, inline: true },
+        { name: "Gravité", value: w.severity ?? "minor", inline: true },
+      ],
+    });
+    return { ok: true };
+  });
