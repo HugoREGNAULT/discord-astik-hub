@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
+import { getChurnRisk, getRetentionCohorts, type ChurnRow } from "@/lib/data/churn.functions";
 import {
   LayoutDashboard,
   Users,
