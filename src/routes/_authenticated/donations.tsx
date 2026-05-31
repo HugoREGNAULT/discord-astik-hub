@@ -162,7 +162,7 @@ function DonationsPage() {
           }
         />
       ))}
-      {carts.data?.carts.length === 0 && (
+      {!carts.error && carts.data?.carts.length === 0 && (
         <PageCard>
           <EmptyBlock label="Aucun panier actif — crée-en un" />
         </PageCard>
