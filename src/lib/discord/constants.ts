@@ -53,4 +53,6 @@ export const LOG_CHANNELS = {
   AUTH: "1509547507640701081",
   SITE: "1509547529384235178",
   SHOP_ALERTS: "1510047242646454272",
+  /** Salon des erreurs serveur — surchargeable via env DISCORD_LOG_CHANNEL_ERROR */
+  ERROR: "",
 } as const;

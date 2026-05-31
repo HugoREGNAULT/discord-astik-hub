@@ -1,11 +1,29 @@
+import { useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toUserMessage } from "@/lib/errors";
+import { reportClientError } from "@/lib/observability.functions";
 
 export function RouteError({ error, reset }: { error: Error; reset: () => void }) {
   console.error("[route-error]", error);
   const router = useRouter();
   const isDev = import.meta.env.DEV;
   const message = toUserMessage(error);
+  const report = useServerFn(reportClientError);
+
+  useEffect(() => {
+    if (!error) return;
+    report({
+      data: {
+        context: "route-error",
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      },
+    }).catch(() => {
+      /* silencieux */
+    });
+  }, [error, report]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

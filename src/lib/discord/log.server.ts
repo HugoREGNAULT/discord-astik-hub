@@ -38,10 +38,22 @@ async function postToChannel(
   }
 }
 
-export type LogKind = "auth" | "site";
+export type LogKind = "auth" | "site" | "error";
+
+function resolveChannel(kind: LogKind): string {
+  switch (kind) {
+    case "auth":
+      return LOG_CHANNELS.AUTH;
+    case "site":
+      return LOG_CHANNELS.SITE;
+    case "error":
+      return process.env.DISCORD_LOG_CHANNEL_ERROR || LOG_CHANNELS.ERROR;
+  }
+}
 
 export function logToDiscord(kind: LogKind, embed: Embed): Promise<void> {
-  const channel = kind === "auth" ? LOG_CHANNELS.AUTH : LOG_CHANNELS.SITE;
+  const channel = resolveChannel(kind);
+  if (!channel) return Promise.resolve();
   return postToChannel(channel, {
     embeds: [{ timestamp: new Date().toISOString(), ...embed }],
   });
