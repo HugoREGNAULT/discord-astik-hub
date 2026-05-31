@@ -72,6 +72,7 @@ import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authen
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as ApiPublicHooksVerifyAuditChainRouteImport } from './routes/api/public/hooks/verify-audit-chain'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksScanAnomaliesRouteImport } from './routes/api/public/hooks/scan-anomalies'
@@ -434,6 +435,11 @@ const AuthenticatedEventsIdRoute = AuthenticatedEventsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedEventsRoute,
 } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const ApiPublicHooksVerifyAuditChainRoute =
   ApiPublicHooksVerifyAuditChainRouteImport.update({
     id: '/api/public/hooks/verify-audit-chain',
@@ -567,7 +573,7 @@ export interface FileRoutesByFullPath {
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/absences': typeof AuthenticatedAbsencesRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
@@ -595,6 +601,7 @@ export interface FileRoutesByFullPath {
   '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
@@ -653,7 +660,7 @@ export interface FileRoutesByTo {
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/absences': typeof AuthenticatedAbsencesRoute
-  '/admin': typeof AuthenticatedAdminRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
@@ -678,6 +685,7 @@ export interface FileRoutesByTo {
   '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
@@ -738,7 +746,7 @@ export interface FileRoutesById {
   '/legal': typeof LegalRoute
   '/login': typeof LoginRoute
   '/_authenticated/absences': typeof AuthenticatedAbsencesRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
@@ -766,6 +774,7 @@ export interface FileRoutesById {
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
@@ -854,6 +863,7 @@ export interface FileRouteTypes {
     | '/trials'
     | '/welcome'
     | '/api/health'
+    | '/admin/audit'
     | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
@@ -937,6 +947,7 @@ export interface FileRouteTypes {
     | '/trials'
     | '/welcome'
     | '/api/health'
+    | '/admin/audit'
     | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
@@ -1024,6 +1035,7 @@ export interface FileRouteTypes {
     | '/_authenticated/trials'
     | '/_authenticated/welcome'
     | '/api/health'
+    | '/_authenticated/admin/audit'
     | '/_authenticated/events/$id'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
@@ -1557,6 +1569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEventsIdRouteImport
       parentRoute: typeof AuthenticatedEventsRoute
     }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/hooks/verify-audit-chain': {
       id: '/api/public/hooks/verify-audit-chain'
       path: '/api/public/hooks/verify-audit-chain'
@@ -1714,6 +1733,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedEventsRouteChildren {
   AuthenticatedEventsIdRoute: typeof AuthenticatedEventsIdRoute
   AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
@@ -1805,7 +1835,7 @@ const AuthenticatedToolsRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
@@ -1836,7 +1866,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAbsencesRoute: AuthenticatedAbsencesRoute,
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
