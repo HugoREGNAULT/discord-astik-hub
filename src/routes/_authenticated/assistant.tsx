@@ -35,7 +35,8 @@ interface HistoryEntry {
 }
 
 function AssistantPage() {
-  const me = useCurrentUser();
+  const meQuery = useCurrentUser();
+  const me = meQuery.data ?? null;
   const canUse = hasPerm(me, "members.view");
 
   const [question, setQuestion] = useState("");
@@ -57,12 +58,12 @@ function AssistantPage() {
     return (
       <div className="space-y-4">
         <PageHeader
-          icon={<Sparkles className="size-5" />}
+          code="// assistant"
           title="Assistant IA"
           description="Pose des questions sur la faction en langage naturel."
         />
         <EmptyState
-          icon={<ShieldAlert className="size-6" />}
+          icon={ShieldAlert}
           title="Accès réservé au staff"
           description="Tu n'as pas la permission de consulter cet assistant."
         />
@@ -79,13 +80,14 @@ function AssistantPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        icon={<Sparkles className="size-5" />}
+        code="// assistant ia"
         title="Assistant IA"
         description="Réponses générées à partir des données ci-dessous — aucune action n'est exécutée."
       />
 
-      <PageCard title="Question">
+      <PageCard>
         <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-pink-400">Question</p>
           <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
@@ -117,7 +119,7 @@ function AssistantPage() {
 
       {history.length === 0 && !mutation.isPending ? (
         <EmptyState
-          icon={<Sparkles className="size-6" />}
+          icon={Sparkles}
           title="Aucune question pour l'instant"
           description="L'assistant n'a accès qu'aux outils de lecture autorisés par ton rôle."
         />
