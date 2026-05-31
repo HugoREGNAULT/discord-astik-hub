@@ -166,3 +166,30 @@ export async function fetchAggregatedRoles(userId: string): Promise<string[]> {
   fac?.roles.forEach((r) => roles.add(r));
   return Array.from(roles);
 }
+
+/**
+ * Ping léger de l'API Discord (GET /gateway), avec cache mémoire 30 s.
+ * Utilisé par l'overview admin pour éviter de marteler Discord à chaque rendu.
+ */
+let pingCache: { ok: boolean; latencyMs: number; at: number } | null = null;
+const PING_TTL_MS = 30_000;
+
+export async function pingDiscord(): Promise<{ ok: boolean; latencyMs: number; at: number }> {
+  if (pingCache && Date.now() - pingCache.at < PING_TTL_MS) return pingCache;
+  let ok = false;
+  let latencyMs = 0;
+  try {
+    const t0 = Date.now();
+    const r = await fetchWithRetry(
+      `${DISCORD_API}/gateway`,
+      { method: "GET" },
+      { bucket: "discord", retries: 0, timeoutMs: 3000 },
+    );
+    latencyMs = Date.now() - t0;
+    ok = r.ok;
+  } catch {
+    ok = false;
+  }
+  pingCache = { ok, latencyMs, at: Date.now() };
+  return pingCache;
+}
