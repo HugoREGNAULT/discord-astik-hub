@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
+import { requireSession } from "@/lib/auth/require.server";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
@@ -37,6 +38,7 @@ export const resolveMojangUuid = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    await requireSession();
     // 1) Try cache (case-insensitive)
     try {
       const { data: cached } = await db
@@ -88,6 +90,7 @@ export const resolveUuidsToNames = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    await requireSession();
     const out: Record<string, string> = {};
     const unique = Array.from(new Set(data.uuids.map(normalizeUuid)));
 

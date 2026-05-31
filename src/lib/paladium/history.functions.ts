@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchPaladium } from "./paladium.server";
+import { requireSession } from "@/lib/auth/require.server";
 
 /* ============= Status snapshot (every 15min) ============= */
 
@@ -102,6 +103,7 @@ export const getStatusHistory = createServerFn({ method: "POST" })
     days: Math.min(Math.max(Number(d?.days ?? 7), 1), 30),
   }))
   .handler(async ({ data }) => {
+    await requireSession();
     const since = new Date(Date.now() - data.days * 86400000).toISOString();
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_server_status_history")
@@ -181,6 +183,7 @@ export const snapshotAdminShop = createServerFn({ method: "POST" }).handler(asyn
 });
 
 export const getAdminShopLatest = createServerFn({ method: "GET" }).handler(async () => {
+  await requireSession();
   // Take the most recent snapshot batch (last 10 min worth).
   const since = new Date(Date.now() - 10 * 60_000).toISOString();
   const { data, error } = await supabaseAdmin
@@ -209,6 +212,7 @@ export const getAdminShopLatest = createServerFn({ method: "GET" }).handler(asyn
 export const getAdminShopHistory = createServerFn({ method: "POST" })
   .inputValidator((d: { itemName: string }) => d)
   .handler(async ({ data }) => {
+    await requireSession();
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_admin_shop_history")
       .select("captured_at, price, price_pb")
@@ -226,6 +230,7 @@ export const getAdminShopHistory = createServerFn({ method: "POST" })
   });
 
 export const getAdminShopTopMovers = createServerFn({ method: "GET" }).handler(async () => {
+  await requireSession();
   // Compare latest snapshot vs the oldest snapshot within the last 7 days.
   const sinceOld = new Date(Date.now() - 7 * 86400000).toISOString();
   const sinceLatest = new Date(Date.now() - 10 * 60_000).toISOString();
@@ -338,6 +343,7 @@ export const getMarketPriceHistory = createServerFn({ method: "POST" })
     rangeHours: Math.min(Math.max(Number(d.rangeHours ?? 168), 1), 24 * 30),
   }))
   .handler(async ({ data }) => {
+    await requireSession();
     const since = new Date(Date.now() - data.rangeHours * 3600_000).toISOString();
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_market_price_history")

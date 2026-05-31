@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchPaladium } from "./paladium.server";
+import { requireSession } from "@/lib/auth/require.server";
 
 type ApiListing = {
   seller?: string;
@@ -168,6 +169,7 @@ export const trackPlayerSearch = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    await requireSession();
     const now = new Date().toISOString();
     // Upsert via select+insert/update (no on_conflict needed)
     const { data: existing } = await supabaseAdmin
@@ -202,6 +204,7 @@ export const trackPlayerSearch = createServerFn({ method: "POST" })
   });
 
 export const getTopSearchedPlayers = createServerFn({ method: "GET" }).handler(async () => {
+  await requireSession();
   const { data, error } = await supabaseAdmin
     .from("paladium_tracked_players")
     .select("uuid, username, search_count, last_searched_at")
@@ -229,6 +232,7 @@ export const getTopSearchedPlayers = createServerFn({ method: "GET" }).handler(a
 export const getPlayerSalesHistory = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ uuid: z.string().regex(UUID_RE) }).parse(input))
   .handler(async ({ data }) => {
+    await requireSession();
     const { data: rows } = await supabaseAdmin
       .from("paladium_player_listings_history")
       .select("*")
