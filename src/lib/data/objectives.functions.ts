@@ -54,11 +54,17 @@ export const updateObjective = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("objectives.edit");
-    const patch: Record<string, unknown> = {};
+    const patch: Partial<{
+      title: string;
+      description: string | null;
+      target_value: number | null;
+      unit: string | null;
+      reward_points: number;
+    }> = {};
     if (data.title !== undefined) patch.title = data.title;
-    if (data.description !== undefined) patch.description = data.description;
-    if (data.targetValue !== undefined) patch.target_value = data.targetValue;
-    if (data.unit !== undefined) patch.unit = data.unit;
+    if (data.description !== undefined) patch.description = data.description ?? null;
+    if (data.targetValue !== undefined) patch.target_value = data.targetValue ?? null;
+    if (data.unit !== undefined) patch.unit = data.unit ?? null;
     if (data.rewardPoints !== undefined) patch.reward_points = data.rewardPoints;
     const { error } = await db.from("objectives").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
