@@ -60,10 +60,11 @@ function WelcomePage() {
   });
 
   // Déjà onboardé → on renvoie sur /me
-  if (data && !data.needsOnboarding) {
-    navigate({ to: "/me", replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (data && !data.needsOnboarding) navigate({ to: "/me", replace: true });
+  }, [data, navigate]);
+
+  if (data && !data.needsOnboarding) return null;
 
   return (
     <div className="max-w-2xl mx-auto py-6">
