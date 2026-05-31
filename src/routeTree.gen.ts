@@ -72,6 +72,7 @@ import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authen
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
+import { Route as ApiPublicHooksVerifyAuditChainRouteImport } from './routes/api/public/hooks/verify-audit-chain'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksScanAnomaliesRouteImport } from './routes/api/public/hooks/scan-anomalies'
 import { Route as ApiPublicHooksRunAutomationRouteImport } from './routes/api/public/hooks/run-automation'
@@ -433,6 +434,12 @@ const AuthenticatedEventsIdRoute = AuthenticatedEventsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedEventsRoute,
 } as any)
+const ApiPublicHooksVerifyAuditChainRoute =
+  ApiPublicHooksVerifyAuditChainRouteImport.update({
+    id: '/api/public/hooks/verify-audit-chain',
+    path: '/api/public/hooks/verify-audit-chain',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksSyncDiscordPresenceRoute =
   ApiPublicHooksSyncDiscordPresenceRouteImport.update({
     id: '/api/public/hooks/sync-discord-presence',
@@ -633,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/run-automation': typeof ApiPublicHooksRunAutomationRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
+  '/api/public/hooks/verify-audit-chain': typeof ApiPublicHooksVerifyAuditChainRoute
   '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
   '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
@@ -715,6 +723,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/run-automation': typeof ApiPublicHooksRunAutomationRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
+  '/api/public/hooks/verify-audit-chain': typeof ApiPublicHooksVerifyAuditChainRoute
   '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
   '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
@@ -802,6 +811,7 @@ export interface FileRoutesById {
   '/api/public/hooks/run-automation': typeof ApiPublicHooksRunAutomationRoute
   '/api/public/hooks/scan-anomalies': typeof ApiPublicHooksScanAnomaliesRoute
   '/api/public/hooks/sync-discord-presence': typeof ApiPublicHooksSyncDiscordPresenceRoute
+  '/api/public/hooks/verify-audit-chain': typeof ApiPublicHooksVerifyAuditChainRoute
   '/api/public/bot/query/candidatures': typeof ApiPublicBotQueryCandidaturesRoute
   '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
@@ -889,6 +899,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/run-automation'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
+    | '/api/public/hooks/verify-audit-chain'
     | '/api/public/bot/query/candidatures'
     | '/api/public/bot/query/don-valider'
     | '/api/public/bot/query/points'
@@ -971,6 +982,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/run-automation'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
+    | '/api/public/hooks/verify-audit-chain'
     | '/api/public/bot/query/candidatures'
     | '/api/public/bot/query/don-valider'
     | '/api/public/bot/query/points'
@@ -1057,6 +1069,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/run-automation'
     | '/api/public/hooks/scan-anomalies'
     | '/api/public/hooks/sync-discord-presence'
+    | '/api/public/hooks/verify-audit-chain'
     | '/api/public/bot/query/candidatures'
     | '/api/public/bot/query/don-valider'
     | '/api/public/bot/query/points'
@@ -1094,6 +1107,7 @@ export interface RootRouteChildren {
   ApiPublicHooksRunAutomationRoute: typeof ApiPublicHooksRunAutomationRoute
   ApiPublicHooksScanAnomaliesRoute: typeof ApiPublicHooksScanAnomaliesRoute
   ApiPublicHooksSyncDiscordPresenceRoute: typeof ApiPublicHooksSyncDiscordPresenceRoute
+  ApiPublicHooksVerifyAuditChainRoute: typeof ApiPublicHooksVerifyAuditChainRoute
   ApiPublicBotQueryCandidaturesRoute: typeof ApiPublicBotQueryCandidaturesRoute
   ApiPublicBotQueryDonValiderRoute: typeof ApiPublicBotQueryDonValiderRoute
   ApiPublicBotQueryPointsRoute: typeof ApiPublicBotQueryPointsRoute
@@ -1543,6 +1557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEventsIdRouteImport
       parentRoute: typeof AuthenticatedEventsRoute
     }
+    '/api/public/hooks/verify-audit-chain': {
+      id: '/api/public/hooks/verify-audit-chain'
+      path: '/api/public/hooks/verify-audit-chain'
+      fullPath: '/api/public/hooks/verify-audit-chain'
+      preLoaderRoute: typeof ApiPublicHooksVerifyAuditChainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/sync-discord-presence': {
       id: '/api/public/hooks/sync-discord-presence'
       path: '/api/public/hooks/sync-discord-presence'
@@ -1883,6 +1904,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksScanAnomaliesRoute: ApiPublicHooksScanAnomaliesRoute,
   ApiPublicHooksSyncDiscordPresenceRoute:
     ApiPublicHooksSyncDiscordPresenceRoute,
+  ApiPublicHooksVerifyAuditChainRoute: ApiPublicHooksVerifyAuditChainRoute,
   ApiPublicBotQueryCandidaturesRoute: ApiPublicBotQueryCandidaturesRoute,
   ApiPublicBotQueryDonValiderRoute: ApiPublicBotQueryDonValiderRoute,
   ApiPublicBotQueryPointsRoute: ApiPublicBotQueryPointsRoute,

@@ -2504,6 +2504,15 @@ export type Database = {
         Args: { p_discord_id: string; p_total: number }
         Returns: number
       }
+      verify_logs_chain: {
+        Args: never
+        Returns: {
+          broken_at_seq: number
+          detail: string
+          ok: boolean
+          scanned: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
