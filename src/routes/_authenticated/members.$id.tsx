@@ -175,35 +175,7 @@ function MemberDetail() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center gap-4">
-        {m.avatar_url ? (
-          <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
-        ) : (
-          <div className="size-16 rounded-full bg-muted" />
-        )}
-        <div>
-          <div className="text-pink-500 mb-1">
-            <MonoLabel>// member</MonoLabel>
-          </div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>
-            {m.ig_name ?? m.discord_username}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            @{m.discord_username}
-            {data.canEdit && ` · ${m.discord_id}`}
-          </p>
-        </div>
-        <div className="ml-auto flex gap-2">
-          {isSelf && <Badge variant="outline">Toi</Badge>}
-          <Badge variant="secondary">{m.status}</Badge>
-        </div>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="AstikPoints" value={m.astik_points} accent />
-        <Stat label="Grade" value={m.current_grade ?? "—"} />
-        <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
-      </div>
+      <MemberHeader member={m} isSelf={isSelf} canShowDiscordId={!!data.canEdit} />
 
       {data.canEdit && (
         <MemberActions member={m} canManagePoints={!!data.canManagePoints} onChanged={refresh} />
