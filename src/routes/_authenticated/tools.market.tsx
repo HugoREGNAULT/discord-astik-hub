@@ -345,7 +345,9 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                         color: "#e4e4e7",
                       }}
                       labelFormatter={(t) => new Date(Number(t)).toLocaleString("fr-FR")}
-                      formatter={(v: number | null) => (v == null ? "—" : fmtNum(v))}
+                      formatter={(v: unknown) =>
+                        typeof v === "number" && Number.isFinite(v) ? fmtNum(v) : "—"
+                      }
                     />
                     <Legend wrapperStyle={{ fontSize: 11, color: "#a1a1aa" }} />
                     <Line
