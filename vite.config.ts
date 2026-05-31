@@ -6,6 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import type { RollupLog, WarningHandlerWithDefault } from "rollup";
+import { visualizer } from "rollup-plugin-visualizer";
 import { createLogger } from "vite";
 
 const IGNORED_WARNING_CODES = new Set([
