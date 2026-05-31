@@ -42,15 +42,8 @@ import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers } fro
 import { getFactionHealth } from "@/lib/data/health.functions";
 import { getLatestDigest, generateDigestManually } from "@/lib/data/digest.functions";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
-import {
-  AreaChart,
-  Area,
-  XAxis as RXAxis,
-  YAxis as RYAxis,
-  Tooltip as RTooltip,
-  ResponsiveContainer,
-  CartesianGrid as RGrid,
-} from "recharts";
+import { lazy, Suspense } from "react";
+const StaffHealthChart = lazy(() => import("./-staff.chart"));
 
 import { markMemberAway, dmMember } from "@/lib/data/members.functions";
 import {
