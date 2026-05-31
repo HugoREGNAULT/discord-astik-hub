@@ -415,6 +415,7 @@ function PlayerSales() {
               </div>
             </>
           )}
+          </div>
 
 
           <p className="text-[10px] text-zinc-600" style={{ fontFamily: "'Space Mono'" }}>
