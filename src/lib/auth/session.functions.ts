@@ -34,3 +34,15 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(
     };
   },
 );
+
+/**
+ * Garde légère pour beforeLoad : ne renvoie QUE l'existence d'une session.
+ * Ne JAMAIS retourner d'id Discord, rôles, ou tout autre champ ici.
+ */
+export const getSessionStatus = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ authenticated: boolean }> => {
+    const data = await getSessionData();
+    return { authenticated: !!data };
+  },
+);
+

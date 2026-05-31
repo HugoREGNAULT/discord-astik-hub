@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -7,8 +7,13 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 import { useCurrentUser } from "@/lib/auth/use-current-user";
+import { getSessionStatus } from "@/lib/auth/session.functions";
 
 export const Route = createFileRoute("/_authenticated")({
+  beforeLoad: async () => {
+    const { authenticated } = await getSessionStatus();
+    if (!authenticated) throw redirect({ to: "/login" });
+  },
   head: () => ({
     links: [
       {
@@ -19,6 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
   }),
   component: AuthLayout,
 });
+
 
 function AuthLayout() {
   const { data: user, isLoading } = useCurrentUser();
