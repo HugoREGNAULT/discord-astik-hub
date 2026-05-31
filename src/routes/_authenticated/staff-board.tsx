@@ -363,9 +363,16 @@ function TaskCard({
               <SelectItem value="cancelled">Annulée</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onDelete}>
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          <ConfirmDialog
+            title="Supprimer la tâche ?"
+            description={task.title}
+            onConfirm={onDelete}
+            trigger={
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            }
+          />
         </div>
       </CardContent>
     </Card>
