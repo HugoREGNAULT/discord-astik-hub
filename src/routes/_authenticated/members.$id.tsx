@@ -336,18 +336,7 @@ function MemberDetail() {
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: any; accent?: boolean }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm text-muted-foreground">{label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
+
 
 function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void }) {
   const reactId = useId();
