@@ -1680,3 +1680,195 @@ function NeverConnectedRow({
     </div>
   );
 }
+
+// ----------------- File de relance (inactivité) -----------------
+
+type InactivityRow = {
+  discord_id: string;
+  discord_username: string | null;
+  ig_name: string | null;
+  avatar_url: string | null;
+  current_grade: string | null;
+  inactivityDays: number;
+  onDeclaredAbsence: boolean;
+  absenceUntil: string | null;
+  lastPingAt: string | null;
+};
+
+function formatDate(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function InactivityQueueCard() {
+  const fn = useServerFn(getInactivityQueue);
+  const { data, isLoading } = useQuery({
+    queryKey: ["inactivity-queue"],
+    queryFn: () => fn(),
+    refetchInterval: 5 * 60_000,
+  });
+
+  const rows: InactivityRow[] = (data?.rows ?? []) as InactivityRow[];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+          <span className="flex items-center gap-2">
+            <Send className="size-4 text-pink-500" />
+            File de relance
+          </span>
+          <Badge variant="outline">{rows.length}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 max-h-[32rem] overflow-y-auto">
+        {isLoading ? (
+          <RowListSkeleton count={5} />
+        ) : rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            Personne à relancer, tout le monde est actif ✨
+          </p>
+        ) : (
+          <>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Triés par jours d&apos;inactivité décroissants. Les membres en absence
+              déclarée sont signalés — pense à vérifier avant de relancer.
+            </p>
+            <div className="hidden md:grid grid-cols-[1fr_90px_140px_140px_110px] gap-2 px-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+              <div>Membre</div>
+              <div className="text-right">Inactif</div>
+              <div>Statut</div>
+              <div>Dernière relance</div>
+              <div className="text-right">Action</div>
+            </div>
+            {rows.map((m) => (
+              <InactivityRowItem key={m.discord_id} member={m} />
+            ))}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function InactivityRowItem({ member }: { member: InactivityRow }) {
+  const qc = useQueryClient();
+  const sendFn = useServerFn(sendInactivityPing);
+  const [open, setOpen] = useState(false);
+  const greeting = member.ig_name ?? member.discord_username ?? "";
+  const [content, setContent] = useState(
+    `Hey ${greeting} 👋\n\nOn te voit plus trop en jeu ces derniers temps, tout va bien ? Si t'as besoin de poser une absence, dis-le nous (ou viens passer un bonjour 😄).`,
+  );
+
+  const mut = useMutation({
+    mutationFn: () =>
+      sendFn({ data: { memberDiscordId: member.discord_id, message: content } }),
+    onSuccess: () => {
+      toast.success("Relance envoyée");
+      setOpen(false);
+      qc.invalidateQueries({ queryKey: ["inactivity-queue"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const dim = member.onDeclaredAbsence;
+
+  return (
+    <div
+      className={`grid md:grid-cols-[1fr_90px_140px_140px_110px] grid-cols-1 gap-2 items-center border border-border rounded p-2 hover:border-primary/40 transition ${
+        dim ? "opacity-60" : ""
+      }`}
+    >
+      <Link
+        to="/members/$id"
+        params={{ id: member.discord_id }}
+        className="flex items-center gap-3 min-w-0"
+      >
+        {member.avatar_url ? (
+          <img src={member.avatar_url} alt="" className="size-8 rounded-full" />
+        ) : (
+          <div className="size-8 rounded-full bg-muted" />
+        )}
+        <div className="min-w-0">
+          <div className="text-sm font-medium truncate">
+            {member.ig_name ?? member.discord_username ?? member.discord_id}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate">
+            @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
+          </div>
+        </div>
+      </Link>
+
+      <div className="md:text-right text-sm tabular-nums font-semibold">
+        {member.inactivityDays}j
+      </div>
+
+      <div>
+        {member.onDeclaredAbsence ? (
+          <Badge variant="outline" className="border-amber-500/50 text-amber-500">
+            En absence{member.absenceUntil ? ` · ${formatDate(member.absenceUntil)}` : ""}
+          </Badge>
+        ) : (
+          <span className="text-[11px] text-muted-foreground">—</span>
+        )}
+      </div>
+
+      <div className="text-[11px] text-muted-foreground">
+        {formatDate(member.lastPingAt)}
+      </div>
+
+      <div className="md:text-right">
+        <Button
+          size="sm"
+          variant={dim ? "ghost" : "outline"}
+          onClick={() => setOpen(true)}
+          title={dim ? "Ce membre est en absence déclarée" : "Relancer par DM Discord"}
+        >
+          <MessageCircle className="size-3.5 mr-1" />
+          Relancer
+        </Button>
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Relancer {greeting || member.discord_id}</DialogTitle>
+            <DialogDescription>
+              DM Discord envoyé par le bot. La relance sera tracée dans l&apos;historique.
+              {member.onDeclaredAbsence ? (
+                <span className="block mt-2 text-amber-500">
+                  ⚠️ Ce membre est en absence déclarée
+                  {member.absenceUntil ? ` jusqu'au ${formatDate(member.absenceUntil)}` : ""}.
+                </span>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            rows={6}
+            maxLength={1800}
+          />
+          <div className="text-[11px] text-muted-foreground text-right">
+            {content.length}/1800
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => mut.mutate()}
+              disabled={mut.isPending || content.trim().length === 0}
+            >
+              {mut.isPending ? "Envoi…" : "Envoyer la relance"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
