@@ -229,11 +229,3 @@ function UptimePage() {
     </div>
   );
 }
-
-function formatTick(t: number, days: number): string {
-  const d = new Date(t);
-  if (days <= 1) {
-    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  }
-  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
-}
