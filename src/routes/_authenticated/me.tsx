@@ -259,6 +259,7 @@ function MePage() {
             </CardContent>
           </Card>
 
+          <MyBadgesCard />
           <MyWarningsCard />
         </div>
       </div>
