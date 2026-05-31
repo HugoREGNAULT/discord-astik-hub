@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
 import { generateWeeklyDigest } from "./digest.server";
+import { rateLimit } from "@/lib/rate-limit.server";
 
 /**
  * Renvoie le dernier digest IA hebdo enregistré (le plus récent).
@@ -24,6 +25,8 @@ export const getLatestDigest = createServerFn({ method: "GET" }).handler(async (
  */
 export const generateDigestManually = createServerFn({ method: "POST" }).handler(async () => {
   const user = await requirePermission("admin.access");
+  const { ok } = rateLimit(`digest:${user.discordId}`, 2, 60000);
+  if (!ok) throw new Error("RATE_LIMITED");
   const result = await generateWeeklyDigest({
     generatedBy: `manual:${user.discordId}`,
     force: true,
