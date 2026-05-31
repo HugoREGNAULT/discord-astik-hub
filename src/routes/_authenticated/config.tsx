@@ -347,9 +347,10 @@ function ValueRowItem({
       <span className="font-mono text-primary">{value.points} pts</span>
       <Switch checked={value.active} onCheckedChange={onToggle} />
       <ConfirmDialog
-        title={`Supprimer "${value.name}" ?`}
-        description="Cette valeur sera définitivement supprimée de la configuration."
+        title="Supprimer cette valeur ?"
+        description="Cette valeur sert au barème des dons. Action irréversible."
         confirmLabel="Supprimer"
+        destructive
         onConfirm={onDelete}
         trigger={
           <Button variant="ghost" size="icon" className="text-destructive" aria-label="Supprimer">
