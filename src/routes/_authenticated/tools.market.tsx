@@ -22,7 +22,7 @@ import {
 } from "@/components/tools/ToolsUi";
 import { PaladiumApi, hasPaladiumKey, type MarketItemsPage } from "@/lib/paladium/api";
 import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
-import { getMarketPriceHistory } from "@/lib/paladium/history.functions";
+import { getMarketPriceHistory, getAdminShopHistory } from "@/lib/paladium/history.functions";
 import { createShopAlert } from "@/lib/data/shop-alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/market")({
