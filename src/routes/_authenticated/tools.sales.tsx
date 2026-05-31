@@ -321,44 +321,97 @@ function PlayerSales() {
           {filtered.length === 0 ? (
             <EmptyBlock label="Aucune vente à afficher." />
           ) : (
-            <div className="border border-zinc-800 overflow-x-auto">
-              <table className="w-full text-xs min-w-[640px]">
-                <thead className="bg-zinc-950/60 text-zinc-500">
-                  <tr style={{ fontFamily: "'Space Mono'" }}>
-                    <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Item</th>
-                    <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Qté</th>
-                    <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Prix</th>
-                    <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Unitaire</th>
-                    <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Listé</th>
-                    <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Statut</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((r) => {
-                    const unit = r.quantity ? r.price / r.quantity : r.price;
-                    return (
-                      <tr key={r.id} className="border-t border-zinc-900 hover:bg-zinc-950/60">
-                        <td className="px-3 py-2 text-white">{r.item_name}</td>
-                        <td className="px-3 py-2 text-right text-zinc-300">{fmtInt(r.quantity)}</td>
-                        <td className="px-3 py-2 text-right text-zinc-200">{fmtInt(r.price)}</td>
-                        <td className="px-3 py-2 text-right text-zinc-400">{fmtInt(unit)}</td>
-                        <td className="px-3 py-2 text-zinc-500">
+            <>
+              {/* Mobile : cartes empilées */}
+              <div className="sm:hidden space-y-2">
+                {filtered.map((r) => {
+                  const unit = r.quantity ? r.price / r.quantity : r.price;
+                  const labelCls =
+                    "text-[11px] uppercase tracking-[0.18em] text-zinc-500 font-mono";
+                  return (
+                    <div
+                      key={r.id}
+                      className="border border-zinc-800 bg-zinc-900/70 p-3 space-y-1"
+                    >
+                      <div className="text-white text-sm font-medium break-words">
+                        {r.item_name}
+                      </div>
+                      <div className="flex justify-between items-baseline gap-3">
+                        <span className={labelCls}>Qté</span>
+                        <span className="text-zinc-300 text-xs">{fmtInt(r.quantity)}</span>
+                      </div>
+                      <div className="flex justify-between items-baseline gap-3">
+                        <span className={labelCls}>Prix</span>
+                        <span className="text-zinc-200 text-xs">{fmtInt(r.price)}</span>
+                      </div>
+                      <div className="flex justify-between items-baseline gap-3">
+                        <span className={labelCls}>Unitaire</span>
+                        <span className="text-zinc-400 text-xs">{fmtInt(unit)}</span>
+                      </div>
+                      <div className="flex justify-between items-baseline gap-3">
+                        <span className={labelCls}>Listé</span>
+                        <span className="text-zinc-500 text-xs">
                           {fmtDate(r.listed_at ?? r.first_seen_at)}
-                        </td>
-                        <td className="px-3 py-2">
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-baseline gap-3">
+                        <span className={labelCls}>Statut</span>
+                        <span className="text-xs">
                           {r.sold_at ? (
-                            <span className="text-emerald-400">vendu · {fmtDate(r.sold_at)}</span>
+                            <span className="text-emerald-400">
+                              vendu · {fmtDate(r.sold_at)}
+                            </span>
                           ) : (
                             <span className="text-pink-400">en cours</span>
                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop : tableau */}
+              <div className="hidden sm:block border border-zinc-800 sm:overflow-x-auto">
+                <table className="hidden sm:table w-full text-xs min-w-[640px]">
+                  <thead className="bg-zinc-950/60 text-zinc-500">
+                    <tr style={{ fontFamily: "'Space Mono'" }}>
+                      <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Item</th>
+                      <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Qté</th>
+                      <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Prix</th>
+                      <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Unitaire</th>
+                      <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Listé</th>
+                      <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((r) => {
+                      const unit = r.quantity ? r.price / r.quantity : r.price;
+                      return (
+                        <tr key={r.id} className="border-t border-zinc-900 hover:bg-zinc-950/60">
+                          <td className="px-3 py-2 text-white">{r.item_name}</td>
+                          <td className="px-3 py-2 text-right text-zinc-300">{fmtInt(r.quantity)}</td>
+                          <td className="px-3 py-2 text-right text-zinc-200">{fmtInt(r.price)}</td>
+                          <td className="px-3 py-2 text-right text-zinc-400">{fmtInt(unit)}</td>
+                          <td className="px-3 py-2 text-zinc-500">
+                            {fmtDate(r.listed_at ?? r.first_seen_at)}
+                          </td>
+                          <td className="px-3 py-2">
+                            {r.sold_at ? (
+                              <span className="text-emerald-400">vendu · {fmtDate(r.sold_at)}</span>
+                            ) : (
+                              <span className="text-pink-400">en cours</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
+
 
           <p className="text-[10px] text-zinc-600" style={{ fontFamily: "'Space Mono'" }}>
             Snapshot auto toutes les 10 min ; les ventes disparues sont marquées comme passées.
