@@ -108,7 +108,15 @@ export const updateStaffTask = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("members.view");
-    const patch: Record<string, any> = {};
+    const patch: Partial<{
+      title: string;
+      description: string | null;
+      assignee_discord_id: string | null;
+      assignee_username: string | null;
+      priority: string;
+      due_date: string | null;
+      display_order: number;
+    }> = {};
     if (data.title !== undefined) patch.title = data.title;
     if (data.description !== undefined) patch.description = data.description ?? null;
     if (data.assigneeDiscordId !== undefined) {
