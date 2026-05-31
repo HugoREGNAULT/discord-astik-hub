@@ -178,12 +178,19 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
     actionsByType.set(l.action, (actionsByType.get(l.action) ?? 0) + 1);
   }
 
+  // Anonymisation : pas de discord_id brut ni de texte de sanction envoyés à l'IA.
+  const anonymizeMembers = (rows: any[]) =>
+    rows.map((m) => ({
+      name: m.ig_name ?? m.discord_username ?? "—",
+      grade: m.current_grade ?? null,
+    }));
+
   const stats = {
     week_start: weekStart,
     week_end: weekEndIso.slice(0, 10),
-     active_members: factionActiveMembers.length,
-     arrivals: factionArrivals,
-     departures: factionDepartures,
+    active_members: factionActiveMembers.length,
+    arrivals: anonymizeMembers(factionArrivals),
+    departures: anonymizeMembers(factionDepartures),
     applications: {
       total: apps.length,
       accepted,
@@ -195,14 +202,13 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
       total_points_validated: totalDonations,
       cancelled: cancelledDonations,
     },
-    warnings: (warnings.data ?? []).map((w: any) => ({
-      member: w.member_discord_id,
-      staff: w.staff_username,
-      body: w.body,
-    })),
+    warnings: {
+      total: (warnings.data ?? []).length,
+    },
     top_contributors: topContribs,
     staff_actions: Object.fromEntries(actionsByType),
   };
+
 
   // 2. Appel IA
   const systemPrompt = `Tu es l'historien officiel de la faction Minecraft "PunkAstik" sur le serveur Paladium. Tu rédiges un compte-rendu hebdomadaire pour le staff, en français, ton décontracté mais factuel, sans emojis excessifs (2-3 max sur tout le doc). Structure attendue en markdown :
@@ -217,7 +223,7 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
 - Top contributeurs, événements notables, momentum
 
 ## ⚠️ Points d'attention
-- Sanctions, candidatures en attente, signaux faibles
+- Mentionne le NOMBRE de sanctions de la semaine (champ warnings.total) sans aucun détail nominatif ni texte ; signale aussi les candidatures en attente et signaux faibles
 
 ## 💡 Suggestions staff
 - 2-3 actions concrètes à envisager cette semaine
