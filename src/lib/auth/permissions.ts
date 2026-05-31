@@ -82,6 +82,8 @@ export function canAccess(user: SessionUser | null, perm: Permission): boolean {
       return isRecruiter(user);
     case "objectives.edit":
       return isStaffFaction(user);
+    case "shop.manage":
+      return isStaffPoints(user);
     case "admin.access":
       return isHighStaff(user);
   }
