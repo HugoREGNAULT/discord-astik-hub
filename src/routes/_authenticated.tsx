@@ -1,10 +1,18 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationBell } from "@/components/NotificationBell";
 import { CommandPalette } from "@/components/CommandPalette";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { getSessionStatus } from "@/lib/auth/session.functions";
@@ -25,10 +33,57 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
+// Libellés lisibles par segment d'URL (alignés sur AppSidebar ITEMS + TABS de tools.tsx).
+const PATH_LABELS: Record<string, string> = {
+  "/me": "Mon profil",
+  "/dashboard": "Classement",
+  "/polls": "Sondages",
+  "/absences": "Absences",
+  "/tools": "Outils Paladium",
+  "/tools/alerts": "Mes alertes",
+  "/tools/player": "Player",
+  "/tools/sales": "Ventes",
+  "/tools/faction": "Faction",
+  "/tools/check-bc": "Check BC",
+  "/tools/status": "Status",
+  "/tools/market": "Market",
+  "/tools/leaderboard": "Leaderboard",
+  "/tools/clicker": "Clicker",
+  "/tools/xp-calculator": "XP Calc",
+  "/tools/events": "Events",
+  "/tools/uptime": "Uptime",
+  "/tools/shop-admin": "Shop admin",
+  "/staff": "Dashboard staff",
+  "/members": "Membres",
+  "/effectif": "Effectif",
+  "/objectives": "Objectifs",
+  "/pdc": "Plan de coupe",
+  "/recruitment": "Candidatures",
+  "/blacklist": "Blacklist",
+  "/points": "AstikPoints",
+  "/donations": "Dons",
+  "/config": "Config valeurs",
+  "/logs": "Logs",
+  "/admin": "Admin",
+  "/welcome": "Bienvenue",
+};
+
+function buildCrumbs(pathname: string): Array<{ label: string; href: string; isLast: boolean }> {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs: Array<{ label: string; href: string; isLast: boolean }> = [];
+  for (let i = 0; i < segments.length; i++) {
+    const href = "/" + segments.slice(0, i + 1).join("/");
+    const label = PATH_LABELS[href] ?? decodeURIComponent(segments[i]);
+    crumbs.push({ label, href, isLast: i === segments.length - 1 });
+  }
+  return crumbs;
+}
 
 function AuthLayout() {
   const { data: user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const crumbs = buildCrumbs(pathname);
 
   useEffect(() => {
     if (!isLoading && !user) navigate({ to: "/login" });
@@ -65,12 +120,34 @@ function AuthLayout() {
         <div className="flex-1 flex flex-col min-w-0 relative">
           <header className="h-14 flex items-center gap-3 border-b border-zinc-800/80 px-4 sticky top-0 bg-[#0a0a0c]/90 backdrop-blur z-10">
             <SidebarTrigger className="text-zinc-400 hover:text-pink-500" />
-            <div
-              className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] hidden sm:block"
+            <Breadcrumb
+              className="hidden sm:flex"
               style={{ fontFamily: "'Space Mono'" }}
             >
-              // punkastik / hub
-            </div>
+              <BreadcrumbList className="text-[10px] uppercase tracking-[0.3em] gap-1.5 sm:gap-2">
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild className="text-zinc-500 hover:text-pink-500">
+                    <Link to="/me">PunkAstik //</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {crumbs.map((c) => (
+                  <span key={c.href} className="inline-flex items-center gap-1.5 sm:gap-2">
+                    <BreadcrumbSeparator className="text-zinc-600 [&>svg]:size-3" />
+                    <BreadcrumbItem>
+                      {c.isLast ? (
+                        <BreadcrumbPage className="text-zinc-300 font-normal">
+                          {c.label}
+                        </BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink href={c.href} className="text-zinc-500 hover:text-pink-500">
+                          {c.label}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </span>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="ml-auto flex items-center gap-1">
               <CommandPalette />
               <NotificationBell />
