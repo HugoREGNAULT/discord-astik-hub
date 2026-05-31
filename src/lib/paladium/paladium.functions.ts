@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { fetchPaladium } from "./paladium.server";
+import { requireSession } from "@/lib/auth/require.server";
 
 // Single proxy server function. The client passes the Paladium API path
 // (e.g. "/v1/status") and the server forwards it using PALADIUM_API_KEY.
@@ -18,6 +19,7 @@ export const callPaladium = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
+    await requireSession();
     const result = await fetchPaladium(data.path);
     // Serialize as a JSON string to bypass strict structural serialization checks
     // (Paladium responses have dynamic shapes).
