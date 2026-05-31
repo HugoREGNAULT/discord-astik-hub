@@ -181,6 +181,11 @@ function LeaderboardPage() {
       {q.isLoading && <LoadingBlock />}
       {q.error && <ErrorBlock message={(q.error as Error).message} />}
 
+      <div aria-live="polite" aria-busy={q.isLoading}>
+        <p className="sr-only" aria-live="polite">
+          {q.isLoading ? "Chargement du classement…" : `${filtered.length} résultat(s)`}
+        </p>
+      </div>
       {rows.length > 0 && (
         <ToolCard className="!p-0 overflow-x-auto">
           <table className="w-full text-sm">

@@ -318,6 +318,10 @@ function PlayerSales() {
             </div>
           </div>
 
+          <div aria-live="polite" aria-busy={isLoading}>
+            <p className="sr-only" aria-live="polite">
+              {isLoading ? "Chargement des ventes…" : `${filtered.length} vente(s)`}
+            </p>
           {filtered.length === 0 ? (
             <EmptyBlock label="Aucune vente à afficher." />
           ) : (
@@ -411,6 +415,7 @@ function PlayerSales() {
               </div>
             </>
           )}
+          </div>
 
 
           <p className="text-[10px] text-zinc-600" style={{ fontFamily: "'Space Mono'" }}>

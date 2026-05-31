@@ -131,7 +131,8 @@ function LeaderboardList({
   }, [entries, metric, period, baseline, query]);
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1" aria-live="polite">
+      <p className="sr-only" aria-live="polite">{`${sorted.length} membre(s)`}</p>
       {sorted.map((e, i) => {
         const rank = i + 1 + rankOffset;
         const value = getValue(e, metric, period, baseline);
