@@ -266,3 +266,63 @@ export async function _botConfirmMcLink(
 
   return { ok: true, mc_uuid: row.mc_uuid ?? undefined };
 }
+
+/* ===== Lecture stats Paladium pour la fiche membre ===== */
+
+export interface McStatsResult {
+  uuid: string | null;
+  latest: {
+    money: number | null;
+    faction_ingame: string | null;
+    jobs: Array<{ name: string; level: number }>;
+    snapshot_at: string;
+    raw: unknown;
+  } | null;
+  history_count: number;
+}
+
+import { requirePermission } from "@/lib/auth/require.server";
+
+export const getMemberMcStats = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z.object({ discordId: z.string().regex(/^\d{15,25}$/) }).parse(input),
+  )
+  .handler(async ({ data }): Promise<McStatsResult> => {
+    await requirePermission("members.view");
+
+    const { data: m } = await db
+      .from("members")
+      .select("mc_uuid")
+      .eq("discord_id", data.discordId)
+      .maybeSingle();
+    const uuid = m?.mc_uuid ?? null;
+    if (!uuid) return { uuid: null, latest: null, history_count: 0 };
+
+    const { data: rows } = await db
+      .from("mc_player_stats")
+      .select("money, faction_ingame, jobs, snapshot_at, raw")
+      .eq("mc_uuid", uuid)
+      .order("snapshot_at", { ascending: false })
+      .limit(1);
+
+    const { count } = await db
+      .from("mc_player_stats")
+      .select("id", { count: "exact", head: true })
+      .eq("mc_uuid", uuid);
+
+    const r = rows?.[0];
+    return {
+      uuid,
+      latest: r
+        ? {
+            money: r.money,
+            faction_ingame: r.faction_ingame,
+            jobs: (r.jobs as Array<{ name: string; level: number }>) ?? [],
+            snapshot_at: r.snapshot_at,
+            raw: r.raw,
+          }
+        : null,
+      history_count: count ?? 0,
+    };
+  });
+
