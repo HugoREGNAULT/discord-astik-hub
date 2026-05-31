@@ -303,6 +303,9 @@ function ValueRowItem({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string>(String(value.points));
+  const up = useServerFn(upsertValue);
 
   const replaceImage = async (file: File | null) => {
     if (!file) return;
@@ -313,6 +316,24 @@ function ValueRowItem({
       const url = await uploadIcon(file);
       await onUpdateImage(url);
       toast.success("Icône mise à jour");
+    } catch (e) {
+      toast.error(toUserMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const savePoints = async () => {
+    const n = parseFloat(draft.replace(",", "."));
+    if (!Number.isFinite(n)) {
+      toast.error("Valeur invalide");
+      return;
+    }
+    setBusy(true);
+    try {
+      await up({ data: { ...value, points: n } });
+      toast.success("Valeur mise à jour");
+      setEditing(false);
     } catch (e) {
       toast.error(toUserMessage(e));
     } finally {
@@ -344,7 +365,40 @@ function ValueRowItem({
         onChange={(e) => replaceImage(e.target.files?.[0] ?? null)}
       />
       <span className="flex-1 truncate">{value.name}</span>
-      <span className="font-mono text-primary">{value.points} pts</span>
+      {editing ? (
+        <>
+          <Input
+            type="text"
+            inputMode="decimal"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            className="w-24 h-8"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === "Enter") savePoints();
+              if (e.key === "Escape") {
+                setDraft(String(value.points));
+                setEditing(false);
+              }
+            }}
+          />
+          <Button size="sm" onClick={savePoints} disabled={busy}>
+            OK
+          </Button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(String(value.points));
+            setEditing(true);
+          }}
+          className="font-mono text-primary hover:underline"
+          title="Cliquer pour modifier"
+        >
+          {value.points.toLocaleString("fr-FR", { maximumFractionDigits: 4 })} pts
+        </button>
+      )}
       <Switch checked={value.active} onCheckedChange={onToggle} />
       <ConfirmDialog
         title="Supprimer cette valeur ?"
