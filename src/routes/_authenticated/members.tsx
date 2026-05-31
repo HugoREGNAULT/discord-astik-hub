@@ -25,7 +25,7 @@ function MembersPage() {
   const [page, setPage] = useState(1);
   const navigate = useNavigate({ from: Route.fullPath });
   const fn = useServerFn(listMembers);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["members", q, status],
     queryFn: () => fn({ data: { q, status } }),
   });
