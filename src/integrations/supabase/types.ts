@@ -750,38 +750,94 @@ export type Database = {
           },
         ]
       }
+      objective_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by_discord_id: string | null
+          id: string
+          member_discord_id: string
+          member_username: string | null
+          note: string | null
+          objective_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by_discord_id?: string | null
+          id?: string
+          member_discord_id: string
+          member_username?: string | null
+          note?: string | null
+          objective_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by_discord_id?: string | null
+          id?: string
+          member_discord_id?: string
+          member_username?: string | null
+          note?: string | null
+          objective_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objective_contributions_objective_id_fkey"
+            columns: ["objective_id"]
+            isOneToOne: false
+            referencedRelation: "objectives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       objectives: {
         Row: {
           created_at: string
+          current_value: number
           description: string | null
           display_order: number
           done: boolean
           done_at: string | null
           done_by_discord_id: string | null
           id: string
+          reward_points: number
+          rewarded: boolean
+          target_value: number | null
           title: string
+          unit: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          current_value?: number
           description?: string | null
           display_order?: number
           done?: boolean
           done_at?: string | null
           done_by_discord_id?: string | null
           id?: string
+          reward_points?: number
+          rewarded?: boolean
+          target_value?: number | null
           title: string
+          unit?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          current_value?: number
           description?: string | null
           display_order?: number
           done?: boolean
           done_at?: string | null
           done_by_discord_id?: string | null
           id?: string
+          reward_points?: number
+          rewarded?: boolean
+          target_value?: number | null
           title?: string
+          unit?: string | null
           updated_at?: string
         }
         Relationships: []
