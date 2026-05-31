@@ -184,14 +184,18 @@ function AnnouncementsPage() {
                       >
                         <Eye className="size-4" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        title="Supprimer"
-                        onClick={() => setConfirmDel(a.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      <ConfirmDialog
+                        trigger={
+                          <Button size="icon" variant="ghost" title="Supprimer">
+                            <Trash2 className="size-4" />
+                          </Button>
+                        }
+                        title="Supprimer cette annonce ?"
+                        description="Cette action est irréversible."
+                        confirmLabel="Supprimer"
+                        onConfirm={() => delM.mutateAsync(a.id)}
+                      />
+
                     </div>
                   )}
                 </div>
