@@ -258,20 +258,86 @@ export const addNote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const SEVERITY_POINTS: Record<string, number> = {
+  verbal: 0,
+  minor: 1,
+  major: 3,
+  severe: 5,
+};
+
 export const addWarning = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z.object({ memberDiscordId: z.string(), body: z.string().min(1).max(2000) }).parse(input),
+    z
+      .object({
+        memberDiscordId: z.string(),
+        body: z.string().min(1).max(2000),
+        severity: z.enum(["verbal", "minor", "major", "severe"]).default("minor"),
+        category: z.string().max(64).optional(),
+        expiresInDays: z.number().int().positive().max(3650).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("warnings.write");
+    const points = SEVERITY_POINTS[data.severity] ?? 1;
+    const expires_at = data.expiresInDays
+      ? new Date(Date.now() + data.expiresInDays * 86_400_000).toISOString()
+      : null;
     const { error } = await db.from("warnings").insert({
       member_discord_id: data.memberDiscordId,
       staff_discord_id: user.discordId,
       staff_username: user.username,
       body: data.body,
+      severity: data.severity,
+      category: data.category ?? null,
+      points,
+      expires_at,
+      status: "active",
     });
     if (error) throw new Error(error.message);
-    await logAction("warning_add", user.discordId, { target: data.memberDiscordId });
+    await logAction("warning_add", user.discordId, {
+      target: data.memberDiscordId,
+      severity: data.severity,
+      category: data.category,
+    });
+    const { sendDiscordDM } = await import("@/lib/discord/dm.server");
+    void sendDiscordDM(
+      data.memberDiscordId,
+      `⚠️ **Avertissement (${data.severity})** : ${data.body}\n\nTu peux contester depuis ta page /me sur le site.`,
+    );
+    return { ok: true };
+  });
+
+export const revokeWarning = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({ id: z.string().uuid(), reason: z.string().min(1).max(1000) })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requirePermission("warnings.write");
+    const { data: w, error: gErr } = await db
+      .from("warnings")
+      .select("member_discord_id, body")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (gErr) throw new Error(gErr.message);
+    if (!w) throw new Error("NOT_FOUND");
+    const { error } = await db
+      .from("warnings")
+      .update({
+        status: "revoked",
+        revoked_by_discord_id: user.discordId,
+        revoked_reason: data.reason,
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAction("warning_revoke", user.discordId, { target: w.member_discord_id, id: data.id });
+    const { sendDiscordDM } = await import("@/lib/discord/dm.server");
+    void sendDiscordDM(
+      w.member_discord_id,
+      `✅ **Avertissement annulé** : ${w.body}\nMotif : ${data.reason}`,
+    );
     return { ok: true };
   });
 

@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
-import { getMyOverview } from "@/lib/data/me.functions";
+import { getMyOverview, listMyWarnings, submitWarningAppeal } from "@/lib/data/me.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -258,32 +258,142 @@ function MePage() {
             </CardContent>
           </Card>
 
-          {data.warnings.length > 0 && (
-            <Card className="border-destructive/30">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2 text-destructive">
-                  <AlertTriangle className="size-4" /> Avertissements
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm">
-                  {data.warnings.map((w) => (
-                    <li key={w.id} className="border-l-2 border-destructive pl-3">
-                      <div>{w.body}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(w.created_at).toLocaleDateString("fr-FR")}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+          <MyWarningsCard />
         </div>
       </div>
 
       <DangerZone />
     </div>
+  );
+}
+
+function MyWarningsCard() {
+  const qc = useQueryClient();
+  const ls = useServerFn(listMyWarnings);
+  const sub = useServerFn(submitWarningAppeal);
+  const { data } = useQuery({ queryKey: ["my-warnings"], queryFn: () => ls() });
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [msg, setMsg] = useState("");
+
+  const submit = useMutation({
+    mutationFn: (warningId: string) => sub({ data: { warningId, message: msg.trim() } }),
+    onSuccess: () => {
+      toast.success("Appel envoyé");
+      setOpenId(null);
+      setMsg("");
+      qc.invalidateQueries({ queryKey: ["my-warnings"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const list = data?.warnings ?? [];
+  if (list.length === 0) return null;
+
+  const sevColor: Record<string, string> = {
+    verbal: "bg-muted text-foreground",
+    minor: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+    major: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+    severe: "bg-destructive/15 text-destructive",
+  };
+  const statusLabel: Record<string, string> = {
+    active: "Active",
+    expired: "Expirée",
+    revoked: "Annulée",
+  };
+
+  return (
+    <Card className="border-destructive/30">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2 text-destructive">
+          <AlertTriangle className="size-4" /> Mes sanctions
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-3 text-sm">
+          {list.map((w: any) => {
+            const sev = w.severity ?? "minor";
+            const expires = w.expires_at ? new Date(w.expires_at).toLocaleDateString("fr-FR") : null;
+            const appeal = w.appeal;
+            return (
+              <li key={w.id} className="border-l-2 border-destructive/60 pl-3 space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Badge className={sevColor[sev] ?? sevColor.minor} variant="outline">
+                    {sev}
+                  </Badge>
+                  {w.category && (
+                    <Badge variant="outline" className="text-xs">
+                      {w.category}
+                    </Badge>
+                  )}
+                  <Badge variant={w.status === "active" ? "destructive" : "secondary"}>
+                    {statusLabel[w.status] ?? w.status}
+                  </Badge>
+                </div>
+                <div>{w.body}</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(w.created_at).toLocaleDateString("fr-FR")} · expire :{" "}
+                  {expires ?? "permanent"}
+                </div>
+                {appeal && (
+                  <div className="text-xs text-muted-foreground">
+                    Appel :{" "}
+                    <span className="font-medium">
+                      {appeal.status === "pending"
+                        ? "en attente"
+                        : appeal.status === "accepted"
+                          ? "accepté"
+                          : "rejeté"}
+                    </span>
+                    {appeal.decision_note ? ` — ${appeal.decision_note}` : ""}
+                  </div>
+                )}
+                {w.status === "active" && (!appeal || appeal.status !== "pending") && (
+                  <AlertDialog
+                    open={openId === w.id}
+                    onOpenChange={(o) => {
+                      setOpenId(o ? w.id : null);
+                      if (!o) setMsg("");
+                    }}
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        Contester
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Contester cette sanction</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Explique au staff pourquoi tu contestes cet avertissement.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <textarea
+                        className="w-full min-h-[120px] p-2 rounded-md border bg-background text-sm"
+                        placeholder="Ton argumentaire (10 caractères min)"
+                        value={msg}
+                        onChange={(e) => setMsg(e.target.value)}
+                      />
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          disabled={msg.trim().length < 10 || submit.isPending}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            submit.mutate(w.id);
+                          }}
+                        >
+                          Envoyer
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 
