@@ -118,7 +118,9 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/staff.lazy').then((d) => d.Route),
+)
 const AuthenticatedRecruitmentRoute =
   AuthenticatedRecruitmentRouteImport.update({
     id: '/recruitment',
