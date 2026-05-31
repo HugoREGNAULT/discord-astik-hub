@@ -170,7 +170,18 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
   const cartId = useId();
   const [picked, setPicked] = useState<string>("");
   const [qty, setQty] = useState(1);
+  const [busy, setBusy] = useState(false);
   const v = values.find((x: any) => x.id === picked);
+
+  const wrap = async (fn: () => unknown) => {
+    setBusy(true);
+    try {
+      await fn();
+    } finally {
+      setBusy(false);
+    }
+  };
+
 
   return (
     <PageCard>
@@ -279,30 +290,34 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
           />
         </div>
         <DaButton
-          disabled={!v}
+          disabled={!v || busy}
           onClick={() => {
             if (!v) return;
-            onAdd({
-              line_type: v.category,
-              config_value_id: v.id,
-              label: v.name,
-              unit_points: v.points,
-              quantity: qty,
-            });
+            wrap(() =>
+              onAdd({
+                line_type: v.category,
+                config_value_id: v.id,
+                label: v.name,
+                unit_points: v.points,
+                quantity: qty,
+              }),
+            );
             setQty(1);
             setPicked("");
           }}
         >
           Ajouter
         </DaButton>
+
       </div>
 
       <div className="flex gap-2 justify-end mt-3 pt-3 border-t border-zinc-800">
-        <DaButton variant="ghost" onClick={onCancel}>
+        <DaButton variant="ghost" disabled={busy} onClick={() => wrap(() => onCancel())}>
           Annuler
         </DaButton>
-        <DaButton variant="success" onClick={onValidate}>
+        <DaButton variant="success" disabled={busy} onClick={() => wrap(() => onValidate())}>
           Valider don
+
         </DaButton>
       </div>
     </PageCard>

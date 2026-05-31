@@ -44,6 +44,8 @@ function PointsPage() {
   const [target, setTarget] = useState<string>("");
   const [amount, setAmount] = useState<number>(0);
   const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
 
   const history = useQuery({
     queryKey: ["history", target],
@@ -69,6 +71,7 @@ function PointsPage() {
       toast.error("Le solde ne peut pas être négatif.");
       return;
     }
+    setBusy(true);
     try {
       let res: { total: number };
       if (action === "add")
@@ -82,8 +85,11 @@ function PointsPage() {
       refresh();
     } catch (e: any) {
       toast.error(toUserMessage(e));
+    } finally {
+      setBusy(false);
     }
   };
+
 
   return (
     <div className="max-w-4xl space-y-5">
@@ -154,15 +160,16 @@ function PointsPage() {
           </div>
 
           <div className="flex gap-2 flex-wrap pt-2">
-            <DaButton variant="success" onClick={() => run("add")}>
-              + Ajouter
+            <DaButton variant="success" disabled={busy} onClick={() => run("add")}>
+              {busy ? "..." : "+ Ajouter"}
             </DaButton>
-            <DaButton variant="danger" onClick={() => run("remove")}>
-              − Retirer
+            <DaButton variant="danger" disabled={busy} onClick={() => run("remove")}>
+              {busy ? "..." : "− Retirer"}
             </DaButton>
-            <DaButton variant="ghost" onClick={() => run("set")}>
-              = Définir
+            <DaButton variant="ghost" disabled={busy} onClick={() => run("set")}>
+              {busy ? "..." : "= Définir"}
             </DaButton>
+
           </div>
         </div>
       </PageCard>
