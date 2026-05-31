@@ -93,7 +93,7 @@ export function RecentCartsPanel() {
           Derniers paniers de dons
         </CardTitle>
         <Button asChild variant="ghost" size="sm">
-          <Link to="/donations">
+          <Link to="/points">
             Voir tout <ExternalLink className="size-3.5 ml-1" />
           </Link>
         </Button>

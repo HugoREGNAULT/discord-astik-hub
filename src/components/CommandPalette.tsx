@@ -35,17 +35,13 @@ import { Button } from "@/components/ui/button";
 type Nav = { label: string; to: string; icon: any; perm: Permission };
 
 const NAVS: Nav[] = [
-  { label: "Mon profil", to: "/me", icon: UserCircle2, perm: "profile.self" },
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
+  { label: "Classement", to: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
   { label: "Sondages", to: "/polls", icon: CalendarCheck, perm: "profile.self" },
-  { label: "Événements", to: "/events", icon: CalendarCheck, perm: "profile.self" },
+  { label: "Effectif", to: "/effectif", icon: ListTree, perm: "profile.self" },
   { label: "Membres", to: "/members", icon: Users, perm: "members.view" },
   { label: "Candidatures", to: "/recruitment", icon: UserPlus, perm: "recruit.access" },
-  { label: "AstikPoints", to: "/points", icon: Coins, perm: "points.manage" },
-  { label: "Dons", to: "/donations", icon: ShoppingCart, perm: "donations.manage" },
+  { label: "Gestion Points", to: "/points", icon: Coins, perm: "points.manage" },
   { label: "Config valeurs", to: "/config", icon: Settings2, perm: "config.manage" },
-  { label: "Effectif", to: "/effectif", icon: ListTree, perm: "members.view" },
-  { label: "Objectifs", to: "/objectives", icon: Target, perm: "objectives.edit" },
   { label: "Logs", to: "/logs", icon: FileText, perm: "admin.access" },
   { label: "Admin", to: "/admin", icon: ShieldAlert, perm: "admin.access" },
 ];

@@ -219,8 +219,7 @@ function StaffPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Inactifs multi-seuils */}
-        <InactivityCard />
+
 
 
 
@@ -404,7 +403,7 @@ function StaffPage() {
               Derniers paniers
             </span>
             <Button asChild size="sm" variant="outline">
-              <Link to="/donations">Gérer</Link>
+              <Link to="/points">Gérer</Link>
             </Button>
           </CardTitle>
         </CardHeader>

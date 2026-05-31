@@ -58,7 +58,6 @@ const SECTIONS: Section[] = [
   {
     label: "// punkastik",
     items: [
-      { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self", accent: "pink" },
       {
         title: "Classement",
         url: "/dashboard",
@@ -74,17 +73,9 @@ const SECTIONS: Section[] = [
         accent: "blurple",
       },
       {
-        title: "Annonces",
-        url: "/announcements",
-        icon: Megaphone,
-        perm: "profile.self",
-        accent: "pink",
-      },
-
-      {
-        title: "Événements",
-        url: "/events",
-        icon: CalendarCheck,
+        title: "Effectif",
+        url: "/effectif",
+        icon: ListTree,
         perm: "profile.self",
         accent: "pink",
       },
@@ -123,20 +114,6 @@ const SECTIONS: Section[] = [
       },
       { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
       {
-        title: "Effectif",
-        url: "/effectif",
-        icon: ListTree,
-        perm: "members.view",
-        accent: "blurple",
-      },
-      {
-        title: "Objectifs",
-        url: "/objectives",
-        icon: Target,
-        perm: "objectives.edit",
-        accent: "pink",
-      },
-      {
         title: "Plan de coupe",
         url: "/pdc",
         icon: Grid3x3,
@@ -144,25 +121,11 @@ const SECTIONS: Section[] = [
         accent: "blurple",
       },
       {
-        title: "Grades & badges",
-        url: "/staff/grades",
-        icon: Award,
-        perm: "members.edit",
-        accent: "pink",
-      },
-      {
         title: "Logistique",
         url: "/logistics",
         icon: Wrench,
         perm: "members.view",
         accent: "blurple",
-      },
-      {
-        title: "Board staff",
-        url: "/staff-board",
-        icon: ListTree,
-        perm: "members.view",
-        accent: "pink",
       },
       {
         title: "Économie faction",
@@ -197,24 +160,10 @@ const SECTIONS: Section[] = [
     label: "// économie",
     items: [
       {
-        title: "AstikPoints",
+        title: "Gestion Points",
         url: "/points",
         icon: Coins,
         perm: "points.manage",
-        accent: "pink",
-      },
-      {
-        title: "Salaires",
-        url: "/salaries",
-        icon: Coins,
-        perm: "points.manage",
-        accent: "pink",
-      },
-      {
-        title: "Dons",
-        url: "/donations",
-        icon: ShoppingCart,
-        perm: "donations.manage",
         accent: "pink",
       },
       {

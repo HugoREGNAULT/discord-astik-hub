@@ -1,10 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { RouteError } from "@/components/RouteError";
-import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
-
 import {
   listMyActiveCarts,
   createCart,
@@ -20,9 +16,7 @@ import { toUserMessage } from "@/lib/errors";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-
 import {
-  PageHeader,
   PageCard,
   SectionLabel,
   DaButton,
@@ -33,17 +27,7 @@ import {
   ErrorBlock,
 } from "@/components/tools/ToolsUi";
 
-export const Route = createFileRoute("/_authenticated/donations")({
-  errorComponent: RouteError,
-  head: () => ({ meta: [{ title: "Dons · PunkAstik" }] }),
-  component: () => (
-    <Guard perm="donations.manage">
-      <DonationsPage />
-    </Guard>
-  ),
-});
-
-function DonationsPage() {
+export function DonationsPanel() {
   const qc = useQueryClient();
   const listCarts = useServerFn(listMyActiveCarts);
   const create = useServerFn(createCart);
@@ -74,14 +58,8 @@ function DonationsPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        code="// donations.carts"
-        title="Dons"
-        description="Création et validation des paniers de donations. 1h pour valider avant expiration."
-      />
-
       <PageCard>
-        <SectionLabel>nouveau panier</SectionLabel>
+        <SectionLabel>nouveau panier de don</SectionLabel>
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex-1 min-w-[200px]">
             <label
@@ -130,49 +108,44 @@ function DonationsPage() {
       )}
 
       <div aria-live="polite" aria-busy={carts.isLoading} className="space-y-5">
-        <p className="sr-only" aria-live="polite">
-          {carts.isLoading
-            ? "Chargement des paniers…"
-            : `${carts.data?.carts.length ?? 0} panier(s) actif(s)`}
-        </p>
         {carts.data?.carts.map((c: any) => (
-        <Cart
-          key={c.id}
-          cart={c}
-          values={values.data?.values ?? []}
-          onAdd={(payload: any) =>
-            addLine({ data: { ...payload, cartId: c.id } })
-              .then(refresh)
-              .catch((e: Error) => toast.error(toUserMessage(e)))
-          }
-          onRemove={(lineId: string) =>
-            rmLine({ data: { lineId, cartId: c.id } })
-              .then(refresh)
-              .catch((e: Error) => toast.error(toUserMessage(e)))
-          }
-          onValidate={() =>
-            validate({ data: { cartId: c.id } })
-              .then(() => {
-                toast.success("Validé");
-                refresh();
-              })
-              .catch((e: Error) => toast.error(toUserMessage(e)))
-          }
-          onCancel={() =>
-            cancel({ data: { cartId: c.id } })
-              .then(() => {
-                toast.info("Annulé");
-                refresh();
-              })
-              .catch((e: Error) => toast.error(toUserMessage(e)))
-          }
-        />
-      ))}
-      {!carts.error && carts.data?.carts.length === 0 && (
-        <PageCard>
-          <EmptyBlock label="Aucun panier actif — crée-en un" />
-        </PageCard>
-      )}
+          <Cart
+            key={c.id}
+            cart={c}
+            values={values.data?.values ?? []}
+            onAdd={(payload: any) =>
+              addLine({ data: { ...payload, cartId: c.id } })
+                .then(refresh)
+                .catch((e: Error) => toast.error(toUserMessage(e)))
+            }
+            onRemove={(lineId: string) =>
+              rmLine({ data: { lineId, cartId: c.id } })
+                .then(refresh)
+                .catch((e: Error) => toast.error(toUserMessage(e)))
+            }
+            onValidate={() =>
+              validate({ data: { cartId: c.id } })
+                .then(() => {
+                  toast.success("Validé");
+                  refresh();
+                })
+                .catch((e: Error) => toast.error(toUserMessage(e)))
+            }
+            onCancel={() =>
+              cancel({ data: { cartId: c.id } })
+                .then(() => {
+                  toast.info("Annulé");
+                  refresh();
+                })
+                .catch((e: Error) => toast.error(toUserMessage(e)))
+            }
+          />
+        ))}
+        {!carts.error && carts.data?.carts.length === 0 && (
+          <PageCard>
+            <EmptyBlock label="Aucun panier actif — crée-en un" />
+          </PageCard>
+        )}
       </div>
     </div>
   );
@@ -193,7 +166,6 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
       setBusy(false);
     }
   };
-
 
   return (
     <PageCard>
@@ -319,7 +291,6 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
         >
           Ajouter
         </DaButton>
-
       </div>
 
       <div className="flex gap-2 justify-end mt-3 pt-3 border-t border-zinc-800">
@@ -328,7 +299,6 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
         </DaButton>
         <DaButton variant="success" disabled={busy} onClick={() => wrap(() => onValidate())}>
           Valider don
-
         </DaButton>
       </div>
     </PageCard>
