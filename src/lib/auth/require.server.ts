@@ -13,7 +13,7 @@ const ROLE_CACHE_TTL_MS = 5 * 60 * 1000;
 
 export async function requireSession(): Promise<SessionUser> {
   const data = await getSessionData();
-  if (!data) throw new Error("UNAUTHENTICATED");
+  if (!data) throw new AppError("UNAUTHENTICATED", 401, ERROR_MESSAGES.UNAUTHENTICATED);
   if (Date.now() - data.rolesRefreshedAt > ROLE_CACHE_TTL_MS) {
     try {
       const roles = await fetchAggregatedRoles(data.discordId);
@@ -30,7 +30,7 @@ export async function requireSession(): Promise<SessionUser> {
     .select("status")
     .eq("discord_id", data.discordId)
     .maybeSingle();
-  if (m?.status === "left") throw new Error("FORBIDDEN_LEFT_GUILD");
+  if (m?.status === "left") throw new AppError("FORBIDDEN_LEFT_GUILD", 403, ERROR_MESSAGES.FORBIDDEN_LEFT_GUILD);
   return toSessionUser(data);
 }
 
@@ -43,7 +43,7 @@ export async function requirePermission(perm: Permission): Promise<SessionUser> 
       actor_discord_id: user.discordId,
       payload: { permission: perm } as never,
     });
-    throw new Error("FORBIDDEN");
+    throw new AppError("FORBIDDEN", 403, ERROR_MESSAGES.FORBIDDEN);
   }
   return user;
 }
