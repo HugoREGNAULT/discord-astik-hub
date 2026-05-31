@@ -101,17 +101,19 @@ function AnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Annonces"
-        subtitle="Communications internes, accusé de lecture requis."
-        actions={
-          canManage ? (
-            <Button onClick={() => setShowCreate(true)} size="sm">
-              <Plus className="size-4 mr-1" /> Nouvelle annonce
-            </Button>
-          ) : null
-        }
-      />
+      <div className="flex items-start justify-between gap-3">
+        <PageHeader
+          code="// announces"
+          title="Annonces"
+          description="Communications internes, accusé de lecture requis."
+        />
+        {canManage && (
+          <Button onClick={() => setShowCreate(true)} size="sm">
+            <Plus className="size-4 mr-1" /> Nouvelle annonce
+          </Button>
+        )}
+      </div>
+
 
       {isLoading ? (
         <CardListSkeleton count={3} />
