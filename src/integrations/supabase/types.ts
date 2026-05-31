@@ -164,6 +164,39 @@ export type Database = {
         }
         Relationships: []
       }
+      badges: {
+        Row: {
+          auto_rule: Json | null
+          code: string
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          auto_rule?: Json | null
+          code: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          auto_rule?: Json | null
+          code?: string
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       blacklist: {
         Row: {
           added_by_discord_id: string
@@ -539,6 +572,48 @@ export type Database = {
         }
         Relationships: []
       }
+      grade_thresholds: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_order: number
+          grade_label: string
+          id: string
+          min_days_in_faction: number
+          min_days_since_rankup: number
+          min_messages_7d: number
+          min_points: number
+          min_voice_7d_seconds: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_order: number
+          grade_label: string
+          id?: string
+          min_days_in_faction?: number
+          min_days_since_rankup?: number
+          min_messages_7d?: number
+          min_points?: number
+          min_voice_7d_seconds?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_order?: number
+          grade_label?: string
+          id?: string
+          min_days_in_faction?: number
+          min_days_since_rankup?: number
+          min_messages_7d?: number
+          min_points?: number
+          min_voice_7d_seconds?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leaderboard_snapshots: {
         Row: {
           astik_points: number
@@ -628,6 +703,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "members"
             referencedColumns: ["discord_id"]
+          },
+        ]
+      }
+      member_badges: {
+        Row: {
+          awarded_at: string
+          awarded_by_discord_id: string | null
+          badge_id: string
+          id: string
+          member_discord_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          awarded_by_discord_id?: string | null
+          badge_id: string
+          id?: string
+          member_discord_id: string
+        }
+        Update: {
+          awarded_at?: string
+          awarded_by_discord_id?: string | null
+          badge_id?: string
+          id?: string
+          member_discord_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
           },
         ]
       }

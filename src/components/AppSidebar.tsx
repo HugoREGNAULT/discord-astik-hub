@@ -18,6 +18,7 @@ import {
   Grid3x3,
   Wrench,
   Bell,
+  Award,
 } from "lucide-react";
 
 import {
@@ -131,6 +132,13 @@ const SECTIONS: Section[] = [
         icon: Grid3x3,
         perm: "members.view",
         accent: "blurple",
+      },
+      {
+        title: "Grades & badges",
+        url: "/staff/grades",
+        icon: Award,
+        perm: "members.edit",
+        accent: "pink",
       },
     ],
   },

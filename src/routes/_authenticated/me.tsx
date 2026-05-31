@@ -44,6 +44,7 @@ import {
 import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { getMyOverview, listMyWarnings, submitWarningAppeal } from "@/lib/data/me.functions";
+import { listMyBadges } from "@/lib/data/grades.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -258,12 +259,44 @@ function MePage() {
             </CardContent>
           </Card>
 
+          <MyBadgesCard />
           <MyWarningsCard />
         </div>
       </div>
 
       <DangerZone />
     </div>
+  );
+}
+
+function MyBadgesCard() {
+  const ls = useServerFn(listMyBadges);
+  const { data } = useQuery({ queryKey: ["my-badges"], queryFn: () => ls() });
+  const badges = (data?.badges ?? []) as Array<{
+    badge_id: string;
+    awarded_at: string;
+    badges: { id: string; code: string; name: string; description: string | null; icon: string | null; color: string | null } | null;
+  }>;
+  if (badges.length === 0) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2"><Award className="h-4 w-4" /> Mes badges</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-wrap gap-2">
+        {badges.map((b) => (
+          <span
+            key={b.badge_id}
+            title={b.badges?.description ?? b.badges?.name ?? ""}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border"
+            style={{ borderColor: b.badges?.color ?? undefined, color: b.badges?.color ?? undefined }}
+          >
+            <span>{b.badges?.icon ?? "🏅"}</span>
+            <span>{b.badges?.name ?? "Badge"}</span>
+          </span>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
