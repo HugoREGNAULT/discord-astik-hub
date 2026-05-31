@@ -17,9 +17,12 @@ import {
   DaSelect,
   EmptyBlock,
 } from "@/components/tools/ToolsUi";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DonationsPanel } from "@/components/DonationsPanel";
+import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/points")({
-  head: () => ({ meta: [{ title: "AstikPoints · PunkAstik" }] }),
+  head: () => ({ meta: [{ title: "Gestion Points · PunkAstik" }] }),
   component: () => (
     <Guard perm="points.manage">
       <PointsPage />
@@ -28,6 +31,35 @@ export const Route = createFileRoute("/_authenticated/points")({
 });
 
 function PointsPage() {
+  const me = useCurrentUser();
+  const canDonations = hasPerm(me, "donations.manage");
+
+  return (
+    <div className="max-w-4xl space-y-5">
+      <PageHeader
+        code="// points.manage"
+        title="Gestion Points"
+        description="Ajustements manuels du solde et paniers de dons regroupés au même endroit."
+      />
+      <Tabs defaultValue="manual">
+        <TabsList>
+          <TabsTrigger value="manual">Actions manuelles</TabsTrigger>
+          {canDonations && <TabsTrigger value="donations">Dons</TabsTrigger>}
+        </TabsList>
+        <TabsContent value="manual" className="mt-4">
+          <ManualPanel />
+        </TabsContent>
+        {canDonations && (
+          <TabsContent value="donations" className="mt-4">
+            <DonationsPanel />
+          </TabsContent>
+        )}
+      </Tabs>
+    </div>
+  );
+}
+
+function ManualPanel() {
   const qc = useQueryClient();
   const listFn = useServerFn(listMembers);
   const addFn = useServerFn(addPoints);
@@ -45,7 +77,6 @@ function PointsPage() {
   const [amount, setAmount] = useState<number>(0);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
-
 
   const history = useQuery({
     queryKey: ["history", target],
@@ -90,15 +121,8 @@ function PointsPage() {
     }
   };
 
-
   return (
-    <div className="max-w-4xl space-y-5">
-      <PageHeader
-        code="// points.manage"
-        title="AstikPoints"
-        description="Ajoute, retire ou redéfinit manuellement le solde d'un membre. Historique complet par membre."
-      />
-
+    <div className="space-y-5">
       <PageCard>
         <SectionLabel>action manuelle</SectionLabel>
         <div className="space-y-3">
@@ -169,7 +193,6 @@ function PointsPage() {
             <DaButton variant="ghost" disabled={busy} onClick={() => run("set")}>
               {busy ? "..." : "= Définir"}
             </DaButton>
-
           </div>
         </div>
       </PageCard>

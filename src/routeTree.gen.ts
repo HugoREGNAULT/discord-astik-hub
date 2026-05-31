@@ -19,34 +19,25 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
-import { Route as AuthenticatedStaffBoardRouteImport } from './routes/_authenticated/staff-board'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
-import { Route as AuthenticatedSalariesRouteImport } from './routes/_authenticated/salaries'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
-import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedPdcRouteImport } from './routes/_authenticated/pdc'
-import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authenticated/objectives'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
-import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedLogisticsRouteImport } from './routes/_authenticated/logistics'
 import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authenticated/faction-economy'
-import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
-import { Route as AuthenticatedDonationsRouteImport } from './routes/_authenticated/donations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
-import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
-import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
@@ -66,12 +57,10 @@ import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
 import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authenticated/tools.check-bc'
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
-import { Route as AuthenticatedStaffGradesRouteImport } from './routes/_authenticated/staff.grades'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
-import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as ApiPublicHooksVerifyAuditChainRouteImport } from './routes/api/public/hooks/verify-audit-chain'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
@@ -145,11 +134,6 @@ const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   path: '/tools',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedStaffBoardRoute = AuthenticatedStaffBoardRouteImport.update({
-  id: '/staff-board',
-  path: '/staff-board',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -162,22 +146,12 @@ const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedSalariesRoute = AuthenticatedSalariesRouteImport.update({
-  id: '/salaries',
-  path: '/salaries',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedRecruitmentRoute =
   AuthenticatedRecruitmentRouteImport.update({
     id: '/recruitment',
     path: '/recruitment',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedPollsRoute = AuthenticatedPollsRouteImport.update({
   id: '/polls',
   path: '/polls',
@@ -195,19 +169,9 @@ const AuthenticatedPdcRoute = AuthenticatedPdcRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_authenticated/pdc.lazy').then((d) => d.Route),
 )
-const AuthenticatedObjectivesRoute = AuthenticatedObjectivesRouteImport.update({
-  id: '/objectives',
-  path: '/objectives',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedMembersRoute = AuthenticatedMembersRouteImport.update({
   id: '/members',
   path: '/members',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
-  id: '/me',
-  path: '/me',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
@@ -226,19 +190,9 @@ const AuthenticatedFactionEconomyRoute =
     path: '/faction-economy',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedEffectifRoute = AuthenticatedEffectifRouteImport.update({
   id: '/effectif',
   path: '/effectif',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedDonationsRoute = AuthenticatedDonationsRouteImport.update({
-  id: '/donations',
-  path: '/donations',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -261,12 +215,6 @@ const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
   path: '/assistant',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAnnouncementsRoute =
-  AuthenticatedAnnouncementsRouteImport.update({
-    id: '/announcements',
-    path: '/announcements',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -287,12 +235,6 @@ const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedPollsRoute,
 } as any)
-const AuthenticatedEventsIndexRoute =
-  AuthenticatedEventsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedEventsRoute,
-  } as any)
 const ApiTestSeedPollRoute = ApiTestSeedPollRouteImport.update({
   id: '/api/test/seed-poll',
   path: '/api/test/seed-poll',
@@ -400,12 +342,6 @@ const AuthenticatedToolsAlertsRoute =
     path: '/alerts',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
-const AuthenticatedStaffGradesRoute =
-  AuthenticatedStaffGradesRouteImport.update({
-    id: '/grades',
-    path: '/grades',
-    getParentRoute: () => AuthenticatedStaffRoute,
-  } as any)
 const AuthenticatedStaffAppealsRoute =
   AuthenticatedStaffAppealsRouteImport.update({
     id: '/appeals',
@@ -429,11 +365,6 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AuthenticatedMembersRoute,
-} as any)
-const AuthenticatedEventsIdRoute = AuthenticatedEventsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedEventsRoute,
 } as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
@@ -574,40 +505,30 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
-  '/events': typeof AuthenticatedEventsRouteWithChildren
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
-  '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
-  '/objectives': typeof AuthenticatedObjectivesRoute
   '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
   '/polls': typeof AuthenticatedPollsRouteWithChildren
-  '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
-  '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/staff-board': typeof AuthenticatedStaffBoardRoute
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
-  '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
-  '/staff/grades': typeof AuthenticatedStaffGradesRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -627,7 +548,6 @@ export interface FileRoutesByFullPath {
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
-  '/events/': typeof AuthenticatedEventsIndexRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -661,37 +581,28 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/announcements': typeof AuthenticatedAnnouncementsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
-  '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
-  '/objectives': typeof AuthenticatedObjectivesRoute
   '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
-  '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
-  '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/staff-board': typeof AuthenticatedStaffBoardRoute
   '/trials': typeof AuthenticatedTrialsRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
-  '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
-  '/staff/grades': typeof AuthenticatedStaffGradesRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -711,7 +622,6 @@ export interface FileRoutesByTo {
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
-  '/events': typeof AuthenticatedEventsIndexRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -747,40 +657,30 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/absences': typeof AuthenticatedAbsencesRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/donations': typeof AuthenticatedDonationsRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
-  '/_authenticated/events': typeof AuthenticatedEventsRouteWithChildren
   '/_authenticated/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/_authenticated/logistics': typeof AuthenticatedLogisticsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
-  '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
-  '/_authenticated/objectives': typeof AuthenticatedObjectivesRoute
   '/_authenticated/pdc': typeof AuthenticatedPdcRoute
   '/_authenticated/points': typeof AuthenticatedPointsRoute
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
-  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
-  '/_authenticated/salaries': typeof AuthenticatedSalariesRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/_authenticated/staff-board': typeof AuthenticatedStaffBoardRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
-  '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
-  '/_authenticated/staff/grades': typeof AuthenticatedStaffGradesRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/_authenticated/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -800,7 +700,6 @@ export interface FileRoutesById {
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
-  '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -836,40 +735,30 @@ export interface FileRouteTypes {
     | '/login'
     | '/absences'
     | '/admin'
-    | '/announcements'
     | '/assistant'
     | '/blacklist'
     | '/config'
     | '/dashboard'
-    | '/donations'
     | '/effectif'
-    | '/events'
     | '/faction-economy'
     | '/logistics'
     | '/logs'
-    | '/me'
     | '/members'
-    | '/objectives'
     | '/pdc'
     | '/points'
     | '/polls'
-    | '/profile'
     | '/recruitment'
-    | '/salaries'
     | '/shop'
     | '/staff'
-    | '/staff-board'
     | '/tools'
     | '/trials'
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
-    | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
-    | '/staff/grades'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -889,7 +778,6 @@ export interface FileRouteTypes {
     | '/api/auth/whoami'
     | '/api/test/login'
     | '/api/test/seed-poll'
-    | '/events/'
     | '/polls/'
     | '/tools/'
     | '/api/public/bot/import'
@@ -923,37 +811,28 @@ export interface FileRouteTypes {
     | '/login'
     | '/absences'
     | '/admin'
-    | '/announcements'
     | '/assistant'
     | '/blacklist'
     | '/config'
     | '/dashboard'
-    | '/donations'
     | '/effectif'
     | '/faction-economy'
     | '/logistics'
     | '/logs'
-    | '/me'
     | '/members'
-    | '/objectives'
     | '/pdc'
     | '/points'
-    | '/profile'
     | '/recruitment'
-    | '/salaries'
     | '/shop'
     | '/staff'
-    | '/staff-board'
     | '/trials'
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
-    | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
-    | '/staff/grades'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -973,7 +852,6 @@ export interface FileRouteTypes {
     | '/api/auth/whoami'
     | '/api/test/login'
     | '/api/test/seed-poll'
-    | '/events'
     | '/polls'
     | '/tools'
     | '/api/public/bot/import'
@@ -1008,40 +886,30 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/absences'
     | '/_authenticated/admin'
-    | '/_authenticated/announcements'
     | '/_authenticated/assistant'
     | '/_authenticated/blacklist'
     | '/_authenticated/config'
     | '/_authenticated/dashboard'
-    | '/_authenticated/donations'
     | '/_authenticated/effectif'
-    | '/_authenticated/events'
     | '/_authenticated/faction-economy'
     | '/_authenticated/logistics'
     | '/_authenticated/logs'
-    | '/_authenticated/me'
     | '/_authenticated/members'
-    | '/_authenticated/objectives'
     | '/_authenticated/pdc'
     | '/_authenticated/points'
     | '/_authenticated/polls'
-    | '/_authenticated/profile'
     | '/_authenticated/recruitment'
-    | '/_authenticated/salaries'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
-    | '/_authenticated/staff-board'
     | '/_authenticated/tools'
     | '/_authenticated/trials'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/admin/audit'
-    | '/_authenticated/events/$id'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
     | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
-    | '/_authenticated/staff/grades'
     | '/_authenticated/tools/alerts'
     | '/_authenticated/tools/check-bc'
     | '/_authenticated/tools/clicker'
@@ -1061,7 +929,6 @@ export interface FileRouteTypes {
     | '/api/auth/whoami'
     | '/api/test/login'
     | '/api/test/seed-poll'
-    | '/_authenticated/events/'
     | '/_authenticated/polls/'
     | '/_authenticated/tools/'
     | '/api/public/bot/import'
@@ -1198,13 +1065,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/staff-board': {
-      id: '/_authenticated/staff-board'
-      path: '/staff-board'
-      fullPath: '/staff-board'
-      preLoaderRoute: typeof AuthenticatedStaffBoardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/staff': {
       id: '/_authenticated/staff'
       path: '/staff'
@@ -1219,25 +1079,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShopRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/salaries': {
-      id: '/_authenticated/salaries'
-      path: '/salaries'
-      fullPath: '/salaries'
-      preLoaderRoute: typeof AuthenticatedSalariesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/recruitment': {
       id: '/_authenticated/recruitment'
       path: '/recruitment'
       fullPath: '/recruitment'
       preLoaderRoute: typeof AuthenticatedRecruitmentRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/profile': {
-      id: '/_authenticated/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/polls': {
@@ -1261,25 +1107,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPdcRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/objectives': {
-      id: '/_authenticated/objectives'
-      path: '/objectives'
-      fullPath: '/objectives'
-      preLoaderRoute: typeof AuthenticatedObjectivesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/members': {
       id: '/_authenticated/members'
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof AuthenticatedMembersRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/me': {
-      id: '/_authenticated/me'
-      path: '/me'
-      fullPath: '/me'
-      preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/logs': {
@@ -1303,25 +1135,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFactionEconomyRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/events': {
-      id: '/_authenticated/events'
-      path: '/events'
-      fullPath: '/events'
-      preLoaderRoute: typeof AuthenticatedEventsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/effectif': {
       id: '/_authenticated/effectif'
       path: '/effectif'
       fullPath: '/effectif'
       preLoaderRoute: typeof AuthenticatedEffectifRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/donations': {
-      id: '/_authenticated/donations'
-      path: '/donations'
-      fullPath: '/donations'
-      preLoaderRoute: typeof AuthenticatedDonationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -1352,13 +1170,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistantRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/announcements': {
-      id: '/_authenticated/announcements'
-      path: '/announcements'
-      fullPath: '/announcements'
-      preLoaderRoute: typeof AuthenticatedAnnouncementsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -1386,13 +1197,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/polls/'
       preLoaderRoute: typeof AuthenticatedPollsIndexRouteImport
       parentRoute: typeof AuthenticatedPollsRoute
-    }
-    '/_authenticated/events/': {
-      id: '/_authenticated/events/'
-      path: '/'
-      fullPath: '/events/'
-      preLoaderRoute: typeof AuthenticatedEventsIndexRouteImport
-      parentRoute: typeof AuthenticatedEventsRoute
     }
     '/api/test/seed-poll': {
       id: '/api/test/seed-poll'
@@ -1527,13 +1331,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsAlertsRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
-    '/_authenticated/staff/grades': {
-      id: '/_authenticated/staff/grades'
-      path: '/grades'
-      fullPath: '/staff/grades'
-      preLoaderRoute: typeof AuthenticatedStaffGradesRouteImport
-      parentRoute: typeof AuthenticatedStaffRoute
-    }
     '/_authenticated/staff/appeals': {
       id: '/_authenticated/staff/appeals'
       path: '/appeals'
@@ -1561,13 +1358,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/members/$id'
       preLoaderRoute: typeof AuthenticatedMembersIdRouteImport
       parentRoute: typeof AuthenticatedMembersRoute
-    }
-    '/_authenticated/events/$id': {
-      id: '/_authenticated/events/$id'
-      path: '/$id'
-      fullPath: '/events/$id'
-      preLoaderRoute: typeof AuthenticatedEventsIdRouteImport
-      parentRoute: typeof AuthenticatedEventsRoute
     }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
@@ -1744,19 +1534,6 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface AuthenticatedEventsRouteChildren {
-  AuthenticatedEventsIdRoute: typeof AuthenticatedEventsIdRoute
-  AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
-}
-
-const AuthenticatedEventsRouteChildren: AuthenticatedEventsRouteChildren = {
-  AuthenticatedEventsIdRoute: AuthenticatedEventsIdRoute,
-  AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
-}
-
-const AuthenticatedEventsRouteWithChildren =
-  AuthenticatedEventsRoute._addFileChildren(AuthenticatedEventsRouteChildren)
-
 interface AuthenticatedMembersRouteChildren {
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
 }
@@ -1784,13 +1561,11 @@ const AuthenticatedPollsRouteWithChildren =
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
-  AuthenticatedStaffGradesRoute: typeof AuthenticatedStaffGradesRoute
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffAnnounceRoute: AuthenticatedStaffAnnounceRoute,
   AuthenticatedStaffAppealsRoute: AuthenticatedStaffAppealsRoute,
-  AuthenticatedStaffGradesRoute: AuthenticatedStaffGradesRoute,
 }
 
 const AuthenticatedStaffRouteWithChildren =
@@ -1836,29 +1611,21 @@ const AuthenticatedToolsRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
-  AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDonationsRoute: typeof AuthenticatedDonationsRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
-  AuthenticatedEventsRoute: typeof AuthenticatedEventsRouteWithChildren
   AuthenticatedFactionEconomyRoute: typeof AuthenticatedFactionEconomyRoute
   AuthenticatedLogisticsRoute: typeof AuthenticatedLogisticsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
-  AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
-  AuthenticatedObjectivesRoute: typeof AuthenticatedObjectivesRoute
   AuthenticatedPdcRoute: typeof AuthenticatedPdcRoute
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
-  AuthenticatedSalariesRoute: typeof AuthenticatedSalariesRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
-  AuthenticatedStaffBoardRoute: typeof AuthenticatedStaffBoardRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
@@ -1867,29 +1634,21 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAbsencesRoute: AuthenticatedAbsencesRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
-  AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDonationsRoute: AuthenticatedDonationsRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
-  AuthenticatedEventsRoute: AuthenticatedEventsRouteWithChildren,
   AuthenticatedFactionEconomyRoute: AuthenticatedFactionEconomyRoute,
   AuthenticatedLogisticsRoute: AuthenticatedLogisticsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
-  AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
-  AuthenticatedObjectivesRoute: AuthenticatedObjectivesRoute,
   AuthenticatedPdcRoute: AuthenticatedPdcRoute,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
-  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
-  AuthenticatedSalariesRoute: AuthenticatedSalariesRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
-  AuthenticatedStaffBoardRoute: AuthenticatedStaffBoardRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
