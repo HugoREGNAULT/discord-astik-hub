@@ -88,7 +88,10 @@ function MembersPage() {
 
       {error && <ErrorBlock message={(error as Error).message} hint="Réessaie dans un instant." />}
 
-      <div className="grid gap-2">
+      <div className="grid gap-2" aria-live="polite" aria-busy={isLoading}>
+        <p className="sr-only" aria-live="polite">
+          {isLoading ? "Chargement des membres…" : `${members.length} membre(s)`}
+        </p>
         {paged.map((m, i) => (
           <Link
             key={m.discord_id}
