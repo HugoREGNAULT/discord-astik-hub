@@ -260,6 +260,7 @@ function MePage() {
           </Card>
 
           <MyTrialCard trialUntil={data.member.trial_until ?? null} />
+          <GamificationCard scope="me" />
           <MyBadgesCard />
           <MyWarningsCard />
         </div>
