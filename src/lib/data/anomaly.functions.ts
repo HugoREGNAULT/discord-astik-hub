@@ -267,13 +267,14 @@ async function runScan(): Promise<{
         .eq("kind", f.kind)
         .eq("status", "open")
         .maybeSingle();
+      const evidenceJson = f.evidence as never;
       if (existing.data?.id) {
         await db
           .from("anomaly_flags")
           .update({
             severity: f.severity,
             score: f.score,
-            evidence: f.evidence,
+            evidence: evidenceJson,
           })
           .eq("id", existing.data.id);
       } else {
@@ -282,13 +283,13 @@ async function runScan(): Promise<{
           kind: f.kind,
           severity: f.severity,
           score: f.score,
-          evidence: f.evidence,
+          evidence: evidenceJson,
         });
       }
     }
   }
 
-  await logAction("anomaly.scan", {
+  await logAction("anomaly.scan", "system", {
     scanned: members.length,
     flagged: flags.length,
     byKind,
