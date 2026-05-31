@@ -49,11 +49,14 @@ import {
   FilePlus2,
   Droplet,
   Calculator,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
 import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { usePdcCollab, type CellEdit } from "@/hooks/usePdcCollab";
+import { useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createLazyFileRoute("/_authenticated/pdc")({
   component: PdcPage,
@@ -119,6 +122,10 @@ function PdcPage() {
   // ---------------- Canvas drawing ----------------
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Bumped whenever peers/cursors change so draw() re-runs without making the
+  // big draw closure depend on peers directly (collab block is declared below).
+  const [peersVersion, setPeersVersion] = useState(0);
+  const peersRef = useRef<{ discordId: string; username: string; color: string; cursor: { x: number; y: number } | null }[]>([]);
 
   const draw = useCallback(() => {
     const cv = canvasRef.current;
@@ -213,6 +220,17 @@ function PdcPage() {
       ctx.fillRect(x1 * zoom, y1 * zoom, (x2 - x1 + 1) * zoom, (y2 - y1 + 1) * zoom);
     }
 
+    // peer cursors
+    for (const p of peersRef.current) {
+      if (!p.cursor) continue;
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(p.cursor.x * zoom, p.cursor.y * zoom, zoom, zoom);
+      ctx.fillStyle = p.color;
+      ctx.font = "10px ui-sans-serif, system-ui";
+      ctx.fillText(p.username, p.cursor.x * zoom + 2, p.cursor.y * zoom - 2);
+    }
+
     ctx.restore();
   }, [
     layers,
@@ -227,6 +245,7 @@ function PdcPage() {
     hoverCell,
     tool,
     rectStart,
+    peersVersion,
   ]);
 
   useEffect(() => {
@@ -252,7 +271,51 @@ function PdcPage() {
   const isPanningRef = useRef(false);
   const panStartRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
 
-  const paintCell = (x: number, y: number, blockId: string | null) => {
+  // ---------------- Collaboration ----------------
+  const { data: currentUser } = useCurrentUser();
+  const me = useMemo(
+    () =>
+      currentUser
+        ? { discordId: currentUser.discordId, username: currentUser.username }
+        : null,
+    [currentUser],
+  );
+
+  // Apply a remote edit locally (last-write-wins per cell — we don't compare ts
+  // because Broadcast is ordered per channel and the LAST event for a given
+  // cell is by definition the latest write).
+  const applyRemoteEdit = useCallback((d: CellEdit) => {
+    setLayers((prev) => {
+      const key = String(d.layer);
+      const layer = { ...(prev[key] ?? {}) };
+      const ck = `${d.x},${d.y}`;
+      if (d.block_id === null) delete layer[ck];
+      else layer[ck] = d.block_id;
+      return { ...prev, [key]: layer };
+    });
+    setDirty(true);
+  }, []);
+
+  const { peers, connected, broadcastCellEdit, broadcastCursor } = usePdcCollab({
+    planId,
+    me,
+    onRemoteEdit: applyRemoteEdit,
+  });
+
+  const broadcastCellEditRef = useRef(broadcastCellEdit);
+  broadcastCellEditRef.current = broadcastCellEdit;
+  const broadcastCursorRef = useRef(broadcastCursor);
+  broadcastCursorRef.current = broadcastCursor;
+  // Sync peers into the ref + bump version so draw() re-runs.
+  useEffect(() => {
+    peersRef.current = peers;
+    setPeersVersion((v) => v + 1);
+  }, [peers]);
+
+
+
+
+  const paintCell = (x: number, y: number, blockId: string | null, broadcast = true) => {
     if (x < 0 || y < 0 || x >= wCells || y >= hCells) return;
     setLayers((prev) => {
       const key = String(currentLayer);
@@ -263,6 +326,9 @@ function PdcPage() {
       return { ...prev, [key]: layer };
     });
     setDirty(true);
+    if (broadcast) {
+      broadcastCellEditRef.current?.({ layer: currentLayer, x, y, block_id: blockId });
+    }
   };
 
   const onPointerDown = (e: ReactPointerEvent<HTMLCanvasElement>) => {
@@ -300,6 +366,7 @@ function PdcPage() {
     }
     const cell = cellFromEvent(e);
     setHoverCell(cell);
+    if (connected) broadcastCursorRef.current?.({ x: cell.x, y: cell.y });
     if (!isDrawingRef.current) return;
     if (tool === "paint" && selectedBlockId) paintCell(cell.x, cell.y, selectedBlockId);
     if (tool === "erase") paintCell(cell.x, cell.y, null);
@@ -328,11 +395,22 @@ function PdcPage() {
         }
         return { ...prev, [key]: layer };
       });
+      // Broadcast each cell of the rect (small payloads, ordered).
+      const bcast = broadcastCellEditRef.current;
+      if (bcast) {
+        const blockId = selectedBlockId ?? null;
+        for (let y = y1; y <= y2; y++) {
+          for (let x = x1; x <= x2; x++) {
+            bcast({ layer: currentLayer, x, y, block_id: blockId });
+          }
+        }
+      }
       setDirty(true);
       setRectStart(null);
     }
     isDrawingRef.current = false;
   };
+
 
   const onWheel = (e: ReactWheelEvent<HTMLCanvasElement>) => {
     e.preventDefault();
@@ -412,6 +490,20 @@ function PdcPage() {
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
+  // ---------------- Auto-save débouncé en mode collab ----------------
+  // En collab, le Broadcast porte le temps réel ; savePdcPlan porte la vérité.
+  // On débounce ~2.5s après la dernière modif pour ne pas spammer la DB.
+  const saveMutateRef = useRef(save.mutate);
+  saveMutateRef.current = save.mutate;
+  useEffect(() => {
+    if (!planId || !dirty || !connected) return;
+    const t = setTimeout(() => {
+      saveMutateRef.current();
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [planId, dirty, connected, layers, planName, layersCount]);
+
+
   const removePlan = useMutation({
     mutationFn: async (id: string) => {
       await delPlan({ data: { id } });
@@ -470,7 +562,40 @@ function PdcPage() {
           title="Plan de coupe (PDC)"
           description="Éditeur de base claim · 1 chunk = 16×16 blocs"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {planId && peers.length > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-zinc-800 bg-zinc-900/60 text-xs">
+              <Users className="size-3.5 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {peers.length === 1
+                  ? "1 personne édite"
+                  : `${peers.length} personnes éditent`}{" "}
+                ce plan
+              </span>
+              <div className="flex -space-x-1 ml-1">
+                {peers.slice(0, 6).map((p) => (
+                  <span
+                    key={p.discordId}
+                    title={p.username}
+                    className="size-4 rounded-full border border-zinc-900"
+                    style={{ background: p.color }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {planId && (
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded ${
+                connected
+                  ? "bg-emerald-500/15 text-emerald-400"
+                  : "bg-zinc-700/40 text-zinc-400"
+              }`}
+              title={connected ? "Collaboration temps réel active" : "Mode local"}
+            >
+              {connected ? "● live" : "○ local"}
+            </span>
+          )}
           {planId && (
             <>
               <Input
@@ -488,6 +613,7 @@ function PdcPage() {
           )}
         </div>
       </div>
+
 
       <Tabs defaultValue="calc" className="w-full">
         <TabsList>
