@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
 } from "recharts";
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
@@ -22,7 +23,7 @@ import {
 } from "@/components/tools/ToolsUi";
 import { PaladiumApi, hasPaladiumKey, type MarketItemsPage } from "@/lib/paladium/api";
 import { resolveUuidsToNames } from "@/lib/paladium/mojang.functions";
-import { getMarketPriceHistory } from "@/lib/paladium/history.functions";
+import { getMarketPriceHistory, getAdminShopHistory } from "@/lib/paladium/history.functions";
 import { createShopAlert } from "@/lib/data/shop-alerts.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/market")({
@@ -151,24 +152,72 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
   });
 
   const fetchHistory = useServerFn(getMarketPriceHistory);
+  const fetchAdminHistory = useServerFn(getAdminShopHistory);
   const fetchNames = useServerFn(resolveUuidsToNames);
-  const [range, setRange] = useState<"24h" | "7d">("7d");
-  const rangeHours = range === "24h" ? 24 : 168;
+  const [range, setRange] = useState<"1h" | "24h" | "7d">("24h");
+  const rangeHours = range === "1h" ? 1 : range === "24h" ? 24 : 168;
   const history = useQuery({
     queryKey: ["pala-market-history", it.name, range],
     queryFn: () => fetchHistory({ data: { itemName: it.name, rangeHours } }),
     enabled: expanded,
     staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     retry: false,
   });
-  const historySeries = useMemo(
-    () =>
-      (history.data?.rows ?? []).map((r) => ({
-        t: new Date(r.captured_at).getTime(),
-        price: r.price_average == null ? null : Number(r.price_average),
-      })),
-    [history.data],
-  );
+  const adminHistory = useQuery({
+    queryKey: ["pala-admin-history-for-market", it.name],
+    queryFn: () => fetchAdminHistory({ data: { itemName: it.name } }),
+    enabled: expanded,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+    retry: false,
+  });
+
+  // Merge market avg + admin buy/sell on a shared timeline, restricted to the
+  // selected range. Each point: { t, marketAvg, adminBuy, adminSell }.
+  const historySeries = useMemo(() => {
+    const sinceMs = Date.now() - rangeHours * 3600_000;
+    const byT = new Map<
+      number,
+      { t: number; marketAvg: number | null; adminBuy: number | null; adminSell: number | null }
+    >();
+    const ensure = (t: number) => {
+      let row = byT.get(t);
+      if (!row) {
+        row = { t, marketAvg: null, adminBuy: null, adminSell: null };
+        byT.set(t, row);
+      }
+      return row;
+    };
+    for (const r of history.data?.rows ?? []) {
+      const t = new Date(r.captured_at).getTime();
+      if (t < sinceMs) continue;
+      ensure(t).marketAvg = r.price_average == null ? null : Number(r.price_average);
+    }
+    for (const r of adminHistory.data?.rows ?? []) {
+      const t = new Date(r.captured_at).getTime();
+      if (t < sinceMs) continue;
+      const row = ensure(t);
+      row.adminBuy = r.price == null ? null : Number(r.price);
+      row.adminSell = r.price_pb == null ? null : Number(r.price_pb);
+    }
+    return Array.from(byT.values()).sort((a, b) => a.t - b.t);
+  }, [history.data, adminHistory.data, rangeHours]);
+
+  // Latest known values for the stat tiles.
+  const latest = useMemo(() => {
+    const lastMarket = [...(history.data?.rows ?? [])]
+      .reverse()
+      .find((r) => r.price_average != null);
+    const lastAdmin = [...(adminHistory.data?.rows ?? [])]
+      .reverse()
+      .find((r) => r.price != null || r.price_pb != null);
+    return {
+      marketAvg: lastMarket?.price_average == null ? null : Number(lastMarket.price_average),
+      adminBuy: lastAdmin?.price == null ? null : Number(lastAdmin.price),
+      adminSell: lastAdmin?.price_pb == null ? null : Number(lastAdmin.price_pb),
+    };
+  }, [history.data, adminHistory.data]);
 
   // Resolve seller UUIDs → MC pseudos via Mojang (batched).
   const sellerUuids = useMemo(() => {
@@ -218,15 +267,19 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
             {detail.isLoading && <LoadingBlock label="Listings…" />}
             {detail.error && <ErrorBlock message={(detail.error as Error).message} />}
 
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <div
                 className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
                 style={{ fontFamily: "'Space Mono'" }}
               >
-                // prix moyen — {range === "24h" ? "24h" : "7 jours"}
+                // évolution achat / vente —{" "}
+                {range === "1h" ? "1 heure" : range === "24h" ? "24 heures" : "7 jours"}
+                <span className="text-zinc-700 normal-case tracking-normal ml-2">
+                  (auto 10 min)
+                </span>
               </div>
               <div className="flex gap-1">
-                {(["24h", "7d"] as const).map((r) => (
+                {(["1h", "24h", "7d"] as const).map((r) => (
                   <button
                     key={r}
                     type="button"
@@ -243,22 +296,41 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                 ))}
               </div>
             </div>
+
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <PriceTile label="HDV prix moyen u." value={latest.marketAvg} color="text-pink-400" />
+              <PriceTile
+                label="Shop achat u."
+                value={latest.adminBuy}
+                color="text-emerald-400"
+              />
+              <PriceTile
+                label="Shop vente u. (PB)"
+                value={latest.adminSell}
+                color="text-sky-400"
+              />
+            </div>
+
             {historySeries.length < 2 ? (
               <p className="text-zinc-600 text-xs mb-3">
-                Pas encore assez d&apos;historique — la sync tourne toutes les heures.
+                Pas encore assez d&apos;historique sur cette plage — la sync tourne toutes les
+                heures.
               </p>
             ) : (
-              <div className="h-32 mb-4">
+              <div className="h-48 mb-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={historySeries}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                     <XAxis
                       dataKey="t"
+                      type="number"
+                      domain={["dataMin", "dataMax"]}
+                      scale="time"
                       tickFormatter={(t) =>
                         new Date(t).toLocaleString("fr-FR", {
                           day: "2-digit",
                           month: "2-digit",
-                          ...(range === "24h" ? { hour: "2-digit", minute: "2-digit" } : {}),
+                          ...(range === "7d" ? {} : { hour: "2-digit", minute: "2-digit" }),
                         })
                       }
                       stroke="#52525b"
@@ -272,13 +344,35 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                         fontSize: 12,
                         color: "#e4e4e7",
                       }}
-                      labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                      formatter={(v: number) => fmtNum(v)}
+                      labelFormatter={(t) => new Date(Number(t)).toLocaleString("fr-FR")}
+                      formatter={(v: unknown) =>
+                        typeof v === "number" && Number.isFinite(v) ? fmtNum(v) : "—"
+                      }
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#a1a1aa" }} />
+                    <Line
+                      type="monotone"
+                      dataKey="marketAvg"
+                      name="HDV moyen"
+                      stroke="#ec4899"
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
                     />
                     <Line
                       type="monotone"
-                      dataKey="price"
-                      stroke="#ec4899"
+                      dataKey="adminBuy"
+                      name="Shop achat"
+                      stroke="#22c55e"
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="adminSell"
+                      name="Shop vente"
+                      stroke="#38bdf8"
                       strokeWidth={2}
                       dot={false}
                       connectNulls
@@ -335,6 +429,30 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
 function fmtNum(n: unknown): string {
   if (typeof n !== "number" || !Number.isFinite(n)) return "—";
   return Math.round(n).toLocaleString("fr-FR");
+}
+
+function PriceTile({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number | null;
+  color: string;
+}) {
+  return (
+    <div className="border border-zinc-800 bg-zinc-900/60 p-2">
+      <div
+        className="text-[9px] uppercase tracking-[0.25em] text-zinc-500 mb-0.5"
+        style={{ fontFamily: "'Space Mono'" }}
+      >
+        {label}
+      </div>
+      <div className={`text-sm font-bold ${color}`} style={{ fontFamily: "'Space Grotesk'" }}>
+        {fmtNum(value)}
+      </div>
+    </div>
+  );
 }
 
 function MarketAlertForm({ itemName }: { itemName: string }) {
