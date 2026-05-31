@@ -370,6 +370,133 @@ export type Database = {
           },
         ]
       }
+      event_loot: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          ledger_id: string | null
+          member_discord_id: string
+          note: string | null
+          points: number
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          ledger_id?: string | null
+          member_discord_id: string
+          note?: string | null
+          points: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          ledger_id?: string | null
+          member_discord_id?: string
+          note?: string | null
+          points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_loot_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_signups: {
+        Row: {
+          attended: boolean | null
+          created_at: string
+          event_id: string
+          id: string
+          member_discord_id: string
+          member_username: string | null
+          rsvp: string
+          updated_at: string
+        }
+        Insert: {
+          attended?: boolean | null
+          created_at?: string
+          event_id: string
+          id?: string
+          member_discord_id: string
+          member_username?: string | null
+          rsvp: string
+          updated_at?: string
+        }
+        Update: {
+          attended?: boolean | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          member_discord_id?: string
+          member_username?: string | null
+          rsvp?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_signups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          description: string | null
+          id: string
+          location: string | null
+          loot_distributed: boolean
+          report: string | null
+          starts_at: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          loot_distributed?: boolean
+          report?: string | null
+          starts_at: string
+          status?: string
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          loot_distributed?: boolean
+          report?: string | null
+          starts_at?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       faction_bc_checks: {
         Row: {
           created_at: string
