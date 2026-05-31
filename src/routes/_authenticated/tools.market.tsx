@@ -152,24 +152,72 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
   });
 
   const fetchHistory = useServerFn(getMarketPriceHistory);
+  const fetchAdminHistory = useServerFn(getAdminShopHistory);
   const fetchNames = useServerFn(resolveUuidsToNames);
-  const [range, setRange] = useState<"24h" | "7d">("7d");
-  const rangeHours = range === "24h" ? 24 : 168;
+  const [range, setRange] = useState<"1h" | "24h" | "7d">("24h");
+  const rangeHours = range === "1h" ? 1 : range === "24h" ? 24 : 168;
   const history = useQuery({
     queryKey: ["pala-market-history", it.name, range],
     queryFn: () => fetchHistory({ data: { itemName: it.name, rangeHours } }),
     enabled: expanded,
     staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
     retry: false,
   });
-  const historySeries = useMemo(
-    () =>
-      (history.data?.rows ?? []).map((r) => ({
-        t: new Date(r.captured_at).getTime(),
-        price: r.price_average == null ? null : Number(r.price_average),
-      })),
-    [history.data],
-  );
+  const adminHistory = useQuery({
+    queryKey: ["pala-admin-history-for-market", it.name],
+    queryFn: () => fetchAdminHistory({ data: { itemName: it.name } }),
+    enabled: expanded,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+    retry: false,
+  });
+
+  // Merge market avg + admin buy/sell on a shared timeline, restricted to the
+  // selected range. Each point: { t, marketAvg, adminBuy, adminSell }.
+  const historySeries = useMemo(() => {
+    const sinceMs = Date.now() - rangeHours * 3600_000;
+    const byT = new Map<
+      number,
+      { t: number; marketAvg: number | null; adminBuy: number | null; adminSell: number | null }
+    >();
+    const ensure = (t: number) => {
+      let row = byT.get(t);
+      if (!row) {
+        row = { t, marketAvg: null, adminBuy: null, adminSell: null };
+        byT.set(t, row);
+      }
+      return row;
+    };
+    for (const r of history.data?.rows ?? []) {
+      const t = new Date(r.captured_at).getTime();
+      if (t < sinceMs) continue;
+      ensure(t).marketAvg = r.price_average == null ? null : Number(r.price_average);
+    }
+    for (const r of adminHistory.data?.rows ?? []) {
+      const t = new Date(r.captured_at).getTime();
+      if (t < sinceMs) continue;
+      const row = ensure(t);
+      row.adminBuy = r.price == null ? null : Number(r.price);
+      row.adminSell = r.price_pb == null ? null : Number(r.price_pb);
+    }
+    return Array.from(byT.values()).sort((a, b) => a.t - b.t);
+  }, [history.data, adminHistory.data, rangeHours]);
+
+  // Latest known values for the stat tiles.
+  const latest = useMemo(() => {
+    const lastMarket = [...(history.data?.rows ?? [])]
+      .reverse()
+      .find((r) => r.price_average != null);
+    const lastAdmin = [...(adminHistory.data?.rows ?? [])]
+      .reverse()
+      .find((r) => r.price != null || r.price_pb != null);
+    return {
+      marketAvg: lastMarket?.price_average == null ? null : Number(lastMarket.price_average),
+      adminBuy: lastAdmin?.price == null ? null : Number(lastAdmin.price),
+      adminSell: lastAdmin?.price_pb == null ? null : Number(lastAdmin.price_pb),
+    };
+  }, [history.data, adminHistory.data]);
 
   // Resolve seller UUIDs → MC pseudos via Mojang (batched).
   const sellerUuids = useMemo(() => {
