@@ -138,34 +138,9 @@ function UptimePage() {
             // joueurs connectés Paladium (global) — {RANGES.find((r) => r.key === range)?.label}
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={globalSeries}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis
-                  dataKey="t"
-                  tickFormatter={(t) => formatTick(t, days)}
-                  stroke="#52525b"
-                  tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                />
-                <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#18181b",
-                    border: "1px solid #3f3f46",
-                    fontSize: 12,
-                  }}
-                  labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="players"
-                  name="Joueurs"
-                  stroke="#ec4899"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+              <UptimePlayersChart data={globalSeries} days={days} />
+            </Suspense>
           </div>
         </ToolCard>
       )}
