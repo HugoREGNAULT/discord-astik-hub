@@ -2150,7 +2150,7 @@ function ChurnSection() {
                   </tr>
                 </thead>
                 <tbody>
-                  {cohorts!.cohorts.map((c) => (
+                  {cohorts!.cohorts.map((c: CohortRow) => (
                     <tr key={c.month} className="border-t border-border">
                       <td className="py-1 pr-2 font-mono">{c.month}</td>
                       <td className="py-1 pr-2 text-right">{c.arrived}</td>
