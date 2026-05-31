@@ -92,13 +92,21 @@ function ShopPage() {
                         stock: {r.stock === null || r.stock === undefined ? "illimité" : r.stock}
                       </span>
                     </div>
-                    <DaButton
-                      className="mt-2"
-                      disabled={insufficient || outOfStock || mut.isPending}
-                      onClick={() => setConfirmId(r.id)}
-                    >
-                      {outOfStock ? "Rupture" : insufficient ? "Solde insuffisant" : "Échanger"}
-                    </DaButton>
+                    <ConfirmDialog
+                      title="Confirmer l'échange"
+                      description="Ta demande sera mise en attente de validation par le staff. Les points ne sont débités qu'après approbation."
+                      destructive={false}
+                      onConfirm={() => mut.mutateAsync(r.id)}
+                      trigger={
+                        <DaButton
+                          className="mt-2"
+                          disabled={insufficient || outOfStock || mut.isPending}
+                        >
+                          {outOfStock ? "Rupture" : insufficient ? "Solde insuffisant" : "Échanger"}
+                        </DaButton>
+                      }
+                    />
+
                   </div>
                 </ToolCard>
               );
