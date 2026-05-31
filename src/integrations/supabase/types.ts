@@ -916,6 +916,72 @@ export type Database = {
           },
         ]
       }
+      mc_link_challenges: {
+        Row: {
+          code: string
+          created_at: string
+          discord_id: string
+          expires_at: string
+          id: string
+          mc_name: string
+          mc_uuid: string | null
+          status: string
+          verified_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discord_id: string
+          expires_at: string
+          id?: string
+          mc_name: string
+          mc_uuid?: string | null
+          status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discord_id?: string
+          expires_at?: string
+          id?: string
+          mc_name?: string
+          mc_uuid?: string | null
+          status?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
+      mc_player_stats: {
+        Row: {
+          faction_ingame: string | null
+          id: string
+          jobs: Json
+          mc_uuid: string
+          money: number | null
+          raw: Json
+          snapshot_at: string
+        }
+        Insert: {
+          faction_ingame?: string | null
+          id?: string
+          jobs?: Json
+          mc_uuid: string
+          money?: number | null
+          raw?: Json
+          snapshot_at?: string
+        }
+        Update: {
+          faction_ingame?: string | null
+          id?: string
+          jobs?: Json
+          mc_uuid?: string
+          money?: number | null
+          raw?: Json
+          snapshot_at?: string
+        }
+        Relationships: []
+      }
       member_alts: {
         Row: {
           alt_discord_id: string | null
