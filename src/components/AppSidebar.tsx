@@ -153,6 +153,13 @@ const SECTIONS: Section[] = [
         accent: "pink",
       },
       { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
+      {
+        title: "Périodes d'essai",
+        url: "/trials",
+        icon: CalendarCheck,
+        perm: "recruit.access",
+        accent: "pink",
+      },
     ],
   },
   {
