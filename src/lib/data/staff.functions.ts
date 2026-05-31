@@ -86,8 +86,8 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
   // Aggregate top contributors over last 7 days
   const sums = new Map<string, number>();
   for (const row of topPoints7d.data ?? []) {
-    const id = (row as any).member_discord_id as string;
-    const amt = (row as any).amount as number;
+    const id = row.member_discord_id;
+    const amt = row.amount;
     sums.set(id, (sums.get(id) ?? 0) + amt);
   }
   const topIds = Array.from(sums.entries())
@@ -111,18 +111,18 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
       );
     const byId = new Map(
       (members ?? [])
-        .filter((member: any) => isFactionMember(member))
-        .map((member: any) => [member.discord_id, member]),
+        .filter((member) => isFactionMember(member))
+        .map((member) => [member.discord_id, member] as const),
     );
     topContributors = topIds
       .filter(([id]) => byId.has(id))
       .map(([id, points]) => {
-        const m: any = byId.get(id) ?? {};
+        const m = byId.get(id);
         return {
           discord_id: id,
-          ig_name: m.ig_name ?? null,
-          discord_username: m.discord_username ?? null,
-          avatar_url: m.avatar_url ?? null,
+          ig_name: m?.ig_name ?? null,
+          discord_username: m?.discord_username ?? null,
+          avatar_url: m?.avatar_url ?? null,
           points,
         };
       });
@@ -236,7 +236,7 @@ export const getInactivityBuckets = createServerFn({ method: "GET" }).handler(as
       .limit(200_000),
   ]);
 
-  const active = filterFactionMembers(activeRes.data ?? []) as any[];
+  const active = filterFactionMembers(activeRes.data ?? []);
 
   // For each member, keep the EARLIEST snapshot at or after each threshold.
   // We want the oldest snapshot within the last 14d (to detect 14j inactivity)
@@ -339,7 +339,7 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
     if (row.actor_discord_id) connected.add(row.actor_discord_id);
   }
 
-  const factionMembers = filterFactionMembers(membersRes.data ?? []) as any[];
+  const factionMembers = filterFactionMembers(membersRes.data ?? []);
   const neverConnected = factionMembers
     .filter((m) => !connected.has(m.discord_id))
     .sort((a, b) =>

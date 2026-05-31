@@ -59,12 +59,12 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     db.from("blacklist").select("discord_id").not("discord_id", "is", null),
   ]);
   const factionDbMembers = filterFactionMembers(dbMembers ?? []);
-  const factionIds = new Set(factionDbMembers.map((m: any) => m.discord_id));
+  const factionIds = new Set(factionDbMembers.map((m) => m.discord_id));
   const igByDiscord = new Map<string, string | null>(
-    factionDbMembers.map((m: any) => [m.discord_id, m.ig_name ?? null]),
+    factionDbMembers.map((m) => [m.discord_id, m.ig_name ?? null]),
   );
   const blacklisted = new Set<string>(
-    (blacklistRows ?? []).map((b: any) => b.discord_id as string),
+    (blacklistRows ?? []).flatMap((b) => (b.discord_id ? [b.discord_id] : [])),
   );
 
   const seen = new Set<string>();

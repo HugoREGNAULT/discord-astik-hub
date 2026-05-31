@@ -99,7 +99,8 @@ export const globalSearch = createServerFn({ method: "GET" })
       const existingIds = new Set((r.data ?? []).map((m) => m.discord_id));
       const missingIds = [...altMap.keys()].filter((id) => !existingIds.has(id));
 
-      let extraMembers: any[] = [];
+      type MemberHitRow = NonNullable<typeof r.data>[number];
+      let extraMembers: MemberHitRow[] = [];
       if (missingIds.length > 0) {
         const extraR = await db
           .from("members")
