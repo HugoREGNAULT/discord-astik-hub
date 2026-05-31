@@ -122,6 +122,10 @@ function PdcPage() {
   // ---------------- Canvas drawing ----------------
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Bumped whenever peers/cursors change so draw() re-runs without making the
+  // big draw closure depend on peers directly (collab block is declared below).
+  const [peersVersion, setPeersVersion] = useState(0);
+  const peersRef = useRef<{ discordId: string; username: string; color: string; cursor: { x: number; y: number } | null }[]>([]);
 
   const draw = useCallback(() => {
     const cv = canvasRef.current;
