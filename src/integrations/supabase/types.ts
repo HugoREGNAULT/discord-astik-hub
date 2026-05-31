@@ -154,6 +154,48 @@ export type Database = {
         }
         Relationships: []
       }
+      anomaly_flags: {
+        Row: {
+          ai_explanation: string | null
+          created_at: string
+          evidence: Json
+          id: string
+          kind: string
+          member_discord_id: string
+          reviewed_at: string | null
+          reviewed_by_discord_id: string | null
+          score: number | null
+          severity: string
+          status: string
+        }
+        Insert: {
+          ai_explanation?: string | null
+          created_at?: string
+          evidence?: Json
+          id?: string
+          kind: string
+          member_discord_id: string
+          reviewed_at?: string | null
+          reviewed_by_discord_id?: string | null
+          score?: number | null
+          severity?: string
+          status?: string
+        }
+        Update: {
+          ai_explanation?: string | null
+          created_at?: string
+          evidence?: Json
+          id?: string
+          kind?: string
+          member_discord_id?: string
+          reviewed_at?: string | null
+          reviewed_by_discord_id?: string | null
+          score?: number | null
+          severity?: string
+          status?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           age: number
