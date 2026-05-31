@@ -16,16 +16,8 @@ import {
   Ban,
   Sparkles,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { lazy, Suspense } from "react";
+const RecruitmentTimelineChart = lazy(() => import("./-recruitment.chart"));
 import { EmptyState } from "@/components/EmptyState";
 import {
   listApplications,
