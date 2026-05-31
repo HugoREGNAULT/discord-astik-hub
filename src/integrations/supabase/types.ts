@@ -199,6 +199,7 @@ export type Database = {
       applications: {
         Row: {
           age: number
+          ai_review: Json | null
           country: string
           created_at: string
           decided_at: string | null
@@ -223,6 +224,7 @@ export type Database = {
         }
         Insert: {
           age: number
+          ai_review?: Json | null
           country: string
           created_at?: string
           decided_at?: string | null
@@ -247,6 +249,7 @@ export type Database = {
         }
         Update: {
           age?: number
+          ai_review?: Json | null
           country?: string
           created_at?: string
           decided_at?: string | null
