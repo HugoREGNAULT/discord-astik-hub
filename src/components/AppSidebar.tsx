@@ -173,6 +173,13 @@ const SECTIONS: Section[] = [
         accent: "pink",
       },
       {
+        title: "Salaires",
+        url: "/salaries",
+        icon: Coins,
+        perm: "points.manage",
+        accent: "pink",
+      },
+      {
         title: "Dons",
         url: "/donations",
         icon: ShoppingCart,

@@ -1439,6 +1439,78 @@ export type Database = {
         }
         Relationships: []
       }
+      salary_grades: {
+        Row: {
+          active: boolean
+          created_at: string
+          grade_label: string
+          id: string
+          min_activity_seconds: number
+          updated_at: string
+          weekly_points: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          grade_label: string
+          id?: string
+          min_activity_seconds?: number
+          updated_at?: string
+          weekly_points?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          grade_label?: string
+          id?: string
+          min_activity_seconds?: number
+          updated_at?: string
+          weekly_points?: number
+        }
+        Relationships: []
+      }
+      salary_runs: {
+        Row: {
+          breakdown: Json
+          committed_at: string | null
+          created_at: string
+          created_by_discord_id: string | null
+          created_by_username: string | null
+          id: string
+          period_end: string
+          period_start: string
+          recipient_count: number
+          status: string
+          total_points: number
+        }
+        Insert: {
+          breakdown?: Json
+          committed_at?: string | null
+          created_at?: string
+          created_by_discord_id?: string | null
+          created_by_username?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          recipient_count?: number
+          status?: string
+          total_points?: number
+        }
+        Update: {
+          breakdown?: Json
+          committed_at?: string | null
+          created_at?: string
+          created_by_discord_id?: string | null
+          created_by_username?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          recipient_count?: number
+          status?: string
+          total_points?: number
+        }
+        Relationships: []
+      }
       shop_admin_price_alerts: {
         Row: {
           created_at: string

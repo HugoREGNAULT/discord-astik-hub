@@ -21,6 +21,7 @@ import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
+import { Route as AuthenticatedSalariesRouteImport } from './routes/_authenticated/salaries'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -70,6 +71,7 @@ import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
 import { Route as ApiPublicHooksPaladiumMarketSyncRouteImport } from './routes/api/public/hooks/paladium-market-sync'
 import { Route as ApiPublicHooksPaladiumAdminShopSyncRouteImport } from './routes/api/public/hooks/paladium-admin-shop-sync'
+import { Route as ApiPublicHooksGenerateSalaryPreviewRouteImport } from './routes/api/public/hooks/generate-salary-preview'
 import { Route as ApiPublicHooksGenerateDigestRouteImport } from './routes/api/public/hooks/generate-digest'
 import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/voice'
 import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
@@ -136,6 +138,11 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
 const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSalariesRoute = AuthenticatedSalariesRouteImport.update({
+  id: '/salaries',
+  path: '/salaries',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRecruitmentRoute =
@@ -408,6 +415,12 @@ const ApiPublicHooksPaladiumAdminShopSyncRoute =
     path: '/api/public/hooks/paladium-admin-shop-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksGenerateSalaryPreviewRoute =
+  ApiPublicHooksGenerateSalaryPreviewRouteImport.update({
+    id: '/api/public/hooks/generate-salary-preview',
+    path: '/api/public/hooks/generate-salary-preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksGenerateDigestRoute =
   ApiPublicHooksGenerateDigestRouteImport.update({
     id: '/api/public/hooks/generate-digest',
@@ -463,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/tools': typeof AuthenticatedToolsRouteWithChildren
@@ -502,6 +516,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/generate-digest': typeof ApiPublicHooksGenerateDigestRoute
+  '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -529,6 +544,7 @@ export interface FileRoutesByTo {
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
@@ -567,6 +583,7 @@ export interface FileRoutesByTo {
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/generate-digest': typeof ApiPublicHooksGenerateDigestRoute
+  '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -598,6 +615,7 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/_authenticated/salaries': typeof AuthenticatedSalariesRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
@@ -637,6 +655,7 @@ export interface FileRoutesById {
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
   '/api/public/bot/voice': typeof ApiPublicBotVoiceRoute
   '/api/public/hooks/generate-digest': typeof ApiPublicHooksGenerateDigestRoute
+  '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -668,6 +687,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/profile'
     | '/recruitment'
+    | '/salaries'
     | '/shop'
     | '/staff'
     | '/tools'
@@ -707,6 +727,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/generate-digest'
+    | '/api/public/hooks/generate-salary-preview'
     | '/api/public/hooks/paladium-admin-shop-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
@@ -734,6 +755,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/profile'
     | '/recruitment'
+    | '/salaries'
     | '/shop'
     | '/staff'
     | '/trials'
@@ -772,6 +794,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/generate-digest'
+    | '/api/public/hooks/generate-salary-preview'
     | '/api/public/hooks/paladium-admin-shop-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
@@ -802,6 +825,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
+    | '/_authenticated/salaries'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
     | '/_authenticated/tools'
@@ -841,6 +865,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/stats'
     | '/api/public/bot/voice'
     | '/api/public/hooks/generate-digest'
+    | '/api/public/hooks/generate-salary-preview'
     | '/api/public/hooks/paladium-admin-shop-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
@@ -868,6 +893,7 @@ export interface RootRouteChildren {
   ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
   ApiPublicBotVoiceRoute: typeof ApiPublicBotVoiceRoute
   ApiPublicHooksGenerateDigestRoute: typeof ApiPublicHooksGenerateDigestRoute
+  ApiPublicHooksGenerateSalaryPreviewRoute: typeof ApiPublicHooksGenerateSalaryPreviewRoute
   ApiPublicHooksPaladiumAdminShopSyncRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRoute
   ApiPublicHooksPaladiumMarketSyncRoute: typeof ApiPublicHooksPaladiumMarketSyncRoute
   ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
@@ -959,6 +985,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof AuthenticatedShopRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/salaries': {
+      id: '/_authenticated/salaries'
+      path: '/salaries'
+      fullPath: '/salaries'
+      preLoaderRoute: typeof AuthenticatedSalariesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/recruitment': {
@@ -1304,6 +1337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/generate-salary-preview': {
+      id: '/api/public/hooks/generate-salary-preview'
+      path: '/api/public/hooks/generate-salary-preview'
+      fullPath: '/api/public/hooks/generate-salary-preview'
+      preLoaderRoute: typeof ApiPublicHooksGenerateSalaryPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/generate-digest': {
       id: '/api/public/hooks/generate-digest'
       path: '/api/public/hooks/generate-digest'
@@ -1454,6 +1494,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
+  AuthenticatedSalariesRoute: typeof AuthenticatedSalariesRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
@@ -1479,6 +1520,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
+  AuthenticatedSalariesRoute: AuthenticatedSalariesRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
@@ -1510,6 +1552,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBotStatsRoute: ApiPublicBotStatsRoute,
   ApiPublicBotVoiceRoute: ApiPublicBotVoiceRoute,
   ApiPublicHooksGenerateDigestRoute: ApiPublicHooksGenerateDigestRoute,
+  ApiPublicHooksGenerateSalaryPreviewRoute:
+    ApiPublicHooksGenerateSalaryPreviewRoute,
   ApiPublicHooksPaladiumAdminShopSyncRoute:
     ApiPublicHooksPaladiumAdminShopSyncRoute,
   ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
