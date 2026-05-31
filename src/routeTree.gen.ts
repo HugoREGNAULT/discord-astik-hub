@@ -21,6 +21,7 @@ import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
+import { Route as AuthenticatedSalariesRouteImport } from './routes/_authenticated/salaries'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -137,6 +138,11 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
 const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSalariesRoute = AuthenticatedSalariesRouteImport.update({
+  id: '/salaries',
+  path: '/salaries',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedRecruitmentRoute =
@@ -470,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/tools': typeof AuthenticatedToolsRouteWithChildren
@@ -537,6 +544,7 @@ export interface FileRoutesByTo {
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/salaries': typeof AuthenticatedSalariesRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
@@ -607,6 +615,7 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/_authenticated/salaries': typeof AuthenticatedSalariesRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
@@ -678,6 +687,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/profile'
     | '/recruitment'
+    | '/salaries'
     | '/shop'
     | '/staff'
     | '/tools'
@@ -745,6 +755,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/profile'
     | '/recruitment'
+    | '/salaries'
     | '/shop'
     | '/staff'
     | '/trials'
@@ -814,6 +825,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
+    | '/_authenticated/salaries'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
     | '/_authenticated/tools'
@@ -973,6 +985,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof AuthenticatedShopRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/salaries': {
+      id: '/_authenticated/salaries'
+      path: '/salaries'
+      fullPath: '/salaries'
+      preLoaderRoute: typeof AuthenticatedSalariesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/recruitment': {
@@ -1475,6 +1494,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
+  AuthenticatedSalariesRoute: typeof AuthenticatedSalariesRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
@@ -1500,6 +1520,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
+  AuthenticatedSalariesRoute: AuthenticatedSalariesRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
