@@ -162,13 +162,15 @@ export const validateCart = createServerFn({ method: "POST" })
       throw new Error("Total du panier excède la limite autorisée");
     }
 
-    // Ajout des points au membre
-    const { data: m } = await db
-      .from("members")
-      .select("astik_points")
-      .eq("discord_id", cart.member_discord_id)
-      .single();
-    const next = (m?.astik_points ?? 0) + totals.final;
+    // Ajout atomique des points au membre via RPC (évite la race condition).
+    const { data: newBalance, error: rpcErr } = await db.rpc("apply_points_delta", {
+      p_discord_id: cart.member_discord_id,
+      p_delta: totals.final,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (newBalance === null || newBalance === undefined)
+      throw new Error("Membre introuvable");
+    const next = newBalance as number;
     // members.astik_points est synchronisé par le trigger SQL via points_ledger.total_after.
     await db.from("points_ledger").insert({
       member_discord_id: cart.member_discord_id,
