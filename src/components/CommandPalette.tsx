@@ -38,6 +38,7 @@ const NAVS: Nav[] = [
   { label: "Mon profil", to: "/me", icon: UserCircle2, perm: "profile.self" },
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
   { label: "Sondages", to: "/polls", icon: CalendarCheck, perm: "profile.self" },
+  { label: "Événements", to: "/events", icon: CalendarCheck, perm: "profile.self" },
   { label: "Membres", to: "/members", icon: Users, perm: "members.view" },
   { label: "Candidatures", to: "/recruitment", icon: UserPlus, perm: "recruit.access" },
   { label: "AstikPoints", to: "/points", icon: Coins, perm: "points.manage" },

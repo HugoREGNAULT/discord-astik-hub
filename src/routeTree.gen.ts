@@ -29,6 +29,7 @@ import { Route as AuthenticatedObjectivesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
+import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDonationsRouteImport } from './routes/_authenticated/donations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -38,6 +39,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
+import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
@@ -59,6 +61,7 @@ import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authent
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
+import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
@@ -175,6 +178,11 @@ const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedEffectifRoute = AuthenticatedEffectifRouteImport.update({
   id: '/effectif',
   path: '/effectif',
@@ -220,6 +228,12 @@ const AuthenticatedPollsIndexRoute = AuthenticatedPollsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedPollsRoute,
 } as any)
+const AuthenticatedEventsIndexRoute =
+  AuthenticatedEventsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedEventsRoute,
+  } as any)
 const ApiTestSeedPollRoute = ApiTestSeedPollRouteImport.update({
   id: '/api/test/seed-poll',
   path: '/api/test/seed-poll',
@@ -339,6 +353,11 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMembersRoute,
 } as any)
+const AuthenticatedEventsIdRoute = AuthenticatedEventsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedEventsRoute,
+} as any)
 const ApiPublicHooksSyncDiscordPresenceRoute =
   ApiPublicHooksSyncDiscordPresenceRouteImport.update({
     id: '/api/public/hooks/sync-discord-presence',
@@ -414,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
+  '/events': typeof AuthenticatedEventsRouteWithChildren
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
@@ -428,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -449,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/events/': typeof AuthenticatedEventsIndexRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -488,6 +510,7 @@ export interface FileRoutesByTo {
   '/staff': typeof AuthenticatedStaffRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -509,6 +532,7 @@ export interface FileRoutesByTo {
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/events': typeof AuthenticatedEventsIndexRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -538,6 +562,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/donations': typeof AuthenticatedDonationsRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
+  '/_authenticated/events': typeof AuthenticatedEventsRouteWithChildren
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
@@ -552,6 +577,7 @@ export interface FileRoutesById {
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
+  '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -573,6 +599,7 @@ export interface FileRoutesById {
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -602,6 +629,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/donations'
     | '/effectif'
+    | '/events'
     | '/logs'
     | '/me'
     | '/members'
@@ -616,6 +644,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/welcome'
     | '/api/health'
+    | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
     | '/tools/alerts'
@@ -637,6 +666,7 @@ export interface FileRouteTypes {
     | '/api/auth/whoami'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/events/'
     | '/polls/'
     | '/tools/'
     | '/api/public/bot/import'
@@ -676,6 +706,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/welcome'
     | '/api/health'
+    | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
     | '/tools/alerts'
@@ -697,6 +728,7 @@ export interface FileRouteTypes {
     | '/api/auth/whoami'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/events'
     | '/polls'
     | '/tools'
     | '/api/public/bot/import'
@@ -725,6 +757,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/donations'
     | '/_authenticated/effectif'
+    | '/_authenticated/events'
     | '/_authenticated/logs'
     | '/_authenticated/me'
     | '/_authenticated/members'
@@ -739,6 +772,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tools'
     | '/_authenticated/welcome'
     | '/api/health'
+    | '/_authenticated/events/$id'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
     | '/_authenticated/tools/alerts'
@@ -760,6 +794,7 @@ export interface FileRouteTypes {
     | '/api/auth/whoami'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/_authenticated/events/'
     | '/_authenticated/polls/'
     | '/_authenticated/tools/'
     | '/api/public/bot/import'
@@ -944,6 +979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/events': {
+      id: '/_authenticated/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof AuthenticatedEventsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/effectif': {
       id: '/_authenticated/effectif'
       path: '/effectif'
@@ -1006,6 +1048,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/polls/'
       preLoaderRoute: typeof AuthenticatedPollsIndexRouteImport
       parentRoute: typeof AuthenticatedPollsRoute
+    }
+    '/_authenticated/events/': {
+      id: '/_authenticated/events/'
+      path: '/'
+      fullPath: '/events/'
+      preLoaderRoute: typeof AuthenticatedEventsIndexRouteImport
+      parentRoute: typeof AuthenticatedEventsRoute
     }
     '/api/test/seed-poll': {
       id: '/api/test/seed-poll'
@@ -1154,6 +1203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembersIdRouteImport
       parentRoute: typeof AuthenticatedMembersRoute
     }
+    '/_authenticated/events/$id': {
+      id: '/_authenticated/events/$id'
+      path: '/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof AuthenticatedEventsIdRouteImport
+      parentRoute: typeof AuthenticatedEventsRoute
+    }
     '/api/public/hooks/sync-discord-presence': {
       id: '/api/public/hooks/sync-discord-presence'
       path: '/api/public/hooks/sync-discord-presence'
@@ -1234,6 +1290,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedEventsRouteChildren {
+  AuthenticatedEventsIdRoute: typeof AuthenticatedEventsIdRoute
+  AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
+}
+
+const AuthenticatedEventsRouteChildren: AuthenticatedEventsRouteChildren = {
+  AuthenticatedEventsIdRoute: AuthenticatedEventsIdRoute,
+  AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
+}
+
+const AuthenticatedEventsRouteWithChildren =
+  AuthenticatedEventsRoute._addFileChildren(AuthenticatedEventsRouteChildren)
+
 interface AuthenticatedMembersRouteChildren {
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
 }
@@ -1303,6 +1372,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDonationsRoute: typeof AuthenticatedDonationsRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
+  AuthenticatedEventsRoute: typeof AuthenticatedEventsRouteWithChildren
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
@@ -1326,6 +1396,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDonationsRoute: AuthenticatedDonationsRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
+  AuthenticatedEventsRoute: AuthenticatedEventsRouteWithChildren,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,

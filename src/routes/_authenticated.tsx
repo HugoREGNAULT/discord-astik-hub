@@ -31,6 +31,7 @@ const PATH_LABELS: Record<string, string> = {
   "/me": "Mon profil",
   "/dashboard": "Classement",
   "/polls": "Sondages",
+  "/events": "Événements",
   "/absences": "Absences",
   "/tools": "Outils Paladium",
   "/tools/alerts": "Mes alertes",
