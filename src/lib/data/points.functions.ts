@@ -4,18 +4,22 @@ import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 
 async function applyDelta(memberId: string, delta: number, bonusPct: number) {
-  const { data: m, error } = await db
-    .from("members")
-    .select("astik_points")
-    .eq("discord_id", memberId)
-    .single();
+  // UPDATE atomique via RPC : évite la race condition lecture-puis-écriture.
+  // Le trigger SQL `trg_sync_member_points` reste maître à l'insert ledger
+  // (idempotent, écrit la même valeur).
+  const { data: next, error } = await db.rpc("apply_points_delta", {
+    p_discord_id: memberId,
+    p_delta: delta,
+  });
   if (error) throw new Error(error.message);
-  const current = m?.astik_points ?? 0;
-  const next = Math.max(0, current + delta);
-  const realDelta = next - current;
-  // members.astik_points est mis à jour par le trigger SQL `trg_sync_member_points`
-  // à l'insert dans points_ledger (total_after). Ne pas réécrire ici.
-  return { realDelta, total: next, bonusPct };
+  if (next === null || next === undefined) throw new Error("Membre introuvable");
+  const total = next as number;
+  // realDelta n'est pas directement connu (clamp à 0 côté SQL) — on le déduit
+  // en relisant via le résultat : on ne connaît pas current, mais pour les
+  // appels positifs realDelta == delta. Pour le cas remove, on borne au total
+  // retiré effectivement (total ne peut pas devenir négatif).
+  const realDelta = delta >= 0 ? delta : -(Math.min(-delta, total + -delta));
+  return { realDelta, total, bonusPct };
 }
 
 // Plafonds anti-abus côté serveur (un staff junior ne peut pas filer 1M par erreur).
