@@ -40,6 +40,7 @@ import { Route as AuthenticatedDonationsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
+import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAnnouncementsRouteImport } from './routes/_authenticated/announcements'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
@@ -248,6 +249,11 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
   id: '/blacklist',
   path: '/blacklist',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAnnouncementsRoute =
@@ -535,6 +541,7 @@ export interface FileRoutesByFullPath {
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -616,6 +623,7 @@ export interface FileRoutesByTo {
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/assistant': typeof AuthenticatedAssistantRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -696,6 +704,7 @@ export interface FileRoutesById {
   '/_authenticated/absences': typeof AuthenticatedAbsencesRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/announcements': typeof AuthenticatedAnnouncementsRoute
+  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -779,6 +788,7 @@ export interface FileRouteTypes {
     | '/absences'
     | '/admin'
     | '/announcements'
+    | '/assistant'
     | '/blacklist'
     | '/config'
     | '/dashboard'
@@ -860,6 +870,7 @@ export interface FileRouteTypes {
     | '/absences'
     | '/admin'
     | '/announcements'
+    | '/assistant'
     | '/blacklist'
     | '/config'
     | '/dashboard'
@@ -939,6 +950,7 @@ export interface FileRouteTypes {
     | '/_authenticated/absences'
     | '/_authenticated/admin'
     | '/_authenticated/announcements'
+    | '/_authenticated/assistant'
     | '/_authenticated/blacklist'
     | '/_authenticated/config'
     | '/_authenticated/dashboard'
@@ -1264,6 +1276,13 @@ declare module '@tanstack/react-router' {
       path: '/blacklist'
       fullPath: '/blacklist'
       preLoaderRoute: typeof AuthenticatedBlacklistRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/assistant': {
+      id: '/_authenticated/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/announcements': {
@@ -1703,6 +1722,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAnnouncementsRoute: typeof AuthenticatedAnnouncementsRoute
+  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1733,6 +1753,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAbsencesRoute: AuthenticatedAbsencesRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAnnouncementsRoute: AuthenticatedAnnouncementsRoute,
+  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
