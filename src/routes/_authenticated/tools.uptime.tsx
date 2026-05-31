@@ -203,43 +203,9 @@ function UptimePage() {
                 {RANGES.find((r) => r.key === range)?.label}
               </div>
               <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={current.series}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis
-                      dataKey="t"
-                      tickFormatter={(t) => formatTick(t, days)}
-                      stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                    />
-                    <YAxis
-                      domain={[0, 1]}
-                      ticks={[0, 1]}
-                      tickFormatter={(v) => (v === 1 ? "UP" : "DOWN")}
-                      stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                      width={48}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#18181b",
-                        border: "1px solid #3f3f46",
-                        fontSize: 12,
-                        color: "#e4e4e7",
-                      }}
-                      labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                      formatter={(v: number) => (v === 1 ? "UP" : "DOWN")}
-                    />
-                    <Line
-                      type="stepAfter"
-                      dataKey="up"
-                      name="Statut"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+                  <UptimeStatusChart data={current.series} days={days} />
+                </Suspense>
               </div>
               {current.series.some((p) => p.players > 0) && (
                 <>
@@ -250,33 +216,9 @@ function UptimePage() {
                     // joueurs en ligne
                   </div>
                   <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={current.series}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                        <XAxis
-                          dataKey="t"
-                          tickFormatter={(t) => formatTick(t, days)}
-                          stroke="#52525b"
-                          tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                        />
-                        <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#18181b",
-                            border: "1px solid #3f3f46",
-                            fontSize: 12,
-                          }}
-                          labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="players"
-                          stroke="#ec4899"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+                      <UptimePlayersChart data={current.series} days={days} />
+                    </Suspense>
                   </div>
                 </>
               )}
