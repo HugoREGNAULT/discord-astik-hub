@@ -29,8 +29,8 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      aria-label={theme === "dark" ? "Activer le mode clair" : "Activer le mode sombre"}
-      title={theme === "dark" ? "Mode clair" : "Mode sombre"}
+      aria-label={theme === "dark" ? "Activer le mode clair (bêta)" : "Activer le mode sombre"}
+      title={theme === "dark" ? "Mode clair (bêta)" : "Mode sombre"}
       className="h-8 w-8 grid place-items-center rounded-md border border-zinc-800/80 text-zinc-400 hover:text-pink-500 hover:border-pink-500/50 transition-colors"
     >
       {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
