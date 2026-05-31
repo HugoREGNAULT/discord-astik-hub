@@ -124,6 +124,12 @@ function LoginPage() {
 
         <div className="h-1 w-2/3 mx-auto bg-gradient-to-r from-transparent via-pink-500/30 to-transparent mt-4" />
       </div>
+      {import.meta.env.DEV && (
+        <div className="fixed bottom-2 right-2 z-50 text-[9px] text-zinc-700 font-mono">
+          dev build
+        </div>
+      )}
     </div>
   );
 }
+
