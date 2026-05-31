@@ -681,7 +681,7 @@ function FactionHealthSection() {
   const { data, isLoading } = useQuery({
     queryKey: ["faction-health"],
     queryFn: () => fn(),
-    refetchInterval: 5 * 60_000,
+  });
   });
 
   if (isLoading || !data) {
@@ -832,7 +832,7 @@ function WeeklyDigestSection() {
   const { data, isLoading } = useQuery({
     queryKey: ["latest-digest"],
     queryFn: () => fn(),
-    refetchInterval: 10 * 60_000,
+  });
   });
 
   const genMut = useMutation({
@@ -1532,7 +1532,7 @@ function InactivityCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["inactivity-buckets"],
     queryFn: () => fn(),
-    refetchInterval: 5 * 60_000,
+  });
   });
   const [tab, setTab] = useState<"d7" | "d14" | "d30">("d7");
 
@@ -1582,7 +1582,7 @@ function NeverConnectedCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["never-connected"],
     queryFn: () => fn(),
-    refetchInterval: 10 * 60_000,
+    });
   });
 
   return (
@@ -1737,7 +1737,7 @@ function InactivityQueueCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["inactivity-queue"],
     queryFn: () => fn(),
-    refetchInterval: 5 * 60_000,
+    });
   });
 
   const rows: InactivityRow[] = (data?.rows ?? []) as InactivityRow[];
@@ -1926,7 +1926,7 @@ function AnomaliesCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["anomaly-flags-open"],
     queryFn: () => fn(),
-    refetchInterval: 120_000,
+    });
   });
 
   const mut = useMutation({
