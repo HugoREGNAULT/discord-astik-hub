@@ -68,6 +68,7 @@ import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authent
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedStaffGradesRouteImport } from './routes/_authenticated/staff.grades'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
+import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as AuthenticatedEventsIdRouteImport } from './routes/_authenticated/events.$id'
@@ -407,6 +408,12 @@ const AuthenticatedStaffAppealsRoute =
     path: '/appeals',
     getParentRoute: () => AuthenticatedStaffRoute,
   } as any)
+const AuthenticatedStaffAnnounceRoute =
+  AuthenticatedStaffAnnounceRouteImport.update({
+    id: '/announce',
+    path: '/announce',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const AuthenticatedPollsIdRoute = AuthenticatedPollsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -570,6 +577,7 @@ export interface FileRoutesByFullPath {
   '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/staff/grades': typeof AuthenticatedStaffGradesRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -649,6 +657,7 @@ export interface FileRoutesByTo {
   '/events/$id': typeof AuthenticatedEventsIdRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/staff/grades': typeof AuthenticatedStaffGradesRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -733,6 +742,7 @@ export interface FileRoutesById {
   '/_authenticated/events/$id': typeof AuthenticatedEventsIdRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
+  '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/_authenticated/staff/grades': typeof AuthenticatedStaffGradesRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -817,6 +827,7 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
+    | '/staff/announce'
     | '/staff/appeals'
     | '/staff/grades'
     | '/tools/alerts'
@@ -896,6 +907,7 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/members/$id'
     | '/polls/$id'
+    | '/staff/announce'
     | '/staff/appeals'
     | '/staff/grades'
     | '/tools/alerts'
@@ -979,6 +991,7 @@ export interface FileRouteTypes {
     | '/_authenticated/events/$id'
     | '/_authenticated/members/$id'
     | '/_authenticated/polls/$id'
+    | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
     | '/_authenticated/staff/grades'
     | '/_authenticated/tools/alerts'
@@ -1474,6 +1487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffAppealsRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
     }
+    '/_authenticated/staff/announce': {
+      id: '/_authenticated/staff/announce'
+      path: '/announce'
+      fullPath: '/staff/announce'
+      preLoaderRoute: typeof AuthenticatedStaffAnnounceRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/polls/$id': {
       id: '/_authenticated/polls/$id'
       path: '/$id'
@@ -1669,11 +1689,13 @@ const AuthenticatedPollsRouteWithChildren =
   AuthenticatedPollsRoute._addFileChildren(AuthenticatedPollsRouteChildren)
 
 interface AuthenticatedStaffRouteChildren {
+  AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
   AuthenticatedStaffGradesRoute: typeof AuthenticatedStaffGradesRoute
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
+  AuthenticatedStaffAnnounceRoute: AuthenticatedStaffAnnounceRoute,
   AuthenticatedStaffAppealsRoute: AuthenticatedStaffAppealsRoute,
   AuthenticatedStaffGradesRoute: AuthenticatedStaffGradesRoute,
 }
