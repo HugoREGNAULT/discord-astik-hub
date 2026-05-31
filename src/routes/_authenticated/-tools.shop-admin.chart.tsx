@@ -10,8 +10,8 @@ import {
 
 interface Row {
   captured_at: string;
-  price: number;
-  price_pb: number;
+  price: number | null;
+  price_pb: number | null;
 }
 
 export default function ShopAdminHistoryChart({ rows }: { rows: Row[] }) {
