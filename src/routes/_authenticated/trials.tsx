@@ -139,7 +139,7 @@ function TrialPanel({ memberDiscordId }: { memberDiscordId: string }) {
   const voteFn = useServerFn(castTrialVote);
   const decideFn = useServerFn(decideTrial);
   const mentorFn = useServerFn(setMentor);
-  const user = useCurrentUser();
+  const user = useCurrentUser().data;
 
   const { data, isLoading } = useQuery({
     queryKey: ["trial-panel", memberDiscordId],
