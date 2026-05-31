@@ -30,6 +30,7 @@ import {
 } from "@/lib/data/members.functions";
 import { addPoints } from "@/lib/data/points.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GamificationCard } from "@/components/GamificationCard";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
