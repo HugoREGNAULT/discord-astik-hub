@@ -221,52 +221,6 @@ function StaffPage() {
       <div className="grid gap-6 lg:grid-cols-2">
 
 
-
-
-        {/* Top contributeurs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="size-4 text-primary" />
-              Top contributeurs (7j)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {data.topContributors.length === 0 ? (
-              <EmptyState
-                icon={TrendingUpIcon}
-                title="Aucun gain de points cette semaine"
-                description="Les contributeurs apparaîtront ici dès les premiers gains."
-                variant="compact"
-              />
-            ) : (
-              data.topContributors.map((m, i) => (
-                <Link
-                  key={m.discord_id}
-                  to="/members/$id"
-                  params={{ id: m.discord_id }}
-                  className="flex items-center gap-3 border border-border rounded p-2 hover:border-primary/40 transition"
-                >
-                  <span className="text-xs font-mono text-muted-foreground w-5">#{i + 1}</span>
-                  {m.avatar_url ? (
-                    <img src={m.avatar_url} alt="" className="size-8 rounded-full" />
-                  ) : (
-                    <div className="size-8 rounded-full bg-muted" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">
-                      {m.ig_name ?? m.discord_username}
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="gap-1">
-                    <Coins className="size-3" /> +{m.points}
-                  </Badge>
-                </Link>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
         {/* Candidatures en attente */}
         <Card>
           <CardHeader>
