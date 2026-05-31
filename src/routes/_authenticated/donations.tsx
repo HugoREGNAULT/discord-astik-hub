@@ -226,21 +226,20 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
             </span>
             <span className="font-mono text-pink-400 font-bold">{l.subtotal} pts</span>
             <ConfirmDialog
-              title={`Supprimer "${l.label}" ?`}
-              description="Cette ligne sera retirée du panier."
-              confirmLabel="Supprimer"
+              title="Retirer cette ligne ?"
+              description={`"${l.label}" sera retiré du panier.`}
+              confirmLabel="Retirer"
+              destructive
               onConfirm={() => onRemove(l.id)}
               trigger={
                 <Button
                   variant="ghost"
                   size="icon"
                   className="text-red-400 hover:text-red-300"
-                  aria-label={`Supprimer ${l.label}`}
-                  onClick={() => onRemove(l.id)}
+                  aria-label={`Retirer ${l.label}`}
                 >
                   <Trash2 className="size-4" />
                 </Button>
-
               }
             />
           </li>
