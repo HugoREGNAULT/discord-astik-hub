@@ -39,7 +39,9 @@ export const resolveMojangUuid = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    await requireSession();
+    const user = await requireSession();
+    const { ok } = rateLimit(`mojang:${user.discordId}`, 20, 10000);
+    if (!ok) throw new Error("RATE_LIMITED");
     // 1) Try cache (case-insensitive)
     try {
       const { data: cached } = await db
