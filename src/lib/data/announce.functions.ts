@@ -112,11 +112,9 @@ export const publishAnnouncement = createServerFn({ method: "POST" })
 
     await postToChannel(data.channel, { content });
 
-    await logAction({
-      action: "announcement.publish",
-      actor: user.discordId,
-      level: "info",
-      payload: { channel: data.channel, length: content.length },
+    await logAction("announcement.publish", user.discordId, {
+      channel: data.channel,
+      length: content.length,
     });
 
     return { ok: true, channel: data.channel };
