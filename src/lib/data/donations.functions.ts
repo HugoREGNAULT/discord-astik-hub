@@ -180,6 +180,15 @@ export const validateCart = createServerFn({ method: "POST" })
       .update({ status: "validated", validated_at: new Date().toISOString() })
       .eq("id", data.cartId);
     await logAction("cart_validate", user.discordId, { cartId: data.cartId, total: totals.final });
+    // Notif membre — don validé
+    const { notify } = await import("@/lib/data/notify.server");
+    void notify({
+      recipientDiscordId: cart.member_discord_id,
+      kind: "donation",
+      title: `Don validé : +${totals.final} AstikPoints`,
+      detail: `Nouveau solde : ${next} pts`,
+      href: "/me",
+    });
     return { ok: true, total: totals.final, newBalance: next };
   });
 
