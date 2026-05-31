@@ -48,6 +48,7 @@ import { listMyBadges } from "@/lib/data/grades.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GamificationCard } from "@/components/GamificationCard";
 
 export const Route = createFileRoute("/_authenticated/me")({
   head: () => ({
