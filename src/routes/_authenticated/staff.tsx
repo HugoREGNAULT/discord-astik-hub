@@ -421,6 +421,9 @@ function StaffPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Membres jamais connectés au site */}
+      <NeverConnectedCard />
     </div>
   );
 }
