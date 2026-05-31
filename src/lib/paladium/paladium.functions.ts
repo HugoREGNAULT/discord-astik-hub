@@ -20,7 +20,9 @@ export const callPaladium = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    await requireSession();
+    const user = await requireSession();
+    const { ok } = rateLimit(`paladium:${user.discordId}`, 30, 10000);
+    if (!ok) throw new Error("RATE_LIMITED");
     const result = await fetchPaladium(data.path);
     // Serialize as a JSON string to bypass strict structural serialization checks
     // (Paladium responses have dynamic shapes).
