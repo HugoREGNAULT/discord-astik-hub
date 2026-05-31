@@ -343,6 +343,7 @@ function PdcPage() {
     }
     const cell = cellFromEvent(e);
     setHoverCell(cell);
+    if (connected) broadcastCursorRef.current?.({ x: cell.x, y: cell.y });
     if (!isDrawingRef.current) return;
     if (tool === "paint" && selectedBlockId) paintCell(cell.x, cell.y, selectedBlockId);
     if (tool === "erase") paintCell(cell.x, cell.y, null);
@@ -371,11 +372,22 @@ function PdcPage() {
         }
         return { ...prev, [key]: layer };
       });
+      // Broadcast each cell of the rect (small payloads, ordered).
+      const bcast = broadcastCellEditRef.current;
+      if (bcast) {
+        const blockId = selectedBlockId ?? null;
+        for (let y = y1; y <= y2; y++) {
+          for (let x = x1; x <= x2; x++) {
+            bcast({ layer: currentLayer, x, y, block_id: blockId });
+          }
+        }
+      }
       setDirty(true);
       setRectStart(null);
     }
     isDrawingRef.current = false;
   };
+
 
   const onWheel = (e: ReactWheelEvent<HTMLCanvasElement>) => {
     e.preventDefault();
