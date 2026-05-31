@@ -18,7 +18,9 @@ import { listMembers } from "@/lib/data/members.functions";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
 import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+
 import {
   PageHeader,
   PageCard,
@@ -213,12 +215,16 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
               confirmLabel="Supprimer"
               onConfirm={() => onRemove(l.id)}
               trigger={
-                <button
-                  aria-label={`Supprimer ${l.label}`}
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="text-red-400 hover:text-red-300"
+                  aria-label={`Supprimer ${l.label}`}
+                  onClick={() => onRemove(l.id)}
                 >
                   <Trash2 className="size-4" />
-                </button>
+                </Button>
+
               }
             />
           </li>
