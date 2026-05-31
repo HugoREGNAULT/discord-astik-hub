@@ -430,51 +430,9 @@ function ApplicationStats() {
       {data.timeline.length > 1 && (
         <div className="rounded-lg border bg-card p-4">
           <div className="text-sm font-medium mb-3">Évolution mensuelle</div>
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.timeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis dataKey="month" stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 12 }} />
-                <YAxis
-                  stroke="#52525b"
-                  tick={{ fill: "#e4e4e7", fontSize: 12 }}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "#18181b",
-                    border: "1px solid #3f3f46",
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: "#e4e4e7",
-                  }}
-                  labelStyle={{ color: "#fafafa" }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12, color: "#e4e4e7" }} />
-                <Line
-                  type="monotone"
-                  dataKey="total"
-                  name="Total"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="accepted"
-                  name="Acceptées"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="rejected"
-                  name="Refusées"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <Suspense fallback={<div className="h-64 w-full animate-pulse rounded-md bg-muted" />}>
+            <RecruitmentTimelineChart data={data.timeline} />
+          </Suspense>
         </div>
       )}
     </div>
