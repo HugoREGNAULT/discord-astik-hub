@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
 import { generateWeeklyDigest } from "./digest.server";
+import { rateLimit } from "@/lib/rate-limit.server";
 
 /**
  * Renvoie le dernier digest IA hebdo enregistré (le plus récent).
