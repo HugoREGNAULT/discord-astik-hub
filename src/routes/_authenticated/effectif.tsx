@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageHeader } from "@/components/tools/ToolsUi";
+import { PageHeader, ErrorBlock } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
