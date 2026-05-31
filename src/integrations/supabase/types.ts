@@ -750,10 +750,12 @@ export type Database = {
           ig_name: string | null
           last_rankup: string | null
           mc_uuid: string | null
+          mentor_discord_id: string | null
           messages_7d: number
           messages_total: number
           recruiter_discord_id: string | null
           status: string
+          trial_until: string | null
           updated_at: string
           voice_7d_seconds: number
           voice_total_seconds: number
@@ -769,10 +771,12 @@ export type Database = {
           ig_name?: string | null
           last_rankup?: string | null
           mc_uuid?: string | null
+          mentor_discord_id?: string | null
           messages_7d?: number
           messages_total?: number
           recruiter_discord_id?: string | null
           status?: string
+          trial_until?: string | null
           updated_at?: string
           voice_7d_seconds?: number
           voice_total_seconds?: number
@@ -788,10 +792,12 @@ export type Database = {
           ig_name?: string | null
           last_rankup?: string | null
           mc_uuid?: string | null
+          mentor_discord_id?: string | null
           messages_7d?: number
           messages_total?: number
           recruiter_discord_id?: string | null
           status?: string
+          trial_until?: string | null
           updated_at?: string
           voice_7d_seconds?: number
           voice_total_seconds?: number
@@ -946,6 +952,39 @@ export type Database = {
           title?: string
           unit?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      onboarding_tasks: {
+        Row: {
+          created_at: string
+          display_order: number
+          done: boolean
+          done_at: string | null
+          id: string
+          label: string
+          member_discord_id: string
+          template_key: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          done?: boolean
+          done_at?: string | null
+          id?: string
+          label: string
+          member_discord_id: string
+          template_key?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          done?: boolean
+          done_at?: string | null
+          id?: string
+          label?: string
+          member_discord_id?: string
+          template_key?: string | null
         }
         Relationships: []
       }
@@ -1586,6 +1625,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trial_votes: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          member_discord_id: string
+          vote: string
+          voter_discord_id: string
+          voter_username: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          member_discord_id: string
+          vote: string
+          voter_discord_id: string
+          voter_username?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          member_discord_id?: string
+          vote?: string
+          voter_discord_id?: string
+          voter_username?: string | null
+        }
+        Relationships: []
       }
       warning_appeals: {
         Row: {
