@@ -452,11 +452,13 @@ function StockSection({ isStaff }: { isStaff: boolean }) {
                           <ConfirmDialog
                             title="Supprimer cet item ?"
                             onConfirm={() => mDel.mutate(s.id)}
-                          >
-                            <Button size="icon" variant="ghost">
-                              <Trash2 className="w-4 h-4 text-rose-400" />
-                            </Button>
-                          </ConfirmDialog>
+                            trigger={
+                              <Button size="icon" variant="ghost">
+                                <Trash2 className="w-4 h-4 text-rose-400" />
+                              </Button>
+                            }
+                          />
+
                         </div>
                       )}
                     </td>
