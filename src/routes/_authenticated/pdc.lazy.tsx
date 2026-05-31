@@ -562,7 +562,40 @@ function PdcPage() {
           title="Plan de coupe (PDC)"
           description="Éditeur de base claim · 1 chunk = 16×16 blocs"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {planId && peers.length > 0 && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded border border-zinc-800 bg-zinc-900/60 text-xs">
+              <Users className="size-3.5 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {peers.length === 1
+                  ? "1 personne édite"
+                  : `${peers.length} personnes éditent`}{" "}
+                ce plan
+              </span>
+              <div className="flex -space-x-1 ml-1">
+                {peers.slice(0, 6).map((p) => (
+                  <span
+                    key={p.discordId}
+                    title={p.username}
+                    className="size-4 rounded-full border border-zinc-900"
+                    style={{ background: p.color }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {planId && (
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded ${
+                connected
+                  ? "bg-emerald-500/15 text-emerald-400"
+                  : "bg-zinc-700/40 text-zinc-400"
+              }`}
+              title={connected ? "Collaboration temps réel active" : "Mode local"}
+            >
+              {connected ? "● live" : "○ local"}
+            </span>
+          )}
           {planId && (
             <>
               <Input
@@ -580,6 +613,7 @@ function PdcPage() {
           )}
         </div>
       </div>
+
 
       <Tabs defaultValue="calc" className="w-full">
         <TabsList>
