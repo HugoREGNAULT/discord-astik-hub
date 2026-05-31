@@ -83,12 +83,12 @@ export const upsertReward = createServerFn({ method: "POST" })
   .inputValidator((input) => RewardInput.parse(input))
   .handler(async ({ data }) => {
     const user = await requirePermission("shop.manage");
-    const payload = { ...data };
     let res;
     if (data.id) {
-      const { id, ...patch } = payload;
+      const { id, ...patch } = data;
       res = await db.from("shop_rewards").update(patch).eq("id", id).select("*").single();
     } else {
+      const { id: _ignored, ...payload } = data;
       res = await db.from("shop_rewards").insert(payload).select("*").single();
     }
     if (res.error) throw new Error(res.error.message);
