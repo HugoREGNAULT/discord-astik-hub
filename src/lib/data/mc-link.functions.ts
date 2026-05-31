@@ -276,7 +276,7 @@ export interface McStatsResult {
     faction_ingame: string | null;
     jobs: Array<{ name: string; level: number }>;
     snapshot_at: string;
-    raw: unknown;
+    raw_json: string;
   } | null;
   history_count: number;
 }
