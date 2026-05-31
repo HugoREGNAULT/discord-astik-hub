@@ -14,7 +14,7 @@ type Badge = {
   description: string | null;
   icon: string | null;
   color: string | null;
-  criteria: Record<string, unknown> | null;
+  criteria: { type?: string; gte?: number } | null;
 };
 
 type MemberXp = {
