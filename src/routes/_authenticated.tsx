@@ -33,10 +33,57 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
+// Libellés lisibles par segment d'URL (alignés sur AppSidebar ITEMS + TABS de tools.tsx).
+const PATH_LABELS: Record<string, string> = {
+  "/me": "Mon profil",
+  "/dashboard": "Classement",
+  "/polls": "Sondages",
+  "/absences": "Absences",
+  "/tools": "Outils Paladium",
+  "/tools/alerts": "Mes alertes",
+  "/tools/player": "Player",
+  "/tools/sales": "Ventes",
+  "/tools/faction": "Faction",
+  "/tools/check-bc": "Check BC",
+  "/tools/status": "Status",
+  "/tools/market": "Market",
+  "/tools/leaderboard": "Leaderboard",
+  "/tools/clicker": "Clicker",
+  "/tools/xp-calculator": "XP Calc",
+  "/tools/events": "Events",
+  "/tools/uptime": "Uptime",
+  "/tools/shop-admin": "Shop admin",
+  "/staff": "Dashboard staff",
+  "/members": "Membres",
+  "/effectif": "Effectif",
+  "/objectives": "Objectifs",
+  "/pdc": "Plan de coupe",
+  "/recruitment": "Candidatures",
+  "/blacklist": "Blacklist",
+  "/points": "AstikPoints",
+  "/donations": "Dons",
+  "/config": "Config valeurs",
+  "/logs": "Logs",
+  "/admin": "Admin",
+  "/welcome": "Bienvenue",
+};
+
+function buildCrumbs(pathname: string): Array<{ label: string; href: string; isLast: boolean }> {
+  const segments = pathname.split("/").filter(Boolean);
+  const crumbs: Array<{ label: string; href: string; isLast: boolean }> = [];
+  for (let i = 0; i < segments.length; i++) {
+    const href = "/" + segments.slice(0, i + 1).join("/");
+    const label = PATH_LABELS[href] ?? decodeURIComponent(segments[i]);
+    crumbs.push({ label, href, isLast: i === segments.length - 1 });
+  }
+  return crumbs;
+}
 
 function AuthLayout() {
   const { data: user, isLoading } = useCurrentUser();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const crumbs = buildCrumbs(pathname);
 
   useEffect(() => {
     if (!isLoading && !user) navigate({ to: "/login" });
