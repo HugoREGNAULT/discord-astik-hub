@@ -86,6 +86,8 @@ function MembersPage() {
 
       {isLoading && <MemberRowsSkeleton count={8} />}
 
+      {error && <ErrorBlock message={(error as Error).message} hint="Réessaie dans un instant." />}
+
       <div className="grid gap-2">
         {paged.map((m, i) => (
           <Link
