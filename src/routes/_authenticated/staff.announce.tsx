@@ -62,9 +62,9 @@ function AnnouncePage() {
   return (
     <div className="space-y-6">
       <PageHeader
+        code="ANNONCES"
         title="Annonces assistées par IA"
         description="Génère un brouillon, édite-le, puis publie manuellement sur Discord. L'IA ne publie jamais seule."
-        icon={Megaphone}
       />
 
       <Card>
