@@ -22,14 +22,7 @@ export const Route = createFileRoute("/_authenticated")({
     const { authenticated } = await getSessionStatus();
     if (!authenticated) throw redirect({ to: "/login" });
   },
-  head: () => ({
-    links: [
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono&display=swap",
-      },
-    ],
-  }),
+  head: () => ({}),
   component: AuthLayout,
 });
 
