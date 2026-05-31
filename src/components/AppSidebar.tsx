@@ -18,6 +18,7 @@ import {
   Grid3x3,
   Wrench,
   Bell,
+  Award,
 } from "lucide-react";
 
 import {
