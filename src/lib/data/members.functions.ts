@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
-import { requirePermission, requireSession, logAction } from "@/lib/auth/require.server";
+import { requirePermission, requireSelfOrPermission, logAction } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
 import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
 import type { Json } from "@/integrations/supabase/types";
@@ -42,9 +42,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
     z.object({ discordId: z.string().min(1) }).parse(input),
   )
   .handler(async ({ data }) => {
-    const user = await requireSession();
-    const isSelf = user.discordId === data.discordId;
-    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
+    const { user, isSelf } = await requireSelfOrPermission(data.discordId, "members.view");
 
     const canViewStaffData = canAccess(user, "members.view");
 
@@ -159,9 +157,7 @@ const pageSchema = z.object({ discordId: z.string().min(1), offset: z.number().i
 export const getMemberPointsHistory = createServerFn({ method: "GET" })
   .inputValidator((input) => pageSchema.parse(input))
   .handler(async ({ data }) => {
-    const user = await requireSession();
-    const isSelf = user.discordId === data.discordId;
-    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
+    await requireSelfOrPermission(data.discordId, "members.view");
     const { data: rows, error } = await db
       .from("points_ledger")
       .select("*")
@@ -175,9 +171,7 @@ export const getMemberPointsHistory = createServerFn({ method: "GET" })
 export const getMemberDonations = createServerFn({ method: "GET" })
   .inputValidator((input) => pageSchema.parse(input))
   .handler(async ({ data }) => {
-    const user = await requireSession();
-    const isSelf = user.discordId === data.discordId;
-    if (!isSelf && !canAccess(user, "members.view")) throw new Error("FORBIDDEN");
+    await requireSelfOrPermission(data.discordId, "members.view");
     const { data: rows, error } = await db
       .from("donations")
       .select(

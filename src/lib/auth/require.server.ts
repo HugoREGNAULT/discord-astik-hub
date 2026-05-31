@@ -48,6 +48,24 @@ export async function requirePermission(perm: Permission): Promise<SessionUser> 
   return user;
 }
 
+export async function requireSelfOrPermission(
+  targetDiscordId: string,
+  perm: Permission,
+): Promise<{ user: SessionUser; isSelf: boolean }> {
+  const user = await requireSession();
+  const isSelf = user.discordId === targetDiscordId;
+  if (!isSelf && !canAccess(user, perm)) {
+    await db.from("logs").insert({
+      level: "warn",
+      action: "permission_denied",
+      actor_discord_id: user.discordId,
+      payload: { permission: perm } as never,
+    });
+    throw new AppError("FORBIDDEN", 403, ERROR_MESSAGES.FORBIDDEN);
+  }
+  return { user, isSelf };
+}
+
 export async function logAction(
   action: string,
   actorId: string,
