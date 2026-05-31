@@ -86,6 +86,7 @@ import { Route as ApiPublicBotVoiceRouteImport } from './routes/api/public/bot/v
 import { Route as ApiPublicBotStatsRouteImport } from './routes/api/public/bot/stats'
 import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot/message'
 import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
+import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/public/bot/mc-link-confirm'
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
@@ -511,6 +512,12 @@ const ApiPublicBotMemberRoute = ApiPublicBotMemberRouteImport.update({
   path: '/api/public/bot/member',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBotMcLinkConfirmRoute =
+  ApiPublicBotMcLinkConfirmRouteImport.update({
+    id: '/api/public/bot/mc-link-confirm',
+    path: '/api/public/bot/mc-link-confirm',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
   id: '/api/public/bot/import',
   path: '/api/public/bot/import',
@@ -603,6 +610,7 @@ export interface FileRoutesByFullPath {
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
@@ -683,6 +691,7 @@ export interface FileRoutesByTo {
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
@@ -768,6 +777,7 @@ export interface FileRoutesById {
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
+  '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
   '/api/public/bot/message': typeof ApiPublicBotMessageRoute
   '/api/public/bot/stats': typeof ApiPublicBotStatsRoute
@@ -853,6 +863,7 @@ export interface FileRouteTypes {
     | '/polls/'
     | '/tools/'
     | '/api/public/bot/import'
+    | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
@@ -933,6 +944,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/tools'
     | '/api/public/bot/import'
+    | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
@@ -1017,6 +1029,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls/'
     | '/_authenticated/tools/'
     | '/api/public/bot/import'
+    | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
     | '/api/public/bot/message'
     | '/api/public/bot/stats'
@@ -1052,6 +1065,7 @@ export interface RootRouteChildren {
   ApiTestLoginRoute: typeof ApiTestLoginRoute
   ApiTestSeedPollRoute: typeof ApiTestSeedPollRoute
   ApiPublicBotImportRoute: typeof ApiPublicBotImportRoute
+  ApiPublicBotMcLinkConfirmRoute: typeof ApiPublicBotMcLinkConfirmRoute
   ApiPublicBotMemberRoute: typeof ApiPublicBotMemberRoute
   ApiPublicBotMessageRoute: typeof ApiPublicBotMessageRoute
   ApiPublicBotStatsRoute: typeof ApiPublicBotStatsRoute
@@ -1613,6 +1627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBotMemberRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/bot/mc-link-confirm': {
+      id: '/api/public/bot/mc-link-confirm'
+      path: '/api/public/bot/mc-link-confirm'
+      fullPath: '/api/public/bot/mc-link-confirm'
+      preLoaderRoute: typeof ApiPublicBotMcLinkConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/bot/import': {
       id: '/api/public/bot/import'
       path: '/api/public/bot/import'
@@ -1821,6 +1842,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTestLoginRoute: ApiTestLoginRoute,
   ApiTestSeedPollRoute: ApiTestSeedPollRoute,
   ApiPublicBotImportRoute: ApiPublicBotImportRoute,
+  ApiPublicBotMcLinkConfirmRoute: ApiPublicBotMcLinkConfirmRoute,
   ApiPublicBotMemberRoute: ApiPublicBotMemberRoute,
   ApiPublicBotMessageRoute: ApiPublicBotMessageRoute,
   ApiPublicBotStatsRoute: ApiPublicBotStatsRoute,
