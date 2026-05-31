@@ -1,16 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  Legend,
-} from "recharts";
+import { lazy, Suspense, useMemo, useState } from "react";
+const MarketHistoryChart = lazy(() => import("./-tools.market.chart"));
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
