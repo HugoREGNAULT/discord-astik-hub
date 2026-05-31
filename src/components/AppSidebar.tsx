@@ -18,6 +18,8 @@ import {
   Grid3x3,
   Wrench,
   Bell,
+  Megaphone,
+
   Award,
 } from "lucide-react";
 
