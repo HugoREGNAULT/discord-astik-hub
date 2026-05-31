@@ -466,6 +466,13 @@ export type Database = {
             referencedRelation: "members"
             referencedColumns: ["discord_id"]
           },
+          {
+            foreignKeyName: "donations_member_discord_id_fkey"
+            columns: ["member_discord_id"]
+            isOneToOne: false
+            referencedRelation: "v_faction_member_sales"
+            referencedColumns: ["discord_id"]
+          },
         ]
       }
       event_loot: {
@@ -858,6 +865,13 @@ export type Database = {
             referencedRelation: "members"
             referencedColumns: ["discord_id"]
           },
+          {
+            foreignKeyName: "member_alts_member_discord_id_fkey"
+            columns: ["member_discord_id"]
+            isOneToOne: false
+            referencedRelation: "v_faction_member_sales"
+            referencedColumns: ["discord_id"]
+          },
         ]
       }
       member_badges: {
@@ -1013,6 +1027,13 @@ export type Database = {
             columns: ["member_discord_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["discord_id"]
+          },
+          {
+            foreignKeyName: "notes_member_discord_id_fkey"
+            columns: ["member_discord_id"]
+            isOneToOne: false
+            referencedRelation: "v_faction_member_sales"
             referencedColumns: ["discord_id"]
           },
         ]
@@ -1428,6 +1449,13 @@ export type Database = {
             columns: ["member_discord_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["discord_id"]
+          },
+          {
+            foreignKeyName: "points_ledger_member_discord_id_fkey"
+            columns: ["member_discord_id"]
+            isOneToOne: false
+            referencedRelation: "v_faction_member_sales"
             referencedColumns: ["discord_id"]
           },
         ]
@@ -2105,10 +2133,30 @@ export type Database = {
             referencedRelation: "members"
             referencedColumns: ["discord_id"]
           },
+          {
+            foreignKeyName: "warnings_member_discord_id_fkey"
+            columns: ["member_discord_id"]
+            isOneToOne: false
+            referencedRelation: "v_faction_member_sales"
+            referencedColumns: ["discord_id"]
+          },
         ]
       }
     }
     Views: {
+      v_faction_member_sales: {
+        Row: {
+          discord_id: string | null
+          first_seen_at: string | null
+          item_name: string | null
+          name: string | null
+          price: number | null
+          price_pb: number | null
+          quantity: number | null
+          sold_at: string | null
+        }
+        Relationships: []
+      }
       v_leaderboard_timeseries: {
         Row: {
           astik_points: number | null

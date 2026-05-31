@@ -164,6 +164,13 @@ const SECTIONS: Section[] = [
         perm: "members.view",
         accent: "pink",
       },
+      {
+        title: "Économie faction",
+        url: "/faction-economy",
+        icon: Coins,
+        perm: "members.view",
+        accent: "blurple",
+      },
     ],
   },
   {

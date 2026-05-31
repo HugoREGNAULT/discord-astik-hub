@@ -33,6 +33,7 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedLogisticsRouteImport } from './routes/_authenticated/logistics'
+import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authenticated/faction-economy'
 import { Route as AuthenticatedEventsRouteImport } from './routes/_authenticated/events'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDonationsRouteImport } from './routes/_authenticated/donations'
@@ -206,6 +207,12 @@ const AuthenticatedLogisticsRoute = AuthenticatedLogisticsRouteImport.update({
   path: '/logistics',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFactionEconomyRoute =
+  AuthenticatedFactionEconomyRouteImport.update({
+    id: '/faction-economy',
+    path: '/faction-economy',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEventsRoute = AuthenticatedEventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -487,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
   '/events': typeof AuthenticatedEventsRouteWithChildren
+  '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -559,6 +567,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/donations': typeof AuthenticatedDonationsRoute
   '/effectif': typeof AuthenticatedEffectifRoute
+  '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -632,6 +641,7 @@ export interface FileRoutesById {
   '/_authenticated/donations': typeof AuthenticatedDonationsRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
   '/_authenticated/events': typeof AuthenticatedEventsRouteWithChildren
+  '/_authenticated/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/_authenticated/logistics': typeof AuthenticatedLogisticsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -707,6 +717,7 @@ export interface FileRouteTypes {
     | '/donations'
     | '/effectif'
     | '/events'
+    | '/faction-economy'
     | '/logistics'
     | '/logs'
     | '/me'
@@ -779,6 +790,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/donations'
     | '/effectif'
+    | '/faction-economy'
     | '/logistics'
     | '/logs'
     | '/me'
@@ -851,6 +863,7 @@ export interface FileRouteTypes {
     | '/_authenticated/donations'
     | '/_authenticated/effectif'
     | '/_authenticated/events'
+    | '/_authenticated/faction-economy'
     | '/_authenticated/logistics'
     | '/_authenticated/logs'
     | '/_authenticated/me'
@@ -1106,6 +1119,13 @@ declare module '@tanstack/react-router' {
       path: '/logistics'
       fullPath: '/logistics'
       preLoaderRoute: typeof AuthenticatedLogisticsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/faction-economy': {
+      id: '/_authenticated/faction-economy'
+      path: '/faction-economy'
+      fullPath: '/faction-economy'
+      preLoaderRoute: typeof AuthenticatedFactionEconomyRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/events': {
@@ -1544,6 +1564,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDonationsRoute: typeof AuthenticatedDonationsRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
   AuthenticatedEventsRoute: typeof AuthenticatedEventsRouteWithChildren
+  AuthenticatedFactionEconomyRoute: typeof AuthenticatedFactionEconomyRoute
   AuthenticatedLogisticsRoute: typeof AuthenticatedLogisticsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1573,6 +1594,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDonationsRoute: AuthenticatedDonationsRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
   AuthenticatedEventsRoute: AuthenticatedEventsRouteWithChildren,
+  AuthenticatedFactionEconomyRoute: AuthenticatedFactionEconomyRoute,
   AuthenticatedLogisticsRoute: AuthenticatedLogisticsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
