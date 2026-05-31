@@ -325,7 +325,9 @@ const AuthenticatedPollsIdRoute = AuthenticatedPollsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AuthenticatedPollsRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/polls.$id.lazy').then((d) => d.Route),
+)
 const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
