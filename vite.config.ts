@@ -61,6 +61,9 @@ export default defineConfig({
   } as any,
   vite: {
     customLogger: viteLogger,
+    plugins: [
+      visualizer({ filename: "dist/stats.html", gzipSize: true, brotliSize: true }),
+    ],
     build: {
       chunkSizeWarningLimit: 1200,
       rollupOptions: {
