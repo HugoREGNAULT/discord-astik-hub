@@ -339,7 +339,7 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
     if (row.actor_discord_id) connected.add(row.actor_discord_id);
   }
 
-  const factionMembers = filterFactionMembers(membersRes.data ?? []) as any[];
+  const factionMembers = filterFactionMembers(membersRes.data ?? []);
   const neverConnected = factionMembers
     .filter((m) => !connected.has(m.discord_id))
     .sort((a, b) =>
