@@ -1781,6 +1781,54 @@ export type Database = {
           },
         ]
       }
+      staff_tasks: {
+        Row: {
+          assignee_discord_id: string | null
+          assignee_username: string | null
+          created_at: string
+          created_by_discord_id: string | null
+          created_by_username: string | null
+          description: string | null
+          display_order: number
+          done_at: string | null
+          due_date: string | null
+          id: string
+          priority: string
+          status: string
+          title: string
+        }
+        Insert: {
+          assignee_discord_id?: string | null
+          assignee_username?: string | null
+          created_at?: string
+          created_by_discord_id?: string | null
+          created_by_username?: string | null
+          description?: string | null
+          display_order?: number
+          done_at?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title: string
+        }
+        Update: {
+          assignee_discord_id?: string | null
+          assignee_username?: string | null
+          created_at?: string
+          created_by_discord_id?: string | null
+          created_by_username?: string | null
+          description?: string | null
+          display_order?: number
+          done_at?: string | null
+          due_date?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       stock_items: {
         Row: {
           chest_id: string | null

@@ -157,6 +157,13 @@ const SECTIONS: Section[] = [
         perm: "members.view",
         accent: "blurple",
       },
+      {
+        title: "Board staff",
+        url: "/staff-board",
+        icon: ListTree,
+        perm: "members.view",
+        accent: "pink",
+      },
     ],
   },
   {
