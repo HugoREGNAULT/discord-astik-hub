@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+
 import { toast } from "sonner";
 import {
   ToolHeader,
@@ -14,6 +14,7 @@ import {
 import { listShopRewards, createSpendRequest, listMySpendRequests } from "@/lib/data/shop.functions";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { toUserMessage } from "@/lib/errors";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/shop")({
   head: () => ({ meta: [{ title: "Boutique · PunkAstik" }] }),
@@ -33,9 +34,6 @@ function ShopPage() {
   const meQ = useQuery({ queryKey: ["me-overview"], queryFn: () => meFn() });
 
   const balance = meQ.data?.member?.astik_points ?? 0;
-  const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-
   const mut = useMutation({
     mutationFn: (rewardId: string) => createFn({ data: { rewardId, quantity: 1 } }),
     onSuccess: () => {
@@ -44,10 +42,6 @@ function ShopPage() {
       qc.invalidateQueries({ queryKey: ["shop", "rewards"] });
     },
     onError: (e) => toast.error(toUserMessage(e)),
-    onSettled: () => {
-      setPending(false);
-      setConfirmId(null);
-    },
   });
 
   return (
@@ -98,13 +92,21 @@ function ShopPage() {
                         stock: {r.stock === null || r.stock === undefined ? "illimité" : r.stock}
                       </span>
                     </div>
-                    <DaButton
-                      className="mt-2"
-                      disabled={insufficient || outOfStock || mut.isPending}
-                      onClick={() => setConfirmId(r.id)}
-                    >
-                      {outOfStock ? "Rupture" : insufficient ? "Solde insuffisant" : "Échanger"}
-                    </DaButton>
+                    <ConfirmDialog
+                      title="Confirmer l'échange"
+                      description="Ta demande sera mise en attente de validation par le staff. Les points ne sont débités qu'après approbation."
+                      destructive={false}
+                      onConfirm={async () => { await mut.mutateAsync(r.id); }}
+                      trigger={
+                        <DaButton
+                          className="mt-2"
+                          disabled={insufficient || outOfStock || mut.isPending}
+                        >
+                          {outOfStock ? "Rupture" : insufficient ? "Solde insuffisant" : "Échanger"}
+                        </DaButton>
+                      }
+                    />
+
                   </div>
                 </ToolCard>
               );
@@ -139,18 +141,6 @@ function ShopPage() {
         )}
       </section>
 
-      <ConfirmDialog
-        open={!!confirmId}
-        onOpenChange={(v) => !v && setConfirmId(null)}
-        title="Confirmer l'échange"
-        description="Ta demande sera mise en attente de validation par le staff. Les points ne sont débités qu'après approbation."
-        confirmLabel={pending ? "Envoi…" : "Confirmer"}
-        onConfirm={() => {
-          if (!confirmId) return;
-          setPending(true);
-          mut.mutate(confirmId);
-        }}
-      />
     </div>
   );
 }
