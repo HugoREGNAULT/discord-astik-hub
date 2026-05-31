@@ -1,19 +1,181 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useCurrentUser } from "@/lib/auth/use-current-user";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Coins, ShieldAlert, UserCircle2 } from "lucide-react";
+import { getMyOverview, listMyWarnings } from "@/lib/data/me.functions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { GamificationCard } from "@/components/GamificationCard";
+import { EmptyState } from "@/components/EmptyState";
+import { DetailPageSkeleton } from "@/components/Skeletons";
+import { MonoLabel } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/me")({
-  component: MeRedirect,
+  head: () => ({ meta: [{ title: "Mon profil · PunkAstik" }] }),
+  component: MyProfile,
 });
 
-function MeRedirect() {
-  const { data, isLoading } = useCurrentUser();
-  if (isLoading) {
-    return (
-      <div className="p-6 text-sm text-muted-foreground">Chargement de votre profil…</div>
-    );
-  }
-  if (!data?.discordId) {
-    return <Navigate to="/dashboard" />;
-  }
-  return <Navigate to="/members/$id" params={{ id: data.discordId }} />;
+function MyProfile() {
+  const overviewFn = useServerFn(getMyOverview);
+  const warningsFn = useServerFn(listMyWarnings);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["me", "overview"],
+    queryFn: () => overviewFn(),
+  });
+  const { data: warningsData } = useQuery({
+    queryKey: ["me", "warnings"],
+    queryFn: () => warningsFn(),
+  });
+
+  if (isLoading || !data) return <DetailPageSkeleton />;
+  const m = data.member;
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div className="flex items-center gap-4">
+        {m.avatar_url ? (
+          <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
+        ) : (
+          <div className="size-16 rounded-full bg-muted" />
+        )}
+        <div>
+          <div className="text-pink-500 mb-1">
+            <MonoLabel>// mon profil</MonoLabel>
+          </div>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>
+            {m.ig_name ?? m.discord_username}
+          </h1>
+          <p className="text-sm text-muted-foreground">@{m.discord_username}</p>
+        </div>
+        <div className="ml-auto">
+          <Badge variant="secondary">{m.status}</Badge>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Stat label="AstikPoints" value={m.astik_points} accent />
+        <Stat label="Grade" value={m.current_grade ?? "—"} />
+        <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
+      </div>
+
+      {data.recruiter && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <UserCircle2 className="size-4 text-primary" /> Recruteur
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm">
+            {data.recruiter.ig_name ?? data.recruiter.discord_username}
+            <span className="text-xs text-muted-foreground ml-2">
+              @{data.recruiter.discord_username ?? "—"}
+            </span>
+          </CardContent>
+        </Card>
+      )}
+
+      <GamificationCard scope="member" discordId={m.discord_id} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-base">
+            <span className="flex items-center gap-2">
+              <Coins className="size-4 text-primary" /> Mes derniers gains
+            </span>
+            <Badge variant="outline">{data.recentGains.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {data.recentGains.length === 0 ? (
+            <div className="p-4">
+              <EmptyState
+                icon={Coins}
+                title="Aucun mouvement"
+                description="Tes gains apparaîtront ici."
+                variant="compact"
+              />
+            </div>
+          ) : (
+            <ul className="divide-y divide-border max-h-96 overflow-y-auto">
+              {data.recentGains.map((p) => (
+                <li key={p.id} className="px-4 py-2 text-sm flex items-center gap-3">
+                  <span
+                    className={`font-mono font-semibold w-16 text-right ${
+                      p.amount >= 0 ? "text-primary" : "text-destructive"
+                    }`}
+                  >
+                    {p.amount >= 0 ? "+" : ""}
+                    {p.amount}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs">
+                      {p.action_type}
+                      {p.reason ? ` · ${p.reason}` : ""}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {new Date(p.created_at).toLocaleString("fr-FR")}
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    → {p.total_after}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {warningsData && warningsData.warnings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-base">
+              <span className="flex items-center gap-2">
+                <ShieldAlert className="size-4 text-destructive" /> Mes avertissements
+              </span>
+              <Badge variant="outline">{warningsData.warnings.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {warningsData.warnings.map((w) => (
+                <li key={w.id} className="text-sm border border-border rounded-md p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline">{w.severity ?? "minor"}</Badge>
+                    <Badge variant="secondary">{w.status}</Badge>
+                    <span className="text-[11px] text-muted-foreground ml-auto">
+                      {new Date(w.created_at).toLocaleDateString("fr-FR")}
+                    </span>
+                  </div>
+                  <div>{w.body}</div>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  accent?: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm text-muted-foreground">{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div>
+      </CardContent>
+    </Card>
+  );
 }
