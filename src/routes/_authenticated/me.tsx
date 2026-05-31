@@ -259,6 +259,7 @@ function MePage() {
             </CardContent>
           </Card>
 
+          <MyTrialCard trialUntil={data.member.trial_until ?? null} />
           <MyBadgesCard />
           <MyWarningsCard />
         </div>
