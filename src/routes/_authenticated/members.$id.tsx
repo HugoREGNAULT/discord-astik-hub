@@ -1,15 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MonoLabel } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId, useEffect } from "react";
 import {
   ShieldX,
   Coins,
-  ShoppingCart,
   Activity,
   UserCheck,
-  ChevronDown,
   MessageSquare,
   Clock,
   UserX,
@@ -50,6 +47,17 @@ import { toUserMessage } from "@/lib/errors";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
+import { MemberHeader } from "@/components/members/MemberHeader";
+import { MemberAltsPanel } from "@/components/members/MemberAltsPanel";
+import { MemberNotesPanel } from "@/components/members/MemberNotesPanel";
+import { MemberWarningsPanel } from "@/components/members/MemberWarningsPanel";
+import { MemberPointsHistory } from "@/components/members/MemberPointsHistory";
+import { MemberDonationsPanel } from "@/components/members/MemberDonationsPanel";
+import type {
+  MemberPointsEntry,
+  MemberDonationEntry,
+  MemberRow,
+} from "@/components/members/types";
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
   head: () => ({ meta: [{ title: "Profil membre · PunkAstik" }] }),
