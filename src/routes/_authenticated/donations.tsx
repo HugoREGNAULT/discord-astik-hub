@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteError } from "@/components/RouteError";
 import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -30,6 +31,7 @@ import {
 } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/donations")({
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Dons · PunkAstik" }] }),
   component: () => (
     <Guard perm="donations.manage">

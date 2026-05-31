@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RouteError } from "@/components/RouteError";
 import { PageHeader } from "@/components/tools/ToolsUi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -55,6 +56,7 @@ import { PdcSliceCalculator } from "@/components/PdcSliceCalculator";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/pdc")({
+  errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Plans de coupe · PunkAstik" }] }),
   component: PdcPage,
 });
