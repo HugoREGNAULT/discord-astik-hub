@@ -115,7 +115,9 @@ async function recomputeObjective(objectiveId: string) {
     .maybeSingle();
   if (oErr) throw new Error(oErr.message);
 
-  const patch: Record<string, unknown> = { current_value: sum };
+  const patch: Partial<{ current_value: number; done: boolean; done_at: string }> = {
+    current_value: sum,
+  };
   if (obj?.target_value != null && sum >= Number(obj.target_value) && !obj.done) {
     patch.done = true;
     patch.done_at = new Date().toISOString();
