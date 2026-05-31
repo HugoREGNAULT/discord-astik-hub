@@ -1,16 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-  Legend,
-} from "recharts";
+import { lazy, Suspense, useMemo, useState } from "react";
+const MarketHistoryChart = lazy(() => import("./-tools.market.chart"));
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
@@ -323,69 +314,9 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                 heures.
               </p>
             ) : (
-              <div className="h-48 mb-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={historySeries}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis
-                      dataKey="t"
-                      type="number"
-                      domain={["dataMin", "dataMax"]}
-                      scale="time"
-                      tickFormatter={(t) =>
-                        new Date(t).toLocaleString("fr-FR", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          ...(range === "7d" ? {} : { hour: "2-digit", minute: "2-digit" }),
-                        })
-                      }
-                      stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                    />
-                    <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} width={60} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#18181b",
-                        border: "1px solid #3f3f46",
-                        fontSize: 12,
-                        color: "#e4e4e7",
-                      }}
-                      labelFormatter={(t) => new Date(Number(t)).toLocaleString("fr-FR")}
-                      formatter={(v: unknown) =>
-                        typeof v === "number" && Number.isFinite(v) ? fmtNum(v) : "—"
-                      }
-                    />
-                    <Legend wrapperStyle={{ fontSize: 11, color: "#a1a1aa" }} />
-                    <Line
-                      type="monotone"
-                      dataKey="marketAvg"
-                      name="HDV moyen"
-                      stroke="#ec4899"
-                      strokeWidth={2}
-                      dot={false}
-                      connectNulls
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="adminBuy"
-                      name="Shop achat"
-                      stroke="#22c55e"
-                      strokeWidth={2}
-                      dot={false}
-                      connectNulls
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="adminSell"
-                      name="Shop vente"
-                      stroke="#38bdf8"
-                      strokeWidth={2}
-                      dot={false}
-                      connectNulls
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <Suspense fallback={<div className="h-48 mb-4 animate-pulse rounded-md bg-muted" />}>
+                <MarketHistoryChart data={historySeries} range={range} />
+              </Suspense>
             )}
 
             <MarketAlertForm itemName={it.name} />

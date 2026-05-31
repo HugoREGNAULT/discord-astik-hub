@@ -1,15 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
+import { lazy, Suspense, useMemo, useState } from "react";
+const UptimePlayersChart = lazy(() =>
+  import("./-tools.uptime.chart").then((m) => ({ default: m.UptimePlayersChart })),
+);
+const UptimeStatusChart = lazy(() =>
+  import("./-tools.uptime.chart").then((m) => ({ default: m.UptimeStatusChart })),
+);
 import {
   ToolHeader,
   ToolCard,
@@ -141,34 +138,9 @@ function UptimePage() {
             // joueurs connectés Paladium (global) — {RANGES.find((r) => r.key === range)?.label}
           </div>
           <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={globalSeries}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                <XAxis
-                  dataKey="t"
-                  tickFormatter={(t) => formatTick(t, days)}
-                  stroke="#52525b"
-                  tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                />
-                <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#18181b",
-                    border: "1px solid #3f3f46",
-                    fontSize: 12,
-                  }}
-                  labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="players"
-                  name="Joueurs"
-                  stroke="#ec4899"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+              <UptimePlayersChart data={globalSeries} days={days} />
+            </Suspense>
           </div>
         </ToolCard>
       )}
@@ -231,43 +203,9 @@ function UptimePage() {
                 {RANGES.find((r) => r.key === range)?.label}
               </div>
               <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={current.series}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis
-                      dataKey="t"
-                      tickFormatter={(t) => formatTick(t, days)}
-                      stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                    />
-                    <YAxis
-                      domain={[0, 1]}
-                      ticks={[0, 1]}
-                      tickFormatter={(v) => (v === 1 ? "UP" : "DOWN")}
-                      stroke="#52525b"
-                      tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                      width={48}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#18181b",
-                        border: "1px solid #3f3f46",
-                        fontSize: 12,
-                        color: "#e4e4e7",
-                      }}
-                      labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                      formatter={(v: number) => (v === 1 ? "UP" : "DOWN")}
-                    />
-                    <Line
-                      type="stepAfter"
-                      dataKey="up"
-                      name="Statut"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+                  <UptimeStatusChart data={current.series} days={days} />
+                </Suspense>
               </div>
               {current.series.some((p) => p.players > 0) && (
                 <>
@@ -278,33 +216,9 @@ function UptimePage() {
                     // joueurs en ligne
                   </div>
                   <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={current.series}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                        <XAxis
-                          dataKey="t"
-                          tickFormatter={(t) => formatTick(t, days)}
-                          stroke="#52525b"
-                          tick={{ fill: "#e4e4e7", fontSize: 10 }}
-                        />
-                        <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
-                        <Tooltip
-                          contentStyle={{
-                            background: "#18181b",
-                            border: "1px solid #3f3f46",
-                            fontSize: 12,
-                          }}
-                          labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="players"
-                          stroke="#ec4899"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+                      <UptimePlayersChart data={current.series} days={days} />
+                    </Suspense>
                   </div>
                 </>
               )}
@@ -314,12 +228,4 @@ function UptimePage() {
       )}
     </div>
   );
-}
-
-function formatTick(t: number, days: number): string {
-  const d = new Date(t);
-  if (days <= 1) {
-    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-  }
-  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
 }
