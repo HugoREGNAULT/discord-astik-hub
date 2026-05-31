@@ -152,7 +152,7 @@ function MembersPage() {
             </div>
           </Link>
         ))}
-        {members.length === 0 && !isLoading && <EmptyBlock label="Aucun membre — ajuste filtres" />}
+        {members.length === 0 && !isLoading && !error && <EmptyBlock label="Aucun membre — ajuste filtres" />}
       </div>
 
       <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
