@@ -4,18 +4,21 @@ import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 
 async function applyDelta(memberId: string, delta: number, bonusPct: number) {
-  const { data: m, error } = await db
-    .from("members")
-    .select("astik_points")
-    .eq("discord_id", memberId)
-    .single();
+  // UPDATE atomique via RPC : évite la race condition lecture-puis-écriture.
+  // Le trigger SQL `trg_sync_member_points` reste maître à l'insert ledger
+  // (idempotent : il réécrit la même valeur via total_after).
+  const { data: next, error } = await db.rpc("apply_points_delta", {
+    p_discord_id: memberId,
+    p_delta: delta,
+  });
   if (error) throw new Error(error.message);
-  const current = m?.astik_points ?? 0;
-  const next = Math.max(0, current + delta);
-  const realDelta = next - current;
-  // members.astik_points est mis à jour par le trigger SQL `trg_sync_member_points`
-  // à l'insert dans points_ledger (total_after). Ne pas réécrire ici.
-  return { realDelta, total: next, bonusPct };
+  if (next === null || next === undefined) throw new Error("Membre introuvable");
+  const total = next as number;
+  // Note : si delta négatif et clamp à 0, le ledger enregistre le delta
+  // demandé (intention), pas le delta net réellement appliqué — total_after
+  // reste exact via le RETURNING de la RPC.
+  const realDelta = delta;
+  return { realDelta, total, bonusPct };
 }
 
 // Plafonds anti-abus côté serveur (un staff junior ne peut pas filer 1M par erreur).
@@ -91,22 +94,22 @@ export const setPoints = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("points.manage");
-    const { data: m } = await db
-      .from("members")
-      .select("astik_points")
-      .eq("discord_id", data.memberDiscordId)
-      .single();
-    const current = m?.astik_points ?? 0;
-    const delta = data.total - current;
-    // members.astik_points est synchronisé par le trigger SQL via points_ledger.total_after.
+    // UPDATE atomique via RPC. Le RETURNING devient total_after du ledger.
+    const { data: newTotal, error: rpcErr } = await db.rpc("set_member_points", {
+      p_discord_id: data.memberDiscordId,
+      p_total: data.total,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (newTotal === null || newTotal === undefined) throw new Error("Membre introuvable");
+    const total = newTotal as number;
     await db.from("points_ledger").insert({
       member_discord_id: data.memberDiscordId,
       staff_discord_id: user.discordId,
       staff_username: user.username,
-      amount: delta,
+      amount: 0, // set absolu : pas de delta significatif
       reason: data.reason,
       bonus_pct: 0,
-      total_after: data.total,
+      total_after: total,
       action_type: "set",
     });
     await logAction("points_set", user.discordId, { ...data });
