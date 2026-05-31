@@ -2041,7 +2041,7 @@ function AnomaliesCard() {
 // ==========================================================
 // ChurnSection : risque de départ + cohortes de rétention
 // ==========================================================
-import { getChurnRisk, getRetentionCohorts, type ChurnRow } from "@/lib/data/churn.functions";
+
 
 function ChurnSection() {
   const fnRisk = useServerFn(getChurnRisk);
