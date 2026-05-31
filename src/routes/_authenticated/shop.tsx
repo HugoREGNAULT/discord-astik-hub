@@ -34,9 +34,6 @@ function ShopPage() {
   const meQ = useQuery({ queryKey: ["me-overview"], queryFn: () => meFn() });
 
   const balance = meQ.data?.member?.astik_points ?? 0;
-  const [confirmId, setConfirmId] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-
   const mut = useMutation({
     mutationFn: (rewardId: string) => createFn({ data: { rewardId, quantity: 1 } }),
     onSuccess: () => {
@@ -45,10 +42,6 @@ function ShopPage() {
       qc.invalidateQueries({ queryKey: ["shop", "rewards"] });
     },
     onError: (e) => toast.error(toUserMessage(e)),
-    onSettled: () => {
-      setPending(false);
-      setConfirmId(null);
-    },
   });
 
   return (
