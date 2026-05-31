@@ -7,6 +7,7 @@ import { getSessionData, setSessionData, toSessionUser } from "./session.server"
 import { canAccess, type Permission, type SessionUser } from "./permissions";
 import { fetchAggregatedRoles } from "@/lib/discord/api.server";
 import { db } from "@/lib/db.server";
+import { AppError, ERROR_MESSAGES } from "@/lib/errors";
 
 const ROLE_CACHE_TTL_MS = 5 * 60 * 1000;
 
