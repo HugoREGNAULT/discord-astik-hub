@@ -120,12 +120,34 @@ function AuthLayout() {
         <div className="flex-1 flex flex-col min-w-0 relative">
           <header className="h-14 flex items-center gap-3 border-b border-zinc-800/80 px-4 sticky top-0 bg-[#0a0a0c]/90 backdrop-blur z-10">
             <SidebarTrigger className="text-zinc-400 hover:text-pink-500" />
-            <div
-              className="text-[10px] text-zinc-500 uppercase tracking-[0.3em] hidden sm:block"
+            <Breadcrumb
+              className="hidden sm:flex"
               style={{ fontFamily: "'Space Mono'" }}
             >
-              // punkastik / hub
-            </div>
+              <BreadcrumbList className="text-[10px] uppercase tracking-[0.3em] gap-1.5 sm:gap-2">
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild className="text-zinc-500 hover:text-pink-500">
+                    <Link to="/me">PunkAstik //</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {crumbs.map((c) => (
+                  <span key={c.href} className="inline-flex items-center gap-1.5 sm:gap-2">
+                    <BreadcrumbSeparator className="text-zinc-600 [&>svg]:size-3" />
+                    <BreadcrumbItem>
+                      {c.isLast ? (
+                        <BreadcrumbPage className="text-zinc-300 font-normal">
+                          {c.label}
+                        </BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink asChild className="text-zinc-500 hover:text-pink-500">
+                          <Link to={c.href}>{c.label}</Link>
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </span>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
             <div className="ml-auto flex items-center gap-1">
               <CommandPalette />
               <NotificationBell />
