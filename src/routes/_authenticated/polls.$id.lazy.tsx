@@ -143,6 +143,7 @@ function PollDetail() {
     queryFn: () => getFn({ data: { id } }),
     retry: false,
     enabled: !meLoading && canVote,
+    staleTime: 0,
   });
 
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});

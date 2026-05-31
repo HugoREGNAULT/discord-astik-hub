@@ -41,6 +41,7 @@ function AdminPage() {
   const { data } = useQuery({
     queryKey: ["admin"],
     queryFn: () => fn(),
+    staleTime: 0,
     refetchInterval: 30_000,
   });
 
