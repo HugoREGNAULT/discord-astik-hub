@@ -96,12 +96,13 @@ export const getMemberDetail = createServerFn({ method: "GET" })
     if (member.data && !isSelf && !isFactionMember(member.data)) throw new Error("NOT_FOUND");
 
     // Staff activity on this member (logs whose payload.target === discordId)
+    // logs.payload is jsonb (dynamic shape) — typed as Json to satisfy server-fn
+    // serialization while staying explicit (no `any`); narrow at use site.
     type StaffActivityLog = {
       id: string;
       action: string;
       actor_discord_id: string | null;
-      // logs.payload is jsonb (dynamic shape) — keep unknown, narrow at use site
-      payload: unknown;
+      payload: Json | null;
       level: string;
       created_at: string;
     };
