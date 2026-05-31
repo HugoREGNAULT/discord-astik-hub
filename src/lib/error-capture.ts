@@ -21,6 +21,14 @@ function record(source: string, error: unknown) {
   // normalizer never picks it up.
 
   console.error(`[ssr-capture:${source}] ${formatError(error)}`);
+
+  // Fire-and-forget : forward vers Discord (import dynamique pour éviter
+  // tout cycle avec observability/log.server).
+  import("@/lib/observability.server")
+    .then(({ reportError }) => reportError(`ssr:${source}`, error))
+    .catch(() => {
+      /* silencieux */
+    });
 }
 
 if (typeof globalThis.addEventListener === "function") {

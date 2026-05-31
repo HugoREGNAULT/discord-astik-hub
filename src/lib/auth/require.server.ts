@@ -78,4 +78,8 @@ export async function logAction(
     actor_discord_id: actorId,
     payload: payload as never,
   });
+  if (level === "error") {
+    const { reportError } = await import("@/lib/observability.server");
+    reportError(action, new Error(action), { actor: actorId, ...payload });
+  }
 }
