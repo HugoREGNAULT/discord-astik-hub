@@ -13,12 +13,6 @@ export const Route = createFileRoute("/login")({
           "Connecte-toi au dashboard PunkAstik avec ton compte Discord. Accès staff et faction Paladium.",
       },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono&display=swap",
-      },
-    ],
   }),
   component: LoginPage,
 });

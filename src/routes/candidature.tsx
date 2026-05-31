@@ -30,12 +30,6 @@ export const Route = createFileRoute("/candidature")({
         content: "Postule pour rejoindre la PunkAstik. Connexion Discord requise.",
       },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono&display=swap",
-      },
-    ],
   }),
   component: CandidaturePage,
 });
