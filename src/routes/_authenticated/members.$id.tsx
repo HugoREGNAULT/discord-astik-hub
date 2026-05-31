@@ -84,9 +84,9 @@ function MemberDetail() {
   });
 
   // Pagination states
-  const [ledger, setLedger] = useState<any[]>([]);
+  const [ledger, setLedger] = useState<MemberPointsEntry[]>([]);
   const [ledgerHasMore, setLedgerHasMore] = useState(false);
-  const [donations, setDonations] = useState<any[]>([]);
+  const [donations, setDonations] = useState<MemberDonationEntry[]>([]);
   const [donationsHasMore, setDonationsHasMore] = useState(false);
 
   useEffect(() => {
