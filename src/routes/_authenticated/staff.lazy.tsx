@@ -414,6 +414,9 @@ function StaffPage() {
         </CardContent>
       </Card>
 
+      {/* File de relance d'inactivité */}
+      <InactivityQueueCard />
+
       {/* Membres jamais connectés au site */}
       <NeverConnectedCard />
     </div>
