@@ -14,7 +14,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 // requireBotAuth est utilisé par le hook public qui appellera _runAnomalyScan.
-import { logAction } from "@/lib/auth/require.server";
+import { logAction, requirePermission } from "@/lib/auth/require.server";
 
 const DAY_MS = 86_400_000;
 
@@ -311,3 +311,136 @@ export const scanAnomalies = createServerFn({ method: "POST" })
   });
 
 export { runScan as _runAnomalyScan };
+
+// ──────────────────────────────────────────────────────────────────────────────
+// UI server functions : liste + revue manuelle.
+// ──────────────────────────────────────────────────────────────────────────────
+
+export type AnomalyEvidence =
+  | string
+  | number
+  | boolean
+  | null
+  | AnomalyEvidence[]
+  | { [k: string]: AnomalyEvidence };
+
+export type OpenAnomalyRow = {
+  id: string;
+  member_discord_id: string;
+  discord_username: string | null;
+  ig_name: string | null;
+  avatar_url: string | null;
+  kind: AnomalyKind;
+  severity: Severity;
+  score: number | null;
+  evidence: AnomalyEvidence;
+  ai_explanation: string | null;
+  created_at: string;
+};
+
+const SEVERITY_RANK: Record<Severity, number> = { high: 3, med: 2, low: 1 };
+
+export const getOpenAnomalies = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
+
+  const { data: flags } = await db
+    .from("anomaly_flags")
+    .select(
+      "id, member_discord_id, kind, severity, score, evidence, ai_explanation, created_at",
+    )
+    .eq("status", "open")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  const rows = (flags ?? []) as Array<{
+    id: string;
+    member_discord_id: string;
+    kind: AnomalyKind;
+    severity: Severity;
+    score: number | null;
+    evidence: AnomalyEvidence;
+    ai_explanation: string | null;
+    created_at: string;
+  }>;
+
+  const memberIds = [...new Set(rows.map((r) => r.member_discord_id))];
+  const membersById = new Map<
+    string,
+    { discord_username: string | null; ig_name: string | null; avatar_url: string | null }
+  >();
+  if (memberIds.length > 0) {
+    const { data: members } = await db
+      .from("members")
+      .select("discord_id, discord_username, ig_name, avatar_url")
+      .in("discord_id", memberIds);
+    for (const m of (members ?? []) as Array<{
+      discord_id: string;
+      discord_username: string | null;
+      ig_name: string | null;
+      avatar_url: string | null;
+    }>) {
+      membersById.set(m.discord_id, {
+        discord_username: m.discord_username,
+        ig_name: m.ig_name,
+        avatar_url: m.avatar_url,
+      });
+    }
+  }
+
+  const enriched: OpenAnomalyRow[] = rows.map((r) => {
+    const mb = membersById.get(r.member_discord_id);
+    return {
+      id: r.id,
+      member_discord_id: r.member_discord_id,
+      discord_username: mb?.discord_username ?? null,
+      ig_name: mb?.ig_name ?? null,
+      avatar_url: mb?.avatar_url ?? null,
+      kind: r.kind,
+      severity: r.severity,
+      score: r.score,
+      evidence: r.evidence,
+      ai_explanation: r.ai_explanation,
+      created_at: r.created_at,
+    };
+  });
+
+  // Sort severity desc, then created_at desc
+  enriched.sort((a, b) => {
+    const rs = SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity];
+    if (rs !== 0) return rs;
+    return b.created_at.localeCompare(a.created_at);
+  });
+
+  return { rows: enriched };
+});
+
+const UpdateStatusInput = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["reviewed", "dismissed"]),
+});
+
+export const updateAnomalyStatus = createServerFn({ method: "POST" })
+  .inputValidator((input) => UpdateStatusInput.parse(input))
+  .handler(async ({ data }) => {
+    const user = await requirePermission("members.view");
+
+    const { error } = await db
+      .from("anomaly_flags")
+      .update({
+        status: data.status,
+        reviewed_by_discord_id: user.discordId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", data.id)
+      .eq("status", "open");
+
+    if (error) throw new Error(error.message);
+
+    await logAction("anomaly.review", user.discordId, {
+      flag_id: data.id,
+      status: data.status,
+    });
+
+    return { ok: true };
+  });
+
