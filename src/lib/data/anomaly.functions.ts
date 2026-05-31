@@ -13,7 +13,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
-import { requireBotAuth } from "@/lib/bot-auth.server";
+// requireBotAuth est utilisé par le hook public qui appellera _runAnomalyScan.
 import { logAction } from "@/lib/auth/require.server";
 
 const DAY_MS = 86_400_000;
