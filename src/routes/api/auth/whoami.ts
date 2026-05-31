@@ -12,6 +12,9 @@ export const Route = createFileRoute("/api/auth/whoami")({
   server: {
     handlers: {
       GET: async () => {
+        if (process.env.NODE_ENV === "production") {
+          return new Response("Not found", { status: 404 });
+        }
         const s = await getSessionData();
         if (!s) {
           return Response.json(
