@@ -123,13 +123,16 @@ function ObjectivesPage() {
                     await delM.mutateAsync(o.id);
                   }}
                   trigger={
-                    <button
-                      className="text-destructive disabled:opacity-50"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
                       disabled={delM.isPending}
                       aria-label="Supprimer l'objectif"
                     >
                       <Trash2 className="size-4" />
-                    </button>
+                    </Button>
+
                   }
                 />
               )}

@@ -4,7 +4,18 @@ import type { ReactNode } from "react";
 /**
  * DA "Tools / PunkAstik" — kit visuel partagé (terminal/cyberpunk).
  * Réutilisable hors `/tools` : importer depuis ce fichier (alias PageHeader / PageCard).
+ *
+ * Convention UI du projet :
+ * - Pages "outils Paladium" et gestion faction (points, donations, tools.*) :
+ *   utiliser les composants Da* d'ici (DaButton, DaInput, DaSelect, DaChip…).
+ *   Angles droits, focus rose, ambiance terminal.
+ * - Formulaires de profil / admin (me, welcome, config, objectives) :
+ *   utiliser les composants shadcn (`@/components/ui/*`). Ils héritent du
+ *   même anneau de focus rose via la variable CSS `--ring`.
+ * Éviter de mélanger les deux kits dans une même page.
  */
+
+
 
 export function ToolHeader({
   code,
