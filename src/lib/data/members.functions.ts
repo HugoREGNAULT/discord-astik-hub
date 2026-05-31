@@ -95,7 +95,16 @@ export const getMemberDetail = createServerFn({ method: "GET" })
     if (member.data && !isSelf && !isFactionMember(member.data)) throw new Error("NOT_FOUND");
 
     // Staff activity on this member (logs whose payload.target === discordId)
-    let staffActivity: any[] = [];
+    type StaffActivityLog = {
+      id: string;
+      action: string;
+      actor_discord_id: string | null;
+      // logs.payload is jsonb (dynamic shape) — keep unknown, narrow at use site
+      payload: unknown;
+      level: string;
+      created_at: string;
+    };
+    let staffActivity: StaffActivityLog[] = [];
     if (canViewStaffData) {
       const { data: logs } = await db
         .from("logs")
@@ -103,7 +112,7 @@ export const getMemberDetail = createServerFn({ method: "GET" })
         .contains("payload", { target: data.discordId })
         .order("created_at", { ascending: false })
         .limit(30);
-      staffActivity = logs ?? [];
+      staffActivity = (logs ?? []) as StaffActivityLog[];
     }
 
     // Recruiter info
@@ -112,14 +121,17 @@ export const getMemberDetail = createServerFn({ method: "GET" })
       ig_name: string | null;
       discord_username: string | null;
     } | null = null;
-    const recruiterId = (member.data as any)?.recruiter_discord_id;
+    const recruiterId = member.data?.recruiter_discord_id;
     if (canViewStaffData && recruiterId) {
       const { data: r } = await db
         .from("members")
         .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid")
         .eq("discord_id", recruiterId)
         .maybeSingle();
-      recruiterInfo = r && isFactionMember(r) ? ((r as any) ?? null) : null;
+      recruiterInfo =
+        r && isFactionMember(r)
+          ? { discord_id: r.discord_id, ig_name: r.ig_name, discord_username: r.discord_username }
+          : null;
     }
     void recruiter;
 
