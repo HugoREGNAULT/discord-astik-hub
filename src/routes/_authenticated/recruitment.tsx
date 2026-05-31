@@ -336,11 +336,26 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
 }
 
 function AiReview({ applicationId }: { applicationId: string }) {
+  const qc = useQueryClient();
   const reviewFn = useServerFn(reviewApplication);
+  const getFn = useServerFn(getApplicationAiReview);
+
+  const { data: review, isLoading } = useQuery({
+    queryKey: ["application-ai", applicationId],
+    queryFn: () => getFn({ data: { applicationId } }) as Promise<ApplicationAiReview | null>,
+  });
+
   const mutation = useMutation({
-    mutationFn: () => reviewFn({ data: { applicationId } }),
+    mutationFn: (force: boolean) => reviewFn({ data: { applicationId, force } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["application-ai", applicationId] });
+    },
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
+
+  const hasReview = !!review;
+  const ai = review?.ai;
+  const ev = review?.evidence;
 
   return (
     <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3">
@@ -349,26 +364,137 @@ function AiReview({ applicationId }: { applicationId: string }) {
           <Sparkles className="w-4 h-4 text-primary" />
           Avis IA
           <span className="text-xs text-muted-foreground font-normal">
-            · récap + questions d'entretien
+            · indicatif — la décision reste 100% humaine
           </span>
         </div>
         <Button
           size="sm"
           variant="outline"
-          onClick={() => mutation.mutate()}
-          disabled={mutation.isPending}
+          onClick={() => mutation.mutate(hasReview)}
+          disabled={mutation.isPending || isLoading}
         >
           {mutation.isPending ? (
             <Loader2 className="w-4 h-4 mr-1 animate-spin" />
           ) : (
             <Sparkles className="w-4 h-4 mr-1" />
           )}
-          {mutation.data ? "Régénérer" : "Demander un avis"}
+          {hasReview ? "Régénérer" : "Générer l'avis"}
         </Button>
       </div>
-      {mutation.data && (
-        <div className="text-sm whitespace-pre-wrap leading-relaxed border-t border-primary/20 pt-3">
-          {mutation.data.content}
+
+      {isLoading && (
+        <div className="text-xs text-muted-foreground">Chargement de l'avis…</div>
+      )}
+
+      {!isLoading && !hasReview && (
+        <div className="text-xs text-muted-foreground">
+          Aucun avis IA encore généré. Un job planifié génère automatiquement les avis manquants
+          chaque 10 minutes — ou clique sur « Générer l'avis ».
+        </div>
+      )}
+
+      {ai && (
+        <div className="space-y-3 border-t border-primary/20 pt-3">
+          <div>
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+              <span>Score d'adéquation</span>
+              <span className="font-semibold text-foreground">{ai.score}/100</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-primary/10 overflow-hidden">
+              <div
+                className={`h-full ${
+                  ai.score >= 70
+                    ? "bg-emerald-500"
+                    : ai.score >= 40
+                      ? "bg-amber-500"
+                      : "bg-red-500"
+                }`}
+                style={{ width: `${Math.max(0, Math.min(100, ai.score))}%` }}
+              />
+            </div>
+            <div className="mt-1 text-xs">
+              Verdict :{" "}
+              <Badge variant="outline" className="ml-1">
+                {ai.fit === "plutot_oui"
+                  ? "Plutôt OUI"
+                  : ai.fit === "plutot_non"
+                    ? "Plutôt NON"
+                    : "À creuser"}
+              </Badge>
+            </div>
+          </div>
+
+          {ai.strengths.length > 0 && (
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-emerald-500 font-medium mb-1">
+                Forces
+              </div>
+              <ul className="text-sm list-disc pl-5 space-y-0.5">
+                {ai.strengths.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {ai.concerns.length > 0 && (
+            <div>
+              <div className="text-[11px] uppercase tracking-wider text-amber-500 font-medium mb-1">
+                Points de vigilance
+              </div>
+              <ul className="text-sm list-disc pl-5 space-y-0.5">
+                {ai.concerns.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {review?.ai_error && !ai && (
+        <div className="text-xs text-destructive border-t border-destructive/20 pt-2">
+          Synthèse IA indisponible : {review.ai_error}
+        </div>
+      )}
+
+      {ev && (
+        <details className="text-xs text-muted-foreground border-t border-primary/20 pt-2">
+          <summary className="cursor-pointer hover:text-foreground">
+            Sources brutes (profil Paladium, blacklist, alts)
+          </summary>
+          <div className="mt-2 space-y-2">
+            <div>
+              <span className="font-medium text-foreground">UUID Mojang :</span>{" "}
+              {ev.mc_uuid ?? <em>non résolu</em>}
+            </div>
+            <div>
+              <span className="font-medium text-foreground">Paladium :</span>{" "}
+              {ev.paladium_error
+                ? `indisponible (${ev.paladium_error.slice(0, 60)})`
+                : ev.paladium_profile
+                  ? "profil récupéré"
+                  : "aucune donnée"}
+            </div>
+            <div>
+              <span className="font-medium text-foreground">Blacklist :</span>{" "}
+              {ev.blacklist_matches.length} match(s)
+            </div>
+            <div>
+              <span className="font-medium text-foreground">Alts détectés :</span>{" "}
+              {ev.alt_signals.length}
+            </div>
+            <pre className="mt-2 max-h-64 overflow-auto rounded bg-background/50 p-2 text-[10px] leading-tight">
+              {JSON.stringify(ev, null, 2)}
+            </pre>
+          </div>
+        </details>
+      )}
+
+      {review && (
+        <div className="text-[10px] text-muted-foreground italic border-t border-primary/20 pt-2">
+          Avis indicatif — la décision reste 100% humaine. Modèle : {review.model} ·{" "}
+          {new Date(review.generated_at).toLocaleString("fr-FR")}
         </div>
       )}
     </div>
