@@ -710,6 +710,59 @@ export type Database = {
         }
         Relationships: []
       }
+      material_requests: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by_discord_id: string | null
+          decided_by_username: string | null
+          delivered_at: string | null
+          id: string
+          item_name: string
+          member_discord_id: string
+          quantity: number
+          reason: string | null
+          status: string
+          stock_item_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          delivered_at?: string | null
+          id?: string
+          item_name: string
+          member_discord_id: string
+          quantity: number
+          reason?: string | null
+          status?: string
+          stock_item_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          delivered_at?: string | null
+          id?: string
+          item_name?: string
+          member_discord_id?: string
+          quantity?: number
+          reason?: string | null
+          status?: string
+          stock_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_requests_stock_item_id_fkey"
+            columns: ["stock_item_id"]
+            isOneToOne: false
+            referencedRelation: "stock_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_alts: {
         Row: {
           alt_discord_id: string | null
@@ -1662,6 +1715,80 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stock_items: {
+        Row: {
+          chest_id: string | null
+          created_at: string
+          id: string
+          item_name: string
+          min_threshold: number
+          quantity: number
+          unit: string | null
+          updated_at: string
+          updated_by_discord_id: string | null
+        }
+        Insert: {
+          chest_id?: string | null
+          created_at?: string
+          id?: string
+          item_name: string
+          min_threshold?: number
+          quantity?: number
+          unit?: string | null
+          updated_at?: string
+          updated_by_discord_id?: string | null
+        }
+        Update: {
+          chest_id?: string | null
+          created_at?: string
+          id?: string
+          item_name?: string
+          min_threshold?: number
+          quantity?: number
+          unit?: string | null
+          updated_at?: string
+          updated_by_discord_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_items_chest_id_fkey"
+            columns: ["chest_id"]
+            isOneToOne: false
+            referencedRelation: "storage_chests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storage_chests: {
+        Row: {
+          created_at: string
+          created_by_discord_id: string | null
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_discord_id?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_discord_id?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       treasury_accounts: {
         Row: {
