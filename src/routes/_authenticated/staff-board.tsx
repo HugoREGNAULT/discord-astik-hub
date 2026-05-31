@@ -98,7 +98,7 @@ function StaffBoardPage() {
   const [dueDate, setDueDate] = useState("");
   const [filterAssignee, setFilterAssignee] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
-  const [toDelete, setToDelete] = useState<Task | null>(null);
+  
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["staff-tasks"] });
 
