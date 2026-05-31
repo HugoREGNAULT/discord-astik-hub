@@ -24,7 +24,11 @@ import {
   decideApplication,
   getApplicationStats,
 } from "@/lib/data/applications.functions";
-import { reviewApplication } from "@/lib/data/applications-ai.functions";
+import {
+  reviewApplication,
+  getApplicationAiReview,
+  type ApplicationAiReview,
+} from "@/lib/data/applications-ai.functions";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
