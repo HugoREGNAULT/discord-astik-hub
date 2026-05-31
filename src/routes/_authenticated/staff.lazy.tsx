@@ -140,11 +140,21 @@ function StaffPage() {
 
   return (
     <div className="space-y-6 max-w-6xl">
-      <PageHeader
-        code="// staff"
-        title="Dashboard staff"
-        description="Vue d'ensemble de la faction : alertes, files d'attente et activité récente."
-      />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader
+          code="// staff"
+          title="Dashboard staff"
+          description="Vue d'ensemble de la faction : alertes, files d'attente et activité récente."
+        />
+        {me ? (
+          <StaffPresence
+            discordId={me.discordId}
+            username={me.username}
+            avatar={me.avatarUrl ?? me.avatar ?? null}
+          />
+        ) : null}
+      </div>
+
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
