@@ -4,6 +4,7 @@ import { db } from "@/lib/db.server";
 import { requirePermission, requireSession, logAction } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
 import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
+import type { Json } from "@/integrations/supabase/types";
 
 /* ---------- Lecture ---------- */
 
