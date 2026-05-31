@@ -93,7 +93,9 @@ export const resolveUuidsToNames = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    await requireSession();
+    const user = await requireSession();
+    const { ok } = rateLimit(`mojang:${user.discordId}`, 20, 10000);
+    if (!ok) throw new Error("RATE_LIMITED");
     const out: Record<string, string> = {};
     const unique = Array.from(new Set(data.uuids.map(normalizeUuid)));
 
