@@ -274,6 +274,30 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_integrity_checks: {
+        Row: {
+          broken_at_seq: number | null
+          checked_at: string
+          detail: string | null
+          id: string
+          ok: boolean
+        }
+        Insert: {
+          broken_at_seq?: number | null
+          checked_at?: string
+          detail?: string | null
+          id?: string
+          ok: boolean
+        }
+        Update: {
+          broken_at_seq?: number | null
+          checked_at?: string
+          detail?: string | null
+          id?: string
+          ok?: boolean
+        }
+        Relationships: []
+      }
       automation_rules: {
         Row: {
           action: Json
@@ -841,25 +865,34 @@ export type Database = {
           action: string
           actor_discord_id: string | null
           created_at: string
+          hash: string | null
           id: string
           level: string
           payload: Json | null
+          prev_hash: string | null
+          seq: number
         }
         Insert: {
           action: string
           actor_discord_id?: string | null
           created_at?: string
+          hash?: string | null
           id?: string
           level?: string
           payload?: Json | null
+          prev_hash?: string | null
+          seq?: number
         }
         Update: {
           action?: string
           actor_discord_id?: string | null
           created_at?: string
+          hash?: string | null
           id?: string
           level?: string
           payload?: Json | null
+          prev_hash?: string | null
+          seq?: number
         }
         Relationships: []
       }
@@ -2470,6 +2503,15 @@ export type Database = {
       set_member_points: {
         Args: { p_discord_id: string; p_total: number }
         Returns: number
+      }
+      verify_logs_chain: {
+        Args: never
+        Returns: {
+          broken_at_seq: number
+          detail: string
+          ok: boolean
+          scanned: number
+        }[]
       }
     }
     Enums: {

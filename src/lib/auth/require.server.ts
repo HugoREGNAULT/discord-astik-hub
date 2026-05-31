@@ -66,6 +66,23 @@ export async function requireSelfOrPermission(
   return { user, isSelf };
 }
 
+/**
+ * Actions sensibles : pour chacune, on poste un embed récap dans le canal staff
+ * (asynchrone, non bloquant). Pattern log.server.ts. La liste reste
+ * conservatrice — on signale ce qui est irréversible ou qui touche aux
+ * permissions / sanctions.
+ */
+const SENSITIVE_ACTIONS = new Set<string>([
+  "member_delete",
+  "permission_change",
+  "points_remove",
+  "application_reject",
+  "warning_create",
+  "donation_cancel",
+  "config_value_delete",
+  "blacklist_add",
+]);
+
 export async function logAction(
   action: string,
   actorId: string,
@@ -82,4 +99,36 @@ export async function logAction(
     const { reportError } = await import("@/lib/observability.server");
     reportError(action, new Error(action), { actor: actorId, ...payload });
   }
+  if (SENSITIVE_ACTIONS.has(action)) {
+    // Fire-and-forget : ne casse jamais l'appelant.
+    void (async () => {
+      try {
+        const { postToChannel, COLORS } = await import("@/lib/discord/log.server");
+        const { NOTIFY_CHANNELS } = await import("@/lib/discord/constants");
+        if (!NOTIFY_CHANNELS.STAFF) return;
+        const fields = Object.entries(payload)
+          .slice(0, 10)
+          .map(([k, v]) => ({
+            name: k,
+            value: "```" + JSON.stringify(v).slice(0, 900) + "```",
+            inline: false,
+          }));
+        await postToChannel(NOTIFY_CHANNELS.STAFF, {
+          embeds: [
+            {
+              title: `🔐 Action sensible · ${action}`,
+              description: `Acteur : \`${actorId}\``,
+              color: COLORS.warn,
+              timestamp: new Date().toISOString(),
+              fields,
+              footer: { text: "Audit log PunkAstik" },
+            },
+          ],
+        });
+      } catch (e) {
+        console.error("[logAction] sensitive alert failed", (e as Error).message);
+      }
+    })();
+  }
 }
+
