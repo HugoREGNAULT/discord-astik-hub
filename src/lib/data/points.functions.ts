@@ -98,10 +98,7 @@ export const setPoints = createServerFn({ method: "POST" })
       .single();
     const current = m?.astik_points ?? 0;
     const delta = data.total - current;
-    await db
-      .from("members")
-      .update({ astik_points: data.total })
-      .eq("discord_id", data.memberDiscordId);
+    // members.astik_points est synchronisé par le trigger SQL via points_ledger.total_after.
     await db.from("points_ledger").insert({
       member_discord_id: data.memberDiscordId,
       staff_discord_id: user.discordId,
