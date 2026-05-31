@@ -267,15 +267,19 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
             {detail.isLoading && <LoadingBlock label="Listings…" />}
             {detail.error && <ErrorBlock message={(detail.error as Error).message} />}
 
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <div
                 className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
                 style={{ fontFamily: "'Space Mono'" }}
               >
-                // prix moyen — {range === "24h" ? "24h" : "7 jours"}
+                // évolution achat / vente —{" "}
+                {range === "1h" ? "1 heure" : range === "24h" ? "24 heures" : "7 jours"}
+                <span className="text-zinc-700 normal-case tracking-normal ml-2">
+                  (auto 10 min)
+                </span>
               </div>
               <div className="flex gap-1">
-                {(["24h", "7d"] as const).map((r) => (
+                {(["1h", "24h", "7d"] as const).map((r) => (
                   <button
                     key={r}
                     type="button"
@@ -292,22 +296,41 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                 ))}
               </div>
             </div>
+
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <PriceTile label="HDV prix moyen u." value={latest.marketAvg} color="text-pink-400" />
+              <PriceTile
+                label="Shop achat u."
+                value={latest.adminBuy}
+                color="text-emerald-400"
+              />
+              <PriceTile
+                label="Shop vente u. (PB)"
+                value={latest.adminSell}
+                color="text-sky-400"
+              />
+            </div>
+
             {historySeries.length < 2 ? (
               <p className="text-zinc-600 text-xs mb-3">
-                Pas encore assez d&apos;historique — la sync tourne toutes les heures.
+                Pas encore assez d&apos;historique sur cette plage — la sync tourne toutes les
+                heures.
               </p>
             ) : (
-              <div className="h-32 mb-4">
+              <div className="h-48 mb-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={historySeries}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
                     <XAxis
                       dataKey="t"
+                      type="number"
+                      domain={["dataMin", "dataMax"]}
+                      scale="time"
                       tickFormatter={(t) =>
                         new Date(t).toLocaleString("fr-FR", {
                           day: "2-digit",
                           month: "2-digit",
-                          ...(range === "24h" ? { hour: "2-digit", minute: "2-digit" } : {}),
+                          ...(range === "7d" ? {} : { hour: "2-digit", minute: "2-digit" }),
                         })
                       }
                       stroke="#52525b"
@@ -321,13 +344,33 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                         fontSize: 12,
                         color: "#e4e4e7",
                       }}
-                      labelFormatter={(t) => new Date(t).toLocaleString("fr-FR")}
-                      formatter={(v: number) => fmtNum(v)}
+                      labelFormatter={(t) => new Date(Number(t)).toLocaleString("fr-FR")}
+                      formatter={(v: number | null) => (v == null ? "—" : fmtNum(v))}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 11, color: "#a1a1aa" }} />
+                    <Line
+                      type="monotone"
+                      dataKey="marketAvg"
+                      name="HDV moyen"
+                      stroke="#ec4899"
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
                     />
                     <Line
                       type="monotone"
-                      dataKey="price"
-                      stroke="#ec4899"
+                      dataKey="adminBuy"
+                      name="Shop achat"
+                      stroke="#22c55e"
+                      strokeWidth={2}
+                      dot={false}
+                      connectNulls
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="adminSell"
+                      name="Shop vente"
+                      stroke="#38bdf8"
                       strokeWidth={2}
                       dot={false}
                       connectNulls
