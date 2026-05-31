@@ -133,6 +133,13 @@ const SECTIONS: Section[] = [
         perm: "members.view",
         accent: "blurple",
       },
+      {
+        title: "Grades & badges",
+        url: "/staff/grades",
+        icon: Award,
+        perm: "members.edit",
+        accent: "pink",
+      },
     ],
   },
   {
