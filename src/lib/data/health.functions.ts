@@ -43,10 +43,10 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
       .order("updated_at", { ascending: false }),
   ]);
 
-  const active = (activeMembers.data ?? []).filter((member: any) => isFactionMember(member));
+  const active = (activeMembers.data ?? []).filter((member) => isFactionMember(member));
   const total = active.length;
   const activeCount = active.filter(
-    (m: any) => (m.messages_7d ?? 0) > 0 || (m.voice_7d_seconds ?? 0) > 0,
+    (m) => (m.messages_7d ?? 0) > 0 || (m.voice_7d_seconds ?? 0) > 0,
   ).length;
   const activityRate = total > 0 ? Math.round((activeCount / total) * 100) : 0;
 
@@ -70,12 +70,12 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   const recruiters30 = new Map<string, number>();
   const recruiters90 = new Map<string, number>();
   // recentArrivals : 30j seulement, on relance pour 90j via filter sur active
-  for (const m of (recentArrivals.data ?? []) as any[]) {
+  for (const m of recentArrivals.data ?? []) {
     if (m.recruiter_discord_id) {
       recruiters30.set(m.recruiter_discord_id, (recruiters30.get(m.recruiter_discord_id) ?? 0) + 1);
     }
   }
-  for (const m of active as any[]) {
+  for (const m of active) {
     if (m.recruiter_discord_id && m.arrival_date && m.arrival_date >= since90dDate) {
       recruiters90.set(m.recruiter_discord_id, (recruiters90.get(m.recruiter_discord_id) ?? 0) + 1);
     }
@@ -92,8 +92,8 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
       .in("discord_id", topRecruiterIds);
     recruiterMap = new Map(
       (recs ?? [])
-        .filter((member: any) => isFactionMember(member))
-        .map((r: any) => [
+        .filter((member) => isFactionMember(member))
+        .map((r) => [
           r.discord_id,
           { ig_name: r.ig_name, discord_username: r.discord_username, avatar_url: r.avatar_url },
         ]),
