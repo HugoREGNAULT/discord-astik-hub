@@ -12,6 +12,7 @@ import { db } from "@/lib/db.server";
 import { requireSession } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
 import { filterFactionMembers } from "@/lib/data/faction-members";
+import { sanitizePostgrestLike } from "@/lib/data/postgrest";
 
 export type SearchHit =
   | {
@@ -67,7 +68,7 @@ export const globalSearch = createServerFn({ method: "GET" })
     const raw = data.q.trim();
     if (raw.length < 1) return { hits: [] };
     const needle = raw.toLowerCase();
-    const like = `%${raw}%`;
+    const like = `%${sanitizePostgrestLike(raw)}%`;
     const filter = data.filter;
 
     const hits: SearchHit[] = [];

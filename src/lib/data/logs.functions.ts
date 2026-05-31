@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
+import { sanitizePostgrestLike } from "@/lib/data/postgrest";
 
 export const listLogs = createServerFn({ method: "GET" })
   .inputValidator((input) =>
@@ -34,15 +35,18 @@ export const listLogs = createServerFn({ method: "GET" })
 
     if (data.memberQuery) {
       const needle = data.memberQuery;
+      const safeNeedle = sanitizePostgrestLike(needle);
       // Resolve usernames to discord ids
       const { data: members } = await db
         .from("members")
         .select("discord_id")
-        .or(`discord_username.ilike.%${needle}%,ig_name.ilike.%${needle}%,discord_id.eq.${needle}`)
+        .or(`discord_username.ilike.%${safeNeedle}%,ig_name.ilike.%${safeNeedle}%,discord_id.eq.${safeNeedle}`)
         .limit(50);
       const ids = (members ?? []).map((m) => m.discord_id).filter(Boolean);
       if (/^\d{5,}$/.test(needle)) ids.push(needle);
-      const uniq = Array.from(new Set(ids));
+      // Only inject strictly numeric ids into the .or clause to prevent
+      // PostgREST filter injection via actor_discord_id.in.(...) / payload eq.
+      const uniq = Array.from(new Set(ids)).filter((id) => /^\d+$/.test(id));
       if (uniq.length === 0) return { logs: [] };
       const orClause = [
         `actor_discord_id.in.(${uniq.join(",")})`,
