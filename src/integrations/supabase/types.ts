@@ -89,6 +89,71 @@ export type Database = {
         }
         Relationships: []
       }
+      announcement_reads: {
+        Row: {
+          announcement_id: string
+          id: string
+          member_discord_id: string
+          read_at: string
+        }
+        Insert: {
+          announcement_id: string
+          id?: string
+          member_discord_id: string
+          read_at?: string
+        }
+        Update: {
+          announcement_id?: string
+          id?: string
+          member_discord_id?: string
+          read_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_reads_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          body: string
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          id: string
+          pinned: boolean
+          published_at: string | null
+          require_ack: boolean
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string | null
+          require_ack?: boolean
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          id?: string
+          pinned?: boolean
+          published_at?: string | null
+          require_ack?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           age: number
