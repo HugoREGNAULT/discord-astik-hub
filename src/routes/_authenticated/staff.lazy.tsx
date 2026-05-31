@@ -2037,3 +2037,153 @@ function AnomaliesCard() {
   );
 }
 
+
+// ==========================================================
+// ChurnSection : risque de départ + cohortes de rétention
+// ==========================================================
+import { getChurnRisk, getRetentionCohorts, type ChurnRow } from "@/lib/data/churn.functions";
+
+function ChurnSection() {
+  const fnRisk = useServerFn(getChurnRisk);
+  const fnCohorts = useServerFn(getRetentionCohorts);
+  const { data: risk, isLoading: riskLoading } = useQuery({
+    queryKey: ["churn-risk"],
+    queryFn: () => fnRisk(),
+  });
+  const { data: cohorts, isLoading: cohortsLoading } = useQuery({
+    queryKey: ["retention-cohorts"],
+    queryFn: () => fnCohorts(),
+  });
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserMinus className="size-4 text-orange-500" />
+            Risque de départ
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Estimation heuristique — pas une certitude. Aucune action automatique.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {riskLoading ? (
+            <RowListSkeleton count={5} />
+          ) : (risk?.rows?.length ?? 0) === 0 ? (
+            <EmptyState
+              icon={UserMinus}
+              title="Aucun membre à risque détecté"
+              description="Les snapshots d'activité alimenteront ce panneau."
+              variant="compact"
+            />
+          ) : (
+            <>
+              {risk!.rows.slice(0, 12).map((r: ChurnRow) => (
+                <Link
+                  key={r.discord_id}
+                  to="/members/$id"
+                  params={{ id: r.discord_id }}
+                  className="flex items-center gap-3 border border-border rounded p-2 hover:border-primary/40 transition"
+                  title={`activity_drop=${r.factors.activity_drop.toFixed(2)} · trend=${r.factors.presence_trend.toFixed(3)} · tenure=${r.factors.tenure_days}j`}
+                >
+                  {r.avatar_url ? (
+                    <img src={r.avatar_url} alt="" className="size-8 rounded-full" />
+                  ) : (
+                    <div className="size-8 rounded-full bg-muted" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">
+                      {r.ig_name ?? r.discord_username ?? r.discord_id}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      chute {Math.round(r.factors.activity_drop * 100)}% · pente{" "}
+                      {r.factors.presence_trend.toFixed(2)}/j · {r.factors.tenure_days}j
+                    </div>
+                  </div>
+                  <Badge
+                    variant={r.score >= 70 ? "destructive" : r.score >= 40 ? "secondary" : "outline"}
+                  >
+                    {r.score}
+                  </Badge>
+                </Link>
+              ))}
+              <p className="text-[10px] text-muted-foreground pt-2">
+                {risk!.formula}
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HeartPulse className="size-4 text-primary" />
+            Rétention par cohorte
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            % encore actifs à M+1 / M+3 / M+6, par mois d'arrivée.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {cohortsLoading ? (
+            <RowListSkeleton count={5} />
+          ) : (cohorts?.cohorts?.length ?? 0) === 0 ? (
+            <EmptyState
+              icon={HeartPulse}
+              title="Pas encore de cohorte"
+              description="Les arrivées datées rempliront cette grille."
+              variant="compact"
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground">
+                  <tr className="text-left">
+                    <th className="py-1 pr-2">Cohorte</th>
+                    <th className="py-1 pr-2 text-right">N</th>
+                    <th className="py-1 pr-2 text-right">M+1</th>
+                    <th className="py-1 pr-2 text-right">M+3</th>
+                    <th className="py-1 pr-2 text-right">M+6</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cohorts!.cohorts.map((c) => (
+                    <tr key={c.month} className="border-t border-border">
+                      <td className="py-1 pr-2 font-mono">{c.month}</td>
+                      <td className="py-1 pr-2 text-right">{c.arrived}</td>
+                      <RetentionCell rate={c.m1Rate} />
+                      <RetentionCell rate={c.m3Rate} />
+                      <RetentionCell rate={c.m6Rate} />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function RetentionCell({ rate }: { rate: number }) {
+  if (rate < 0) {
+    return <td className="py-1 pr-2 text-right text-muted-foreground">—</td>;
+  }
+  const pct = Math.round(rate * 100);
+  // Heatmap : vert clair -> vert foncé selon le %
+  const intensity = Math.max(0.1, Math.min(1, rate));
+  const bg = `color-mix(in oklab, hsl(var(--primary)) ${Math.round(intensity * 60)}%, transparent)`;
+  return (
+    <td className="py-1 pr-2 text-right">
+      <span
+        className="inline-block px-1.5 py-0.5 rounded text-foreground"
+        style={{ background: bg }}
+      >
+        {pct}%
+      </span>
+    </td>
+  );
+}
