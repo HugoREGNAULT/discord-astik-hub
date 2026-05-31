@@ -173,6 +173,7 @@ function DonationsPage() {
           <EmptyBlock label="Aucun panier actif — crée-en un" />
         </PageCard>
       )}
+      </div>
     </div>
   );
 }
