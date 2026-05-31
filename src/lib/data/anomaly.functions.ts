@@ -316,6 +316,14 @@ export { runScan as _runAnomalyScan };
 // UI server functions : liste + revue manuelle.
 // ──────────────────────────────────────────────────────────────────────────────
 
+export type AnomalyEvidence =
+  | string
+  | number
+  | boolean
+  | null
+  | AnomalyEvidence[]
+  | { [k: string]: AnomalyEvidence };
+
 export type OpenAnomalyRow = {
   id: string;
   member_discord_id: string;
@@ -325,7 +333,7 @@ export type OpenAnomalyRow = {
   kind: AnomalyKind;
   severity: Severity;
   score: number | null;
-  evidence: unknown;
+  evidence: AnomalyEvidence;
   ai_explanation: string | null;
   created_at: string;
 };
