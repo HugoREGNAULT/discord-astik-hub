@@ -19,6 +19,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
+import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
@@ -121,6 +122,11 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_authenticated/staff.lazy').then((d) => d.Route),
 )
+const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedRecruitmentRoute =
   AuthenticatedRecruitmentRouteImport.update({
     id: '/recruitment',
@@ -417,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/welcome': typeof AuthenticatedWelcomeRoute
@@ -477,6 +484,7 @@ export interface FileRoutesByTo {
   '/points': typeof AuthenticatedPointsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
@@ -539,6 +547,7 @@ export interface FileRoutesById {
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
+  '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
@@ -602,6 +611,7 @@ export interface FileRouteTypes {
     | '/polls'
     | '/profile'
     | '/recruitment'
+    | '/shop'
     | '/staff'
     | '/tools'
     | '/welcome'
@@ -662,6 +672,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/profile'
     | '/recruitment'
+    | '/shop'
     | '/staff'
     | '/welcome'
     | '/api/health'
@@ -723,6 +734,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls'
     | '/_authenticated/profile'
     | '/_authenticated/recruitment'
+    | '/_authenticated/shop'
     | '/_authenticated/staff'
     | '/_authenticated/tools'
     | '/_authenticated/welcome'
@@ -860,6 +872,13 @@ declare module '@tanstack/react-router' {
       path: '/staff'
       fullPath: '/staff'
       preLoaderRoute: typeof AuthenticatedStaffRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/shop': {
+      id: '/_authenticated/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof AuthenticatedShopRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/recruitment': {
@@ -1293,6 +1312,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
+  AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
@@ -1315,6 +1335,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
+  AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,

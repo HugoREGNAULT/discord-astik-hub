@@ -23,6 +23,7 @@ export type Permission =
   | "config.manage"
   | "recruit.access"
   | "objectives.edit"
+  | "shop.manage"
   | "admin.access";
 
 export interface SessionUser {
@@ -81,6 +82,8 @@ export function canAccess(user: SessionUser | null, perm: Permission): boolean {
       return isRecruiter(user);
     case "objectives.edit":
       return isStaffFaction(user);
+    case "shop.manage":
+      return isStaffPoints(user);
     case "admin.access":
       return isHighStaff(user);
   }
@@ -102,6 +105,7 @@ export function listPermissions(user: SessionUser | null): Permission[] {
     "config.manage",
     "recruit.access",
     "objectives.edit",
+    "shop.manage",
     "admin.access",
   ];
   return all.filter((p) => canAccess(user, p));

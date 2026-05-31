@@ -1119,6 +1119,184 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_rewards: {
+        Row: {
+          active: boolean
+          category: string | null
+          cost_points: number
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          image_url: string | null
+          name: string
+          per_member_limit: number | null
+          stock: number | null
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          cost_points: number
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          per_member_limit?: number | null
+          stock?: number | null
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          cost_points?: number
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          per_member_limit?: number | null
+          stock?: number | null
+        }
+        Relationships: []
+      }
+      spend_requests: {
+        Row: {
+          decided_at: string | null
+          decided_by_discord_id: string | null
+          decided_by_username: string | null
+          expires_at: string
+          fulfilled_at: string | null
+          id: string
+          ledger_id: string | null
+          member_discord_id: string
+          quantity: number
+          reject_reason: string | null
+          requested_at: string
+          reward_id: string | null
+          reward_name: string
+          status: string
+          total_cost: number
+          unit_cost: number
+        }
+        Insert: {
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          expires_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          ledger_id?: string | null
+          member_discord_id: string
+          quantity?: number
+          reject_reason?: string | null
+          requested_at?: string
+          reward_id?: string | null
+          reward_name: string
+          status?: string
+          total_cost: number
+          unit_cost: number
+        }
+        Update: {
+          decided_at?: string | null
+          decided_by_discord_id?: string | null
+          decided_by_username?: string | null
+          expires_at?: string
+          fulfilled_at?: string | null
+          id?: string
+          ledger_id?: string | null
+          member_discord_id?: string
+          quantity?: number
+          reject_reason?: string | null
+          requested_at?: string
+          reward_id?: string | null
+          reward_name?: string
+          status?: string
+          total_cost?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spend_requests_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "shop_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treasury_accounts: {
+        Row: {
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          name: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      treasury_movements: {
+        Row: {
+          account_id: string
+          balance_after: number
+          created_at: string
+          delta: number
+          id: string
+          reason: string | null
+          source: string | null
+          source_id: string | null
+          staff_discord_id: string | null
+          staff_username: string | null
+        }
+        Insert: {
+          account_id: string
+          balance_after: number
+          created_at?: string
+          delta: number
+          id?: string
+          reason?: string | null
+          source?: string | null
+          source_id?: string | null
+          staff_discord_id?: string | null
+          staff_username?: string | null
+        }
+        Update: {
+          account_id?: string
+          balance_after?: number
+          created_at?: string
+          delta?: number
+          id?: string
+          reason?: string | null
+          source?: string | null
+          source_id?: string | null
+          staff_discord_id?: string | null
+          staff_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treasury_movements_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "treasury_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       warnings: {
         Row: {
           body: string
