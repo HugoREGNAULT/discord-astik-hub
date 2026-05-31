@@ -236,13 +236,16 @@ function MemberDetail() {
       )}
 
       {canViewWarnings && (
-        <MemberWarningsPanel
-          warnings={data.warnings}
-          canWrite={canWriteWarnings}
-          warnInput={warn}
-          onWarnInputChange={setWarn}
-          onAdd={() => mWarn.mutate()}
-        />
+        <>
+          <MemberWarningsPanel
+            warnings={data.warnings}
+            canWrite={canWriteWarnings}
+            warnInput={warn}
+            onWarnInputChange={setWarn}
+            onAdd={() => mWarn.mutate()}
+          />
+          <DisciplinarySummaryCard discordId={data.member.discord_id} />
+        </>
       )}
 
       <GamificationCard scope="member" discordId={data.member.discord_id} />
