@@ -85,7 +85,7 @@ import {
 import { KpiGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/EmptyState";
-import { ApplicationsChart } from "@/components/ApplicationsChart";
+import { LazyApplicationsChart as ApplicationsChart } from "@/components/LazyApplicationsChart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
