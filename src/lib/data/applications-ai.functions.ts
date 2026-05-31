@@ -21,11 +21,19 @@ const MODEL = "google/gemini-3-flash-preview";
 
 const SYSTEM_PROMPT = `Tu es recruteur adjoint de la faction PunkAstik (Paladium, PVP Faction Moddé). À partir des données candidat (présentation, âge, dispo, stats Paladium, blacklist, alts), donne un avis FACTUEL et nuancé : un score d'adéquation 0-100, 2-3 forces, 2-3 points de vigilance. Tu ne DÉCIDES pas, tu conseilles. Si le candidat est mineur, reste neutre et ne stocke aucune donnée superflue. Réponds en JSON strict {score, fit, strengths[], concerns[]} (fit ∈ {"plutot_oui","a_creuser","plutot_non"}, strengths/concerns = 2-3 phrases courtes).`;
 
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [k: string]: JsonValue };
+
 type Evidence = {
   mc_uuid: string | null;
   mojang_error?: string;
-  paladium_profile: unknown | null;
-  paladium_jobs: unknown | null;
+  paladium_profile: JsonValue;
+  paladium_jobs: JsonValue;
   paladium_error?: string;
   blacklist_matches: Array<{
     matched_on: string[];
@@ -40,6 +48,15 @@ type Evidence = {
     matched_on: string;
   }>;
 };
+
+function toJson(value: unknown): JsonValue {
+  if (value == null) return null;
+  try {
+    return JSON.parse(JSON.stringify(value)) as JsonValue;
+  } catch {
+    return null;
+  }
+}
 
 type AiSynth = {
   score: number;
