@@ -41,11 +41,15 @@ export async function exchangeCode(code: string, redirectUri: string): Promise<D
     code,
     redirect_uri: redirectUri,
   });
-  const res = await fetchWithRetry(`${DISCORD_API}/oauth2/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  const res = await fetchWithRetry(
+    `${DISCORD_API}/oauth2/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    },
+    { bucket: "discord" },
+  );
   if (!res.ok) throw new Error(`Discord token exchange failed: ${res.status} ${await res.text()}`);
   return res.json();
 }
@@ -58,9 +62,11 @@ export interface DiscordUser {
 }
 
 export async function getCurrentDiscordUser(accessToken: string): Promise<DiscordUser> {
-  const res = await fetchWithRetry(`${DISCORD_API}/users/@me`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const res = await fetchWithRetry(
+    `${DISCORD_API}/users/@me`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+    { bucket: "discord" },
+  );
   if (!res.ok) throw new Error(`Discord /users/@me failed: ${res.status}`);
   return res.json();
 }
@@ -78,9 +84,11 @@ export async function getGuildMember(
   guildId: string,
   userId: string,
 ): Promise<DiscordGuildMember | null> {
-  const res = await fetchWithRetry(`${DISCORD_API}/guilds/${guildId}/members/${userId}`, {
-    headers: { Authorization: `Bot ${BOT_TOKEN()}` },
-  });
+  const res = await fetchWithRetry(
+    `${DISCORD_API}/guilds/${guildId}/members/${userId}`,
+    { headers: { Authorization: `Bot ${BOT_TOKEN()}` } },
+    { bucket: "discord" },
+  );
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Discord guild member failed: ${res.status}`);
   return res.json();
@@ -95,9 +103,11 @@ export async function listGuildMembers(
   const url = new URL(`${DISCORD_API}/guilds/${guildId}/members`);
   url.searchParams.set("limit", String(limit));
   if (opts.after) url.searchParams.set("after", opts.after);
-  const res = await fetchWithRetry(url, {
-    headers: { Authorization: `Bot ${BOT_TOKEN()}` },
-  });
+  const res = await fetchWithRetry(
+    url,
+    { headers: { Authorization: `Bot ${BOT_TOKEN()}` } },
+    { bucket: "discord" },
+  );
   if (!res.ok) throw new Error(`Discord list members failed: ${res.status} ${await res.text()}`);
   return res.json();
 }
@@ -138,6 +148,7 @@ export async function addGuildMemberRole(
         "Content-Length": "0",
       },
     },
+    { bucket: "discord" },
   );
   if (res.status === 204) return { ok: true, status: 204 };
   const body = await res.text().catch(() => "");
