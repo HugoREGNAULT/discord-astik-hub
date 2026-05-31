@@ -258,17 +258,6 @@ function AnnouncementsPage() {
           onClose={() => setReadersFor(null)}
         />
       )}
-      <ConfirmDialog
-        open={confirmDel !== null}
-        onOpenChange={(o) => !o && setConfirmDel(null)}
-        title="Supprimer cette annonce ?"
-        description="Cette action est irréversible."
-        confirmText="Supprimer"
-        onConfirm={() => {
-          if (confirmDel) delM.mutate(confirmDel);
-          setConfirmDel(null);
-        }}
-      />
     </div>
   );
 }
