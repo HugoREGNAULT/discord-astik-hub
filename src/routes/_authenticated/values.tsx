@@ -55,8 +55,9 @@ function ValuesPage() {
       <PageHeader
         code="// points"
         title="Valeurs & ressources"
-        subtitle="Tarifs des items/actions et ressources manquantes sur les projets en cours."
+        description="Tarifs des items/actions et ressources manquantes sur les projets en cours."
       />
+
 
       <Tabs defaultValue="values">
         <TabsList>

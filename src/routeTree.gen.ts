@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
+import { Route as AuthenticatedValuesRouteImport } from './routes/_authenticated/values'
 import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
@@ -124,6 +125,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedValuesRoute = AuthenticatedValuesRouteImport.update({
+  id: '/values',
+  path: '/values',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTrialsRoute = AuthenticatedTrialsRouteImport.update({
@@ -536,6 +542,7 @@ export interface FileRoutesByFullPath {
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
+  '/values': typeof AuthenticatedValuesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -612,6 +619,7 @@ export interface FileRoutesByTo {
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
+  '/values': typeof AuthenticatedValuesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -692,6 +700,7 @@ export interface FileRoutesById {
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
+  '/_authenticated/values': typeof AuthenticatedValuesRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -772,6 +781,7 @@ export interface FileRouteTypes {
     | '/staff'
     | '/tools'
     | '/trials'
+    | '/values'
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
@@ -848,6 +858,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/staff'
     | '/trials'
+    | '/values'
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
@@ -927,6 +938,7 @@ export interface FileRouteTypes {
     | '/_authenticated/staff'
     | '/_authenticated/tools'
     | '/_authenticated/trials'
+    | '/_authenticated/values'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/admin/audit'
@@ -1073,6 +1085,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/values': {
+      id: '/_authenticated/values'
+      path: '/values'
+      fullPath: '/values'
+      preLoaderRoute: typeof AuthenticatedValuesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/trials': {
@@ -1668,6 +1687,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
+  AuthenticatedValuesRoute: typeof AuthenticatedValuesRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -1693,6 +1713,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
+  AuthenticatedValuesRoute: AuthenticatedValuesRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
