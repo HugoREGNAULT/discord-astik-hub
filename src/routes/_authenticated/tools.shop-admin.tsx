@@ -151,42 +151,9 @@ function ShopAdminPage() {
               <EmptyBlock label="Pas encore d'historique pour cet item" />
             )}
             {selected && history.data && history.data.rows.length > 0 && (
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={history.data.rows.map((r) => ({
-                      t: new Date(r.captured_at).toLocaleString("fr-FR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }),
-                      buy: r.price,
-                      sell: r.price_pb,
-                    }))}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-                    <XAxis dataKey="t" stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
-                    <YAxis stroke="#52525b" tick={{ fill: "#e4e4e7", fontSize: 10 }} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#18181b",
-                        border: "1px solid #3f3f46",
-                        fontSize: 12,
-                        color: "#e4e4e7",
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="sell"
-                      stroke="#ec4899"
-                      strokeWidth={2}
-                      dot={false}
-                      name="Vente"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              <Suspense fallback={<div className="h-64 animate-pulse rounded-md bg-muted" />}>
+                <ShopAdminHistoryChart rows={history.data.rows} />
+              </Suspense>
             )}
             {selected && <AlertForm itemName={selected} />}
           </ToolCard>
