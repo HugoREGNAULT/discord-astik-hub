@@ -1299,6 +1299,7 @@ const PER_PAGE = 8;
 
 type SortKey = "date" | "audience" | "status";
 type SortDir = "asc" | "desc";
+type StaffSearch = { bdmSort: SortKey; bdmDir: SortDir };
 
 function statusRank(p: HistoryItem["payload"]): number {
   const sent = p?.sent ?? 0;
