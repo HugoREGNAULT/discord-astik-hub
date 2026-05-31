@@ -30,6 +30,7 @@ import {
   DaSelect,
   DaChip,
   EmptyBlock,
+  ErrorBlock,
 } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/donations")({
