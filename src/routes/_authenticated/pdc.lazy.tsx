@@ -467,6 +467,20 @@ function PdcPage() {
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
+  // ---------------- Auto-save débouncé en mode collab ----------------
+  // En collab, le Broadcast porte le temps réel ; savePdcPlan porte la vérité.
+  // On débounce ~2.5s après la dernière modif pour ne pas spammer la DB.
+  const saveMutateRef = useRef(save.mutate);
+  saveMutateRef.current = save.mutate;
+  useEffect(() => {
+    if (!planId || !dirty || !connected) return;
+    const t = setTimeout(() => {
+      saveMutateRef.current();
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [planId, dirty, connected, layers, planName, layersCount]);
+
+
   const removePlan = useMutation({
     mutationFn: async (id: string) => {
       await delPlan({ data: { id } });
