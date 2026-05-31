@@ -56,7 +56,6 @@ import { MemberDonationsPanel } from "@/components/members/MemberDonationsPanel"
 import type {
   MemberPointsEntry,
   MemberDonationEntry,
-  MemberRow,
 } from "@/components/members/types";
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
