@@ -18,6 +18,8 @@ import {
   Grid3x3,
   Wrench,
   Bell,
+  Megaphone,
+
   Award,
 } from "lucide-react";
 
@@ -71,6 +73,14 @@ const SECTIONS: Section[] = [
         perm: "profile.self",
         accent: "blurple",
       },
+      {
+        title: "Annonces",
+        url: "/announcements",
+        icon: Megaphone,
+        perm: "profile.self",
+        accent: "pink",
+      },
+
       {
         title: "Événements",
         url: "/events",

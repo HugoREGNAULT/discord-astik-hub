@@ -18,6 +18,8 @@ import { LazyLeaderboardChart as LeaderboardChart } from "@/components/LazyLeade
 import { RecentCartsPanel } from "@/components/RecentCartsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 import { PageHeader, PageCard, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
+import { UnreadAnnouncementsBanner } from "@/components/UnreadAnnouncementsBanner";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   errorComponent: RouteError,
@@ -217,6 +219,9 @@ function LeaderboardPage() {
         title="Classement"
         description="Le top de la faction — AstikPoints, vocal et messages."
       />
+      <UnreadAnnouncementsBanner />
+
+
 
       <PageCard>
         <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
