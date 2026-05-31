@@ -82,7 +82,7 @@ function XpCalculator() {
             <select
               value={job}
               onChange={(e) => setJob(e.target.value as JobId)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus:border-pink-500"
+              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
             >
               {JOBS.map((j) => (
                 <option key={j.id} value={j.id}>
@@ -116,7 +116,7 @@ function XpCalculator() {
               value={bonus}
               onChange={(e) => setBonus(Number(e.target.value) || 0)}
               min={0}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus:border-pink-500"
+              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
             />
           </Field>
           <Field label="Niveau actuel">
@@ -125,7 +125,7 @@ function XpCalculator() {
               value={from}
               min={0}
               onChange={(e) => setFrom(Number(e.target.value) || 0)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus:border-pink-500"
+              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
             />
           </Field>
           <Field label="Niveau cible">
@@ -134,7 +134,7 @@ function XpCalculator() {
               value={to}
               min={0}
               onChange={(e) => setTo(Number(e.target.value) || 0)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus:border-pink-500"
+              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
             />
           </Field>
           <Field label="XP déjà acquise (option.)">
@@ -143,7 +143,7 @@ function XpCalculator() {
               value={currentXp}
               min={0}
               onChange={(e) => setCurrentXp(Number(e.target.value) || 0)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus:border-pink-500"
+              className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
             />
           </Field>
         </div>
@@ -153,7 +153,7 @@ function XpCalculator() {
             value={pseudo}
             onChange={(e) => setPseudo(e.target.value)}
             placeholder="Pseudo (option.) — pré-remplit ton niveau"
-            className="flex-1 bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none font-mono"
+            className="flex-1 bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
           />
           <button
             type="button"

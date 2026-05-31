@@ -300,13 +300,13 @@ function PlayerSales() {
                 value={itemFilter}
                 onChange={(e) => setItemFilter(e.target.value)}
                 placeholder="Filtrer par item…"
-                className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-pink-500/60"
+                className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500/60"
                 style={{ fontFamily: "'Space Mono'" }}
               />
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as Sort)}
-                className="px-2 py-1.5 bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus:border-pink-500/60"
+                className="px-2 py-1.5 bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500/60"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 <option value="recent">Récent</option>
