@@ -94,22 +94,22 @@ export const setPoints = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const user = await requirePermission("points.manage");
-    const { data: m } = await db
-      .from("members")
-      .select("astik_points")
-      .eq("discord_id", data.memberDiscordId)
-      .single();
-    const current = m?.astik_points ?? 0;
-    const delta = data.total - current;
-    // members.astik_points est synchronisé par le trigger SQL via points_ledger.total_after.
+    // UPDATE atomique via RPC. Le RETURNING devient total_after du ledger.
+    const { data: newTotal, error: rpcErr } = await db.rpc("set_member_points", {
+      p_discord_id: data.memberDiscordId,
+      p_total: data.total,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (newTotal === null || newTotal === undefined) throw new Error("Membre introuvable");
+    const total = newTotal as number;
     await db.from("points_ledger").insert({
       member_discord_id: data.memberDiscordId,
       staff_discord_id: user.discordId,
       staff_username: user.username,
-      amount: delta,
+      amount: 0, // set absolu : pas de delta significatif
       reason: data.reason,
       bonus_pct: 0,
-      total_after: data.total,
+      total_after: total,
       action_type: "set",
     });
     await logAction("points_set", user.discordId, { ...data });
