@@ -313,6 +313,7 @@ export type Database = {
           code: string
           color: string | null
           created_at: string
+          criteria: Json | null
           description: string | null
           icon: string | null
           id: string
@@ -323,6 +324,7 @@ export type Database = {
           code: string
           color?: string | null
           created_at?: string
+          criteria?: Json | null
           description?: string | null
           icon?: string | null
           id?: string
@@ -333,6 +335,7 @@ export type Database = {
           code?: string
           color?: string | null
           created_at?: string
+          criteria?: Json | null
           description?: string | null
           icon?: string | null
           id?: string
@@ -983,6 +986,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      member_xp: {
+        Row: {
+          current_streak_days: number
+          discord_id: string
+          last_active_date: string | null
+          level: number
+          longest_streak_days: number
+          updated_at: string
+          xp: number
+        }
+        Insert: {
+          current_streak_days?: number
+          discord_id: string
+          last_active_date?: string | null
+          level?: number
+          longest_streak_days?: number
+          updated_at?: string
+          xp?: number
+        }
+        Update: {
+          current_streak_days?: number
+          discord_id?: string
+          last_active_date?: string | null
+          level?: number
+          longest_streak_days?: number
+          updated_at?: string
+          xp?: number
+        }
+        Relationships: []
       }
       members: {
         Row: {
@@ -1792,6 +1825,33 @@ export type Database = {
         }
         Relationships: []
       }
+      seasons: {
+        Row: {
+          active: boolean
+          created_at: string
+          ends_at: string
+          id: string
+          name: string
+          starts_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          ends_at: string
+          id?: string
+          name: string
+          starts_at: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string
+          id?: string
+          name?: string
+          starts_at?: string
+        }
+        Relationships: []
+      }
       shop_admin_price_alerts: {
         Row: {
           created_at: string
@@ -2339,6 +2399,8 @@ export type Database = {
         Args: { p_discord_id: string; p_inc: number }
         Returns: number
       }
+      level_for_xp: { Args: { p_xp: number }; Returns: number }
+      recompute_member_xp: { Args: never; Returns: undefined }
       set_member_points: {
         Args: { p_discord_id: string; p_total: number }
         Returns: number
