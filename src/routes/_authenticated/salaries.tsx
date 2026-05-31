@@ -75,7 +75,7 @@ function fmtDate(iso: string | null | undefined) {
 function SalariesPage() {
   return (
     <div className="container max-w-6xl py-6 space-y-6">
-      <PageHeader icon={Coins} title="Salaires" subtitle="Paie hebdomadaire en AstikPoints" />
+      <PageHeader code="// salaires" title="Salaires" description="Paie hebdomadaire en AstikPoints" />
       <GradesCard />
       <PreviewCard />
       <RunsHistoryCard />
