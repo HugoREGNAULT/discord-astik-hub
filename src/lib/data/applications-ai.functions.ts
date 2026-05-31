@@ -180,8 +180,8 @@ export async function _runReviewApplication(
   const evidence: Evidence = {
     mc_uuid: mojang?.id ?? null,
     mojang_error: mojang ? undefined : "uuid_unresolved",
-    paladium_profile: paladiumProfile,
-    paladium_jobs: paladiumJobs,
+    paladium_profile: toJson(paladiumProfile),
+    paladium_jobs: toJson(paladiumJobs),
     paladium_error: paladiumError,
     blacklist_matches: matches.map((m) => ({
       matched_on: m.matched_on,
