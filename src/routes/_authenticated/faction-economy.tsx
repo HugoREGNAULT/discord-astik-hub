@@ -77,11 +77,11 @@ function FactionEconomyPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <StatCard label="Valeur vendue (30j)" value={fmt(data.totals.soldValue)} suffix="PB" />
+            <StatCard label="Valeur vendue (30j)" value={fmt(data.totals.soldValue)} suffix="$" />
             <StatCard
               label="Valeur listée actuelle"
               value={fmt(data.totals.listedValue)}
-              suffix="PB"
+              suffix="$"
             />
             <StatCard label="Membres trackés" value={String(data.rows.length)} />
           </div>
@@ -123,7 +123,7 @@ function FactionEconomyPage() {
                           border: "1px solid #27272a",
                           fontSize: 12,
                         }}
-                        formatter={(v: number) => [`${fmt(v)} PB`, "Vendu"]}
+                        formatter={(v: number) => [`${fmt(v)} $`, "Vendu"]}
                         labelFormatter={(d: string) =>
                           new Date(d).toLocaleDateString("fr-FR", {
                             day: "2-digit",

@@ -94,12 +94,20 @@ const SECTIONS: Section[] = [
         accent: "blurple",
       },
       {
+        title: "Projets",
+        url: "/projects",
+        icon: Target,
+        perm: "profile.self",
+        accent: "pink",
+      },
+      {
         title: "Mes alertes",
         url: "/tools/alerts",
         icon: Bell,
         perm: "profile.self",
         accent: "pink",
       },
+
     ],
   },
   {
