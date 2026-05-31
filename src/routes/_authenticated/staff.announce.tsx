@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, Send, Megaphone, AlertTriangle } from "lucide-react";
+import { Sparkles, Send, AlertTriangle } from "lucide-react";
 import {
   generateAnnouncement,
   publishAnnouncement,
