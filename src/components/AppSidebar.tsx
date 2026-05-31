@@ -59,6 +59,13 @@ const SECTIONS: Section[] = [
     label: "// punkastik",
     items: [
       {
+        title: "Mon profil",
+        url: "/me",
+        icon: UserCircle2,
+        perm: "profile.self",
+        accent: "pink",
+      },
+      {
         title: "Classement",
         url: "/dashboard",
         icon: Trophy,

@@ -27,6 +27,7 @@ import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedPdcRouteImport } from './routes/_authenticated/pdc'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
+import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedLogisticsRouteImport } from './routes/_authenticated/logistics'
 import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authenticated/faction-economy'
@@ -178,6 +179,11 @@ const AuthenticatedPdcRoute = AuthenticatedPdcRouteImport.update({
 const AuthenticatedMembersRoute = AuthenticatedMembersRouteImport.update({
   id: '/members',
   path: '/members',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
@@ -519,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
+  '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
@@ -596,6 +603,7 @@ export interface FileRoutesByTo {
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
+  '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
@@ -673,6 +681,7 @@ export interface FileRoutesById {
   '/_authenticated/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/_authenticated/logistics': typeof AuthenticatedLogisticsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
+  '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/pdc': typeof AuthenticatedPdcRoute
   '/_authenticated/points': typeof AuthenticatedPointsRoute
@@ -752,6 +761,7 @@ export interface FileRouteTypes {
     | '/faction-economy'
     | '/logistics'
     | '/logs'
+    | '/me'
     | '/members'
     | '/pdc'
     | '/points'
@@ -829,6 +839,7 @@ export interface FileRouteTypes {
     | '/faction-economy'
     | '/logistics'
     | '/logs'
+    | '/me'
     | '/members'
     | '/pdc'
     | '/points'
@@ -905,6 +916,7 @@ export interface FileRouteTypes {
     | '/_authenticated/faction-economy'
     | '/_authenticated/logistics'
     | '/_authenticated/logs'
+    | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/pdc'
     | '/_authenticated/points'
@@ -1131,6 +1143,13 @@ declare module '@tanstack/react-router' {
       path: '/members'
       fullPath: '/members'
       preLoaderRoute: typeof AuthenticatedMembersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/me': {
+      id: '/_authenticated/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/logs': {
@@ -1638,6 +1657,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFactionEconomyRoute: typeof AuthenticatedFactionEconomyRoute
   AuthenticatedLogisticsRoute: typeof AuthenticatedLogisticsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
+  AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedPdcRoute: typeof AuthenticatedPdcRoute
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
@@ -1662,6 +1682,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFactionEconomyRoute: AuthenticatedFactionEconomyRoute,
   AuthenticatedLogisticsRoute: AuthenticatedLogisticsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
+  AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedPdcRoute: AuthenticatedPdcRoute,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
