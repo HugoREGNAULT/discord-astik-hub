@@ -83,6 +83,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { LazyApplicationsChart as ApplicationsChart } from "@/components/LazyApplicationsChart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { StaffPresence } from "@/components/StaffPresence";
 
 export const Route = createLazyFileRoute("/_authenticated/staff")({
   component: () => (
@@ -94,11 +96,21 @@ export const Route = createLazyFileRoute("/_authenticated/staff")({
 
 function StaffPage() {
   const fn = useServerFn(getStaffDashboard);
+  const { data: me } = useCurrentUser();
   const { data, isLoading } = useQuery({
     queryKey: ["staff-dashboard"],
     queryFn: () => fn(),
-    refetchInterval: 60_000,
   });
+
+  // Realtime — invalide les caches dépendant des tables applications/donations/warnings.
+  // Le push ne sert qu'à invalider : aucune donnée sensible ne transite côté client.
+  const invalidatedKeys = [
+    ["staff-dashboard"],
+    ["faction-health"],
+  ];
+  useRealtimeChannel("applications", "*", invalidatedKeys);
+  useRealtimeChannel("donations", "*", invalidatedKeys);
+  useRealtimeChannel("warnings", "*", invalidatedKeys);
 
   if (isLoading || !data) {
     return (
