@@ -4,18 +4,12 @@ import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 import { filterFactionMembers } from "@/lib/data/faction-members";
 
-/** Marque les paniers expirés. Appelé en best-effort à chaque listing. */
-async function expireOldCarts() {
-  await db
-    .from("donations")
-    .update({ status: "expired" })
-    .eq("status", "active")
-    .lt("expires_at", new Date().toISOString());
-}
+// L'expiration des paniers est gérée côté base via la fonction SQL
+// public.expire_old_carts() planifiée par pg_cron toutes les heures.
+// Les lectures ne doivent pas muter la base.
 
 export const listMyActiveCarts = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requirePermission("donations.manage");
-  await expireOldCarts();
   const { data, error } = await db
     .from("donations")
     .select("*, donation_lines(*)")
@@ -32,7 +26,6 @@ export const listRecentCarts = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     await requirePermission("donations.manage");
-    await expireOldCarts();
     const { data: carts, error } = await db
       .from("donations")
       .select("*, donation_lines(*)")

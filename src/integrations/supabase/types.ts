@@ -1198,6 +1198,7 @@ export type Database = {
         Returns: number
       }
       capture_leaderboard_snapshot: { Args: never; Returns: undefined }
+      expire_old_carts: { Args: never; Returns: undefined }
       increment_messages_total: {
         Args: { p_discord_id: string; p_inc: number }
         Returns: number
