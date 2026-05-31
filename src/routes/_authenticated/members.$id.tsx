@@ -53,6 +53,7 @@ import { MemberHeader } from "@/components/members/MemberHeader";
 import { MemberAltsPanel } from "@/components/members/MemberAltsPanel";
 import { MemberNotesPanel } from "@/components/members/MemberNotesPanel";
 import { MemberWarningsPanel } from "@/components/members/MemberWarningsPanel";
+import { DisciplinarySummaryCard } from "@/components/members/DisciplinarySummaryCard";
 import { MemberPointsHistory } from "@/components/members/MemberPointsHistory";
 import { MemberDonationsPanel } from "@/components/members/MemberDonationsPanel";
 import type {
