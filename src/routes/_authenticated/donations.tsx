@@ -129,7 +129,13 @@ function DonationsPage() {
         <ErrorBlock message={(carts.error as Error).message} hint="Réessaie dans un instant." />
       )}
 
-      {carts.data?.carts.map((c: any) => (
+      <div aria-live="polite" aria-busy={carts.isLoading} className="space-y-5">
+        <p className="sr-only" aria-live="polite">
+          {carts.isLoading
+            ? "Chargement des paniers…"
+            : `${carts.data?.carts.length ?? 0} panier(s) actif(s)`}
+        </p>
+        {carts.data?.carts.map((c: any) => (
         <Cart
           key={c.id}
           cart={c}
