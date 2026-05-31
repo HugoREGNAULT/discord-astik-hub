@@ -48,6 +48,7 @@ import { listMyBadges } from "@/lib/data/grades.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GamificationCard } from "@/components/GamificationCard";
 
 export const Route = createFileRoute("/_authenticated/me")({
   head: () => ({
@@ -260,6 +261,7 @@ function MePage() {
           </Card>
 
           <MyTrialCard trialUntil={data.member.trial_until ?? null} />
+          <GamificationCard scope="me" />
           <MyBadgesCard />
           <MyWarningsCard />
         </div>
