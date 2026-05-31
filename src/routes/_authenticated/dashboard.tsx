@@ -181,7 +181,7 @@ function LeaderboardPage() {
   const fetchHist = useServerFn(getLeaderboardHistory);
   const { data: currentUser } = useCurrentUser();
   const canSeeCarts = hasPerm(currentUser, "donations.manage");
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
     refetchInterval: 60_000,
