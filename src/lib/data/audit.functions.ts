@@ -21,7 +21,7 @@ export type SensitiveLog = {
   action: string;
   actor_discord_id: string | null;
   level: string;
-  payload: unknown;
+  payload: Record<string, unknown> | null;
 };
 
 const SENSITIVE_ACTIONS = [
