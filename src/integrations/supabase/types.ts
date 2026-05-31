@@ -949,6 +949,30 @@ export type Database = {
           },
         ]
       }
+      mc_jobs_snapshots: {
+        Row: {
+          captured_at: string
+          id: number
+          jobs: Json
+          mc_uuid: string
+          member_discord_id: string | null
+        }
+        Insert: {
+          captured_at?: string
+          id?: number
+          jobs?: Json
+          mc_uuid: string
+          member_discord_id?: string | null
+        }
+        Update: {
+          captured_at?: string
+          id?: number
+          jobs?: Json
+          mc_uuid?: string
+          member_discord_id?: string | null
+        }
+        Relationships: []
+      }
       mc_link_challenges: {
         Row: {
           code: string
@@ -1849,6 +1873,155 @@ export type Database = {
           title?: string
           updated_at?: string
           winning_option_id?: string | null
+        }
+        Relationships: []
+      }
+      project_contributions: {
+        Row: {
+          created_at: string
+          created_by_discord_id: string
+          id: string
+          item_name: string
+          member_discord_id: string
+          member_username: string | null
+          note: string | null
+          points_awarded: number | null
+          project_id: string
+          quantity: number
+          resource_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by_discord_id: string
+          id?: string
+          item_name: string
+          member_discord_id: string
+          member_username?: string | null
+          note?: string | null
+          points_awarded?: number | null
+          project_id: string
+          quantity: number
+          resource_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by_discord_id?: string
+          id?: string
+          item_name?: string
+          member_discord_id?: string
+          member_username?: string | null
+          note?: string | null
+          points_awarded?: number | null
+          project_id?: string
+          quantity?: number
+          resource_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_contributions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_contributions_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "project_resources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_resources: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          item_name: string
+          project_id: string
+          qty_collected: number
+          qty_needed: number
+          unit_points: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          item_name: string
+          project_id: string
+          qty_collected?: number
+          qty_needed?: number
+          unit_points?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          item_name?: string
+          project_id?: string
+          qty_collected?: number
+          qty_needed?: number
+          unit_points?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_resources_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by_discord_id: string
+          created_by_username: string | null
+          deadline: string | null
+          description: string | null
+          id: string
+          owner_discord_id: string | null
+          owner_username: string | null
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by_discord_id: string
+          created_by_username?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          owner_discord_id?: string | null
+          owner_username?: string | null
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by_discord_id?: string
+          created_by_username?: string | null
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          owner_discord_id?: string | null
+          owner_username?: string | null
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
