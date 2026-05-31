@@ -17,7 +17,7 @@ import {
 import { LeaderboardChart } from "@/components/LeaderboardChart";
 import { RecentCartsPanel } from "@/components/RecentCartsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
-import { PageHeader, PageCard, DaChip } from "@/components/tools/ToolsUi";
+import { PageHeader, PageCard, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   errorComponent: RouteError,
