@@ -11,7 +11,6 @@ import {
   ErrorBlock,
   EmptyBlock,
 } from "@/components/tools/ToolsUi";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { listShopRewards, createSpendRequest, listMySpendRequests } from "@/lib/data/shop.functions";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { toUserMessage } from "@/lib/errors";
