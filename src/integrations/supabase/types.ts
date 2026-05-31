@@ -442,6 +442,44 @@ export type Database = {
         }
         Relationships: []
       }
+      config_values_history: {
+        Row: {
+          category: string
+          changed_at: string
+          changed_by_discord_id: string | null
+          id: string
+          name: string
+          points: number
+          value_id: string
+        }
+        Insert: {
+          category: string
+          changed_at?: string
+          changed_by_discord_id?: string | null
+          id?: string
+          name: string
+          points: number
+          value_id: string
+        }
+        Update: {
+          category?: string
+          changed_at?: string
+          changed_by_discord_id?: string | null
+          id?: string
+          name?: string
+          points?: number
+          value_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "config_values_history_value_id_fkey"
+            columns: ["value_id"]
+            isOneToOne: false
+            referencedRelation: "config_values"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discord_role_cache: {
         Row: {
           discord_id: string

@@ -3,6 +3,33 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 
+// ============= UPLOAD ICÔNE (admin, contourne le RLS storage) =============
+const uploadSchema = z.object({
+  filename: z.string().min(1).max(200),
+  contentType: z.string().min(1).max(120),
+  dataBase64: z.string().min(1).max(3_000_000), // ~2 MB binaire
+});
+
+export const uploadValueIcon = createServerFn({ method: "POST" })
+  .inputValidator((input) => uploadSchema.parse(input))
+  .handler(async ({ data }) => {
+    await requirePermission("config.manage");
+    if (!data.contentType.startsWith("image/")) {
+      throw new Error("Fichier image requis");
+    }
+    const ext = (data.filename.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = `${crypto.randomUUID()}.${ext || "png"}`;
+    const bytes = Buffer.from(data.dataBase64, "base64");
+    if (bytes.length > 2 * 1024 * 1024) throw new Error("Max 2 MB");
+    const { error } = await db.storage
+      .from("value-icons")
+      .upload(path, bytes, { upsert: false, contentType: data.contentType });
+    if (error) throw new Error(error.message);
+    const { data: pub } = db.storage.from("value-icons").getPublicUrl(path);
+    return { url: pub.publicUrl };
+  });
+
+
 export const listValues = createServerFn({ method: "GET" }).handler(async () => {
   await requirePermission("config.manage");
   const { data, error } = await db

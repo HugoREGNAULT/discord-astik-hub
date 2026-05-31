@@ -9,8 +9,9 @@ import {
   upsertValue,
   toggleValueActive,
   deleteValue,
+  uploadValueIcon,
 } from "@/lib/data/values.functions";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,15 +45,22 @@ interface ValueRow {
 }
 
 async function uploadIcon(file: File): Promise<string> {
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
-  const path = `${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage
-    .from("value-icons")
-    .upload(path, file, { upsert: false, contentType: file.type });
-  if (error) throw new Error(error.message);
-  const { data } = supabase.storage.from("value-icons").getPublicUrl(path);
-  return data.publicUrl;
+  const buf = await file.arrayBuffer();
+  // Encode binaire → base64 (chunks pour éviter call stack)
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+  }
+  const dataBase64 = btoa(binary);
+  const res = await uploadValueIcon({
+    data: { filename: file.name, contentType: file.type, dataBase64 },
+  });
+
+  return res.url;
 }
+
 
 function ConfigPage() {
   const qc = useQueryClient();
