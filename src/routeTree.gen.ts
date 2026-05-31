@@ -146,7 +146,9 @@ const AuthenticatedPdcRoute = AuthenticatedPdcRouteImport.update({
   id: '/pdc',
   path: '/pdc',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/pdc.lazy').then((d) => d.Route),
+)
 const AuthenticatedObjectivesRoute = AuthenticatedObjectivesRouteImport.update({
   id: '/objectives',
   path: '/objectives',
