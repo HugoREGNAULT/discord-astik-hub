@@ -95,7 +95,7 @@ function AnnouncementsPage() {
   const [editing, setEditing] = useState<Ann | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [readersFor, setReadersFor] = useState<Ann | null>(null);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  
 
   const list = (data?.announcements ?? []) as Ann[];
 
