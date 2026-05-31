@@ -137,19 +137,19 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
    const factionArrivals = filterFactionMembers(arrivals.data ?? []);
    const factionDepartures = filterFactionMembers(departures.data ?? []);
    const apps = applications.data ?? [];
-  const accepted = apps.filter((a: any) => a.status === "accepted").length;
-  const rejected = apps.filter((a: any) => a.status === "rejected").length;
-  const pending = apps.filter((a: any) => a.status === "pending").length;
+  const accepted = apps.filter((a) => a.status === "accepted").length;
+  const rejected = apps.filter((a) => a.status === "rejected").length;
+  const pending = apps.filter((a) => a.status === "pending").length;
 
   const donationsList = donations.data ?? [];
   const totalDonations = donationsList
-    .filter((d: any) => d.status === "validated")
-    .reduce((acc: number, d: any) => acc + (d.total_final ?? 0), 0);
-  const cancelledDonations = donationsList.filter((d: any) => d.status === "cancelled").length;
+    .filter((d) => d.status === "validated")
+    .reduce((acc: number, d) => acc + (d.total_final ?? 0), 0);
+  const cancelledDonations = donationsList.filter((d) => d.status === "cancelled").length;
 
   // Top contributeurs
   const sums = new Map<string, number>();
-  for (const p of (pointsLedger.data ?? []) as any[]) {
+  for (const p of pointsLedger.data ?? []) {
     if ((p.amount ?? 0) > 0) {
       sums.set(p.member_discord_id, (sums.get(p.member_discord_id) ?? 0) + p.amount);
     }
@@ -166,20 +166,28 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
         "discord_id",
         topIds.map(([id]) => id),
       );
-     const byId = new Map(filterFactionMembers(m ?? []).map((x: any) => [x.discord_id, x]));
-     topContribs = topIds.filter(([id]) => byId.has(id)).map(([id, points]) => ({
-      name: (byId.get(id) as any)?.ig_name ?? (byId.get(id) as any)?.discord_username ?? id,
-      points,
-    }));
+     const byId = new Map(filterFactionMembers(m ?? []).map((x) => [x.discord_id, x]));
+     topContribs = topIds.filter(([id]) => byId.has(id)).map(([id, points]) => {
+       const found = byId.get(id);
+       return {
+         name: found?.ig_name ?? found?.discord_username ?? id,
+         points,
+       };
+     });
   }
 
   const actionsByType = new Map<string, number>();
-  for (const l of (logs.data ?? []) as any[]) {
+  for (const l of logs.data ?? []) {
     actionsByType.set(l.action, (actionsByType.get(l.action) ?? 0) + 1);
   }
 
   // Anonymisation : pas de discord_id brut ni de texte de sanction envoyés à l'IA.
-  const anonymizeMembers = (rows: any[]) =>
+  type AnonInput = {
+    ig_name?: string | null;
+    discord_username?: string | null;
+    current_grade?: string | null;
+  };
+  const anonymizeMembers = (rows: AnonInput[]) =>
     rows.map((m) => ({
       name: m.ig_name ?? m.discord_username ?? "—",
       grade: m.current_grade ?? null,
@@ -198,7 +206,7 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
       pending,
     },
     donations: {
-      validated_count: donationsList.filter((d: any) => d.status === "validated").length,
+      validated_count: donationsList.filter((d) => d.status === "validated").length,
       total_points_validated: totalDonations,
       cancelled: cancelledDonations,
     },
