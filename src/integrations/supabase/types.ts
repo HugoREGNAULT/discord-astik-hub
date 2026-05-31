@@ -274,6 +274,39 @@ export type Database = {
         }
         Relationships: []
       }
+      automation_rules: {
+        Row: {
+          action: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          last_run_at: string | null
+          mode: string
+          name: string
+          trigger: Json
+        }
+        Insert: {
+          action: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          mode?: string
+          name: string
+          trigger: Json
+        }
+        Update: {
+          action?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_run_at?: string | null
+          mode?: string
+          name?: string
+          trigger?: Json
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           auto_rule: Json | null
@@ -1082,6 +1115,63 @@ export type Database = {
             referencedColumns: ["discord_id"]
           },
         ]
+      }
+      notification_prefs: {
+        Row: {
+          discord_dm: boolean
+          discord_id: string
+          kind: string
+          web: boolean
+          web_push: boolean
+        }
+        Insert: {
+          discord_dm?: boolean
+          discord_id: string
+          kind: string
+          web?: boolean
+          web_push?: boolean
+        }
+        Update: {
+          discord_dm?: boolean
+          discord_id?: string
+          kind?: string
+          web?: boolean
+          web_push?: boolean
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          detail: string | null
+          href: string | null
+          id: string
+          kind: string
+          read_at: string | null
+          recipient_discord_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          href?: string | null
+          id?: string
+          kind: string
+          read_at?: string | null
+          recipient_discord_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          href?: string | null
+          id?: string
+          kind?: string
+          read_at?: string | null
+          recipient_discord_id?: string
+          title?: string
+        }
+        Relationships: []
       }
       objective_contributions: {
         Row: {
