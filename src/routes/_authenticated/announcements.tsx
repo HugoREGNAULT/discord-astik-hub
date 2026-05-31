@@ -193,7 +193,10 @@ function AnnouncementsPage() {
                         title="Supprimer cette annonce ?"
                         description="Cette action est irréversible."
                         confirmLabel="Supprimer"
-                        onConfirm={() => delM.mutateAsync(a.id)}
+                        onConfirm={async () => {
+                          await delM.mutateAsync(a.id);
+                        }}
+
                       />
 
                     </div>
