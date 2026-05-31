@@ -216,6 +216,17 @@ function PdcPage() {
       ctx.fillRect(x1 * zoom, y1 * zoom, (x2 - x1 + 1) * zoom, (y2 - y1 + 1) * zoom);
     }
 
+    // peer cursors
+    for (const p of peersRef.current) {
+      if (!p.cursor) continue;
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(p.cursor.x * zoom, p.cursor.y * zoom, zoom, zoom);
+      ctx.fillStyle = p.color;
+      ctx.font = "10px ui-sans-serif, system-ui";
+      ctx.fillText(p.username, p.cursor.x * zoom + 2, p.cursor.y * zoom - 2);
+    }
+
     ctx.restore();
   }, [
     layers,
