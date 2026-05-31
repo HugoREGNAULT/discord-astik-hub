@@ -168,7 +168,7 @@ function StaffBoardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Board staff" subtitle="Le mini to-do interne de l'équipe." />
+      <PageHeader code="staff/board" title="Board staff" description="Le mini to-do interne de l'équipe." />
 
       <PageCard>
         <div className="space-y-3 p-4">
