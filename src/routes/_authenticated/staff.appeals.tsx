@@ -17,7 +17,7 @@ import { listAppeals, decideAppeal } from "@/lib/data/appeals.functions";
 export const Route = createFileRoute("/_authenticated/staff/appeals")({
   head: () => ({ meta: [{ title: "Appels d'avertissements · Staff" }] }),
   component: () => (
-    <Guard permission="warnings.write">
+    <Guard perm="warnings.write">
       <AppealsPage />
     </Guard>
   ),
