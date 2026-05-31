@@ -14,10 +14,10 @@ async function applyDelta(memberId: string, delta: number, bonusPct: number) {
   if (error) throw new Error(error.message);
   if (next === null || next === undefined) throw new Error("Membre introuvable");
   const total = next as number;
-  // Pour le ledger : si le delta a été clampé (total == 0 et delta < 0),
-  // realDelta est -(montant effectivement retiré) = -(total_before).
-  // Sinon realDelta == delta. On déduit total_before = total - delta (sans clamp).
-  const realDelta = delta < 0 && total === 0 ? -(total - delta) : delta;
+  // Note : si delta négatif et clamp à 0, le ledger enregistre le delta
+  // demandé (intention), pas le delta net réellement appliqué — total_after
+  // reste exact via le RETURNING de la RPC.
+  const realDelta = delta;
   return { realDelta, total, bonusPct };
 }
 
