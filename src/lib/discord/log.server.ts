@@ -16,11 +16,12 @@ type Embed = {
   footer?: { text: string };
 };
 
-async function postToChannel(
+export async function postToChannel(
   channelId: string,
   payload: { content?: string; embeds?: Embed[] },
 ): Promise<void> {
   try {
+    if (!channelId) return;
     if (!process.env.DISCORD_BOT_TOKEN) return;
     const res = await fetchWithRetry(
       `${DISCORD_API}/channels/${channelId}/messages`,
@@ -40,6 +41,14 @@ async function postToChannel(
   } catch (e) {
     console.error("[discord log] error", (e as Error).message);
   }
+}
+
+/** Envoi d'embed dans un canal de notification fonctionnel (silencieux si vide). */
+export function postNotify(channelId: string, embed: Embed): Promise<void> {
+  if (!channelId) return Promise.resolve();
+  return postToChannel(channelId, {
+    embeds: [{ timestamp: new Date().toISOString(), ...embed }],
+  });
 }
 
 export type LogKind = "auth" | "site" | "error";

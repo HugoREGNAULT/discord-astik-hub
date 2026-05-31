@@ -56,3 +56,15 @@ export const LOG_CHANNELS = {
   /** Salon des erreurs serveur — surchargeable via env DISCORD_LOG_CHANNEL_ERROR */
   ERROR: "",
 } as const;
+
+/**
+ * Salons de notifications fonctionnelles (différents des logs techniques).
+ * TODO: remplir les IDs réels — demander à l'utilisateur. Tant que vide,
+ * `postNotify()` est silencieux.
+ */
+export const NOTIFY_CHANNELS = {
+  /** Salon recrutement : nouvelles candidatures */
+  RECRUIT: "",
+  /** Salon staff : récap warnings et événements modération */
+  STAFF: "",
+} as const;
