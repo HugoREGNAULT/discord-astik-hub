@@ -319,7 +319,7 @@ export const getMemberMcStats = createServerFn({ method: "POST" })
             faction_ingame: r.faction_ingame,
             jobs: (r.jobs as Array<{ name: string; level: number }>) ?? [],
             snapshot_at: r.snapshot_at,
-            raw: r.raw,
+            raw_json: JSON.stringify(r.raw ?? null),
           }
         : null,
       history_count: count ?? 0,
