@@ -1878,3 +1878,142 @@ function InactivityRowItem({ member }: { member: InactivityRow }) {
     </div>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AnomaliesCard — détection statistique + explication IA, décision humaine.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ANOMALY_KIND_LABEL: Record<OpenAnomalyRow["kind"], string> = {
+  point_farm: "Pic de points inhabituel",
+  alt_transfer: "Transfert entre alts",
+  ratio_mismatch: "Messages / vocal incohérents",
+  new_farmer: "Nouveau arrivant — gros gains",
+};
+
+const SEVERITY_STYLES: Record<OpenAnomalyRow["severity"], string> = {
+  high: "bg-destructive/15 text-destructive border-destructive/30",
+  med: "bg-amber-500/15 text-amber-600 border-amber-500/30 dark:text-amber-400",
+  low: "bg-muted text-muted-foreground border-border",
+};
+
+function AnomaliesCard() {
+  const fn = useServerFn(getOpenAnomalies);
+  const updateFn = useServerFn(updateAnomalyStatus);
+  const qc = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["anomaly-flags-open"],
+    queryFn: () => fn(),
+    refetchInterval: 120_000,
+  });
+
+  const mut = useMutation({
+    mutationFn: (vars: { id: string; status: "reviewed" | "dismissed" }) =>
+      updateFn({ data: vars }),
+    onSuccess: (_d, vars) => {
+      toast.success(vars.status === "reviewed" ? "Marqué comme examiné" : "Signalement ignoré");
+      qc.invalidateQueries({ queryKey: ["anomaly-flags-open"] });
+    },
+    onError: (err) => toast.error(toUserMessage(err)),
+  });
+
+  const rows = data?.rows ?? [];
+
+  return (
+    <Guard perm="members.view">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldAlert className="size-4 text-primary" />
+            Anomalies à examiner
+            {rows.length > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {rows.length}
+              </Badge>
+            )}
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Signalement automatique — décision humaine requise, aucune sanction n'a été appliquée.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {isLoading ? (
+            <RowListSkeleton count={3} />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              icon={ShieldAlert}
+              title="Aucune anomalie ouverte"
+              description="Le scanner tourne toutes les heures."
+              variant="compact"
+            />
+          ) : (
+            rows.map((flag) => (
+              <div
+                key={flag.id}
+                className="border border-border rounded-md p-3 space-y-2 bg-card/50"
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className={SEVERITY_STYLES[flag.severity]}>
+                    {flag.severity.toUpperCase()}
+                  </Badge>
+                  <span className="text-sm font-medium">{ANOMALY_KIND_LABEL[flag.kind]}</span>
+                  <Link
+                    to="/members/$id"
+                    params={{ id: flag.member_discord_id }}
+                    className="flex items-center gap-2 ml-auto hover:underline"
+                  >
+                    {flag.avatar_url ? (
+                      <img src={flag.avatar_url} alt="" className="size-6 rounded-full" />
+                    ) : (
+                      <div className="size-6 rounded-full bg-muted" />
+                    )}
+                    <span className="text-sm">
+                      {flag.ig_name ?? flag.discord_username ?? flag.member_discord_id}
+                    </span>
+                  </Link>
+                </div>
+
+                {flag.ai_explanation ? (
+                  <p className="text-sm text-foreground/90 italic">{flag.ai_explanation}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground italic">
+                    Explication IA en attente (sera générée au prochain scan).
+                  </p>
+                )}
+
+                <details className="text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                    Données brutes (evidence)
+                  </summary>
+                  <pre className="mt-2 p-2 rounded bg-muted/50 overflow-x-auto text-[11px] leading-snug">
+                    {JSON.stringify(flag.evidence, null, 2)}
+                  </pre>
+                </details>
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={mut.isPending}
+                    onClick={() => mut.mutate({ id: flag.id, status: "reviewed" })}
+                  >
+                    Examiné
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={mut.isPending}
+                    onClick={() => mut.mutate({ id: flag.id, status: "dismissed" })}
+                  >
+                    Ignorer
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </Guard>
+  );
+}
+
