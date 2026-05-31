@@ -140,6 +140,13 @@ const SECTIONS: Section[] = [
         perm: "members.edit",
         accent: "pink",
       },
+      {
+        title: "Logistique",
+        url: "/logistics",
+        icon: Wrench,
+        perm: "members.view",
+        accent: "blurple",
+      },
     ],
   },
   {
