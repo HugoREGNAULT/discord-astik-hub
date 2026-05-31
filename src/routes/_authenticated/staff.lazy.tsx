@@ -205,6 +205,10 @@ function StaffPage() {
       {/* Anomalies à examiner (détection stat. + explication IA, décision humaine) */}
       <AnomaliesCard />
 
+      {/* Risque de départ + cohortes de rétention */}
+      <ChurnSection />
+
+
 
 
       {/* Applications timeline + global stats */}
