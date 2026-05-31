@@ -14,6 +14,7 @@ import {
 import { listShopRewards, createSpendRequest, listMySpendRequests } from "@/lib/data/shop.functions";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { toUserMessage } from "@/lib/errors";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 export const Route = createFileRoute("/_authenticated/shop")({
   head: () => ({ meta: [{ title: "Boutique · PunkAstik" }] }),
