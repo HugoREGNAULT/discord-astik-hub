@@ -17,12 +17,6 @@ export const Route = createFileRoute("/")({
         content: "Hub officiel de la PunkAstik — connexion membre et candidatures.",
       },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono&display=swap",
-      },
-    ],
   }),
   component: LandingPage,
 });
