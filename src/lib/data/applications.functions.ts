@@ -448,6 +448,22 @@ export const decideApplication = createServerFn({ method: "POST" })
       ],
     });
 
+    // Notif persistée — candidat
+    const { notify } = await import("@/lib/data/notify.server");
+    void notify({
+      recipientDiscordId: app.discord_id,
+      kind: "application",
+      title:
+        data.decision === "accepted"
+          ? "✅ Candidature acceptée"
+          : "❌ Candidature refusée",
+      detail:
+        data.decision === "accepted"
+          ? `Bienvenue ! Période d'essai jusqu'au ${trialDateStr}.`
+          : data.reason || undefined,
+      href: "/me",
+    });
+
     return {
       ok: true,
       dmOk: dm.ok,

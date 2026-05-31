@@ -1,27 +1,18 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { Bell, Coins, AlertTriangle, UserPlus, ShoppingCart } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, Coins, AlertTriangle, UserPlus, ShoppingCart, Sparkles } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getMyNotifications, type NotificationItem } from "@/lib/data/notifications.functions";
-
-const LS_KEY = "notif:lastSeenAt";
-
-function useLastSeen(): [string, (v: string) => void] {
-  const [v, setV] = useState<string>(() =>
-    typeof window === "undefined" ? "" : (window.localStorage.getItem(LS_KEY) ?? ""),
-  );
-  return [
-    v,
-    (next: string) => {
-      window.localStorage.setItem(LS_KEY, next);
-      setV(next);
-    },
-  ];
-}
+import {
+  getMyNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type NotificationItem,
+} from "@/lib/data/notifications.functions";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
 
 const iconFor = (k: NotificationItem["kind"]) => {
   switch (k) {
@@ -33,6 +24,8 @@ const iconFor = (k: NotificationItem["kind"]) => {
       return UserPlus;
     case "donation":
       return ShoppingCart;
+    default:
+      return Sparkles;
   }
 };
 
@@ -46,32 +39,38 @@ const colorFor = (k: NotificationItem["kind"]) => {
       return "text-pink-500";
     case "donation":
       return "text-[#5865F2]";
+    default:
+      return "text-zinc-300";
   }
 };
 
 export function NotificationBell() {
   const fn = useServerFn(getMyNotifications);
+  const markAll = useServerFn(markAllNotificationsRead);
+  const markOne = useServerFn(markNotificationRead);
+  const qc = useQueryClient();
+
   const { data } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => fn(),
-    refetchInterval: 60_000,
     staleTime: 30_000,
   });
-  const [lastSeen, setLastSeen] = useLastSeen();
-  const [open, setOpen] = useState(false);
 
+  // Realtime : invalide à chaque INSERT/UPDATE sur notifications.
+  useRealtimeChannel("notifications", "*", [["notifications"]]);
+
+  const [open, setOpen] = useState(false);
   const items = data?.items ?? [];
-  const unread = useMemo(
-    () => items.filter((i) => i.createdAt > lastSeen).length,
-    [items, lastSeen],
-  );
+  const unread = useMemo(() => items.filter((i) => !i.readAt).length, [items]);
 
   return (
     <Popover
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (o && items[0]) setLastSeen(items[0].createdAt);
+        if (o && unread > 0) {
+          void markAll().then(() => qc.invalidateQueries({ queryKey: ["notifications"] }));
+        }
       }}
     >
       <PopoverTrigger asChild>
@@ -108,12 +107,19 @@ export function NotificationBell() {
           <ul className="divide-y divide-zinc-800/80">
             {items.map((n) => {
               const Icon = iconFor(n.kind);
-              const isUnread = n.createdAt > lastSeen;
+              const isUnread = !n.readAt;
               return (
                 <li key={n.id}>
                   <Link
                     to={n.href ?? "/me"}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      if (isUnread) {
+                        void markOne({ data: { id: n.id } }).then(() =>
+                          qc.invalidateQueries({ queryKey: ["notifications"] }),
+                        );
+                      }
+                    }}
                     className={`flex gap-2.5 px-3 py-2.5 hover:bg-zinc-900/80 transition ${
                       isUnread ? "bg-zinc-900/40" : ""
                     }`}
