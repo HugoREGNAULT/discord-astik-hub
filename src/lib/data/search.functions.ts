@@ -13,6 +13,7 @@ import { requireSession } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
 import { filterFactionMembers } from "@/lib/data/faction-members";
 import { sanitizePostgrestLike } from "@/lib/data/postgrest";
+import { rateLimit } from "@/lib/rate-limit.server";
 
 export type SearchHit =
   | {
