@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MinecraftSkin } from "@/components/MinecraftSkin";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
-import { getMyOverview, listMyWarnings, submitWarningAppeal } from "@/lib/data/me.functions";
+import { getMyOverview, listMyWarnings, submitWarningAppeal, listMyOnboardingTasks, toggleMyOnboardingTask } from "@/lib/data/me.functions";
 import { listMyBadges } from "@/lib/data/grades.functions";
 import { deleteMyAccount } from "@/lib/data/account.functions";
 import { ProfileHeroSkeleton, StatGridSkeleton, RowListSkeleton } from "@/components/Skeletons";
