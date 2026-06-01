@@ -45,7 +45,7 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
     await logAction("member_self_create", user.discordId);
   }
 
-  const needsOnboarding = !member.ig_name;
+  const needsOnboarding = !member.mc_uuid;
 
   // 2) Données annexes
   const [altsRes, gainsRes, warnsRes] = await Promise.all([
