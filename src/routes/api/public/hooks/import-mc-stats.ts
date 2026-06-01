@@ -28,15 +28,18 @@ interface PlayerProfile {
   level?: number;
   [k: string]: unknown;
 }
-interface PlayerJobsResponse {
-  jobs?: Array<{ name: string; level: number; experience?: number }>;
-}
+/**
+ * Forme réelle de l'API Paladium `/v1/paladium/player/profile/{uuid}/jobs` :
+ *   { alchemist: { level, xp }, farmer: { level, xp }, hunter: {...}, miner: {...} }
+ * (objet indexé par nom de métier, et NON pas `{ jobs: [...] }`).
+ */
+type PlayerJobsResponse = Record<string, { level?: number; xp?: number } | undefined>;
 
 interface SnapshotRow {
   member_discord_id: string;
   mc_uuid: string;
   money: number | null;
-  jobs: Array<{ name: string; level: number }>;
+  jobs: Array<{ name: string; level: number; xp?: number }>;
   faction_ingame: string | null;
   raw: unknown;
 }
@@ -46,7 +49,7 @@ async function importOne(
   mc_uuid: string,
 ): Promise<{ ok: boolean; snapshot?: SnapshotRow; reason?: string }> {
   let profile: PlayerProfile | null = null;
-  let jobs: PlayerJobsResponse | { jobs?: never[] } = { jobs: [] };
+  let jobsRaw: PlayerJobsResponse = {};
 
   try {
     const pres = await fetchPaladium(`/v1/paladium/player/profile/${mc_uuid}`);
@@ -60,17 +63,35 @@ async function importOne(
 
   try {
     const jres = await fetchPaladium(`/v1/paladium/player/profile/${mc_uuid}/jobs`);
-    jobs = (jres.data ?? { jobs: [] }) as PlayerJobsResponse;
+    jobsRaw = (jres.data ?? {}) as PlayerJobsResponse;
   } catch {
     // Tolérant : si jobs échoue, on garde au moins le profil.
   }
 
-  const jobList = Array.isArray((jobs as { jobs?: unknown }).jobs)
-    ? ((jobs as PlayerJobsResponse).jobs ?? []).map((j) => ({
-        name: String(j.name),
+  // L'API peut renvoyer soit { alchemist: {level,xp}, ... } (forme officielle),
+  // soit (au cas où) { jobs: [{name,level,experience}] } pour rester compatible.
+  const jobList: Array<{ name: string; level: number; xp?: number }> = [];
+  const legacyArr = (jobsRaw as unknown as { jobs?: Array<{ name: string; level: number; experience?: number; xp?: number }> }).jobs;
+  if (Array.isArray(legacyArr)) {
+    for (const j of legacyArr) {
+      if (!j?.name) continue;
+      jobList.push({
+        name: String(j.name).toLowerCase(),
         level: Number(j.level ?? 0),
-      }))
-    : [];
+        xp: Number(j.xp ?? j.experience ?? 0),
+      });
+    }
+  } else if (jobsRaw && typeof jobsRaw === "object") {
+    for (const [name, v] of Object.entries(jobsRaw)) {
+      if (!v || typeof v !== "object") continue;
+      jobList.push({
+        name: name.toLowerCase(),
+        level: Number((v as { level?: number }).level ?? 0),
+        xp: Number((v as { xp?: number }).xp ?? 0),
+      });
+    }
+  }
+
 
   const snapshot: SnapshotRow = {
     member_discord_id: discordId,
