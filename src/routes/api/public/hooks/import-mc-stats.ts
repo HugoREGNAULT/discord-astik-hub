@@ -18,7 +18,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { preflight, requireBotAuth } from "@/lib/bot-auth.server";
 import { db } from "@/lib/db.server";
-import { fetchPaladium } from "@/lib/paladium/paladium.server";
+import { fetchPaladium, dashUuid } from "@/lib/paladium/paladium.server";
 
 interface PlayerProfile {
   uuid?: string;
