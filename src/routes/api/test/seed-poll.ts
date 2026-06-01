@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/test/seed-poll")({
   server: {
     handlers: {
       POST: async () => {
-        if (process.env.NODE_ENV === "production") {
+        if (!import.meta.env.DEV || process.env.NODE_ENV === "production") {
           return new Response("Not found", { status: 404 });
         }
 
