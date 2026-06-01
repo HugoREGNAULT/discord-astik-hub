@@ -467,10 +467,14 @@ export const decideApplication = createServerFn({ method: "POST" })
     );
 
     await logToDiscord("site", {
-      title: data.decision === "accepted" ? "✅ Candidature acceptée" : "❌ Candidature refusée",
+      title: isRedecision
+        ? `🔄 Décision modifiée — ${data.decision === "accepted" ? "acceptée" : "refusée"}`
+        : data.decision === "accepted"
+          ? "✅ Candidature acceptée"
+          : "❌ Candidature refusée",
       color: data.decision === "accepted" ? COLORS.success : COLORS.danger,
-      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) traitée par **${staff.username}**.${
-        data.decision === "accepted" ? "\n\n*En attente d'entretien — rôle public attribué.*" : ""
+      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) ${isRedecision ? `re-traitée (de \`${previousStatus}\` → \`${data.decision}\`)` : "traitée"} par **${staff.username}**.${
+        data.decision === "accepted" && !isRedecision ? "\n\n*En attente d'entretien — rôle public attribué.*" : ""
       }`,
       fields: [
         { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },
