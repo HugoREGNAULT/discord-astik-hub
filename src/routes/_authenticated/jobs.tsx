@@ -11,7 +11,9 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Cell,
+  LabelList,
 } from "recharts";
+
 import { PageHeader } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
