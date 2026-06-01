@@ -221,7 +221,8 @@ async function submitApplicationInner(
     });
 
     return { ok: true, applicationId: ins.data.id, blacklistHits: blacklistMatches.length };
-  });
+  }
+}
 
 export const getMyApplication = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireSession();
