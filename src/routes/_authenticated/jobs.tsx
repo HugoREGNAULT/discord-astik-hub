@@ -16,9 +16,10 @@ import { Guard } from "@/components/Guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
-import { getFactionJobs } from "@/lib/data/faction-jobs.functions";
+import { AlertTriangle, UserX, CloudOff, Clock, BriefcaseBusiness } from "lucide-react";
+import { getFactionJobs, type JobAnomaly } from "@/lib/data/faction-jobs.functions";
 import { avatarUrl } from "@/lib/paladium/api";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   head: () => ({ meta: [{ title: "Suivi métiers · PunkAstik" }] }),
@@ -88,6 +89,28 @@ function JobsPage() {
         title="Suivi métiers"
         description="Classement temps réel des métiers Paladium pour tous les membres de la faction."
       />
+
+      {data && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatTile label="Membres actifs" value={data.stats.total_active} />
+          <StatTile label="Comptes MC liés" value={data.stats.linked} />
+          <StatTile label="Avec snapshot" value={data.stats.with_snapshot} />
+          <StatTile
+            label="Dernier sync"
+            value={
+              data.stats.latest_snapshot_at
+                ? new Date(data.stats.latest_snapshot_at).toLocaleString("fr-FR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })
+                : "—"
+            }
+            tone={data.stats.latest_snapshot_at ? "default" : "warn"}
+          />
+        </div>
+      )}
+
+      {data && data.anomalies.length > 0 && <AnomaliesCard anomalies={data.anomalies} />}
 
       {isLoading && (
         <Card>
@@ -210,3 +233,102 @@ function JobsPage() {
     </div>
   );
 }
+
+function StatTile({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string | number;
+  tone?: "default" | "warn";
+}) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+        <div
+          className={`text-lg font-semibold mt-1 ${tone === "warn" ? "text-amber-500" : ""}`}
+        >
+          {value}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+const KIND_META: Record<
+  JobAnomaly["kind"],
+  { label: string; color: string; Icon: typeof UserX }
+> = {
+  no_mc_link: { label: "Pseudo MC manquant", color: "text-rose-400", Icon: UserX },
+  never_synced: { label: "Jamais synchronisé", color: "text-amber-400", Icon: CloudOff },
+  stale_snapshot: { label: "Snapshot ancien", color: "text-yellow-400", Icon: Clock },
+  no_jobs: { label: "Aucun métier remonté", color: "text-sky-400", Icon: BriefcaseBusiness },
+};
+
+function AnomaliesCard({ anomalies }: { anomalies: JobAnomaly[] }) {
+  const grouped = anomalies.reduce<Record<JobAnomaly["kind"], JobAnomaly[]>>(
+    (acc, a) => {
+      (acc[a.kind] ||= []).push(a);
+      return acc;
+    },
+    {} as Record<JobAnomaly["kind"], JobAnomaly[]>,
+  );
+
+  return (
+    <Card className="border-amber-500/30 bg-amber-500/[0.02]">
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <AlertTriangle className="size-4 text-amber-500" />
+          Anomalies de suivi
+          <Badge variant="outline" className="ml-2">
+            {anomalies.length}
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {(Object.keys(grouped) as JobAnomaly["kind"][]).map((kind) => {
+          const meta = KIND_META[kind];
+          const list = grouped[kind];
+          return (
+            <div key={kind}>
+              <div className={`flex items-center gap-2 text-sm font-medium mb-2 ${meta.color}`}>
+                <meta.Icon className="size-4" />
+                {meta.label}
+                <span className="text-xs text-muted-foreground font-normal">· {list.length}</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                {list.map((a) => (
+                  <Link
+                    key={a.discord_id}
+                    to="/members/$id"
+                    params={{ id: a.discord_id }}
+                    className="flex items-center gap-2 p-2 rounded border bg-card hover:bg-accent transition-colors"
+                  >
+                    {a.avatar_url ? (
+                      <img
+                        src={a.avatar_url}
+                        alt=""
+                        className="size-7 rounded-full border border-border"
+                      />
+                    ) : (
+                      <div className="size-7 rounded-full bg-muted" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm truncate">
+                        {a.ig_name || a.discord_username || a.discord_id.slice(0, 8)}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">{a.detail}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
