@@ -16,7 +16,7 @@ import { Guard } from "@/components/Guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Pickaxe, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { getFactionJobs } from "@/lib/data/faction-jobs.functions";
 import { avatarUrl } from "@/lib/paladium/api";
 
@@ -84,10 +84,9 @@ function JobsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="// faction"
+        code="// faction"
         title="Suivi métiers"
         description="Classement temps réel des métiers Paladium pour tous les membres de la faction."
-        icon={Pickaxe}
       />
 
       {isLoading && (
