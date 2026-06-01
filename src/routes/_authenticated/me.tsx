@@ -1,10 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Coins, ShieldAlert, UserCircle2 } from "lucide-react";
-import { getMyOverview, listMyWarnings } from "@/lib/data/me.functions";
+import { useState } from "react";
+import { Coins, ShieldAlert, UserCircle2, Gamepad2 } from "lucide-react";
+import { toast } from "sonner";
+import { getMyOverview, listMyWarnings, completeOnboarding } from "@/lib/data/me.functions";
+import { avatarUrl } from "@/lib/paladium/api";
+import { toUserMessage } from "@/lib/errors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { GamificationCard } from "@/components/GamificationCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
@@ -74,6 +81,11 @@ function MyProfile() {
           </CardContent>
         </Card>
       )}
+
+      <MinecraftAccountCard
+        mcUuid={m.mc_uuid}
+        igName={m.ig_name}
+      />
 
       <GamificationCard scope="member" discordId={m.discord_id} />
 
@@ -175,6 +187,105 @@ function Stat({
       </CardHeader>
       <CardContent>
         <div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MinecraftAccountCard({
+  mcUuid,
+  igName,
+}: {
+  mcUuid: string | null;
+  igName: string | null;
+}) {
+  const queryClient = useQueryClient();
+  const submit = useServerFn(completeOnboarding);
+  const [editing, setEditing] = useState(!mcUuid);
+  const [name, setName] = useState(igName ?? "");
+
+  const mutation = useMutation({
+    mutationFn: (value: string) => submit({ data: { igName: value.trim(), alts: [] } }),
+    onSuccess: () => {
+      toast.success("Compte Minecraft lié");
+      setEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["me", "overview"] });
+      queryClient.invalidateQueries({ queryKey: ["me-overview"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const onSubmit = () => {
+    if (name.trim().length < 3) {
+      toast.error("Pseudo Minecraft requis");
+      return;
+    }
+    mutation.mutate(name);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Gamepad2 className="size-4 text-primary" /> Mon compte Minecraft
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {mcUuid && !editing ? (
+          <div className="flex items-center gap-4">
+            <img
+              src={avatarUrl(mcUuid, 64)}
+              alt={igName ?? ""}
+              className="size-16 rounded-md bg-muted"
+            />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold">{igName ?? "—"}</div>
+              <div className="text-[11px] font-mono text-muted-foreground truncate">
+                {mcUuid}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+              Modifier
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="mc-ig">Pseudo Minecraft</Label>
+              <Input
+                id="mc-ig"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="ex: Notch"
+                maxLength={16}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                Vérifié via l'API Mojang — relie ton pseudo en jeu à ton profil.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={onSubmit} disabled={mutation.isPending}>
+                {mutation.isPending
+                  ? "Vérification…"
+                  : mcUuid
+                  ? "Mettre à jour"
+                  : "Lier mon compte"}
+              </Button>
+              {mcUuid && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setEditing(false);
+                    setName(igName ?? "");
+                  }}
+                >
+                  Annuler
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

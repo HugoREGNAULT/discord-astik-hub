@@ -9,6 +9,12 @@ import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { isFactionMember } from "@/lib/data/faction-members";
 
+function normalizeUuid(id: string): string {
+  const stripped = id.replace(/-/g, "");
+  if (stripped.length !== 32) return id;
+  return `${stripped.slice(0, 8)}-${stripped.slice(8, 12)}-${stripped.slice(12, 16)}-${stripped.slice(16, 20)}-${stripped.slice(20)}`;
+}
+
 /** Récupère (ou crée) la fiche `members` du user connecté + données d'accueil. */
 export const getMyOverview = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireSession();
@@ -39,7 +45,7 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
     await logAction("member_self_create", user.discordId);
   }
 
-  const needsOnboarding = !member.ig_name;
+  const needsOnboarding = !member.mc_uuid;
 
   // 2) Données annexes
   const [altsRes, gainsRes, warnsRes] = await Promise.all([
@@ -142,7 +148,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
 
     const upd = await db
       .from("members")
-      .update({ ig_name: mojang.name, mc_uuid: mojang.id })
+      .update({ ig_name: mojang.name, mc_uuid: normalizeUuid(mojang.id) })
       .eq("discord_id", user.discordId);
     if (upd.error) throw new Error(upd.error.message);
 
@@ -163,7 +169,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
       ig_name: mojang.name,
       alts: alts.length,
     });
-    return { ok: true, igName: mojang.name, mcUuid: mojang.id };
+    return { ok: true, igName: mojang.name, mcUuid: normalizeUuid(mojang.id) };
   });
 
 /* ---------- Sanctions & appeals (vue membre) ---------- */
