@@ -227,7 +227,47 @@ function JobsPage() {
                             fill={i === 0 ? "#ec4899" : i < 3 ? "#5865F2" : "hsl(var(--primary))"}
                           />
                         ))}
+                        <LabelList
+                          dataKey="level"
+                          content={(props: {
+                            x?: number | string;
+                            y?: number | string;
+                            width?: number | string;
+                            height?: number | string;
+                            value?: number | string;
+                            index?: number;
+                          }) => {
+                            const { x, y, width, height, value, index } = props;
+                            if (index == null) return null;
+                            const row = chartData[index];
+                            if (!row) return null;
+                            const px = Number(x ?? 0) + Number(width ?? 0);
+                            const py = Number(y ?? 0) + Number(height ?? 0) / 2;
+                            const size = 22;
+                            return (
+                              <g transform={`translate(${px + 4}, ${py - size / 2})`}>
+                                <image
+                                  href={avatarUrl(row.uuid, 64)}
+                                  width={size}
+                                  height={size}
+                                  style={{ imageRendering: "pixelated" }}
+                                />
+                                <text
+                                  x={size + 6}
+                                  y={size / 2}
+                                  dominantBaseline="middle"
+                                  fontSize={11}
+                                  fill="hsl(var(--foreground))"
+                                  fontWeight={600}
+                                >
+                                  Niv {value}
+                                </text>
+                              </g>
+                            );
+                          }}
+                        />
                       </Bar>
+
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
