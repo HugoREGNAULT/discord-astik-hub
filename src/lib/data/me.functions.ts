@@ -165,6 +165,33 @@ export const completeOnboarding = createServerFn({ method: "POST" })
       );
     }
 
+    // Best-effort: track this player for HDV listings sync (don't fail onboarding)
+    try {
+      const normalizedUuid = normalizeUuid(mojang.id);
+      const nowIso = new Date().toISOString();
+      const { data: trackedExisting } = await db
+        .from("paladium_tracked_players")
+        .select("uuid")
+        .eq("uuid", normalizedUuid)
+        .maybeSingle();
+      if (!trackedExisting) {
+        await db.from("paladium_tracked_players").insert({
+          uuid: normalizedUuid,
+          username: mojang.name,
+          search_count: 0,
+          first_searched_at: nowIso,
+          last_searched_at: nowIso,
+        });
+      } else {
+        await db
+          .from("paladium_tracked_players")
+          .update({ username: mojang.name })
+          .eq("uuid", normalizedUuid);
+      }
+    } catch {
+      /* ignore — tracking is best-effort */
+    }
+
     await logAction("onboarding_complete", user.discordId, {
       ig_name: mojang.name,
       alts: alts.length,
