@@ -201,7 +201,7 @@ function JobsPage() {
                     <BarChart
                       data={chartData}
                       layout="vertical"
-                      margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+                      margin={{ top: 8, right: 80, left: 8, bottom: 8 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} />
