@@ -60,6 +60,36 @@ export const submitApplication = createServerFn({ method: "POST" })
   .inputValidator((input) => applicationSchema.parse(input))
   .handler(async ({ data }) => {
     const user = await requireSession();
+    try {
+      return await submitApplicationInner(user, data);
+    } catch (e) {
+      const err = e as Error;
+      // Log structuré : permet d'identifier les bugs de dépôt (Mojang KO,
+      // RLS, rate-limit, blacklist DB en erreur, etc.)
+      await logAction(
+        "application_submit_failed",
+        user.discordId,
+        {
+          mc_name: data.mcName,
+          error: err.message?.slice(0, 500) ?? "unknown",
+        },
+        "warn",
+      );
+      void logToDiscord("error", {
+        title: "⚠️ Échec dépôt candidature",
+        color: COLORS.warn,
+        description: `**${user.username}** (<@${user.discordId}>) — \`${data.mcName}\``,
+        fields: [{ name: "Erreur", value: "```" + err.message.slice(0, 900) + "```" }],
+      });
+      throw e;
+    }
+  });
+
+async function submitApplicationInner(
+  user: { discordId: string; username: string },
+  data: z.infer<typeof applicationSchema>,
+) {
+  {
 
     // Vérifie qu'il n'a pas déjà une candidature en attente
     const existing = await db
