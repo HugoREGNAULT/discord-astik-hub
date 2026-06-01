@@ -273,16 +273,36 @@ export const getPlayerSalesHistory = createServerFn({ method: "POST" })
   });
 
 export const syncTrackedPlayersListings = createServerFn({ method: "POST" }).handler(async () => {
-  const { data } = await supabaseAdmin
+  const { data: tracked } = await supabaseAdmin
     .from("paladium_tracked_players")
-    .select("uuid, username")
-    .order("last_synced_at", { ascending: true, nullsFirst: true })
-    .limit(30);
-  const players = (data ?? []) as Array<{ uuid: string; username: string }>;
-  for (const p of players) {
+    .select("uuid, username, last_synced_at")
+    .order("last_synced_at", { ascending: true, nullsFirst: true });
+
+  const { data: factionMembers } = await supabaseAdmin
+    .from("members")
+    .select("mc_uuid, ig_name")
+    .eq("status", "active")
+    .not("mc_uuid", "is", null);
+
+  const seen = new Set<string>();
+  const players: Array<{ uuid: string; username: string }> = [];
+
+  for (const p of (tracked ?? []) as Array<{ uuid: string; username: string; last_synced_at: string | null }>) {
+    if (!p.uuid || seen.has(p.uuid)) continue;
+    seen.add(p.uuid);
+    players.push({ uuid: p.uuid, username: p.username });
+  }
+  for (const m of (factionMembers ?? []) as Array<{ mc_uuid: string | null; ig_name: string | null }>) {
+    if (!m.mc_uuid || seen.has(m.mc_uuid)) continue;
+    seen.add(m.mc_uuid);
+    players.push({ uuid: m.mc_uuid, username: m.ig_name ?? "" });
+  }
+
+  const batch = players.slice(0, 30);
+  for (const p of batch) {
     await snapshotPlayerListings(p.uuid, p.username);
-    // Small delay to spread rate-limit usage
     await new Promise((r) => setTimeout(r, 200));
   }
-  return { processed: players.length };
+  return { processed: batch.length };
 });
+
