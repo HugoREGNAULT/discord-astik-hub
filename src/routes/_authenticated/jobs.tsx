@@ -106,11 +106,24 @@ function JobsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        code="// faction"
-        title="Suivi métiers"
-        description="Classement temps réel des métiers Paladium pour tous les membres de la faction."
-      />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader
+          code="// faction"
+          title="Suivi métiers"
+          description="Classement temps réel des métiers Paladium pour tous les membres de la faction. Sync auto toutes les 6h."
+        />
+        <Button
+          onClick={() => sync.mutate()}
+          disabled={sync.isPending}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <RefreshCw className={`size-4 ${sync.isPending ? "animate-spin" : ""}`} />
+          {sync.isPending ? "Sync en cours…" : "Sync maintenant"}
+        </Button>
+      </div>
+
 
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
