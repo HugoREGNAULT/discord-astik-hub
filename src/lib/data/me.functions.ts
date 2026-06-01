@@ -9,6 +9,12 @@ import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { isFactionMember } from "@/lib/data/faction-members";
 
+function normalizeUuid(id: string): string {
+  const stripped = id.replace(/-/g, "");
+  if (stripped.length !== 32) return id;
+  return `${stripped.slice(0, 8)}-${stripped.slice(8, 12)}-${stripped.slice(12, 16)}-${stripped.slice(16, 20)}-${stripped.slice(20)}`;
+}
+
 /** Récupère (ou crée) la fiche `members` du user connecté + données d'accueil. */
 export const getMyOverview = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireSession();
