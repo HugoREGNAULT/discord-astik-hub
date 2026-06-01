@@ -448,11 +448,17 @@ export const decideApplication = createServerFn({ method: "POST" })
     const dm = await sendDiscordDM(app.discord_id, message);
 
     await logAction(
-      data.decision === "accepted" ? "application_accept" : "application_reject",
+      isRedecision
+        ? "application_redecide"
+        : data.decision === "accepted"
+          ? "application_accept"
+          : "application_reject",
       staff.discordId,
       {
         application_id: app.id,
         candidate: app.discord_id,
+        previous_status: previousStatus,
+        new_status: data.decision,
         dm_ok: dm.ok,
         dm_error: dm.error ?? null,
         role_assigned: data.decision === "accepted" ? roleAssigned.ok : null,
