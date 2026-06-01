@@ -90,6 +90,28 @@ function JobsPage() {
         description="Classement temps réel des métiers Paladium pour tous les membres de la faction."
       />
 
+      {data && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatTile label="Membres actifs" value={data.stats.total_active} />
+          <StatTile label="Comptes MC liés" value={data.stats.linked} />
+          <StatTile label="Avec snapshot" value={data.stats.with_snapshot} />
+          <StatTile
+            label="Dernier sync"
+            value={
+              data.stats.latest_snapshot_at
+                ? new Date(data.stats.latest_snapshot_at).toLocaleString("fr-FR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })
+                : "—"
+            }
+            tone={data.stats.latest_snapshot_at ? "default" : "warn"}
+          />
+        </div>
+      )}
+
+      {data && data.anomalies.length > 0 && <AnomaliesCard anomalies={data.anomalies} />}
+
       {isLoading && (
         <Card>
           <CardContent className="p-6 text-sm text-muted-foreground">Chargement…</CardContent>
