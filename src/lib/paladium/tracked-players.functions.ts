@@ -153,10 +153,26 @@ async function snapshotPlayerListings(uuid: string, username: string) {
     );
   }
 
-  await supabaseAdmin
+  const { data: trackedExisting } = await supabaseAdmin
     .from("paladium_tracked_players")
-    .update({ last_synced_at: now, username })
-    .eq("uuid", uuid);
+    .select("uuid")
+    .eq("uuid", uuid)
+    .maybeSingle();
+  if (trackedExisting) {
+    await supabaseAdmin
+      .from("paladium_tracked_players")
+      .update({ last_synced_at: now, username })
+      .eq("uuid", uuid);
+  } else {
+    await supabaseAdmin.from("paladium_tracked_players").insert({
+      uuid,
+      username,
+      search_count: 0,
+      first_searched_at: now,
+      last_searched_at: now,
+      last_synced_at: now,
+    });
+  }
 }
 
 export const trackPlayerSearch = createServerFn({ method: "POST" })
