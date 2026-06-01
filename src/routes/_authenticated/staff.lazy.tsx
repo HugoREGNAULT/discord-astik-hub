@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 import { Guard } from "@/components/Guard";
-import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers } from "@/lib/data/staff.functions";
+import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers, getMembersWithoutMc, setMemberMcByStaff } from "@/lib/data/staff.functions";
 import { getInactivityQueue, sendInactivityPing } from "@/lib/data/inactivity.functions";
 import { getOpenAnomalies, updateAnomalyStatus, type OpenAnomalyRow } from "@/lib/data/anomaly.functions";
 import { getFactionHealth } from "@/lib/data/health.functions";
@@ -405,6 +405,9 @@ function StaffPage() {
 
       {/* Membres jamais connectés au site */}
       <NeverConnectedCard />
+
+      {/* Membres sans pseudo Minecraft lié */}
+      <MissingMcCard />
     </div>
   );
 }
