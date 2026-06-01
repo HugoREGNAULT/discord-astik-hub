@@ -169,7 +169,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
       ig_name: mojang.name,
       alts: alts.length,
     });
-    return { ok: true, igName: mojang.name, mcUuid: mojang.id };
+    return { ok: true, igName: mojang.name, mcUuid: normalizeUuid(mojang.id) };
   });
 
 /* ---------- Sanctions & appeals (vue membre) ---------- */
