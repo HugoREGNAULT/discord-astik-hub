@@ -60,6 +60,36 @@ export const submitApplication = createServerFn({ method: "POST" })
   .inputValidator((input) => applicationSchema.parse(input))
   .handler(async ({ data }) => {
     const user = await requireSession();
+    try {
+      return await submitApplicationInner(user, data);
+    } catch (e) {
+      const err = e as Error;
+      // Log structuré : permet d'identifier les bugs de dépôt (Mojang KO,
+      // RLS, rate-limit, blacklist DB en erreur, etc.)
+      await logAction(
+        "application_submit_failed",
+        user.discordId,
+        {
+          mc_name: data.mcName,
+          error: err.message?.slice(0, 500) ?? "unknown",
+        },
+        "warn",
+      );
+      void logToDiscord("error", {
+        title: "⚠️ Échec dépôt candidature",
+        color: COLORS.warn,
+        description: `**${user.username}** (<@${user.discordId}>) — \`${data.mcName}\``,
+        fields: [{ name: "Erreur", value: "```" + err.message.slice(0, 900) + "```" }],
+      });
+      throw e;
+    }
+  });
+
+async function submitApplicationInner(
+  user: { discordId: string; username: string },
+  data: z.infer<typeof applicationSchema>,
+) {
+  {
 
     // Vérifie qu'il n'a pas déjà une candidature en attente
     const existing = await db
@@ -191,7 +221,8 @@ export const submitApplication = createServerFn({ method: "POST" })
     });
 
     return { ok: true, applicationId: ins.data.id, blacklistHits: blacklistMatches.length };
-  });
+  }
+}
 
 export const getMyApplication = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireSession();
@@ -312,9 +343,13 @@ export const decideApplication = createServerFn({ method: "POST" })
       .maybeSingle();
     if (appRes.error) throw new Error(appRes.error.message);
     if (!appRes.data) throw new Error("Candidature introuvable.");
-    if (appRes.data.status !== "pending") {
-      throw new Error("Cette candidature a déjà été traitée.");
+    if (appRes.data.status === data.decision) {
+      throw new Error(
+        `Cette candidature est déjà ${data.decision === "accepted" ? "acceptée" : "refusée"}.`,
+      );
     }
+    const previousStatus = appRes.data.status as "pending" | "accepted" | "rejected";
+    const isRedecision = previousStatus !== "pending";
     const app = appRes.data;
 
     const upd = await db
@@ -413,11 +448,17 @@ export const decideApplication = createServerFn({ method: "POST" })
     const dm = await sendDiscordDM(app.discord_id, message);
 
     await logAction(
-      data.decision === "accepted" ? "application_accept" : "application_reject",
+      isRedecision
+        ? "application_redecide"
+        : data.decision === "accepted"
+          ? "application_accept"
+          : "application_reject",
       staff.discordId,
       {
         application_id: app.id,
         candidate: app.discord_id,
+        previous_status: previousStatus,
+        new_status: data.decision,
         dm_ok: dm.ok,
         dm_error: dm.error ?? null,
         role_assigned: data.decision === "accepted" ? roleAssigned.ok : null,
@@ -426,10 +467,14 @@ export const decideApplication = createServerFn({ method: "POST" })
     );
 
     await logToDiscord("site", {
-      title: data.decision === "accepted" ? "✅ Candidature acceptée" : "❌ Candidature refusée",
+      title: isRedecision
+        ? `🔄 Décision modifiée — ${data.decision === "accepted" ? "acceptée" : "refusée"}`
+        : data.decision === "accepted"
+          ? "✅ Candidature acceptée"
+          : "❌ Candidature refusée",
       color: data.decision === "accepted" ? COLORS.success : COLORS.danger,
-      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) traitée par **${staff.username}**.${
-        data.decision === "accepted" ? "\n\n*En attente d'entretien — rôle public attribué.*" : ""
+      description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) ${isRedecision ? `re-traitée (de \`${previousStatus}\` → \`${data.decision}\`)` : "traitée"} par **${staff.username}**.${
+        data.decision === "accepted" && !isRedecision ? "\n\n*En attente d'entretien — rôle public attribué.*" : ""
       }`,
       fields: [
         { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },

@@ -268,16 +268,42 @@ function ApplicationDetail({ app }: { app: Application }) {
           </Button>
         </div>
       ) : (
-        <div className="text-xs text-muted-foreground border-t pt-3">
-          {app.status === "accepted" ? "✅ Acceptée" : "❌ Refusée"}
-          {app.decided_by_username && (
-            <>
-              {" "}
-              par <strong>{app.decided_by_username}</strong>
-            </>
+        <div className="space-y-2 border-t pt-3">
+          <div className="text-xs text-muted-foreground">
+            {app.status === "accepted" ? "✅ Acceptée" : "❌ Refusée"}
+            {app.decided_by_username && (
+              <>
+                {" "}
+                par <strong>{app.decided_by_username}</strong>
+              </>
+            )}
+            {app.decided_at && <> le {new Date(app.decided_at).toLocaleDateString("fr-FR")}</>}
+            {app.decision_reason && (
+              <div className="mt-1 italic">Motif : {app.decision_reason}</div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {app.status === "rejected" && (
+              <Button
+                size="sm"
+                onClick={() => setOpen("accept")}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <CheckCircle2 className="w-4 h-4 mr-1" /> Finalement accepter
+              </Button>
+            )}
+            {app.status === "accepted" && (
+              <Button size="sm" variant="destructive" onClick={() => setOpen("reject")}>
+                <XCircle className="w-4 h-4 mr-1" /> Finalement refuser
+              </Button>
+            )}
+          </div>
+          {app.status === "accepted" && (
+            <p className="text-[11px] text-muted-foreground italic">
+              ⚠️ Passer cette candidature à « refusée » n'enlève pas automatiquement le membre — à
+              gérer manuellement dans la fiche membre.
+            </p>
           )}
-          {app.decided_at && <> le {new Date(app.decided_at).toLocaleDateString("fr-FR")}</>}
-          {app.decision_reason && <div className="mt-1 italic">Motif : {app.decision_reason}</div>}
         </div>
       )}
 
