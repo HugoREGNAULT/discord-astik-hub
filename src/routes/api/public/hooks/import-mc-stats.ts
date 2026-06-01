@@ -99,7 +99,7 @@ async function importOne(
     money: typeof profile.money === "number" ? profile.money : null,
     jobs: jobList,
     faction_ingame: (profile.factionName as string | null) ?? null,
-    raw: { profile, jobs },
+    raw: { profile, jobs: jobsRaw },
   };
 
   const { error } = await db.from("mc_player_stats").insert({
