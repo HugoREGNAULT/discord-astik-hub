@@ -2,6 +2,18 @@
 
 const PALADIUM_BASE = "https://api.paladium.games";
 
+/**
+ * Convertit un UUID Minecraft (avec ou sans tirets) au format canonique
+ * 8-4-4-4-12 attendu par l'API Paladium. Renvoie la valeur telle quelle
+ * si elle n'est pas un UUID 32 hex.
+ */
+export function dashUuid(uuid: string): string {
+  const v = uuid.replace(/-/g, "");
+  if (v.length !== 32 || !/^[0-9a-fA-F]+$/.test(v)) return uuid;
+  return `${v.slice(0, 8)}-${v.slice(8, 12)}-${v.slice(12, 16)}-${v.slice(16, 20)}-${v.slice(20)}`;
+}
+
+
 export class PaladiumServerError extends Error {
   status: number;
   constructor(message: string, status: number) {

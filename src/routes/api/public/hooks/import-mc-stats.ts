@@ -18,7 +18,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { preflight, requireBotAuth } from "@/lib/bot-auth.server";
 import { db } from "@/lib/db.server";
-import { fetchPaladium } from "@/lib/paladium/paladium.server";
+import { fetchPaladium, dashUuid } from "@/lib/paladium/paladium.server";
 
 interface PlayerProfile {
   uuid?: string;
@@ -51,8 +51,12 @@ async function importOne(
   let profile: PlayerProfile | null = null;
   let jobsRaw: PlayerJobsResponse = {};
 
+  // L'API Paladium exige le format UUID 8-4-4-4-12 ; nos enregistrements
+  // peuvent être stockés sans tirets (format Mojang compact).
+  const uuid = dashUuid(mc_uuid);
+
   try {
-    const pres = await fetchPaladium(`/v1/paladium/player/profile/${mc_uuid}`);
+    const pres = await fetchPaladium(`/v1/paladium/player/profile/${uuid}`);
     profile = (pres.data ?? null) as PlayerProfile | null;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -62,7 +66,8 @@ async function importOne(
   if (!profile) return { ok: false, reason: "no_profile" };
 
   try {
-    const jres = await fetchPaladium(`/v1/paladium/player/profile/${mc_uuid}/jobs`);
+    const jres = await fetchPaladium(`/v1/paladium/player/profile/${uuid}/jobs`);
+
     jobsRaw = (jres.data ?? {}) as PlayerJobsResponse;
   } catch {
     // Tolérant : si jobs échoue, on garde au moins le profil.
