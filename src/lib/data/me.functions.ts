@@ -148,7 +148,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
 
     const upd = await db
       .from("members")
-      .update({ ig_name: mojang.name, mc_uuid: mojang.id })
+      .update({ ig_name: mojang.name, mc_uuid: normalizeUuid(mojang.id) })
       .eq("discord_id", user.discordId);
     if (upd.error) throw new Error(upd.error.message);
 
