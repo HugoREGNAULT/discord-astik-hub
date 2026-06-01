@@ -54,10 +54,28 @@ function labelOf(name: string) {
 }
 
 function JobsPage() {
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["faction-jobs"],
     queryFn: () => getFactionJobs(),
   });
+
+  const syncFn = useServerFn(triggerJobsSync);
+  const sync = useMutation({
+    mutationFn: () => syncFn(),
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(
+          `Sync OK · ${res.imported ?? 0} importés${res.failed ? `, ${res.failed} échecs` : ""}${res.rate_limited ? `, ${res.rate_limited} rate-limited` : ""}`,
+        );
+        qc.invalidateQueries({ queryKey: ["faction-jobs"] });
+      } else {
+        toast.error(`Sync échoué : ${res.error}`);
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erreur"),
+  });
+
 
   const jobNames = useMemo(() => {
     const names = data?.jobNames ?? [];
