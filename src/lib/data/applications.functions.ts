@@ -343,9 +343,13 @@ export const decideApplication = createServerFn({ method: "POST" })
       .maybeSingle();
     if (appRes.error) throw new Error(appRes.error.message);
     if (!appRes.data) throw new Error("Candidature introuvable.");
-    if (appRes.data.status !== "pending") {
-      throw new Error("Cette candidature a déjà été traitée.");
+    if (appRes.data.status === data.decision) {
+      throw new Error(
+        `Cette candidature est déjà ${data.decision === "accepted" ? "acceptée" : "refusée"}.`,
+      );
     }
+    const previousStatus = appRes.data.status as "pending" | "accepted" | "rejected";
+    const isRedecision = previousStatus !== "pending";
     const app = appRes.data;
 
     const upd = await db
