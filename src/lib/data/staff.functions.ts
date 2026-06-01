@@ -350,3 +350,111 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
 
   return { members: neverConnected, total: neverConnected.length };
 });
+
+// ============================================================
+// Membres faction sans pseudo Minecraft lié
+// ============================================================
+
+export const getMembersWithoutMc = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
+
+  const { data, error } = await db
+    .from("members")
+    .select(
+      "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid",
+    )
+    .eq("status", "active")
+    .is("mc_uuid", null);
+  if (error) throw new Error(error.message);
+
+  // Garde les vrais membres faction (au moins ig_name ou grade ou arrivée renseignés)
+  const members = filterFactionMembers(data ?? []).sort((a, b) =>
+    (a.ig_name ?? a.discord_username ?? "").localeCompare(
+      b.ig_name ?? b.discord_username ?? "",
+    ),
+  );
+  return { members, total: members.length };
+});
+
+// Lier / corriger le pseudo Minecraft d'un membre (staff)
+import { z as _zStaffMc } from "zod";
+import { logAction as _logActionMc } from "@/lib/auth/require.server";
+
+function _normalizeUuidStaff(id: string): string {
+  const stripped = id.replace(/-/g, "");
+  if (stripped.length !== 32) return id;
+  return `${stripped.slice(0, 8)}-${stripped.slice(8, 12)}-${stripped.slice(12, 16)}-${stripped.slice(16, 20)}-${stripped.slice(20)}`;
+}
+
+const _setMcSchema = _zStaffMc.object({
+  memberDiscordId: _zStaffMc.string().regex(/^\d{5,32}$/, "Discord ID invalide"),
+  igName: _zStaffMc
+    .string()
+    .trim()
+    .min(3, "Pseudo trop court")
+    .max(16, "Max 16 caractères")
+    .regex(/^[a-zA-Z0-9_]+$/, "Lettres, chiffres et _ uniquement"),
+});
+
+export const setMemberMcByStaff = createServerFn({ method: "POST" })
+  .inputValidator((input) => _setMcSchema.parse(input))
+  .handler(async ({ data }) => {
+    const staff = await requirePermission("members.view");
+
+    // Mojang lookup
+    const res = await fetch(
+      `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(data.igName)}`,
+    );
+    if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
+    if (!res.ok) throw new Error("Impossible de vérifier le pseudo (API Mojang).");
+    const body = (await res.json()) as { id?: string; name?: string };
+    if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
+    const mcUuid = _normalizeUuidStaff(body.id);
+
+    // S'assurer que le membre existe
+    const existing = await db
+      .from("members")
+      .select("discord_id")
+      .eq("discord_id", data.memberDiscordId)
+      .maybeSingle();
+    if (!existing.data) throw new Error("Membre introuvable");
+
+    const upd = await db
+      .from("members")
+      .update({ ig_name: body.name, mc_uuid: mcUuid })
+      .eq("discord_id", data.memberDiscordId);
+    if (upd.error) throw new Error(upd.error.message);
+
+    // Best-effort tracked players upsert
+    try {
+      const nowIso = new Date().toISOString();
+      const { data: tracked } = await db
+        .from("paladium_tracked_players")
+        .select("uuid")
+        .eq("uuid", mcUuid)
+        .maybeSingle();
+      if (!tracked) {
+        await db.from("paladium_tracked_players").insert({
+          uuid: mcUuid,
+          username: body.name,
+          search_count: 0,
+          first_searched_at: nowIso,
+          last_searched_at: nowIso,
+        });
+      } else {
+        await db
+          .from("paladium_tracked_players")
+          .update({ username: body.name })
+          .eq("uuid", mcUuid);
+      }
+    } catch {
+      /* ignore */
+    }
+
+    await _logActionMc("member_mc_link_staff", staff.discordId, {
+      member: data.memberDiscordId,
+      ig_name: body.name,
+    });
+
+    return { ok: true, igName: body.name, mcUuid };
+  });
