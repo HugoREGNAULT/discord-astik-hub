@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
   BarChart,
@@ -16,10 +17,13 @@ import { Guard } from "@/components/Guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, UserX, CloudOff, Clock, BriefcaseBusiness } from "lucide-react";
-import { getFactionJobs, type JobAnomaly } from "@/lib/data/faction-jobs.functions";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, UserX, CloudOff, Clock, BriefcaseBusiness, RefreshCw } from "lucide-react";
+import { getFactionJobs, triggerJobsSync, type JobAnomaly } from "@/lib/data/faction-jobs.functions";
 import { avatarUrl } from "@/lib/paladium/api";
 import { Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   head: () => ({ meta: [{ title: "Suivi métiers · PunkAstik" }] }),
@@ -50,10 +54,28 @@ function labelOf(name: string) {
 }
 
 function JobsPage() {
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["faction-jobs"],
     queryFn: () => getFactionJobs(),
   });
+
+  const syncFn = useServerFn(triggerJobsSync);
+  const sync = useMutation({
+    mutationFn: () => syncFn(),
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(
+          `Sync OK · ${res.imported ?? 0} importés${res.failed ? `, ${res.failed} échecs` : ""}${res.rate_limited ? `, ${res.rate_limited} rate-limited` : ""}`,
+        );
+        qc.invalidateQueries({ queryKey: ["faction-jobs"] });
+      } else {
+        toast.error(`Sync échoué : ${res.error}`);
+      }
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Erreur"),
+  });
+
 
   const jobNames = useMemo(() => {
     const names = data?.jobNames ?? [];
@@ -84,11 +106,24 @@ function JobsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        code="// faction"
-        title="Suivi métiers"
-        description="Classement temps réel des métiers Paladium pour tous les membres de la faction."
-      />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageHeader
+          code="// faction"
+          title="Suivi métiers"
+          description="Classement temps réel des métiers Paladium pour tous les membres de la faction. Sync auto toutes les 6h."
+        />
+        <Button
+          onClick={() => sync.mutate()}
+          disabled={sync.isPending}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <RefreshCw className={`size-4 ${sync.isPending ? "animate-spin" : ""}`} />
+          {sync.isPending ? "Sync en cours…" : "Sync maintenant"}
+        </Button>
+      </div>
+
 
       {data && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -164,3 +164,47 @@ export const getFactionJobs = createServerFn({ method: "GET" }).handler(
     };
   },
 );
+
+/**
+ * Déclenche un import-mc-stats à la demande (staff uniquement) pour rafraîchir
+ * les snapshots de métiers sans attendre le cron de 6h.
+ */
+export const triggerJobsSync = createServerFn({ method: "POST" }).handler(
+  async (): Promise<{ ok: boolean; imported?: number; failed?: number; rate_limited?: number; error?: string }> => {
+    await requirePermission("members.edit");
+    const botKey = process.env.BOT_API_KEY;
+    if (!botKey) return { ok: false, error: "BOT_API_KEY missing" };
+
+    // URL stable du déploiement courant
+    const baseUrl =
+      process.env.VITE_PUBLIC_URL ||
+      "https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app";
+
+    try {
+      const res = await fetch(`${baseUrl}/api/public/hooks/import-mc-stats`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-bot-key": botKey },
+        body: "{}",
+      });
+      const json = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        imported?: number;
+        failed?: number;
+        rate_limited?: number;
+        error?: string;
+      };
+      if (!res.ok || !json.ok) {
+        return { ok: false, error: json.error || `HTTP ${res.status}` };
+      }
+      return {
+        ok: true,
+        imported: json.imported,
+        failed: json.failed,
+        rate_limited: json.rate_limited,
+      };
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  },
+);
+
