@@ -16,9 +16,10 @@ import { Guard } from "@/components/Guard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
-import { getFactionJobs } from "@/lib/data/faction-jobs.functions";
+import { AlertTriangle, UserX, CloudOff, Clock, BriefcaseBusiness } from "lucide-react";
+import { getFactionJobs, type JobAnomaly } from "@/lib/data/faction-jobs.functions";
 import { avatarUrl } from "@/lib/paladium/api";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   head: () => ({ meta: [{ title: "Suivi métiers · PunkAstik" }] }),
