@@ -82,6 +82,11 @@ function MyProfile() {
         </Card>
       )}
 
+      <MinecraftAccountCard
+        mcUuid={m.mc_uuid}
+        igName={m.ig_name}
+      />
+
       <GamificationCard scope="member" discordId={m.discord_id} />
 
       <Card>
