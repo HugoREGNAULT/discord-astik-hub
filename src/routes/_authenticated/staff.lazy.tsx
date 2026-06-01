@@ -39,7 +39,7 @@ import {
 } from "lucide-react";
 
 import { Guard } from "@/components/Guard";
-import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers } from "@/lib/data/staff.functions";
+import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers, getMembersWithoutMc, setMemberMcByStaff } from "@/lib/data/staff.functions";
 import { getInactivityQueue, sendInactivityPing } from "@/lib/data/inactivity.functions";
 import { getOpenAnomalies, updateAnomalyStatus, type OpenAnomalyRow } from "@/lib/data/anomaly.functions";
 import { getFactionHealth } from "@/lib/data/health.functions";
@@ -405,6 +405,9 @@ function StaffPage() {
 
       {/* Membres jamais connectés au site */}
       <NeverConnectedCard />
+
+      {/* Membres sans pseudo Minecraft lié */}
+      <MissingMcCard />
     </div>
   );
 }
@@ -2139,5 +2142,158 @@ function RetentionCell({ rate }: { rate: number }) {
         {pct}%
       </span>
     </td>
+  );
+}
+
+function MissingMcCard() {
+  const fn = useServerFn(getMembersWithoutMc);
+  const { data, isLoading } = useQuery({
+    queryKey: ["missing-mc"],
+    queryFn: () => fn(),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <UserPlus className="size-4 text-pink-500" />
+            Sans pseudo Minecraft
+          </span>
+          <Badge variant="outline">{data?.total ?? 0}</Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+        {isLoading ? (
+          <RowListSkeleton count={4} />
+        ) : (data?.members ?? []).length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            Tous les membres ont lié leur compte Minecraft ✨
+          </p>
+        ) : (
+          <>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Membres actifs sans compte MC lié. Tu peux le renseigner toi-même (validation Mojang).
+            </p>
+            {(data?.members ?? []).map((m: any) => (
+              <MissingMcRow key={m.discord_id} member={m} />
+            ))}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function MissingMcRow({
+  member,
+}: {
+  member: {
+    discord_id: string;
+    ig_name?: string | null;
+    discord_username?: string | null;
+    avatar_url?: string | null;
+    current_grade?: string | null;
+  };
+}) {
+  const qc = useQueryClient();
+  const setMcFn = useServerFn(setMemberMcByStaff);
+  const dmFn = useServerFn(dmMember);
+  const [open, setOpen] = useState(false);
+  const [igName, setIgName] = useState(member.ig_name ?? "");
+
+  const setMcMut = useMutation({
+    mutationFn: () =>
+      setMcFn({ data: { memberDiscordId: member.discord_id, igName: igName.trim() } }),
+    onSuccess: (r) => {
+      toast.success(`Compte lié : ${r.igName}`);
+      setOpen(false);
+      qc.invalidateQueries({ queryKey: ["missing-mc"] });
+      qc.invalidateQueries({ queryKey: ["faction-jobs"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const dmMut = useMutation({
+    mutationFn: () =>
+      dmFn({
+        data: {
+          memberDiscordId: member.discord_id,
+          content: `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nPense à renseigner ton pseudo Minecraft sur https://punkastik.com/me pour apparaître dans le suivi métiers et l'économie faction !`,
+        },
+      }),
+    onSuccess: () => toast.success("DM envoyé"),
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  return (
+    <div className="flex items-center gap-2 border border-border rounded p-2 hover:border-primary/40 transition">
+      <Link
+        to="/members/$id"
+        params={{ id: member.discord_id }}
+        className="flex items-center gap-3 flex-1 min-w-0"
+      >
+        {member.avatar_url ? (
+          <img src={member.avatar_url} alt="" className="size-8 rounded-full" />
+        ) : (
+          <div className="size-8 rounded-full bg-muted" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">
+            {member.ig_name ?? member.discord_username ?? member.discord_id}
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate">
+            @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
+          </div>
+        </div>
+      </Link>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => dmMut.mutate()}
+        disabled={dmMut.isPending}
+        title="Lui rappeler par DM"
+      >
+        <MessageCircle className="size-3.5" />
+      </Button>
+      <Button
+        size="sm"
+        onClick={() => setOpen(true)}
+        title="Lier son pseudo MC"
+      >
+        Lier
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Lier le compte MC de {member.ig_name ?? member.discord_username}
+            </DialogTitle>
+            <DialogDescription>
+              Le pseudo est vérifié via l'API Mojang et le membre sera ajouté au suivi HDV.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={igName}
+            onChange={(e) => setIgName(e.target.value)}
+            placeholder="Pseudo Minecraft"
+            maxLength={16}
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={() => setMcMut.mutate()}
+              disabled={setMcMut.isPending || igName.trim().length < 3}
+            >
+              {setMcMut.isPending ? "Vérification…" : "Lier le compte"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
