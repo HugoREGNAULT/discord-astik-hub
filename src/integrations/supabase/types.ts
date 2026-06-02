@@ -1793,26 +1793,29 @@ export type Database = {
         Row: {
           created_at: string
           display_order: number
-          duration_minutes: number
+          duration_minutes: number | null
           id: string
+          label: string | null
           poll_id: string
-          starts_at: string
+          starts_at: string | null
         }
         Insert: {
           created_at?: string
           display_order?: number
-          duration_minutes?: number
+          duration_minutes?: number | null
           id?: string
+          label?: string | null
           poll_id: string
-          starts_at: string
+          starts_at?: string | null
         }
         Update: {
           created_at?: string
           display_order?: number
-          duration_minutes?: number
+          duration_minutes?: number | null
           id?: string
+          label?: string | null
           poll_id?: string
-          starts_at?: string
+          starts_at?: string | null
         }
         Relationships: [
           {
@@ -1880,7 +1883,9 @@ export type Database = {
           created_by_username: string | null
           description: string | null
           id: string
+          kind: string
           location: string | null
+          question_mode: string | null
           status: string
           title: string
           updated_at: string
@@ -1893,7 +1898,9 @@ export type Database = {
           created_by_username?: string | null
           description?: string | null
           id?: string
+          kind?: string
           location?: string | null
+          question_mode?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -1906,7 +1913,9 @@ export type Database = {
           created_by_username?: string | null
           description?: string | null
           id?: string
+          kind?: string
           location?: string | null
+          question_mode?: string | null
           status?: string
           title?: string
           updated_at?: string

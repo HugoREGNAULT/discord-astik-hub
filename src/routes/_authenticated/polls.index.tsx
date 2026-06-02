@@ -59,8 +59,8 @@ function PollsPage() {
       <div className="flex items-center justify-between gap-3">
         <PageHeader
           code="// polls"
-          title="Sondages de planification"
-          description="Vote sur les créneaux proposés pour les prochaines réunions / events."
+          title="Sondages"
+          description="Planification de créneaux ou questions Oui/Non — votes faction-only."
         />
         {canManage && (
           <CreatePollDialog onCreated={() => qc.invalidateQueries({ queryKey: ["polls"] })} />
@@ -146,6 +146,8 @@ function PollsPage() {
 function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
   const createFn = useServerFn(createPoll);
   const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState<"schedule" | "question">("schedule");
+  const [questionMode, setQuestionMode] = useState<"yes_no" | "yes_no_maybe">("yes_no_maybe");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -155,31 +157,53 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
   ]);
   const [submitting, setSubmitting] = useState(false);
 
+  const reset = () => {
+    setKind("schedule");
+    setQuestionMode("yes_no_maybe");
+    setTitle("");
+    setDescription("");
+    setLocation("");
+    setSlots([
+      { value: "", duration: 60 },
+      { value: "", duration: 60 },
+    ]);
+  };
+
   const submit = async () => {
-    const opts = slots
-      .filter((s) => s.value.trim().length > 0)
-      .map((s) => ({ startsAt: s.value, durationMinutes: s.duration }));
     if (title.trim().length < 2) return toast.error("Titre trop court");
-    if (opts.length < 2) return toast.error("Au moins 2 créneaux requis");
     setSubmitting(true);
     try {
-      await createFn({
-        data: {
-          title: title.trim(),
-          description: description.trim() || undefined,
-          location: location.trim() || undefined,
-          options: opts,
-        },
-      });
+      if (kind === "schedule") {
+        const opts = slots
+          .filter((s) => s.value.trim().length > 0)
+          .map((s) => ({ startsAt: s.value, durationMinutes: s.duration }));
+        if (opts.length < 2) {
+          setSubmitting(false);
+          return toast.error("Au moins 2 créneaux requis");
+        }
+        await createFn({
+          data: {
+            kind: "schedule",
+            title: title.trim(),
+            description: description.trim() || undefined,
+            location: location.trim() || undefined,
+            options: opts,
+          },
+        });
+      } else {
+        await createFn({
+          data: {
+            kind: "question",
+            title: title.trim(),
+            description: description.trim() || undefined,
+            location: location.trim() || undefined,
+            questionMode,
+          },
+        });
+      }
       toast.success("Sondage créé");
       setOpen(false);
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setSlots([
-        { value: "", duration: 60 },
-        { value: "", duration: 60 },
-      ]);
+      reset();
       onCreated();
     } catch (e: any) {
       toast.error(toUserMessage(e));
@@ -189,7 +213,13 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) reset();
+      }}
+    >
       <DialogTrigger asChild>
         <Button>
           <Plus className="size-4" /> Nouveau sondage
@@ -197,20 +227,55 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
       </DialogTrigger>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nouveau sondage de planification</DialogTitle>
+          <DialogTitle>Nouveau sondage</DialogTitle>
           <DialogDescription>
-            Propose plusieurs créneaux, les membres voteront oui / peut-être / non.
+            Soit un sondage de planification (créneaux datés), soit une question simple
+            Oui / Non.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Type de sondage</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setKind("schedule")}
+                className={`text-left rounded-lg border p-3 transition ${
+                  kind === "schedule"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                <div className="font-medium text-sm">📅 Planification</div>
+                <div className="text-xs text-muted-foreground">Vote sur des créneaux datés</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setKind("question")}
+                className={`text-left rounded-lg border p-3 transition ${
+                  kind === "question"
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                <div className="font-medium text-sm">❓ Question</div>
+                <div className="text-xs text-muted-foreground">Oui / Non (un seul choix)</div>
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="poll-title">Titre *</Label>
             <Input
               id="poll-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Réunion staff de juin"
+              placeholder={
+                kind === "schedule"
+                  ? "Réunion staff de juin"
+                  : "On se voit ce week-end ?"
+              }
               maxLength={120}
             />
           </div>
@@ -235,109 +300,142 @@ function CreatePollDialog({ onCreated }: { onCreated: () => void }) {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label>Créneaux proposés</Label>
-              <div>
-                <input
-                  id="poll-csv"
-                  type="file"
-                  accept=".csv,text/csv"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = "";
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      const text = String(reader.result ?? "");
-                      const parsed = parsePollCsv(text);
-                      const slots = parsed.slots.map((s) => ({
-                        value: s.value,
-                        duration: s.duration,
-                      }));
-                      if (!slots.length) {
-                        toast.error("Aucun créneau valide trouvé dans le CSV");
-                        return;
-                      }
-                      if (slots.length > 20) {
-                        toast.error("Maximum 20 créneaux — seuls les 20 premiers ont été gardés");
-                      }
-                      setSlots(slots.slice(0, 20));
-                      if (parsed.mode === "matrix") {
-                        toast.success(
-                          `${Math.min(slots.length, 20)} créneaux importés. Tu pourras importer les votes du CSV depuis la page du sondage après création.`,
-                        );
-                      } else {
-                        toast.success(`${Math.min(slots.length, 20)} créneaux importés`);
-                      }
-                    };
-                    reader.readAsText(file);
-                  }}
-                />
-                <Button
+          {kind === "question" ? (
+            <div className="space-y-1.5">
+              <Label>Réponses possibles</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => document.getElementById("poll-csv")?.click()}
+                  onClick={() => setQuestionMode("yes_no")}
+                  className={`text-left rounded-lg border p-3 text-sm transition ${
+                    questionMode === "yes_no"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40"
+                  }`}
                 >
-                  <Upload className="size-3" /> Importer CSV
-                </Button>
+                  <div className="font-medium">Oui / Non</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuestionMode("yes_no_maybe")}
+                  className={`text-left rounded-lg border p-3 text-sm transition ${
+                    questionMode === "yes_no_maybe"
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  <div className="font-medium">Oui / Non / Peut-être</div>
+                </button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Chaque membre ne pourra cocher qu&apos;une seule réponse.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Accepte un CSV simple <code>date,durée(min)</code> ou un export Framadate/Google Forms
-              (matrice <code>Nom,E-mail,créneau 1,créneau 2…</code>) — les votes pourront être
-              importés ensuite depuis la page du sondage.
-            </p>
-
-            {slots.map((s, i) => (
-              <div key={i} className="flex gap-2 items-center">
-                <Input
-                  type="datetime-local"
-                  value={s.value}
-                  onChange={(e) => {
-                    const next = [...slots];
-                    next[i] = { ...next[i], value: e.target.value };
-                    setSlots(next);
-                  }}
-                  className="flex-1"
-                />
-                <Input
-                  type="number"
-                  min={15}
-                  max={1440}
-                  step={15}
-                  value={s.duration}
-                  onChange={(e) => {
-                    const next = [...slots];
-                    next[i] = { ...next[i], duration: Number(e.target.value) || 60 };
-                    setSlots(next);
-                  }}
-                  className="w-20"
-                  title="Durée en minutes"
-                />
-                <span className="text-xs text-muted-foreground">min</span>
-                {slots.length > 2 && (
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label>Créneaux proposés</Label>
+                <div>
+                  <input
+                    id="poll-csv"
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const text = String(reader.result ?? "");
+                        const parsed = parsePollCsv(text);
+                        const newSlots = parsed.slots.map((s) => ({
+                          value: s.value,
+                          duration: s.duration,
+                        }));
+                        if (!newSlots.length) {
+                          toast.error("Aucun créneau valide trouvé dans le CSV");
+                          return;
+                        }
+                        if (newSlots.length > 20) {
+                          toast.error("Maximum 20 créneaux — seuls les 20 premiers ont été gardés");
+                        }
+                        setSlots(newSlots.slice(0, 20));
+                        if (parsed.mode === "matrix") {
+                          toast.success(
+                            `${Math.min(newSlots.length, 20)} créneaux importés. Tu pourras importer les votes du CSV depuis la page du sondage après création.`,
+                          );
+                        } else {
+                          toast.success(`${Math.min(newSlots.length, 20)} créneaux importés`);
+                        }
+                      };
+                      reader.readAsText(file);
+                    }}
+                  />
                   <Button
-                    variant="ghost"
+                    type="button"
+                    variant="outline"
                     size="sm"
-                    onClick={() => setSlots(slots.filter((_, j) => j !== i))}
+                    onClick={() => document.getElementById("poll-csv")?.click()}
                   >
-                    <Trash2 className="size-4" />
+                    <Upload className="size-3" /> Importer CSV
                   </Button>
-                )}
+                </div>
               </div>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSlots([...slots, { value: "", duration: 60 }])}
-              disabled={slots.length >= 20}
-            >
-              <Plus className="size-3" /> Ajouter un créneau
-            </Button>
-          </div>
+              <p className="text-xs text-muted-foreground">
+                Accepte un CSV simple <code>date,durée(min)</code> ou un export Framadate/Google
+                Forms (matrice <code>Nom,E-mail,créneau 1,créneau 2…</code>) — les votes pourront
+                être importés ensuite depuis la page du sondage.
+              </p>
+
+              {slots.map((s, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <Input
+                    type="datetime-local"
+                    value={s.value}
+                    onChange={(e) => {
+                      const next = [...slots];
+                      next[i] = { ...next[i], value: e.target.value };
+                      setSlots(next);
+                    }}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    min={15}
+                    max={1440}
+                    step={15}
+                    value={s.duration}
+                    onChange={(e) => {
+                      const next = [...slots];
+                      next[i] = { ...next[i], duration: Number(e.target.value) || 60 };
+                      setSlots(next);
+                    }}
+                    className="w-20"
+                    title="Durée en minutes"
+                  />
+                  <span className="text-xs text-muted-foreground">min</span>
+                  {slots.length > 2 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSlots(slots.filter((_, j) => j !== i))}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSlots([...slots, { value: "", duration: 60 }])}
+                disabled={slots.length >= 20}
+              >
+                <Plus className="size-3" /> Ajouter un créneau
+              </Button>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
