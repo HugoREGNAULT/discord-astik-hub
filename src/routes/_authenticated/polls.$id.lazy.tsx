@@ -149,7 +149,6 @@ function PollDetail() {
 
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});
   const isQuestion = data?.poll?.kind === "question";
-  const questionMode = (data?.poll?.question_mode ?? "yes_no_maybe") as "yes_no" | "yes_no_maybe";
 
   useEffect(() => {
     if (!data) return;
