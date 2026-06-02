@@ -70,6 +70,37 @@ function MyProfile() {
         <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
       </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Clock className="size-4 text-primary" /> Dernière connexion
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm space-y-1">
+          {data.previousLoginAt ? (
+            <div>
+              <span className="text-muted-foreground">Précédente :</span>{" "}
+              <span className="font-mono">
+                {new Date(data.previousLoginAt).toLocaleString("fr-FR")}
+              </span>
+            </div>
+          ) : (
+            <div className="text-muted-foreground">
+              Aucune connexion précédente enregistrée.
+            </div>
+          )}
+          {data.currentLoginAt && (
+            <div className="text-xs text-muted-foreground">
+              Session actuelle ouverte le{" "}
+              <span className="font-mono">
+                {new Date(data.currentLoginAt).toLocaleString("fr-FR")}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
       {data.recruiter && (
         <Card>
           <CardHeader>
