@@ -2546,6 +2546,27 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_events: {
+        Row: {
+          actor_discord_id: string
+          created_at: string
+          id: number
+          path: string
+        }
+        Insert: {
+          actor_discord_id: string
+          created_at?: string
+          id?: number
+          path: string
+        }
+        Update: {
+          actor_discord_id?: string
+          created_at?: string
+          id?: number
+          path?: string
+        }
+        Relationships: []
+      }
       warning_appeals: {
         Row: {
           created_at: string
