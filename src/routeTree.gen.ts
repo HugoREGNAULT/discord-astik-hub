@@ -31,7 +31,6 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedLogisticsRouteImport } from './routes/_authenticated/logistics'
-import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authenticated/faction-economy'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -201,11 +200,6 @@ const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
 const AuthenticatedLogisticsRoute = AuthenticatedLogisticsRouteImport.update({
   id: '/logistics',
   path: '/logistics',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedFactionEconomyRoute =
@@ -535,7 +529,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/effectif': typeof AuthenticatedEffectifRoute
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
-  '/jobs': typeof AuthenticatedJobsRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -615,7 +608,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/effectif': typeof AuthenticatedEffectifRoute
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
-  '/jobs': typeof AuthenticatedJobsRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -695,7 +687,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
   '/_authenticated/faction-economy': typeof AuthenticatedFactionEconomyRoute
-  '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/logistics': typeof AuthenticatedLogisticsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -777,7 +768,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/effectif'
     | '/faction-economy'
-    | '/jobs'
     | '/logistics'
     | '/logs'
     | '/me'
@@ -857,7 +847,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/effectif'
     | '/faction-economy'
-    | '/jobs'
     | '/logistics'
     | '/logs'
     | '/me'
@@ -936,7 +925,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/effectif'
     | '/_authenticated/faction-economy'
-    | '/_authenticated/jobs'
     | '/_authenticated/logistics'
     | '/_authenticated/logs'
     | '/_authenticated/me'
@@ -1195,13 +1183,6 @@ declare module '@tanstack/react-router' {
       path: '/logistics'
       fullPath: '/logistics'
       preLoaderRoute: typeof AuthenticatedLogisticsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/jobs': {
-      id: '/_authenticated/jobs'
-      path: '/jobs'
-      fullPath: '/jobs'
-      preLoaderRoute: typeof AuthenticatedJobsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/faction-economy': {
@@ -1693,7 +1674,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
   AuthenticatedFactionEconomyRoute: typeof AuthenticatedFactionEconomyRoute
-  AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLogisticsRoute: typeof AuthenticatedLogisticsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1720,7 +1700,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
   AuthenticatedFactionEconomyRoute: AuthenticatedFactionEconomyRoute,
-  AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLogisticsRoute: AuthenticatedLogisticsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
