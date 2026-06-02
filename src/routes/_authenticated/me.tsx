@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Coins, ShieldAlert, UserCircle2, Gamepad2 } from "lucide-react";
+import { Coins, ShieldAlert, UserCircle2, Gamepad2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, listMyWarnings, completeOnboarding } from "@/lib/data/me.functions";
 import { avatarUrl } from "@/lib/paladium/api";
