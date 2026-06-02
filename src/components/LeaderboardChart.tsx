@@ -58,13 +58,26 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
   const data = useMemo(() => {
     if (top3.length === 0) return [];
     const allowed = new Set(top3.map((e) => e.discord_id));
+    // Append a synthetic "now" snapshot from live totals so the chart reflects
+    // the most recent updates without waiting for the next hourly capture.
+    const nowIso = new Date().toISOString();
+    const liveSnapshots: Snapshot[] = top3.map((e) => ({
+      taken_at: nowIso,
+      discord_id: e.discord_id,
+      astik_points: Number(e.astik_points ?? 0),
+      voice_total_seconds: Number(e.voice_total_seconds ?? 0),
+      voice_7d_seconds: Number(e.voice_7d_seconds ?? 0),
+      messages_total: Number(e.messages_total ?? 0),
+      messages_7d: Number(e.messages_7d ?? 0),
+    }));
+    const allSnapshots: Snapshot[] = [...snapshots, ...liveSnapshots];
     // Filtre la fenêtre temporelle
     const cutoff = period === "all" ? 0 : Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
     // Baseline par membre = dernière valeur connue <= cutoff
     const baseline = new Map<string, number>();
     if (period !== "all") {
       const best = new Map<string, { t: number; v: number }>();
-      for (const s of snapshots) {
+      for (const s of allSnapshots) {
         if (!allowed.has(s.discord_id)) continue;
         const t = new Date(s.taken_at).getTime();
         if (t > cutoff) continue;
@@ -76,7 +89,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
     }
 
     const byTime = new Map<string, Record<string, number | string>>();
-    for (const s of snapshots) {
+    for (const s of allSnapshots) {
       if (!allowed.has(s.discord_id)) continue;
       const t = new Date(s.taken_at).getTime();
       if (t < cutoff) continue;
