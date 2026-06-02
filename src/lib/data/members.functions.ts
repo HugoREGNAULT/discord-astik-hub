@@ -260,6 +260,26 @@ export const addNote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const deleteNote = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const user = await requirePermission("notes.write");
+    const { data: existing, error: gErr } = await db
+      .from("notes")
+      .select("member_discord_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (gErr) throw new Error(gErr.message);
+    if (!existing) throw new Error("NOT_FOUND");
+    const { error } = await db.from("notes").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAction("note_delete", user.discordId, {
+      target: existing.member_discord_id,
+      id: data.id,
+    });
+    return { ok: true };
+  });
+
 const SEVERITY_POINTS: Record<string, number> = {
   verbal: 0,
   minor: 1,
