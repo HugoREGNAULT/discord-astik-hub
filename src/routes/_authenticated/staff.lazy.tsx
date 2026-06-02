@@ -1541,7 +1541,9 @@ function NeverConnectedCard() {
     queryKey: ["never-connected"],
     queryFn: () => fn(),
     refetchInterval: 60_000,
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
     });
 
   return (
@@ -1587,9 +1589,11 @@ function NeverConnectedRow({
     discord_username?: string | null;
     avatar_url?: string | null;
     current_grade?: string | null;
+    last_dm_at?: string | null;
   };
 }) {
   const dmFn = useServerFn(dmMember);
+  const queryClient = useQueryClient();
   const [dmOpen, setDmOpen] = useState(false);
   const [dmContent, setDmContent] = useState(
     `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nT'as toujours pas activé ton compte sur le site de la faction ! Va faire un tour ici : https://punkastik.com\n\nTu pourras y voir tes points, poser des absences, suivre les classements, etc. 🚀`,
@@ -1600,6 +1604,7 @@ function NeverConnectedRow({
     onSuccess: () => {
       toast.success("DM envoyé");
       setDmOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["never-connected"] });
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
@@ -1623,6 +1628,19 @@ function NeverConnectedRow({
           <div className="text-[11px] text-muted-foreground truncate">
             @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
           </div>
+          {member.last_dm_at ? (
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 truncate">
+              Relancé le{" "}
+              {new Date(member.last_dm_at).toLocaleString("fr-FR", {
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+          ) : (
+            <div className="text-[10px] text-muted-foreground/70 truncate">Jamais relancé</div>
+          )}
         </div>
       </Link>
       <Button
