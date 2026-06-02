@@ -2218,7 +2218,7 @@ function MissingMcRow({
       dmFn({
         data: {
           memberDiscordId: member.discord_id,
-          content: `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nPense à renseigner ton pseudo Minecraft sur https://punkastik.com/me pour apparaître dans le suivi métiers et l'économie faction !`,
+          content: `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nPense à renseigner ton pseudo Minecraft sur https://punkastik.com/me pour apparaître dans l'économie faction !`,
         },
       }),
     onSuccess: () => toast.success("DM envoyé"),
