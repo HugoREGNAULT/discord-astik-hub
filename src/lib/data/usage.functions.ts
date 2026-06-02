@@ -76,15 +76,21 @@ export const getUsageStats = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - data.days * 24 * 3600 * 1000);
     const sinceIso = since.toISOString();
 
-    const { data: rows, error } = await db
-      .from("usage_events")
-      .select("actor_discord_id, path, created_at")
-      .gte("created_at", sinceIso)
-      .order("created_at", { ascending: false })
-      .limit(50000);
-    if (error) throw new Error(error.message);
+    // On ne compte que les membres actuellement présents sur le serveur privé
+    // (status='active', maintenu par le cron sync-discord-presence sur GUILDS.FACTION).
+    const [eventsRes, activeRes] = await Promise.all([
+      db
+        .from("usage_events")
+        .select("actor_discord_id, path, created_at")
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false })
+        .limit(50000),
+      db.from("members").select("discord_id").eq("status", "active"),
+    ]);
+    if (eventsRes.error) throw new Error(eventsRes.error.message);
 
-    const events = rows ?? [];
+    const activeIds = new Set((activeRes.data ?? []).map((m) => m.discord_id));
+    const events = (eventsRes.data ?? []).filter((e) => activeIds.has(e.actor_discord_id));
     const totalViews = events.length;
 
     const userSet = new Set<string>();
@@ -108,6 +114,7 @@ export const getUsageStats = createServerFn({ method: "GET" })
       d.users.add(e.actor_discord_id);
       dayMap.set(day, d);
     }
+
 
     const topPaths = Array.from(pathMap.entries())
       .map(([path, v]) => ({ path, views: v.views, users: v.users.size }))
