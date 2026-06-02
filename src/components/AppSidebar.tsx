@@ -143,6 +143,13 @@ const SECTIONS: Section[] = [
         perm: "members.view",
         accent: "blurple",
       },
+      {
+        title: "Récap",
+        url: "/staff/recap",
+        icon: Eye,
+        perm: "members.view",
+        accent: "pink",
+      },
       { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
       {
         title: "Plan de coupe",
