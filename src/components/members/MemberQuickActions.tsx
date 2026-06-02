@@ -96,6 +96,8 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
     e.stopPropagation();
   };
 
+  if (!canNote && !canWarn) return null;
+
   return (
     <div className="flex items-center gap-1" onClick={stop} onKeyDown={stop}>
       {canNote && (
