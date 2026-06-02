@@ -20,6 +20,7 @@ import {
   getMemberDetail,
   updateMember,
   addNote,
+  deleteNote,
   addWarning,
   addAlt,
   removeAlt,
