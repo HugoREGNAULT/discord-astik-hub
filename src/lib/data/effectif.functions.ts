@@ -3,7 +3,6 @@ import { requireSession } from "@/lib/auth/require.server";
 import { listAllGuildMembers, type DiscordGuildMember } from "@/lib/discord/api.server";
 import { GUILDS, EFFECTIF_GRADES } from "@/lib/discord/constants";
 import { db } from "@/lib/db.server";
-import { filterFactionMembers } from "@/lib/data/faction-members";
 
 interface EffectifMember {
   discord_id: string;
@@ -58,10 +57,8 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
       .in("discord_id", allDiscordIds),
     db.from("blacklist").select("discord_id").not("discord_id", "is", null),
   ]);
-  const factionDbMembers = filterFactionMembers(dbMembers ?? []);
-  const factionIds = new Set(factionDbMembers.map((m) => m.discord_id));
   const igByDiscord = new Map<string, string | null>(
-    factionDbMembers.map((m) => [m.discord_id, m.ig_name ?? null]),
+    (dbMembers ?? []).map((m) => [m.discord_id, m.ig_name ?? null]),
   );
   const blacklisted = new Set<string>(
     (blacklistRows ?? []).flatMap((b) => (b.discord_id ? [b.discord_id] : [])),
@@ -73,7 +70,7 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     for (const m of members) {
       const uid = m.user?.id;
       if (!uid || seen.has(uid)) continue;
-      if (g.roleIds.some((rid) => m.roles.includes(rid)) && factionIds.has(uid)) {
+      if (g.roleIds.some((rid) => m.roles.includes(rid))) {
         seen.add(uid);
         const igName = igByDiscord.get(uid) ?? null;
         // Priorité : IG name (DB) → nick Discord → global_name → username
@@ -94,6 +91,30 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     return { label: g.label, members: list };
   });
 
-  const total = seen.size;
+  const unassigned: EffectifMember[] = members
+    .filter((m) => {
+      const uid = m.user?.id;
+      return Boolean(uid && !seen.has(uid));
+    })
+    .map((m) => {
+      const uid = m.user!.id;
+      const igName = igByDiscord.get(uid) ?? null;
+      return {
+        discord_id: uid,
+        name: igName || m.nick || m.user?.global_name || m.user?.username || uid,
+        ig_name: igName,
+        avatarUrl: m.user?.avatar
+          ? `https://cdn.discordapp.com/avatars/${uid}/${m.user.avatar}.png`
+          : null,
+        blacklisted: blacklisted.has(uid),
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
+
+  if (unassigned.length > 0) {
+    groups.push({ label: "Sans grade", members: unassigned });
+  }
+
+  const total = members.filter((m) => m.user?.id).length;
   return { groups, total };
 });
