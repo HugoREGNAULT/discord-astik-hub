@@ -28,7 +28,7 @@ async function guard(perm: "notes.view" | "notes.write") {
   } catch (e) {
     const err = e as AppError | Error;
     if (err instanceof AppError) {
-      return { error: bad(err.statusCode ?? 403, err.message) };
+      return { error: bad(err.httpStatus ?? 403, err.message) };
     }
     return { error: bad(500, (err as Error).message) };
   }
