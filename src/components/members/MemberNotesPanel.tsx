@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +11,8 @@ interface Props {
   noteInput: string;
   onNoteInputChange: (v: string) => void;
   onAdd: () => void;
+  onDelete?: (id: string) => void;
+  deletingId?: string | null;
 }
 
 export function MemberNotesPanel({
@@ -18,6 +21,8 @@ export function MemberNotesPanel({
   noteInput,
   onNoteInputChange,
   onAdd,
+  onDelete,
+  deletingId,
 }: Props) {
   return (
     <Card>
@@ -29,11 +34,31 @@ export function MemberNotesPanel({
       <CardContent className="space-y-3">
         <ul className="space-y-2">
           {notes.map((n) => (
-            <li key={n.id} className="text-sm border border-border rounded p-3">
-              <div className="text-[11px] text-muted-foreground">
-                {new Date(n.created_at).toLocaleString()} · {n.staff_username}
+            <li
+              key={n.id}
+              className="text-sm border border-border rounded p-3 flex items-start gap-2"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-muted-foreground">
+                  {new Date(n.created_at).toLocaleString()} · {n.staff_username}
+                </div>
+                <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
               </div>
-              <div className="mt-1 whitespace-pre-wrap">{n.body}</div>
+              {canWrite && onDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Supprimer la note"
+                  title="Supprimer la note"
+                  disabled={deletingId === n.id}
+                  onClick={() => {
+                    if (confirm("Supprimer cette note interne ?")) onDelete(n.id);
+                  }}
+                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
             </li>
           ))}
           {notes.length === 0 && (
