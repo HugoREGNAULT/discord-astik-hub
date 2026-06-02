@@ -223,10 +223,15 @@ export const closePoll = createServerFn({ method: "POST" })
     if (data.winningOptionId) {
       const { data: opt } = await db
         .from("poll_options")
-        .select("starts_at")
+        .select("starts_at,label")
         .eq("id", data.winningOptionId)
         .maybeSingle();
-      if (opt) winInfo = `\n🏆 ${new Date(opt.starts_at).toLocaleString("fr-FR")}`;
+      if (opt) {
+        const label = (opt as any).label as string | null;
+        const startsAt = (opt as any).starts_at as string | null;
+        if (label) winInfo = `\n🏆 ${label}`;
+        else if (startsAt) winInfo = `\n🏆 ${new Date(startsAt).toLocaleString("fr-FR")}`;
+      }
     }
 
     await logAction("poll_close", user.discordId, { id: data.pollId });
