@@ -12,25 +12,38 @@ import { logToDiscord, COLORS } from "@/lib/discord/log.server";
 
 const choiceSchema = z.enum(["yes", "maybe", "no"]);
 
-const createSchema = z.object({
-  title: z.string().trim().min(2).max(120),
-  description: z.string().trim().max(2000).optional().nullable(),
-  location: z.string().trim().max(200).optional().nullable(),
-  options: z
-    .array(
-      z.object({
-        startsAt: z.string().min(1),
-        durationMinutes: z
-          .number()
-          .int()
-          .min(15)
-          .max(24 * 60)
-          .default(60),
-      }),
-    )
-    .min(2)
-    .max(20),
+const scheduleOptionSchema = z.object({
+  startsAt: z.string().min(1),
+  durationMinutes: z
+    .number()
+    .int()
+    .min(15)
+    .max(24 * 60)
+    .default(60),
 });
+
+const createSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("schedule"),
+    title: z.string().trim().min(2).max(120),
+    description: z.string().trim().max(2000).optional().nullable(),
+    location: z.string().trim().max(200).optional().nullable(),
+    options: z.array(scheduleOptionSchema).min(2).max(20),
+  }),
+  z.object({
+    kind: z.literal("question"),
+    title: z.string().trim().min(2).max(120),
+    description: z.string().trim().max(2000).optional().nullable(),
+    location: z.string().trim().max(200).optional().nullable(),
+    questionMode: z.enum(["yes_no", "yes_no_maybe"]),
+  }),
+]);
+
+const QUESTION_LABELS: Record<"yes" | "maybe" | "no", string> = {
+  yes: "Oui",
+  maybe: "Peut-être",
+  no: "Non",
+};
 
 export const listPolls = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireSession();
