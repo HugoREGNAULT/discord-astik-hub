@@ -160,17 +160,7 @@ export const Route = createFileRoute("/api/staff/members/$id/warnings")({
           via: "api",
         });
 
-        void (async () => {
-          try {
-            const { sendDiscordDM } = await import("@/lib/discord/dm.server");
-            await sendDiscordDM(
-              params.id,
-              `✅ **Avertissement annulé** : ${existing.body}\nMotif : ${parsed.data.reason}`,
-            );
-          } catch {
-            /* best-effort */
-          }
-        })();
+        // Pas de DM au membre lors de la révocation.
 
         return Response.json({ ok: true });
       },
