@@ -85,6 +85,7 @@ import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot
 import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
 import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/public/bot/mc-link-confirm'
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
+import { Route as ApiStaffMembersIdWarningsRouteImport } from './routes/api/staff/members.$id.warnings'
 import { Route as ApiStaffMembersIdNotesRouteImport } from './routes/api/staff/members.$id.notes'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
@@ -506,6 +507,12 @@ const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
   path: '/api/public/bot/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStaffMembersIdWarningsRoute =
+  ApiStaffMembersIdWarningsRouteImport.update({
+    id: '/api/staff/members/$id/warnings',
+    path: '/api/staff/members/$id/warnings',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiStaffMembersIdNotesRoute = ApiStaffMembersIdNotesRouteImport.update({
   id: '/api/staff/members/$id/notes',
   path: '/api/staff/members/$id/notes',
@@ -615,6 +622,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
   '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
   '/api/staff/members/$id/notes': typeof ApiStaffMembersIdNotesRoute
+  '/api/staff/members/$id/warnings': typeof ApiStaffMembersIdWarningsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -695,6 +703,7 @@ export interface FileRoutesByTo {
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
   '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
   '/api/staff/members/$id/notes': typeof ApiStaffMembersIdNotesRoute
+  '/api/staff/members/$id/warnings': typeof ApiStaffMembersIdWarningsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -779,6 +788,7 @@ export interface FileRoutesById {
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
   '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
   '/api/staff/members/$id/notes': typeof ApiStaffMembersIdNotesRoute
+  '/api/staff/members/$id/warnings': typeof ApiStaffMembersIdWarningsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -863,6 +873,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/query/points'
     | '/api/public/bot/query/profil'
     | '/api/staff/members/$id/notes'
+    | '/api/staff/members/$id/warnings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -943,6 +954,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/query/points'
     | '/api/public/bot/query/profil'
     | '/api/staff/members/$id/notes'
+    | '/api/staff/members/$id/warnings'
   id:
     | '__root__'
     | '/'
@@ -1026,6 +1038,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/query/points'
     | '/api/public/bot/query/profil'
     | '/api/staff/members/$id/notes'
+    | '/api/staff/members/$id/warnings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1065,6 +1078,7 @@ export interface RootRouteChildren {
   ApiPublicBotQueryPointsRoute: typeof ApiPublicBotQueryPointsRoute
   ApiPublicBotQueryProfilRoute: typeof ApiPublicBotQueryProfilRoute
   ApiStaffMembersIdNotesRoute: typeof ApiStaffMembersIdNotesRoute
+  ApiStaffMembersIdWarningsRoute: typeof ApiStaffMembersIdWarningsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1601,6 +1615,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBotImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/staff/members/$id/warnings': {
+      id: '/api/staff/members/$id/warnings'
+      path: '/api/staff/members/$id/warnings'
+      fullPath: '/api/staff/members/$id/warnings'
+      preLoaderRoute: typeof ApiStaffMembersIdWarningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/staff/members/$id/notes': {
       id: '/api/staff/members/$id/notes'
       path: '/api/staff/members/$id/notes'
@@ -1825,6 +1846,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBotQueryPointsRoute: ApiPublicBotQueryPointsRoute,
   ApiPublicBotQueryProfilRoute: ApiPublicBotQueryProfilRoute,
   ApiStaffMembersIdNotesRoute: ApiStaffMembersIdNotesRoute,
+  ApiStaffMembersIdWarningsRoute: ApiStaffMembersIdWarningsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
