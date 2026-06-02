@@ -59,8 +59,8 @@ function PollsPage() {
       <div className="flex items-center justify-between gap-3">
         <PageHeader
           code="// polls"
-          title="Sondages de planification"
-          description="Vote sur les créneaux proposés pour les prochaines réunions / events."
+          title="Sondages"
+          description="Planification de créneaux ou questions Oui/Non — votes faction-only."
         />
         {canManage && (
           <CreatePollDialog onCreated={() => qc.invalidateQueries({ queryKey: ["polls"] })} />
