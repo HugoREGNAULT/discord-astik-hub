@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Coins, ShieldAlert, UserCircle2, Gamepad2 } from "lucide-react";
+import { Coins, ShieldAlert, UserCircle2, Gamepad2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, listMyWarnings, completeOnboarding } from "@/lib/data/me.functions";
 import { avatarUrl } from "@/lib/paladium/api";
@@ -29,6 +29,10 @@ function MyProfile() {
   const { data, isLoading } = useQuery({
     queryKey: ["me", "overview"],
     queryFn: () => overviewFn(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
+    staleTime: 0,
   });
   const { data: warningsData } = useQuery({
     queryKey: ["me", "warnings"],
@@ -65,6 +69,37 @@ function MyProfile() {
         <Stat label="Grade" value={m.current_grade ?? "—"} />
         <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Clock className="size-4 text-primary" /> Dernière connexion
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm space-y-1">
+          {data.previousLoginAt ? (
+            <div>
+              <span className="text-muted-foreground">Précédente :</span>{" "}
+              <span className="font-mono">
+                {new Date(data.previousLoginAt).toLocaleString("fr-FR")}
+              </span>
+            </div>
+          ) : (
+            <div className="text-muted-foreground">
+              Aucune connexion précédente enregistrée.
+            </div>
+          )}
+          {data.currentLoginAt && (
+            <div className="text-xs text-muted-foreground">
+              Session actuelle ouverte le{" "}
+              <span className="font-mono">
+                {new Date(data.currentLoginAt).toLocaleString("fr-FR")}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
 
       {data.recruiter && (
         <Card>

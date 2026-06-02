@@ -48,7 +48,7 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
   const needsOnboarding = !member.mc_uuid;
 
   // 2) Données annexes
-  const [altsRes, gainsRes, warnsRes] = await Promise.all([
+  const [altsRes, gainsRes, warnsRes, loginsRes] = await Promise.all([
     db.from("member_alts").select("*").eq("member_discord_id", user.discordId),
     db
       .from("points_ledger")
@@ -62,7 +62,19 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
       .eq("member_discord_id", user.discordId)
       .order("created_at", { ascending: false })
       .limit(3),
+    db
+      .from("logs")
+      .select("created_at")
+      .eq("action", "login")
+      .eq("actor_discord_id", user.discordId)
+      .order("created_at", { ascending: false })
+      .limit(2),
   ]);
+
+  const loginRows = (loginsRes.data ?? []) as Array<{ created_at: string }>;
+  // [0] = connexion actuelle, [1] = connexion précédente
+  const currentLoginAt = loginRows[0]?.created_at ?? null;
+  const previousLoginAt = loginRows[1]?.created_at ?? null;
 
   // Recruteur (lookup léger)
   let recruiter: {
@@ -86,6 +98,8 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
     recentGains: gainsRes.data ?? [],
     warnings: warnsRes.data ?? [],
     recruiter,
+    currentLoginAt,
+    previousLoginAt,
   };
 });
 
