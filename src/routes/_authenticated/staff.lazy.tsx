@@ -2209,7 +2209,6 @@ function MissingMcRow({
       toast.success(`Compte lié : ${r.igName}`);
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["missing-mc"] });
-      qc.invalidateQueries({ queryKey: ["faction-jobs"] });
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
