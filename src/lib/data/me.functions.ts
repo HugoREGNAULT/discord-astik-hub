@@ -8,7 +8,6 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { isFactionMember } from "@/lib/data/faction-members";
-import { ROLES } from "@/lib/discord/constants";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
@@ -29,10 +28,10 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
   if (error) throw new Error(error.message);
 
   if (!member) {
-    // Un visiteur connecté SANS le rôle MEMBER_FACTION ne doit pas devenir une fiche
-    // "active" : sinon il pollue l'effectif, les KPIs et la liste "risque de départ".
-    // On le marque "visitor" (exclu des requêtes .eq("status", "active")).
-    const isFactionRole = (user.roleIds ?? []).includes(ROLES.MEMBER_FACTION);
+    // Un non-membre connecté crée ici une fiche "active" minimale (status contraint en
+    // base à active/former/away/left). Elle reste EXCLUE des stats et listes faction via
+    // filterFactionMembers (isFactionMember = ig_name/grade/arrivée/uuid) — donc elle ne
+    // pollue ni l'effectif ni "risque de départ".
     const ins = await db
       .from("members")
       .insert({
@@ -41,7 +40,7 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
         avatar_url: user.avatar
           ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
           : null,
-        status: isFactionRole ? "active" : "visitor",
+        status: "active",
       })
       .select("*")
       .single();
