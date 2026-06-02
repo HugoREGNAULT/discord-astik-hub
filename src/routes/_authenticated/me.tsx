@@ -29,6 +29,10 @@ function MyProfile() {
   const { data, isLoading } = useQuery({
     queryKey: ["me", "overview"],
     queryFn: () => overviewFn(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
+    staleTime: 0,
   });
   const { data: warningsData } = useQuery({
     queryKey: ["me", "warnings"],
