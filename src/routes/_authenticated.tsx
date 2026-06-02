@@ -1,5 +1,6 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -16,6 +17,7 @@ import {
 
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { getSessionStatus } from "@/lib/auth/session.functions";
+import { recordView } from "@/lib/data/usage.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
