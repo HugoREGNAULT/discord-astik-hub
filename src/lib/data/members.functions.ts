@@ -376,11 +376,7 @@ export const revokeWarning = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     await logAction("warning_revoke", user.discordId, { target: w.member_discord_id, id: data.id });
-    const { sendDiscordDM } = await import("@/lib/discord/dm.server");
-    void sendDiscordDM(
-      w.member_discord_id,
-      `✅ **Avertissement annulé** : ${w.body}\nMotif : ${data.reason}`,
-    );
+    // Pas de DM au membre lors de la révocation.
     return { ok: true };
   });
 
