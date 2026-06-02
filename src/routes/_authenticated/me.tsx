@@ -44,17 +44,6 @@ function MyProfile() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {/* --- BOUTON TEST — ajouté en local via Claude Code pour valider le workflow GitHub → Lovable --- */}
-      <Button
-        variant="destructive"
-        onClick={() =>
-          toast.success("✅ Bouton test OK — workflow Claude Code → GitHub → Lovable fonctionnel !")
-        }
-        className="h-16 w-full text-lg font-bold"
-      >
-        🚧 BOUTON TEST 🚧
-      </Button>
-
       <div className="flex items-center gap-4">
         {m.avatar_url ? (
           <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
