@@ -7,6 +7,7 @@ import { listMembers } from "@/lib/data/members.functions";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { MemberRowsSkeleton } from "@/components/Skeletons";
 import { PageHeader, PageCard, EmptyBlock, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
+import { MemberQuickActions } from "@/components/members/MemberQuickActions";
 
 export const Route = createFileRoute("/_authenticated/members")({
   head: () => ({ meta: [{ title: "Membres · PunkAstik" }] }),
