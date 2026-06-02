@@ -1540,6 +1540,8 @@ function NeverConnectedCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["never-connected"],
     queryFn: () => fn(),
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
     });
 
   return (
