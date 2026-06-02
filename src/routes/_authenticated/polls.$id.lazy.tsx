@@ -41,6 +41,7 @@ import {
   closePoll,
   reopenPoll,
   importPollVotes,
+  listPollEligibleVoters,
 } from "@/lib/data/polls.functions";
 import { listMembers } from "@/lib/data/members.functions";
 import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
