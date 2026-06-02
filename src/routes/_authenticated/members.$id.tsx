@@ -78,6 +78,7 @@ function MemberDetail() {
   const getDonationsFn = useServerFn(getMemberDonations);
   const update = useServerFn(updateMember);
   const noteFn = useServerFn(addNote);
+  const deleteNoteFn = useServerFn(deleteNote);
   const warnFn = useServerFn(addWarning);
   const altAddFn = useServerFn(addAlt);
   const altRmFn = useServerFn(removeAlt);
