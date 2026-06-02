@@ -352,7 +352,7 @@ export const listPollEligibleVoters = createServerFn({ method: "GET" }).handler(
   try {
     const members = await listAllGuildMembers(GUILDS.FACTION);
     const list = members
-      .filter((m) => m.user && !m.user.bot)
+      .filter((m) => m.user && !(m.user as any).bot)
       .map((m) => ({
         discord_id: m.user!.id,
         username: m.nick || m.user!.global_name || m.user!.username,
