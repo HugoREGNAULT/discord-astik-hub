@@ -98,6 +98,8 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
     recentGains: gainsRes.data ?? [],
     warnings: warnsRes.data ?? [],
     recruiter,
+    currentLoginAt,
+    previousLoginAt,
   };
 });
 
