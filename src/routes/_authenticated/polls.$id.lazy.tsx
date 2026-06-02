@@ -541,7 +541,7 @@ function PollDetail() {
             <div className="flex flex-wrap gap-1.5">
               {nonVoters.map((m) => (
                 <Badge key={m.discord_id} variant="outline" className="text-xs">
-                  {m.ig_name || m.discord_username || m.discord_id}
+                  {m.username || m.discord_id}
                 </Badge>
               ))}
             </div>
