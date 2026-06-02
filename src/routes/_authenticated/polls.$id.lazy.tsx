@@ -409,18 +409,26 @@ function PollDetail() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Créneaux proposés</CardTitle>
+          <CardTitle className="text-base">
+            {isQuestion ? "Réponses possibles" : "Créneaux proposés"}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-                  <th className="py-2 pr-3">Créneau</th>
-                  <th className="py-2 px-2 text-center">Oui</th>
-                  <th className="py-2 px-2 text-center">Peut-être</th>
-                  <th className="py-2 px-2 text-center">Non</th>
-                  <th className="py-2 px-2 text-center">Score</th>
+                  <th className="py-2 pr-3">{isQuestion ? "Réponse" : "Créneau"}</th>
+                  {isQuestion ? (
+                    <th className="py-2 px-2 text-center">Votes</th>
+                  ) : (
+                    <>
+                      <th className="py-2 px-2 text-center">Oui</th>
+                      <th className="py-2 px-2 text-center">Peut-être</th>
+                      <th className="py-2 px-2 text-center">Non</th>
+                      <th className="py-2 px-2 text-center">Score</th>
+                    </>
+                  )}
                   {isOpen && <th className="py-2 pl-3 text-right">Mon vote</th>}
                   {!isOpen && canManage && <th className="py-2 pl-3 text-right">Action</th>}
                 </tr>
@@ -429,7 +437,9 @@ function PollDetail() {
                 {data.options.map((o: any) => {
                   const t = tallies[o.id] ?? { yes: 0, maybe: 0, no: 0, score: 0 };
                   const isWinner = winnerId === o.id;
+                  const totalForOption = t.yes + t.maybe + t.no;
                   const isBest = !winnerId && t.score === bestScore && bestScore > 0;
+                  const isMyChoice = isQuestion && Boolean(myVotes[o.id]);
                   return (
                     <tr
                       key={o.id}
@@ -440,43 +450,71 @@ function PollDetail() {
                           {isWinner && <Crown className="size-4 text-primary" />}
                           <div>
                             <div className="font-medium">
-                              {new Date(o.starts_at).toLocaleString("fr-FR", {
-                                weekday: "short",
-                                day: "2-digit",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {isQuestion
+                                ? o.label || "—"
+                                : new Date(o.starts_at).toLocaleString("fr-FR", {
+                                    weekday: "short",
+                                    day: "2-digit",
+                                    month: "short",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {o.duration_minutes} min
-                              {isBest && !isWinner && " · meilleur score"}
-                            </div>
+                            {!isQuestion && (
+                              <div className="text-xs text-muted-foreground">
+                                {o.duration_minutes} min
+                                {isBest && !isWinner && " · meilleur score"}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
-                      <td className="text-center text-green-500 font-mono">{t.yes}</td>
-                      <td className="text-center text-amber-500 font-mono">{t.maybe}</td>
-                      <td className="text-center text-destructive font-mono">{t.no}</td>
-                      <td className="text-center font-mono font-semibold">{t.score}</td>
+                      {isQuestion ? (
+                        <td className="text-center font-mono font-semibold">{totalForOption}</td>
+                      ) : (
+                        <>
+                          <td className="text-center text-green-500 font-mono">{t.yes}</td>
+                          <td className="text-center text-amber-500 font-mono">{t.maybe}</td>
+                          <td className="text-center text-destructive font-mono">{t.no}</td>
+                          <td className="text-center font-mono font-semibold">{t.score}</td>
+                        </>
+                      )}
                       {isOpen && (
                         <td className="py-2 pl-3">
                           <div className="flex gap-1 justify-end">
-                            <ChoiceBtn
-                              current={myVotes[o.id]}
-                              value="yes"
-                              onClick={() => setMyVotes({ ...myVotes, [o.id]: "yes" })}
-                            />
-                            <ChoiceBtn
-                              current={myVotes[o.id]}
-                              value="maybe"
-                              onClick={() => setMyVotes({ ...myVotes, [o.id]: "maybe" })}
-                            />
-                            <ChoiceBtn
-                              current={myVotes[o.id]}
-                              value="no"
-                              onClick={() => setMyVotes({ ...myVotes, [o.id]: "no" })}
-                            />
+                            {isQuestion ? (
+                              <Button
+                                size="sm"
+                                variant={isMyChoice ? "default" : "outline"}
+                                onClick={() => setMyVotes({ [o.id]: "yes" })}
+                              >
+                                {isMyChoice ? (
+                                  <>
+                                    <Check className="size-4" /> Choisi
+                                  </>
+                                ) : (
+                                  "Choisir"
+                                )}
+                              </Button>
+                            ) : (
+                              <>
+                                <ChoiceBtn
+                                  current={myVotes[o.id]}
+                                  value="yes"
+                                  onClick={() => setMyVotes({ ...myVotes, [o.id]: "yes" })}
+                                />
+                                <ChoiceBtn
+                                  current={myVotes[o.id]}
+                                  value="maybe"
+                                  onClick={() => setMyVotes({ ...myVotes, [o.id]: "maybe" })}
+                                />
+                                <ChoiceBtn
+                                  current={myVotes[o.id]}
+                                  value="no"
+                                  onClick={() => setMyVotes({ ...myVotes, [o.id]: "no" })}
+                                />
+                              </>
+                            )}
                           </div>
                         </td>
                       )}
