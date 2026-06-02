@@ -85,6 +85,7 @@ import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot
 import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
 import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/public/bot/mc-link-confirm'
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
+import { Route as ApiStaffMembersIdNotesRouteImport } from './routes/api/staff/members.$id.notes'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
 import { Route as ApiPublicBotQueryDonValiderRouteImport } from './routes/api/public/bot/query/don-valider'
@@ -505,6 +506,11 @@ const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
   path: '/api/public/bot/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStaffMembersIdNotesRoute = ApiStaffMembersIdNotesRouteImport.update({
+  id: '/api/staff/members/$id/notes',
+  path: '/api/staff/members/$id/notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicBotQueryProfilRoute = ApiPublicBotQueryProfilRouteImport.update({
   id: '/api/public/bot/query/profil',
   path: '/api/public/bot/query/profil',
@@ -608,6 +614,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
   '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
+  '/api/staff/members/$id/notes': typeof ApiStaffMembersIdNotesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -687,6 +694,7 @@ export interface FileRoutesByTo {
   '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
   '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
+  '/api/staff/members/$id/notes': typeof ApiStaffMembersIdNotesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -770,6 +778,7 @@ export interface FileRoutesById {
   '/api/public/bot/query/don-valider': typeof ApiPublicBotQueryDonValiderRoute
   '/api/public/bot/query/points': typeof ApiPublicBotQueryPointsRoute
   '/api/public/bot/query/profil': typeof ApiPublicBotQueryProfilRoute
+  '/api/staff/members/$id/notes': typeof ApiStaffMembersIdNotesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -853,6 +862,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/query/don-valider'
     | '/api/public/bot/query/points'
     | '/api/public/bot/query/profil'
+    | '/api/staff/members/$id/notes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -932,6 +942,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/query/don-valider'
     | '/api/public/bot/query/points'
     | '/api/public/bot/query/profil'
+    | '/api/staff/members/$id/notes'
   id:
     | '__root__'
     | '/'
@@ -1014,6 +1025,7 @@ export interface FileRouteTypes {
     | '/api/public/bot/query/don-valider'
     | '/api/public/bot/query/points'
     | '/api/public/bot/query/profil'
+    | '/api/staff/members/$id/notes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1052,6 +1064,7 @@ export interface RootRouteChildren {
   ApiPublicBotQueryDonValiderRoute: typeof ApiPublicBotQueryDonValiderRoute
   ApiPublicBotQueryPointsRoute: typeof ApiPublicBotQueryPointsRoute
   ApiPublicBotQueryProfilRoute: typeof ApiPublicBotQueryProfilRoute
+  ApiStaffMembersIdNotesRoute: typeof ApiStaffMembersIdNotesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1588,6 +1601,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBotImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/staff/members/$id/notes': {
+      id: '/api/staff/members/$id/notes'
+      path: '/api/staff/members/$id/notes'
+      fullPath: '/api/staff/members/$id/notes'
+      preLoaderRoute: typeof ApiStaffMembersIdNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/bot/query/profil': {
       id: '/api/public/bot/query/profil'
       path: '/api/public/bot/query/profil'
@@ -1804,6 +1824,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBotQueryDonValiderRoute: ApiPublicBotQueryDonValiderRoute,
   ApiPublicBotQueryPointsRoute: ApiPublicBotQueryPointsRoute,
   ApiPublicBotQueryProfilRoute: ApiPublicBotQueryProfilRoute,
+  ApiStaffMembersIdNotesRoute: ApiStaffMembersIdNotesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
