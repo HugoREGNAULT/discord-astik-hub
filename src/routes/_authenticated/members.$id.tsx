@@ -244,6 +244,8 @@ function MemberDetail() {
           noteInput={note}
           onNoteInputChange={setNote}
           onAdd={() => mNote.mutate()}
+          onDelete={(noteId) => mDeleteNote.mutate(noteId)}
+          deletingId={mDeleteNote.isPending ? (mDeleteNote.variables as string) : null}
         />
       )}
 
