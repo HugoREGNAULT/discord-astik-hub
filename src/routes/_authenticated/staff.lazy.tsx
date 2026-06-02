@@ -1628,6 +1628,19 @@ function NeverConnectedRow({
           <div className="text-[11px] text-muted-foreground truncate">
             @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
           </div>
+          {member.last_dm_at ? (
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 truncate">
+              Relancé le{" "}
+              {new Date(member.last_dm_at).toLocaleString("fr-FR", {
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
+          ) : (
+            <div className="text-[10px] text-muted-foreground/70 truncate">Jamais relancé</div>
+          )}
         </div>
       </Link>
       <Button
