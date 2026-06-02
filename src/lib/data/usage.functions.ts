@@ -131,7 +131,9 @@ export const getUsageStats = createServerFn({ method: "GET" })
       const { data: members } = await db
         .from("members")
         .select("discord_id, discord_username, ig_name, avatar_url")
-        .in("discord_id", ids);
+        .in("discord_id", ids)
+        .eq("status", "active");
+
       const byId = new Map((members ?? []).map((m) => [m.discord_id, m]));
       topUsers = topUserIds.map(([id, views]) => {
         const m = byId.get(id);
