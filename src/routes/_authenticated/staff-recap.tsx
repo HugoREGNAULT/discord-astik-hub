@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowDownRight, ArrowUpRight, Coins, ShoppingCart, UserMinus } from "lucide-react";
 import { getStaffRecap, type StaffRecap } from "@/lib/data/staff-recap.functions";
 
-export const Route = createFileRoute("/_authenticated/staff/recap")({
+export const Route = createFileRoute("/_authenticated/staff-recap")({
   errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Récap staff · PunkAstik" }] }),
   component: RecapPage,
