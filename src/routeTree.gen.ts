@@ -21,6 +21,7 @@ import { Route as AuthenticatedValuesRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedStaffRecapRouteImport } from './routes/_authenticated/staff-recap'
+import { Route as AuthenticatedStaffAnalyticsRouteImport } from './routes/_authenticated/staff-analytics'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
@@ -148,6 +149,12 @@ const AuthenticatedStaffRecapRoute = AuthenticatedStaffRecapRouteImport.update({
   path: '/staff-recap',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedStaffAnalyticsRoute =
+  AuthenticatedStaffAnalyticsRouteImport.update({
+    id: '/staff-analytics',
+    path: '/staff-analytics',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -546,6 +553,7 @@ export interface FileRoutesByFullPath {
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/staff-analytics': typeof AuthenticatedStaffAnalyticsRoute
   '/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
@@ -625,6 +633,7 @@ export interface FileRoutesByTo {
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/staff-analytics': typeof AuthenticatedStaffAnalyticsRoute
   '/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/trials': typeof AuthenticatedTrialsRoute
   '/values': typeof AuthenticatedValuesRoute
@@ -706,6 +715,7 @@ export interface FileRoutesById {
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/_authenticated/staff-analytics': typeof AuthenticatedStaffAnalyticsRoute
   '/_authenticated/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
@@ -788,6 +798,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/shop'
     | '/staff'
+    | '/staff-analytics'
     | '/staff-recap'
     | '/tools'
     | '/trials'
@@ -867,6 +878,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/shop'
     | '/staff'
+    | '/staff-analytics'
     | '/staff-recap'
     | '/trials'
     | '/values'
@@ -947,6 +959,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recruitment'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
+    | '/_authenticated/staff-analytics'
     | '/_authenticated/staff-recap'
     | '/_authenticated/tools'
     | '/_authenticated/trials'
@@ -1125,6 +1138,13 @@ declare module '@tanstack/react-router' {
       path: '/staff-recap'
       fullPath: '/staff-recap'
       preLoaderRoute: typeof AuthenticatedStaffRecapRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/staff-analytics': {
+      id: '/_authenticated/staff-analytics'
+      path: '/staff-analytics'
+      fullPath: '/staff-analytics'
+      preLoaderRoute: typeof AuthenticatedStaffAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/staff': {
@@ -1704,6 +1724,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
+  AuthenticatedStaffAnalyticsRoute: typeof AuthenticatedStaffAnalyticsRoute
   AuthenticatedStaffRecapRoute: typeof AuthenticatedStaffRecapRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
@@ -1731,6 +1752,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
+  AuthenticatedStaffAnalyticsRoute: AuthenticatedStaffAnalyticsRoute,
   AuthenticatedStaffRecapRoute: AuthenticatedStaffRecapRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
