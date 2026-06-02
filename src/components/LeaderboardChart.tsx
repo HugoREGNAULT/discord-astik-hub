@@ -58,6 +58,19 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
   const data = useMemo(() => {
     if (top3.length === 0) return [];
     const allowed = new Set(top3.map((e) => e.discord_id));
+    // Append a synthetic "now" snapshot from live totals so the chart reflects
+    // the most recent updates without waiting for the next hourly capture.
+    const nowIso = new Date().toISOString();
+    const liveSnapshots: Snapshot[] = top3.map((e) => ({
+      taken_at: nowIso,
+      discord_id: e.discord_id,
+      astik_points: Number(e.astik_points ?? 0),
+      voice_total_seconds: Number(e.voice_total_seconds ?? 0),
+      voice_7d_seconds: Number(e.voice_7d_seconds ?? 0),
+      messages_total: Number(e.messages_total ?? 0),
+      messages_7d: Number(e.messages_7d ?? 0),
+    }));
+    snapshots = [...snapshots, ...liveSnapshots];
     // Filtre la fenêtre temporelle
     const cutoff = period === "all" ? 0 : Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
     // Baseline par membre = dernière valeur connue <= cutoff
