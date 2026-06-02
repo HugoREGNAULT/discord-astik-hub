@@ -99,30 +99,51 @@ export const createPoll = createServerFn({ method: "POST" })
         title: data.title,
         description: data.description ?? null,
         location: data.location ?? null,
+        kind: data.kind,
+        question_mode: data.kind === "question" ? data.questionMode : null,
         created_by_discord_id: user.discordId,
         created_by_username: user.username,
-      })
+      } as any)
       .select()
       .single();
     if (error || !poll) throw new Error(error?.message ?? "insert failed");
 
-    const optRows = data.options.map((o, i) => ({
-      poll_id: poll.id,
-      starts_at: new Date(o.startsAt).toISOString(),
-      duration_minutes: o.durationMinutes,
-      display_order: i,
-    }));
+    let optRows: any[];
+    if (data.kind === "schedule") {
+      optRows = data.options.map((o, i) => ({
+        poll_id: poll.id,
+        starts_at: new Date(o.startsAt).toISOString(),
+        duration_minutes: o.durationMinutes,
+        display_order: i,
+      }));
+    } else {
+      const choices: ("yes" | "maybe" | "no")[] =
+        data.questionMode === "yes_no_maybe" ? ["yes", "maybe", "no"] : ["yes", "no"];
+      optRows = choices.map((c, i) => ({
+        poll_id: poll.id,
+        label: QUESTION_LABELS[c],
+        display_order: i,
+      }));
+    }
     const { error: oe } = await db.from("poll_options").insert(optRows);
     if (oe) throw new Error(oe.message);
 
-    await logAction("poll_create", user.discordId, { id: poll.id, title: poll.title });
+    await logAction("poll_create", user.discordId, {
+      id: poll.id,
+      title: poll.title,
+      kind: data.kind,
+    });
     await logToDiscord("site", {
-      title: "📅 Nouveau sondage",
+      title: data.kind === "schedule" ? "📅 Nouveau sondage" : "❓ Nouveau sondage",
       color: COLORS.info,
       description: `**${poll.title}**${poll.location ? `\n📍 ${poll.location}` : ""}`,
       fields: [
         { name: "Créé par", value: user.username, inline: true },
-        { name: "Créneaux", value: String(optRows.length), inline: true },
+        {
+          name: data.kind === "schedule" ? "Créneaux" : "Options",
+          value: String(optRows.length),
+          inline: true,
+        },
       ],
     });
     return { id: poll.id };
@@ -146,11 +167,20 @@ export const castVote = createServerFn({ method: "POST" })
 
     const { data: poll } = await db
       .from("polls")
-      .select("status")
+      .select("status,kind")
       .eq("id", data.pollId)
       .maybeSingle();
     if (!poll) throw new Error("NOT_FOUND");
     if (poll.status !== "open") throw new Error("CLOSED");
+
+    // Question polls = single choice per voter: clear previous vote on this poll first.
+    if ((poll as any).kind === "question") {
+      await db
+        .from("poll_votes")
+        .delete()
+        .eq("poll_id", data.pollId)
+        .eq("voter_discord_id", user.discordId);
+    }
 
     const rows = data.votes.map((v) => ({
       poll_id: data.pollId,
