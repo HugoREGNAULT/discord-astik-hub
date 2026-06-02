@@ -60,6 +60,7 @@ import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
 import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authenticated/tools.check-bc'
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
+import { Route as AuthenticatedStaffRecapRouteImport } from './routes/_authenticated/staff.recap'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
@@ -360,6 +361,11 @@ const AuthenticatedToolsAlertsRoute =
     path: '/alerts',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
+const AuthenticatedStaffRecapRoute = AuthenticatedStaffRecapRouteImport.update({
+  id: '/recap',
+  path: '/recap',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
 const AuthenticatedStaffAppealsRoute =
   AuthenticatedStaffAppealsRouteImport.update({
     id: '/appeals',
@@ -550,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
+  '/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -627,6 +634,7 @@ export interface FileRoutesByTo {
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
+  '/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -708,6 +716,7 @@ export interface FileRoutesById {
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
+  '/_authenticated/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/_authenticated/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -789,6 +798,7 @@ export interface FileRouteTypes {
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
+    | '/staff/recap'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -866,6 +876,7 @@ export interface FileRouteTypes {
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
+    | '/staff/recap'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -946,6 +957,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls/$id'
     | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
+    | '/_authenticated/staff/recap'
     | '/_authenticated/tools/alerts'
     | '/_authenticated/tools/check-bc'
     | '/_authenticated/tools/clicker'
@@ -1388,6 +1400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsAlertsRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
+    '/_authenticated/staff/recap': {
+      id: '/_authenticated/staff/recap'
+      path: '/recap'
+      fullPath: '/staff/recap'
+      preLoaderRoute: typeof AuthenticatedStaffRecapRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/_authenticated/staff/appeals': {
       id: '/_authenticated/staff/appeals'
       path: '/appeals'
@@ -1618,11 +1637,13 @@ const AuthenticatedPollsRouteWithChildren =
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
+  AuthenticatedStaffRecapRoute: typeof AuthenticatedStaffRecapRoute
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffAnnounceRoute: AuthenticatedStaffAnnounceRoute,
   AuthenticatedStaffAppealsRoute: AuthenticatedStaffAppealsRoute,
+  AuthenticatedStaffRecapRoute: AuthenticatedStaffRecapRoute,
 }
 
 const AuthenticatedStaffRouteWithChildren =
