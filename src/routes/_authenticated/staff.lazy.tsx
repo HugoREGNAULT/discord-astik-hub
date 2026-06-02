@@ -1541,7 +1541,9 @@ function NeverConnectedCard() {
     queryKey: ["never-connected"],
     queryFn: () => fn(),
     refetchInterval: 60_000,
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
     });
 
   return (
