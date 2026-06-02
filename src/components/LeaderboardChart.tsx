@@ -77,7 +77,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
     const baseline = new Map<string, number>();
     if (period !== "all") {
       const best = new Map<string, { t: number; v: number }>();
-      for (const s of snapshots) {
+      for (const s of allSnapshots) {
         if (!allowed.has(s.discord_id)) continue;
         const t = new Date(s.taken_at).getTime();
         if (t > cutoff) continue;
