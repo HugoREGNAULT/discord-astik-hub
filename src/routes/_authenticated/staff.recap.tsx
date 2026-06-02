@@ -34,6 +34,7 @@ function RecapPage() {
   return (
     <Guard perm="members.view">
       <PageHeader
+        code="STAFF/RECAP"
         title="Récap staff"
         description="Vue d'ensemble : classement Punk, ventes membres, absents."
       />
