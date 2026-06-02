@@ -48,7 +48,6 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
 
   const canNote = hasPerm(me, "notes.write");
   const canWarn = hasPerm(me, "warnings.write");
-  if (!canNote && !canWarn) return null;
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["member", memberDiscordId] });
