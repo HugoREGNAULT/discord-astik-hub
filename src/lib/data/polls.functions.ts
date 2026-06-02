@@ -339,3 +339,28 @@ export const importPollVotes = createServerFn({ method: "POST" })
 
     return { ok: true, voters: data.voters.length, votes: rows.length };
   });
+
+/**
+ * Liste les membres du Discord privé (faction) pour calculer les non-votants.
+ * Réservé aux membres faction (sondage = faction-only).
+ */
+export const listPollEligibleVoters = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  if (!isFactionMember(user)) throw new Error("FORBIDDEN");
+  const { listAllGuildMembers } = await import("@/lib/discord/api.server");
+  const { GUILDS } = await import("@/lib/discord/constants");
+  try {
+    const members = await listAllGuildMembers(GUILDS.FACTION);
+    const list = members
+      .filter((m) => m.user && !m.user.bot)
+      .map((m) => ({
+        discord_id: m.user!.id,
+        username: m.nick || m.user!.global_name || m.user!.username,
+      }));
+    return { members: list };
+  } catch (e: any) {
+    console.error("[listPollEligibleVoters] failed", e?.message);
+    return { members: [] as { discord_id: string; username: string }[] };
+  }
+});
+
