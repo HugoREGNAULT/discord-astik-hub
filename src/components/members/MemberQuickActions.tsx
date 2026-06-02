@@ -169,7 +169,7 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="warn-body">Motif (envoyé en DM au membre)</Label>
+              <Label htmlFor="warn-body">Motif (interne staff, pas envoyé au membre)</Label>
               <Textarea
                 id="warn-body"
                 value={warnBody}
