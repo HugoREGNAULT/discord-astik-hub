@@ -20,6 +20,7 @@ import {
   getMemberDetail,
   updateMember,
   addNote,
+  deleteNote,
   addWarning,
   addAlt,
   removeAlt,
@@ -77,6 +78,7 @@ function MemberDetail() {
   const getDonationsFn = useServerFn(getMemberDonations);
   const update = useServerFn(updateMember);
   const noteFn = useServerFn(addNote);
+  const deleteNoteFn = useServerFn(deleteNote);
   const warnFn = useServerFn(addWarning);
   const altAddFn = useServerFn(addAlt);
   const altRmFn = useServerFn(removeAlt);
@@ -115,6 +117,14 @@ function MemberDetail() {
       toast.success("Note ajoutée");
       refresh();
     },
+  });
+  const mDeleteNote = useMutation({
+    mutationFn: (noteId: string) => deleteNoteFn({ data: { id: noteId } }),
+    onSuccess: () => {
+      toast.success("Note supprimée");
+      refresh();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
   });
   const mWarn = useMutation({
     mutationFn: () => warnFn({ data: { memberDiscordId: id, body: warn } }),
@@ -234,6 +244,8 @@ function MemberDetail() {
           noteInput={note}
           onNoteInputChange={setNote}
           onAdd={() => mNote.mutate()}
+          onDelete={(noteId) => mDeleteNote.mutate(noteId)}
+          deletingId={mDeleteNote.isPending ? (mDeleteNote.variables as string) : null}
         />
       )}
 
