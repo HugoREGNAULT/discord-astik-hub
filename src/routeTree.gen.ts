@@ -20,6 +20,7 @@ import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedValuesRouteImport } from './routes/_authenticated/values'
 import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
+import { Route as AuthenticatedStaffRecapRouteImport } from './routes/_authenticated/staff-recap'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
@@ -60,7 +61,6 @@ import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
 import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authenticated/tools.check-bc'
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
-import { Route as AuthenticatedStaffRecapRouteImport } from './routes/_authenticated/staff.recap'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
@@ -141,6 +141,11 @@ const AuthenticatedTrialsRoute = AuthenticatedTrialsRouteImport.update({
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStaffRecapRoute = AuthenticatedStaffRecapRouteImport.update({
+  id: '/staff-recap',
+  path: '/staff-recap',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
@@ -361,11 +366,6 @@ const AuthenticatedToolsAlertsRoute =
     path: '/alerts',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
-const AuthenticatedStaffRecapRoute = AuthenticatedStaffRecapRouteImport.update({
-  id: '/recap',
-  path: '/recap',
-  getParentRoute: () => AuthenticatedStaffRoute,
-} as any)
 const AuthenticatedStaffAppealsRoute =
   AuthenticatedStaffAppealsRouteImport.update({
     id: '/appeals',
@@ -546,6 +546,7 @@ export interface FileRoutesByFullPath {
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
   '/values': typeof AuthenticatedValuesRoute
@@ -556,7 +557,6 @@ export interface FileRoutesByFullPath {
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
-  '/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -625,6 +625,7 @@ export interface FileRoutesByTo {
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/trials': typeof AuthenticatedTrialsRoute
   '/values': typeof AuthenticatedValuesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
@@ -634,7 +635,6 @@ export interface FileRoutesByTo {
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
-  '/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -706,6 +706,7 @@ export interface FileRoutesById {
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
+  '/_authenticated/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
   '/_authenticated/values': typeof AuthenticatedValuesRoute
@@ -716,7 +717,6 @@ export interface FileRoutesById {
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
-  '/_authenticated/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/_authenticated/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -788,6 +788,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/shop'
     | '/staff'
+    | '/staff-recap'
     | '/tools'
     | '/trials'
     | '/values'
@@ -798,7 +799,6 @@ export interface FileRouteTypes {
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
-    | '/staff/recap'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -867,6 +867,7 @@ export interface FileRouteTypes {
     | '/recruitment'
     | '/shop'
     | '/staff'
+    | '/staff-recap'
     | '/trials'
     | '/values'
     | '/welcome'
@@ -876,7 +877,6 @@ export interface FileRouteTypes {
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
-    | '/staff/recap'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -947,6 +947,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recruitment'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
+    | '/_authenticated/staff-recap'
     | '/_authenticated/tools'
     | '/_authenticated/trials'
     | '/_authenticated/values'
@@ -957,7 +958,6 @@ export interface FileRouteTypes {
     | '/_authenticated/polls/$id'
     | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
-    | '/_authenticated/staff/recap'
     | '/_authenticated/tools/alerts'
     | '/_authenticated/tools/check-bc'
     | '/_authenticated/tools/clicker'
@@ -1118,6 +1118,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/staff-recap': {
+      id: '/_authenticated/staff-recap'
+      path: '/staff-recap'
+      fullPath: '/staff-recap'
+      preLoaderRoute: typeof AuthenticatedStaffRecapRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/staff': {
@@ -1400,13 +1407,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedToolsAlertsRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
-    '/_authenticated/staff/recap': {
-      id: '/_authenticated/staff/recap'
-      path: '/recap'
-      fullPath: '/staff/recap'
-      preLoaderRoute: typeof AuthenticatedStaffRecapRouteImport
-      parentRoute: typeof AuthenticatedStaffRoute
-    }
     '/_authenticated/staff/appeals': {
       id: '/_authenticated/staff/appeals'
       path: '/appeals'
@@ -1637,13 +1637,11 @@ const AuthenticatedPollsRouteWithChildren =
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
-  AuthenticatedStaffRecapRoute: typeof AuthenticatedStaffRecapRoute
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffAnnounceRoute: AuthenticatedStaffAnnounceRoute,
   AuthenticatedStaffAppealsRoute: AuthenticatedStaffAppealsRoute,
-  AuthenticatedStaffRecapRoute: AuthenticatedStaffRecapRoute,
 }
 
 const AuthenticatedStaffRouteWithChildren =
@@ -1706,6 +1704,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
+  AuthenticatedStaffRecapRoute: typeof AuthenticatedStaffRecapRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
   AuthenticatedValuesRoute: typeof AuthenticatedValuesRoute
@@ -1732,6 +1731,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
+  AuthenticatedStaffRecapRoute: AuthenticatedStaffRecapRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
   AuthenticatedValuesRoute: AuthenticatedValuesRoute,
