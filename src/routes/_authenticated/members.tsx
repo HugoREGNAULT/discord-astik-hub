@@ -154,6 +154,10 @@ function MembersPage() {
                 AstikPoints
               </div>
             </div>
+            <MemberQuickActions
+              memberDiscordId={m.discord_id}
+              memberLabel={m.ig_name ?? m.discord_username ?? m.discord_id}
+            />
           </Link>
         ))}
         {members.length === 0 && !isLoading && !error && <EmptyBlock label="Aucun membre — ajuste filtres" />}
