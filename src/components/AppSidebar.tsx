@@ -21,6 +21,7 @@ import {
   Megaphone,
   Eye,
   Award,
+  BarChart3,
 } from "lucide-react";
 
 import {
