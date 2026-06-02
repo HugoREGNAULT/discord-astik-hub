@@ -1589,9 +1589,11 @@ function NeverConnectedRow({
     discord_username?: string | null;
     avatar_url?: string | null;
     current_grade?: string | null;
+    last_dm_at?: string | null;
   };
 }) {
   const dmFn = useServerFn(dmMember);
+  const queryClient = useQueryClient();
   const [dmOpen, setDmOpen] = useState(false);
   const [dmContent, setDmContent] = useState(
     `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nT'as toujours pas activé ton compte sur le site de la faction ! Va faire un tour ici : https://punkastik.com\n\nTu pourras y voir tes points, poser des absences, suivre les classements, etc. 🚀`,
@@ -1602,6 +1604,7 @@ function NeverConnectedRow({
     onSuccess: () => {
       toast.success("DM envoyé");
       setDmOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["never-connected"] });
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
