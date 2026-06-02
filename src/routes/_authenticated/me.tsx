@@ -44,6 +44,17 @@ function MyProfile() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* --- BOUTON TEST — ajouté en local via Claude Code pour valider le workflow GitHub → Lovable --- */}
+      <Button
+        variant="destructive"
+        onClick={() =>
+          toast.success("✅ Bouton test OK — workflow Claude Code → GitHub → Lovable fonctionnel !")
+        }
+        className="h-16 w-full text-lg font-bold"
+      >
+        🚧 BOUTON TEST 🚧
+      </Button>
+
       <div className="flex items-center gap-4">
         {m.avatar_url ? (
           <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
@@ -85,9 +96,7 @@ function MyProfile() {
               </span>
             </div>
           ) : (
-            <div className="text-muted-foreground">
-              Aucune connexion précédente enregistrée.
-            </div>
+            <div className="text-muted-foreground">Aucune connexion précédente enregistrée.</div>
           )}
           {data.currentLoginAt && (
             <div className="text-xs text-muted-foreground">
@@ -99,7 +108,6 @@ function MyProfile() {
           )}
         </CardContent>
       </Card>
-
 
       {data.recruiter && (
         <Card>
@@ -117,10 +125,7 @@ function MyProfile() {
         </Card>
       )}
 
-      <MinecraftAccountCard
-        mcUuid={m.mc_uuid}
-        igName={m.ig_name}
-      />
+      <MinecraftAccountCard mcUuid={m.mc_uuid} igName={m.ig_name} />
 
       <GamificationCard scope="member" discordId={m.discord_id} />
 
@@ -164,9 +169,7 @@ function MyProfile() {
                       {new Date(p.created_at).toLocaleString("fr-FR")}
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground font-mono">
-                    → {p.total_after}
-                  </span>
+                  <span className="text-xs text-muted-foreground font-mono">→ {p.total_after}</span>
                 </li>
               ))}
             </ul>
@@ -275,9 +278,7 @@ function MinecraftAccountCard({
             />
             <div className="flex-1 min-w-0">
               <div className="font-semibold">{igName ?? "—"}</div>
-              <div className="text-[11px] font-mono text-muted-foreground truncate">
-                {mcUuid}
-              </div>
+              <div className="text-[11px] font-mono text-muted-foreground truncate">{mcUuid}</div>
             </div>
             <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
               Modifier
@@ -304,8 +305,8 @@ function MinecraftAccountCard({
                 {mutation.isPending
                   ? "Vérification…"
                   : mcUuid
-                  ? "Mettre à jour"
-                  : "Lier mon compte"}
+                    ? "Mettre à jour"
+                    : "Lier mon compte"}
               </Button>
               {mcUuid && (
                 <Button
