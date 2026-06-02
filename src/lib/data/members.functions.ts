@@ -322,11 +322,7 @@ export const addWarning = createServerFn({ method: "POST" })
       severity: data.severity,
       category: data.category,
     });
-    const { sendDiscordDM } = await import("@/lib/discord/dm.server");
-    void sendDiscordDM(
-      data.memberDiscordId,
-      `⚠️ **Avertissement (${data.severity})** : ${data.body}\n\nTu peux contester depuis ta page /me sur le site.`,
-    );
+    // Pas de DM au membre pour les avertissements (décision staff).
     // Récap dans le salon staff (corps tronqué pour éviter de divulguer du sensible)
     const { postNotify, COLORS } = await import("@/lib/discord/log.server");
     const { NOTIFY_CHANNELS } = await import("@/lib/discord/constants");
@@ -380,11 +376,7 @@ export const revokeWarning = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     await logAction("warning_revoke", user.discordId, { target: w.member_discord_id, id: data.id });
-    const { sendDiscordDM } = await import("@/lib/discord/dm.server");
-    void sendDiscordDM(
-      w.member_discord_id,
-      `✅ **Avertissement annulé** : ${w.body}\nMotif : ${data.reason}`,
-    );
+    // Pas de DM au membre lors de la révocation.
     return { ok: true };
   });
 
