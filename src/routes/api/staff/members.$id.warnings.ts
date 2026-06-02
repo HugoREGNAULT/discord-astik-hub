@@ -110,18 +110,7 @@ export const Route = createFileRoute("/api/staff/members/$id/warnings")({
           via: "api",
         });
 
-        // Notif Discord DM + canal staff (fire-and-forget)
-        void (async () => {
-          try {
-            const { sendDiscordDM } = await import("@/lib/discord/dm.server");
-            await sendDiscordDM(
-              params.id,
-              `⚠️ **Avertissement (${parsed.data.severity})** : ${parsed.data.body}\n\nTu peux contester depuis ta page /me sur le site.`,
-            );
-          } catch {
-            /* best-effort */
-          }
-        })();
+        // Pas de DM au membre pour les avertissements (décision staff).
 
         return Response.json({ warning: inserted }, { status: 201 });
       },
