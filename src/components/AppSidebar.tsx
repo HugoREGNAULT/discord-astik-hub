@@ -21,6 +21,7 @@ import {
   Megaphone,
   Eye,
   Award,
+  BarChart3,
 } from "lucide-react";
 
 import {
@@ -147,6 +148,13 @@ const SECTIONS: Section[] = [
         title: "Récap",
         url: "/staff-recap",
         icon: Eye,
+        perm: "members.view",
+        accent: "pink",
+      },
+      {
+        title: "Analytics site",
+        url: "/staff-analytics",
+        icon: BarChart3,
         perm: "members.view",
         accent: "pink",
       },
