@@ -19,7 +19,7 @@ import {
   Wrench,
   Bell,
   Megaphone,
-  Pickaxe,
+  Eye,
   Award,
 } from "lucide-react";
 
