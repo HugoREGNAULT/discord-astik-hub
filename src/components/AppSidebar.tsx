@@ -145,7 +145,7 @@ const SECTIONS: Section[] = [
       },
       {
         title: "Récap",
-        url: "/staff/recap",
+        url: "/staff-recap",
         icon: Eye,
         perm: "members.view",
         accent: "pink",
