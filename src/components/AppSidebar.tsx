@@ -19,7 +19,7 @@ import {
   Wrench,
   Bell,
   Megaphone,
-  Pickaxe,
+  Eye,
   Award,
 } from "lucide-react";
 
@@ -115,13 +115,6 @@ const SECTIONS: Section[] = [
         accent: "blurple",
       },
       {
-        title: "Suivi métiers",
-        url: "/jobs",
-        icon: Pickaxe,
-        perm: "profile.self",
-        accent: "pink",
-      },
-      {
         title: "Check BC",
         url: "/tools/check-bc",
         icon: ShieldAlert,
@@ -149,6 +142,13 @@ const SECTIONS: Section[] = [
         icon: LayoutDashboard,
         perm: "members.view",
         accent: "blurple",
+      },
+      {
+        title: "Récap",
+        url: "/staff/recap",
+        icon: Eye,
+        perm: "members.view",
+        accent: "pink",
       },
       { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
       {

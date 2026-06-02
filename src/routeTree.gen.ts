@@ -31,7 +31,6 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedLogisticsRouteImport } from './routes/_authenticated/logistics'
-import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authenticated/faction-economy'
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -61,6 +60,7 @@ import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
 import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authenticated/tools.check-bc'
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
+import { Route as AuthenticatedStaffRecapRouteImport } from './routes/_authenticated/staff.recap'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
 import { Route as AuthenticatedPollsIdRouteImport } from './routes/_authenticated/polls.$id'
@@ -201,11 +201,6 @@ const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
 const AuthenticatedLogisticsRoute = AuthenticatedLogisticsRouteImport.update({
   id: '/logistics',
   path: '/logistics',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
-  id: '/jobs',
-  path: '/jobs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedFactionEconomyRoute =
@@ -366,6 +361,11 @@ const AuthenticatedToolsAlertsRoute =
     path: '/alerts',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
+const AuthenticatedStaffRecapRoute = AuthenticatedStaffRecapRouteImport.update({
+  id: '/recap',
+  path: '/recap',
+  getParentRoute: () => AuthenticatedStaffRoute,
+} as any)
 const AuthenticatedStaffAppealsRoute =
   AuthenticatedStaffAppealsRouteImport.update({
     id: '/appeals',
@@ -535,7 +535,6 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/effectif': typeof AuthenticatedEffectifRoute
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
-  '/jobs': typeof AuthenticatedJobsRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -557,6 +556,7 @@ export interface FileRoutesByFullPath {
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
+  '/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -615,7 +615,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/effectif': typeof AuthenticatedEffectifRoute
   '/faction-economy': typeof AuthenticatedFactionEconomyRoute
-  '/jobs': typeof AuthenticatedJobsRoute
   '/logistics': typeof AuthenticatedLogisticsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -635,6 +634,7 @@ export interface FileRoutesByTo {
   '/polls/$id': typeof AuthenticatedPollsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
+  '/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -695,7 +695,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
   '/_authenticated/faction-economy': typeof AuthenticatedFactionEconomyRoute
-  '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/logistics': typeof AuthenticatedLogisticsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -717,6 +716,7 @@ export interface FileRoutesById {
   '/_authenticated/polls/$id': typeof AuthenticatedPollsIdRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
+  '/_authenticated/staff/recap': typeof AuthenticatedStaffRecapRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
   '/_authenticated/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
@@ -777,7 +777,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/effectif'
     | '/faction-economy'
-    | '/jobs'
     | '/logistics'
     | '/logs'
     | '/me'
@@ -799,6 +798,7 @@ export interface FileRouteTypes {
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
+    | '/staff/recap'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -857,7 +857,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/effectif'
     | '/faction-economy'
-    | '/jobs'
     | '/logistics'
     | '/logs'
     | '/me'
@@ -877,6 +876,7 @@ export interface FileRouteTypes {
     | '/polls/$id'
     | '/staff/announce'
     | '/staff/appeals'
+    | '/staff/recap'
     | '/tools/alerts'
     | '/tools/check-bc'
     | '/tools/clicker'
@@ -936,7 +936,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/effectif'
     | '/_authenticated/faction-economy'
-    | '/_authenticated/jobs'
     | '/_authenticated/logistics'
     | '/_authenticated/logs'
     | '/_authenticated/me'
@@ -958,6 +957,7 @@ export interface FileRouteTypes {
     | '/_authenticated/polls/$id'
     | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
+    | '/_authenticated/staff/recap'
     | '/_authenticated/tools/alerts'
     | '/_authenticated/tools/check-bc'
     | '/_authenticated/tools/clicker'
@@ -1197,13 +1197,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLogisticsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/jobs': {
-      id: '/_authenticated/jobs'
-      path: '/jobs'
-      fullPath: '/jobs'
-      preLoaderRoute: typeof AuthenticatedJobsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/faction-economy': {
       id: '/_authenticated/faction-economy'
       path: '/faction-economy'
@@ -1406,6 +1399,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tools/alerts'
       preLoaderRoute: typeof AuthenticatedToolsAlertsRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
+    }
+    '/_authenticated/staff/recap': {
+      id: '/_authenticated/staff/recap'
+      path: '/recap'
+      fullPath: '/staff/recap'
+      preLoaderRoute: typeof AuthenticatedStaffRecapRouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
     }
     '/_authenticated/staff/appeals': {
       id: '/_authenticated/staff/appeals'
@@ -1637,11 +1637,13 @@ const AuthenticatedPollsRouteWithChildren =
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
+  AuthenticatedStaffRecapRoute: typeof AuthenticatedStaffRecapRoute
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffAnnounceRoute: AuthenticatedStaffAnnounceRoute,
   AuthenticatedStaffAppealsRoute: AuthenticatedStaffAppealsRoute,
+  AuthenticatedStaffRecapRoute: AuthenticatedStaffRecapRoute,
 }
 
 const AuthenticatedStaffRouteWithChildren =
@@ -1693,7 +1695,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
   AuthenticatedFactionEconomyRoute: typeof AuthenticatedFactionEconomyRoute
-  AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLogisticsRoute: typeof AuthenticatedLogisticsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1720,7 +1721,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
   AuthenticatedFactionEconomyRoute: AuthenticatedFactionEconomyRoute,
-  AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLogisticsRoute: AuthenticatedLogisticsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,

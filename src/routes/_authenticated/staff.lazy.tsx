@@ -2209,7 +2209,6 @@ function MissingMcRow({
       toast.success(`Compte lié : ${r.igName}`);
       setOpen(false);
       qc.invalidateQueries({ queryKey: ["missing-mc"] });
-      qc.invalidateQueries({ queryKey: ["faction-jobs"] });
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
@@ -2219,7 +2218,7 @@ function MissingMcRow({
       dmFn({
         data: {
           memberDiscordId: member.discord_id,
-          content: `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nPense à renseigner ton pseudo Minecraft sur https://punkastik.com/me pour apparaître dans le suivi métiers et l'économie faction !`,
+          content: `Yo ${member.ig_name ?? member.discord_username ?? ""} 👋\n\nPense à renseigner ton pseudo Minecraft sur https://punkastik.com/me pour apparaître dans l'économie faction !`,
         },
       }),
     onSuccess: () => toast.success("DM envoyé"),
