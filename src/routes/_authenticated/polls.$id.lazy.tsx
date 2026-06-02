@@ -148,6 +148,8 @@ function PollDetail() {
   });
 
   const [myVotes, setMyVotes] = useState<Record<string, Choice>>({});
+  const isQuestion = data?.poll?.kind === "question";
+  const questionMode = (data?.poll?.question_mode ?? "yes_no_maybe") as "yes_no" | "yes_no_maybe";
 
   useEffect(() => {
     if (!data) return;
@@ -211,14 +213,18 @@ function PollDetail() {
   }, [data]);
 
   const voters = useMemo(() => {
-    if (!data) return [] as { id: string; name: string }[];
-    const map = new Map<string, string>();
+    if (!data) return [] as { id: string; name: string; choice?: Choice }[];
+    const map = new Map<string, { name: string; choice?: Choice }>();
     for (const v of data.votes as any[]) {
-      map.set(v.voter_discord_id, v.voter_username ?? v.voter_discord_id);
+      map.set(v.voter_discord_id, {
+        name: v.voter_username ?? v.voter_discord_id,
+        choice: v.choice as Choice,
+      });
     }
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+    return Array.from(map.entries()).map(([id, v]) => ({ id, name: v.name, choice: v.choice }));
   }, [data]);
 
+  // Liste des membres faction (utilisée pour l'import CSV des sondages planification).
   const membersFn = useServerFn(listMembers);
   const { data: membersData } = useQuery({
     queryKey: ["members", "active"],
@@ -226,10 +232,24 @@ function PollDetail() {
     enabled: canManage,
   });
   const activeMembers = (membersData?.members ?? []) as any[];
+
+  // Liste des membres du Discord privé pour calculer les non-votants.
+  const eligibleFn = useServerFn(listPollEligibleVoters);
+  const { data: eligibleData } = useQuery({
+    queryKey: ["poll-eligible-voters"],
+    queryFn: () => eligibleFn(),
+    enabled: canManage,
+    staleTime: 5 * 60 * 1000,
+  });
+  const eligibleMembers = (eligibleData?.members ?? []) as {
+    discord_id: string;
+    username: string;
+  }[];
+
   const voterIds = useMemo(() => new Set(voters.map((v) => v.id)), [voters]);
   const nonVoters = useMemo(
-    () => activeMembers.filter((m) => !voterIds.has(m.discord_id)),
-    [activeMembers, voterIds],
+    () => eligibleMembers.filter((m) => !voterIds.has(m.discord_id)),
+    [eligibleMembers, voterIds],
   );
 
   if (meLoading || (isLoading && canVote)) return <DetailPageSkeleton />;
