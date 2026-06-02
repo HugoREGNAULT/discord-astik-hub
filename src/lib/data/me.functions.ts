@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { isFactionMember } from "@/lib/data/faction-members";
+import { ROLES } from "@/lib/discord/constants";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
@@ -28,6 +29,10 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
   if (error) throw new Error(error.message);
 
   if (!member) {
+    // Un visiteur connecté SANS le rôle MEMBER_FACTION ne doit pas devenir une fiche
+    // "active" : sinon il pollue l'effectif, les KPIs et la liste "risque de départ".
+    // On le marque "visitor" (exclu des requêtes .eq("status", "active")).
+    const isFactionRole = (user.roleIds ?? []).includes(ROLES.MEMBER_FACTION);
     const ins = await db
       .from("members")
       .insert({
@@ -36,7 +41,7 @@ export const getMyOverview = createServerFn({ method: "GET" }).handler(async () 
         avatar_url: user.avatar
           ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`
           : null,
-        status: "active",
+        status: isFactionRole ? "active" : "visitor",
       })
       .select("*")
       .single();
@@ -252,9 +257,7 @@ export const listMyWarnings = createServerFn({ method: "GET" }).handler(async ()
 
 export const submitWarningAppeal = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z
-      .object({ warningId: z.string().uuid(), message: z.string().min(10).max(2000) })
-      .parse(input),
+    z.object({ warningId: z.string().uuid(), message: z.string().min(10).max(2000) }).parse(input),
   )
   .handler(async ({ data }) => {
     const user = await requireSession();
@@ -300,23 +303,19 @@ export const submitWarningAppeal = createServerFn({ method: "POST" })
 
 /* ---------- Période d'essai : onboarding tasks (vue membre) ---------- */
 
-export const listMyOnboardingTasks = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const user = await requireSession();
-    const { data, error } = await db
-      .from("onboarding_tasks")
-      .select("*")
-      .eq("member_discord_id", user.discordId)
-      .order("display_order");
-    if (error) throw new Error(error.message);
-    return { tasks: data ?? [] };
-  },
-);
+export const listMyOnboardingTasks = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const { data, error } = await db
+    .from("onboarding_tasks")
+    .select("*")
+    .eq("member_discord_id", user.discordId)
+    .order("display_order");
+  if (error) throw new Error(error.message);
+  return { tasks: data ?? [] };
+});
 
 export const toggleMyOnboardingTask = createServerFn({ method: "POST" })
-  .inputValidator((input) =>
-    z.object({ id: z.string().uuid(), done: z.boolean() }).parse(input),
-  )
+  .inputValidator((input) => z.object({ id: z.string().uuid(), done: z.boolean() }).parse(input))
   .handler(async ({ data }) => {
     const user = await requireSession();
     const { data: row, error: fetchErr } = await db

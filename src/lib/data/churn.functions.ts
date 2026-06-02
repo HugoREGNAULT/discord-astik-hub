@@ -5,6 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db.server";
 import { requirePermission } from "@/lib/auth/require.server";
+import { filterFactionMembers } from "@/lib/data/faction-members";
 
 const DAY_MS = 86_400_000;
 
@@ -73,108 +74,107 @@ function slope(points: Array<{ x: number; y: number }>): number {
   return (n * sxy - sx * sy) / denom;
 }
 
-export const getChurnRisk = createServerFn({ method: "GET" }).handler(
-  async () => {
-    await requirePermission("members.view");
+export const getChurnRisk = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
 
-    const now = Date.now();
-    const since90Iso = new Date(now - 90 * DAY_MS).toISOString();
+  const now = Date.now();
+  const since90Iso = new Date(now - 90 * DAY_MS).toISOString();
 
-    const [membersRes, snapsRes] = await Promise.all([
-      db
-        .from("members")
-        .select(
-          "discord_id, ig_name, discord_username, avatar_url, messages_7d, voice_7d_seconds, arrival_date",
-        )
-        .eq("status", "active"),
-      db
-        .from("leaderboard_snapshots")
-        .select("discord_id, taken_at, messages_7d, voice_7d_seconds")
-        .gte("taken_at", since90Iso)
-        .limit(200_000),
-    ]);
+  const [membersRes, snapsRes] = await Promise.all([
+    db
+      .from("members")
+      .select(
+        "discord_id, ig_name, discord_username, avatar_url, messages_7d, voice_7d_seconds, arrival_date, current_grade, mc_uuid",
+      )
+      .eq("status", "active"),
+    db
+      .from("leaderboard_snapshots")
+      .select("discord_id, taken_at, messages_7d, voice_7d_seconds")
+      .gte("taken_at", since90Iso)
+      .limit(200_000),
+  ]);
 
-    const members = membersRes.data ?? [];
-    const snaps = snapsRes.data ?? [];
+  // N'évalue le risque de départ QUE sur les vrais membres faction. Sans ce filtre,
+  // les fiches "visiteur" auto-créées (status=active mais sans ig_name/grade/arrivée/uuid)
+  // polluaient la liste — cf. l'effectif qui filtre déjà via filterFactionMembers.
+  const members = filterFactionMembers(membersRes.data ?? []);
+  const snaps = snapsRes.data ?? [];
 
-    // Group snapshots per member: pour chaque jour, on garde la dernière mesure 7j cumulée.
-    const byMember = new Map<
-      string,
-      Array<{ day: number; messages7d: number; voice7d: number; ts: number }>
-    >();
-    for (const s of snaps) {
-      const ts = new Date(s.taken_at).getTime();
-      const day = Math.floor((now - ts) / DAY_MS); // 0 = aujourd'hui
-      const arr = byMember.get(s.discord_id) ?? [];
-      arr.push({
-        day,
-        messages7d: s.messages_7d ?? 0,
-        voice7d: s.voice_7d_seconds ?? 0,
-        ts,
-      });
-      byMember.set(s.discord_id, arr);
-    }
-
-    const rows: ChurnRow[] = members.map((m) => {
-      const series = (byMember.get(m.discord_id) ?? []).sort(
-        (a, b) => a.ts - b.ts,
-      );
-
-      // Moyenne 30j de référence (sur les snapshots les plus récents dans la fenêtre 0..30j)
-      const ref30 = series.filter((p) => p.day <= 30);
-      const avg30Messages =
-        ref30.length > 0
-          ? ref30.reduce((acc, p) => acc + p.messages7d, 0) / ref30.length
-          : (m.messages_7d ?? 0);
-      const avg30Voice =
-        ref30.length > 0
-          ? ref30.reduce((acc, p) => acc + p.voice7d, 0) / ref30.length
-          : (m.voice_7d_seconds ?? 0);
-
-      // Activité 7j actuelle
-      const cur = (m.messages_7d ?? 0) + (m.voice_7d_seconds ?? 0) / 60;
-      const ref = avg30Messages + avg30Voice / 60;
-      const activity_drop = ref <= 0 ? 0 : Math.max(0, (ref - cur) / ref);
-
-      // Pente sur 90j (présence = messages_7d normalisé)
-      const trendPoints = series.map((p) => ({
-        x: -p.day,
-        y: p.messages7d + p.voice7d / 60,
-      }));
-      const presence_trend = slope(trendPoints);
-
-      const tenure_days = m.arrival_date
-        ? Math.floor((now - new Date(m.arrival_date).getTime()) / DAY_MS)
-        : 0;
-
-      const factors: ChurnRow["factors"] = {
-        activity_drop,
-        presence_trend,
-        tenure_days,
-        messages_7d: m.messages_7d ?? 0,
-        voice_7d_seconds: m.voice_7d_seconds ?? 0,
-      };
-
-      return {
-        discord_id: m.discord_id,
-        ig_name: m.ig_name,
-        discord_username: m.discord_username,
-        avatar_url: m.avatar_url,
-        factors,
-        score: computeScore(factors),
-      };
+  // Group snapshots per member: pour chaque jour, on garde la dernière mesure 7j cumulée.
+  const byMember = new Map<
+    string,
+    Array<{ day: number; messages7d: number; voice7d: number; ts: number }>
+  >();
+  for (const s of snaps) {
+    const ts = new Date(s.taken_at).getTime();
+    const day = Math.floor((now - ts) / DAY_MS); // 0 = aujourd'hui
+    const arr = byMember.get(s.discord_id) ?? [];
+    arr.push({
+      day,
+      messages7d: s.messages_7d ?? 0,
+      voice7d: s.voice_7d_seconds ?? 0,
+      ts,
     });
+    byMember.set(s.discord_id, arr);
+  }
 
-    rows.sort((a, b) => b.score - a.score);
+  const rows: ChurnRow[] = members.map((m) => {
+    const series = (byMember.get(m.discord_id) ?? []).sort((a, b) => a.ts - b.ts);
+
+    // Moyenne 30j de référence (sur les snapshots les plus récents dans la fenêtre 0..30j)
+    const ref30 = series.filter((p) => p.day <= 30);
+    const avg30Messages =
+      ref30.length > 0
+        ? ref30.reduce((acc, p) => acc + p.messages7d, 0) / ref30.length
+        : (m.messages_7d ?? 0);
+    const avg30Voice =
+      ref30.length > 0
+        ? ref30.reduce((acc, p) => acc + p.voice7d, 0) / ref30.length
+        : (m.voice_7d_seconds ?? 0);
+
+    // Activité 7j actuelle
+    const cur = (m.messages_7d ?? 0) + (m.voice_7d_seconds ?? 0) / 60;
+    const ref = avg30Messages + avg30Voice / 60;
+    const activity_drop = ref <= 0 ? 0 : Math.max(0, (ref - cur) / ref);
+
+    // Pente sur 90j (présence = messages_7d normalisé)
+    const trendPoints = series.map((p) => ({
+      x: -p.day,
+      y: p.messages7d + p.voice7d / 60,
+    }));
+    const presence_trend = slope(trendPoints);
+
+    const tenure_days = m.arrival_date
+      ? Math.floor((now - new Date(m.arrival_date).getTime()) / DAY_MS)
+      : 0;
+
+    const factors: ChurnRow["factors"] = {
+      activity_drop,
+      presence_trend,
+      tenure_days,
+      messages_7d: m.messages_7d ?? 0,
+      voice_7d_seconds: m.voice_7d_seconds ?? 0,
+    };
 
     return {
-      rows: rows.slice(0, 30),
-      computedAt: new Date(now).toISOString(),
-      formula:
-        "score = 50·activity_drop(7j vs 30j) + 30·max(0, -slope_90j·10) + 20·tenure_risk(<180j)",
-    } satisfies ChurnPayload;
-  },
-);
+      discord_id: m.discord_id,
+      ig_name: m.ig_name,
+      discord_username: m.discord_username,
+      avatar_url: m.avatar_url,
+      factors,
+      score: computeScore(factors),
+    };
+  });
+
+  rows.sort((a, b) => b.score - a.score);
+
+  return {
+    rows: rows.slice(0, 30),
+    computedAt: new Date(now).toISOString(),
+    formula:
+      "score = 50·activity_drop(7j vs 30j) + 30·max(0, -slope_90j·10) + 20·tenure_risk(<180j)",
+  } satisfies ChurnPayload;
+});
 
 // =========================================================
 // Cohortes de rétention (par mois d'arrivée)
@@ -198,76 +198,71 @@ function ymKey(d: Date): string {
   return `${y}-${m}`;
 }
 
-export const getRetentionCohorts = createServerFn({ method: "GET" }).handler(
-  async () => {
-    await requirePermission("members.view");
+export const getRetentionCohorts = createServerFn({ method: "GET" }).handler(async () => {
+  await requirePermission("members.view");
 
-    const { data, error } = await db
-      .from("members")
-      .select("discord_id, arrival_date, status, updated_at")
-      .not("arrival_date", "is", null)
-      .limit(50_000);
-    if (error) throw new Error(error.message);
+  const { data, error } = await db
+    .from("members")
+    .select("discord_id, arrival_date, status, updated_at")
+    .not("arrival_date", "is", null)
+    .limit(50_000);
+  if (error) throw new Error(error.message);
 
-    const now = Date.now();
-    type Bucket = {
-      arrived: number;
-      stillM1: number;
-      stillM3: number;
-      stillM6: number;
-      eligibleM1: number;
-      eligibleM3: number;
-      eligibleM6: number;
+  const now = Date.now();
+  type Bucket = {
+    arrived: number;
+    stillM1: number;
+    stillM3: number;
+    stillM6: number;
+    eligibleM1: number;
+    eligibleM3: number;
+    eligibleM6: number;
+  };
+  const map = new Map<string, Bucket>();
+
+  for (const m of data ?? []) {
+    if (!m.arrival_date) continue;
+    const arrivedAt = new Date(m.arrival_date).getTime();
+    const key = ymKey(new Date(arrivedAt));
+    const b: Bucket =
+      map.get(key) ??
+      ({
+        arrived: 0,
+        stillM1: 0,
+        stillM3: 0,
+        stillM6: 0,
+        eligibleM1: 0,
+        eligibleM3: 0,
+        eligibleM6: 0,
+      } as Bucket);
+    b.arrived += 1;
+
+    const leftAt = m.status === "left" && m.updated_at ? new Date(m.updated_at).getTime() : null;
+
+    const checkMonth = (months: number, stillKey: keyof Bucket, eligKey: keyof Bucket) => {
+      const milestone = arrivedAt + months * 30 * DAY_MS;
+      if (milestone > now) return; // pas encore éligible
+      (b[eligKey] as number) += 1;
+      const stillActive = leftAt === null || leftAt >= milestone;
+      if (stillActive) (b[stillKey] as number) += 1;
     };
-    const map = new Map<string, Bucket>();
 
-    for (const m of data ?? []) {
-      if (!m.arrival_date) continue;
-      const arrivedAt = new Date(m.arrival_date).getTime();
-      const key = ymKey(new Date(arrivedAt));
-      const b: Bucket =
-        map.get(key) ??
-        ({
-          arrived: 0,
-          stillM1: 0,
-          stillM3: 0,
-          stillM6: 0,
-          eligibleM1: 0,
-          eligibleM3: 0,
-          eligibleM6: 0,
-        } as Bucket);
-      b.arrived += 1;
+    checkMonth(1, "stillM1", "eligibleM1");
+    checkMonth(3, "stillM3", "eligibleM3");
+    checkMonth(6, "stillM6", "eligibleM6");
 
-      const leftAt =
-        m.status === "left" && m.updated_at
-          ? new Date(m.updated_at).getTime()
-          : null;
+    map.set(key, b);
+  }
 
-      const checkMonth = (months: number, stillKey: keyof Bucket, eligKey: keyof Bucket) => {
-        const milestone = arrivedAt + months * 30 * DAY_MS;
-        if (milestone > now) return; // pas encore éligible
-        (b[eligKey] as number) += 1;
-        const stillActive = leftAt === null || leftAt >= milestone;
-        if (stillActive) (b[stillKey] as number) += 1;
-      };
+  const cohorts: CohortRow[] = Array.from(map.entries())
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([month, b]) => ({
+      month,
+      arrived: b.arrived,
+      m1Rate: b.eligibleM1 > 0 ? b.stillM1 / b.eligibleM1 : -1,
+      m3Rate: b.eligibleM3 > 0 ? b.stillM3 / b.eligibleM3 : -1,
+      m6Rate: b.eligibleM6 > 0 ? b.stillM6 / b.eligibleM6 : -1,
+    }));
 
-      checkMonth(1, "stillM1", "eligibleM1");
-      checkMonth(3, "stillM3", "eligibleM3");
-      checkMonth(6, "stillM6", "eligibleM6");
-
-      map.set(key, b);
-    }
-
-    const cohorts: CohortRow[] = Array.from(map.entries())
-      .sort(([a], [b]) => (a < b ? -1 : 1))
-      .map(([month, b]) => ({
-        month,
-        arrived: b.arrived,
-        m1Rate: b.eligibleM1 > 0 ? b.stillM1 / b.eligibleM1 : -1,
-        m3Rate: b.eligibleM3 > 0 ? b.stillM3 / b.eligibleM3 : -1,
-        m6Rate: b.eligibleM6 > 0 ? b.stillM6 / b.eligibleM6 : -1,
-      }));
-
-    return { cohorts } satisfies RetentionPayload;
-  },
-);
+  return { cohorts } satisfies RetentionPayload;
+});
