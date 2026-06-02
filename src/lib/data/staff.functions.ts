@@ -420,6 +420,7 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
         current_grade: row?.current_grade ?? null,
         arrival_date: null as string | null,
         mc_uuid: null as string | null,
+        last_dm_at: lastDmByTarget.get(id) ?? null,
       };
     })
     .sort((a, b) =>
