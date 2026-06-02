@@ -363,6 +363,24 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
     if (row.actor_discord_id) connected.add(row.actor_discord_id);
   }
 
+  // 2b) Dernier DM staff envoyé (action 'member_dm', payload.target = discord_id cible).
+  const { data: dmLogs } = await db
+    .from("logs")
+    .select("payload, created_at")
+    .eq("action", "member_dm")
+    .order("created_at", { ascending: false })
+    .limit(5000);
+  const lastDmByTarget = new Map<string, string>();
+  for (const row of (dmLogs ?? []) as Array<{
+    payload: { target?: string; ok?: boolean } | null;
+    created_at: string;
+  }>) {
+    const target = row.payload?.target;
+    if (!target) continue;
+    if (row.payload?.ok === false) continue;
+    if (!lastDmByTarget.has(target)) lastDmByTarget.set(target, row.created_at);
+  }
+
   // 3) Enrichissement depuis la table members (chunks pour éviter URL trop longues).
   const dbMap = new Map<
     string,
