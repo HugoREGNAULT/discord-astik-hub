@@ -118,6 +118,14 @@ function MemberDetail() {
       refresh();
     },
   });
+  const mDeleteNote = useMutation({
+    mutationFn: (noteId: string) => deleteNoteFn({ data: { id: noteId } }),
+    onSuccess: () => {
+      toast.success("Note supprimée");
+      refresh();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
   const mWarn = useMutation({
     mutationFn: () => warnFn({ data: { memberDiscordId: id, body: warn } }),
     onSuccess: () => {
