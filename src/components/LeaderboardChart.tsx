@@ -70,7 +70,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
       messages_total: Number(e.messages_total ?? 0),
       messages_7d: Number(e.messages_7d ?? 0),
     }));
-    snapshots = [...snapshots, ...liveSnapshots];
+    const allSnapshots: Snapshot[] = [...snapshots, ...liveSnapshots];
     // Filtre la fenêtre temporelle
     const cutoff = period === "all" ? 0 : Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
     // Baseline par membre = dernière valeur connue <= cutoff
