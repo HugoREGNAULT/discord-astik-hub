@@ -319,29 +319,91 @@ export const getInactivityBuckets = createServerFn({ method: "GET" }).handler(as
 export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handler(async () => {
   await requirePermission("members.view");
 
-  const [membersRes, loginsRes] = await Promise.all([
-    db
-      .from("members")
-      .select(
-        "discord_id, discord_username, ig_name, avatar_url, current_grade, arrival_date, mc_uuid",
-      )
-      .eq("status", "active"),
-    db
-      .from("logs")
-      .select("actor_discord_id")
-      .eq("action", "login")
-      .not("actor_discord_id", "is", null)
-      .limit(100_000),
-  ]);
+  // Import dynamique pour garder le bundle léger côté client.
+  const { listAllGuildMembers } = await import("@/lib/discord/api.server");
+  const { GUILDS } = await import("@/lib/discord/constants");
 
+  // 1) Source de vérité : humains réellement présents sur le Discord privé.
+  let guildMembers: Awaited<ReturnType<typeof listAllGuildMembers>> = [];
+  try {
+    guildMembers = await listAllGuildMembers(GUILDS.FACTION);
+  } catch (e) {
+    await db.from("logs").insert({
+      level: "error",
+      action: "never_connected_fetch_failed",
+      payload: { error: (e as Error).message } as never,
+    });
+    throw e;
+  }
+
+  const factionIds: string[] = [];
+  const nickByDiscord = new Map<string, string>();
+  const avatarByDiscord = new Map<string, string | null>();
+  for (const gm of guildMembers) {
+    const uid = gm.user?.id;
+    if (!uid) continue;
+    if ((gm.user as { bot?: boolean } | undefined)?.bot) continue;
+    factionIds.push(uid);
+    nickByDiscord.set(uid, gm.nick || gm.user?.global_name || gm.user?.username || uid);
+    avatarByDiscord.set(
+      uid,
+      gm.user?.avatar ? `https://cdn.discordapp.com/avatars/${uid}/${gm.user.avatar}.png` : null,
+    );
+  }
+
+  // 2) Logins connus (table logs).
+  const { data: loginsRes } = await db
+    .from("logs")
+    .select("actor_discord_id")
+    .eq("action", "login")
+    .not("actor_discord_id", "is", null)
+    .limit(100_000);
   const connected = new Set<string>();
-  for (const row of (loginsRes.data ?? []) as Array<{ actor_discord_id: string | null }>) {
+  for (const row of (loginsRes ?? []) as Array<{ actor_discord_id: string | null }>) {
     if (row.actor_discord_id) connected.add(row.actor_discord_id);
   }
 
-  const factionMembers = filterFactionMembers(membersRes.data ?? []);
-  const neverConnected = factionMembers
-    .filter((m) => !connected.has(m.discord_id))
+  // 3) Enrichissement depuis la table members (chunks pour éviter URL trop longues).
+  const dbMap = new Map<
+    string,
+    {
+      discord_username: string | null;
+      ig_name: string | null;
+      avatar_url: string | null;
+      current_grade: string | null;
+    }
+  >();
+  const chunkSize = 200;
+  for (let i = 0; i < factionIds.length; i += chunkSize) {
+    const chunk = factionIds.slice(i, i + chunkSize);
+    const { data } = await db
+      .from("members")
+      .select("discord_id, discord_username, ig_name, avatar_url, current_grade")
+      .in("discord_id", chunk);
+    for (const m of data ?? []) {
+      dbMap.set(m.discord_id as string, {
+        discord_username: (m as { discord_username: string | null }).discord_username ?? null,
+        ig_name: (m as { ig_name: string | null }).ig_name ?? null,
+        avatar_url: (m as { avatar_url: string | null }).avatar_url ?? null,
+        current_grade: (m as { current_grade: string | null }).current_grade ?? null,
+      });
+    }
+  }
+
+  const neverConnected = factionIds
+    .filter((id) => !connected.has(id))
+    .map((id) => {
+      const row = dbMap.get(id);
+      return {
+        discord_id: id,
+        discord_username: row?.discord_username ?? nickByDiscord.get(id) ?? null,
+        ig_name: row?.ig_name ?? null,
+        avatar_url: row?.avatar_url ?? avatarByDiscord.get(id) ?? null,
+        current_grade: row?.current_grade ?? null,
+        arrival_date: null as string | null,
+        mc_uuid: null as string | null,
+      };
+    })
     .sort((a, b) =>
       (a.ig_name ?? a.discord_username ?? "").localeCompare(
         b.ig_name ?? b.discord_username ?? "",
