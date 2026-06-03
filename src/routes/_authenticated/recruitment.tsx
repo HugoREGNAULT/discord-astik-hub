@@ -661,6 +661,33 @@ function PaladiumProfilePanel({
   const faction = pick("factionName", "faction", "guild", "guildName");
   const rank = pick("rank", "grade");
   const playtime = pick("playtime", "timePlayed", "totalPlaytime");
+  const firstSeen = pick("firstSeen", "firstJoin", "createdAt", "created_at");
+
+  const formatFirstSeen = (v: string | number): { date: string; ago: string } | null => {
+    const ts = typeof v === "number" ? v : Number(v);
+    if (!Number.isFinite(ts) || ts <= 0) return null;
+    const ms = ts < 1e12 ? ts * 1000 : ts;
+    const d = new Date(ms);
+    if (isNaN(d.getTime())) return null;
+    const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    const ago =
+      days < 30
+        ? `${days}j`
+        : days < 365
+          ? `${Math.floor(days / 30)} mois`
+          : `${(days / 365).toFixed(1)} ans`;
+    return { date: d.toLocaleDateString("fr-FR"), ago };
+  };
+  const firstSeenFmt = firstSeen != null ? formatFirstSeen(firstSeen) : null;
+
+  const formatPlaytime = (v: string | number): string => {
+    const n = typeof v === "number" ? v : Number(v);
+    if (!Number.isFinite(n) || n <= 0) return String(v);
+    const totalMin = Math.floor(n / 60);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return h > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${m}min`;
+  };
 
   return (
     <div className="space-y-2">
@@ -689,9 +716,19 @@ function PaladiumProfilePanel({
               value={typeof money === "number" ? money.toLocaleString("fr-FR") : String(money)}
             />
           )}
-          {faction != null && <PaladiumStat label="Faction IG" value={String(faction)} />}
+          {faction != null && faction !== "" && (
+            <PaladiumStat label="Faction IG" value={String(faction)} />
+          )}
           {rank != null && <PaladiumStat label="Rang shop" value={String(rank)} />}
-          {playtime != null && <PaladiumStat label="Temps de jeu" value={String(playtime)} />}
+          {playtime != null && (
+            <PaladiumStat label="Temps de jeu" value={formatPlaytime(playtime)} />
+          )}
+          {firstSeenFmt && (
+            <PaladiumStat
+              label="Première connexion"
+              value={`${firstSeenFmt.date} (il y a ${firstSeenFmt.ago})`}
+            />
+          )}
         </div>
       )}
 
