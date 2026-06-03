@@ -130,6 +130,8 @@ type Application = {
   decided_by_username: string | null;
   decided_at: string | null;
   decision_reason: string | null;
+  interview_validated_at?: string | null;
+  interview_validated_by_username?: string | null;
   created_at: string;
   blacklist_matches?: BlacklistMatch[];
 };
