@@ -238,7 +238,7 @@ export const getMyApplication = createServerFn({ method: "GET" }).handler(async 
 });
 
 export const listApplications = createServerFn({ method: "GET" })
-  .inputValidator((input: { status?: "pending" | "accepted" | "rejected" }) => input ?? {})
+  .inputValidator((input: { status?: "pending" | "accepted" | "rejected" | "interview_validated" }) => input ?? {})
   .handler(async ({ data }) => {
     await requirePermission("recruit.access");
     const { findBlacklistMatches } = await import("@/lib/data/blacklist.server");
