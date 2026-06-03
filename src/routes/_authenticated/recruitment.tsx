@@ -549,6 +549,19 @@ function AiReview({ applicationId }: { applicationId: string }) {
               </ul>
             </div>
           )}
+
+          {ai.followup_questions && ai.followup_questions.length > 0 && (
+            <div className="rounded-md border border-primary/30 bg-background/40 p-2">
+              <div className="text-[11px] uppercase tracking-wider text-primary font-medium mb-1">
+                Questions à poser en entretien
+              </div>
+              <ul className="text-sm list-decimal pl-5 space-y-1">
+                {ai.followup_questions.map((q, i) => (
+                  <li key={i}>{q}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
@@ -559,36 +572,34 @@ function AiReview({ applicationId }: { applicationId: string }) {
       )}
 
       {ev && (
-        <details className="text-xs text-muted-foreground border-t border-primary/20 pt-2">
-          <summary className="cursor-pointer hover:text-foreground">
-            Sources brutes (profil Paladium, blacklist, alts)
-          </summary>
-          <div className="mt-2 space-y-2">
-            <div>
-              <span className="font-medium text-foreground">UUID Mojang :</span>{" "}
-              {ev.mc_uuid ?? <em>non résolu</em>}
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Paladium :</span>{" "}
-              {ev.paladium_error
-                ? `indisponible (${ev.paladium_error.slice(0, 60)})`
-                : ev.paladium_profile
-                  ? "profil récupéré"
-                  : "aucune donnée"}
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Blacklist :</span>{" "}
-              {ev.blacklist_matches.length} match(s)
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Alts détectés :</span>{" "}
-              {ev.alt_signals.length}
-            </div>
-            <pre className="mt-2 max-h-64 overflow-auto rounded bg-background/50 p-2 text-[10px] leading-tight">
+        <div className="border-t border-primary/20 pt-3 space-y-2">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            Profil joueur Paladium
+          </div>
+          <PaladiumProfilePanel
+            mcUuid={ev.mc_uuid}
+            mojangError={ev.mojang_error}
+            paladiumError={ev.paladium_error}
+            paladiumProfile={ev.paladium_profile}
+            paladiumJobs={ev.paladium_jobs}
+            onRefresh={() => mutation.mutate(true)}
+            refreshing={mutation.isPending}
+          />
+          <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground pt-1">
+            <span>
+              <strong className="text-foreground">Blacklist :</strong> {ev.blacklist_matches.length}
+            </span>
+            <span>
+              <strong className="text-foreground">Alts :</strong> {ev.alt_signals.length}
+            </span>
+          </div>
+          <details className="text-[10px] text-muted-foreground">
+            <summary className="cursor-pointer hover:text-foreground">JSON brut</summary>
+            <pre className="mt-1 max-h-64 overflow-auto rounded bg-background/50 p-2 leading-tight">
               {JSON.stringify(ev, null, 2)}
             </pre>
-          </div>
-        </details>
+          </details>
+        </div>
       )}
 
       {review && (
