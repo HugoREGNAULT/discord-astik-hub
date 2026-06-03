@@ -640,7 +640,7 @@ function PaladiumProfilePanel({
     );
   }
 
-  const hasProfile = paladiumProfile && typeof paladiumProfile === "object";
+  const hasProfile = !!paladiumProfile && typeof paladiumProfile === "object";
   const profile = hasProfile ? (paladiumProfile as Record<string, unknown>) : null;
   const jobs = Array.isArray(paladiumJobs)
     ? (paladiumJobs as Array<Record<string, unknown>>)
