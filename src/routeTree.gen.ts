@@ -45,6 +45,7 @@ import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPollsIndexRouteImport } from './routes/_authenticated/polls.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
+import { Route as ApiPublicMarketRouteImport } from './routes/api/public/market'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
@@ -276,6 +277,11 @@ const ApiTestSeedPollRoute = ApiTestSeedPollRouteImport.update({
 const ApiTestLoginRoute = ApiTestLoginRouteImport.update({
   id: '/api/test/login',
   path: '/api/test/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMarketRoute = ApiPublicMarketRouteImport.update({
+  id: '/api/public/market',
+  path: '/api/public/market',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthWhoamiRoute = ApiAuthWhoamiRouteImport.update({
@@ -595,6 +601,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
@@ -676,6 +683,7 @@ export interface FileRoutesByTo {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
@@ -761,6 +769,7 @@ export interface FileRoutesById {
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
+  '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
@@ -846,6 +855,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/polls/'
@@ -927,6 +937,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/polls'
@@ -1011,6 +1022,7 @@ export interface FileRouteTypes {
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/whoami'
+    | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/_authenticated/polls/'
@@ -1053,6 +1065,7 @@ export interface RootRouteChildren {
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthWhoamiRoute: typeof ApiAuthWhoamiRoute
+  ApiPublicMarketRoute: typeof ApiPublicMarketRoute
   ApiTestLoginRoute: typeof ApiTestLoginRoute
   ApiTestSeedPollRoute: typeof ApiTestSeedPollRoute
   ApiPublicBotImportRoute: typeof ApiPublicBotImportRoute
@@ -1333,6 +1346,13 @@ declare module '@tanstack/react-router' {
       path: '/api/test/login'
       fullPath: '/api/test/login'
       preLoaderRoute: typeof ApiTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/market': {
+      id: '/api/public/market'
+      path: '/api/public/market'
+      fullPath: '/api/public/market'
+      preLoaderRoute: typeof ApiPublicMarketRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/whoami': {
@@ -1817,6 +1837,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthWhoamiRoute: ApiAuthWhoamiRoute,
+  ApiPublicMarketRoute: ApiPublicMarketRoute,
   ApiTestLoginRoute: ApiTestLoginRoute,
   ApiTestSeedPollRoute: ApiTestSeedPollRoute,
   ApiPublicBotImportRoute: ApiPublicBotImportRoute,
