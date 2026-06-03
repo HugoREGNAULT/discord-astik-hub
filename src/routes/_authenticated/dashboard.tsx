@@ -44,6 +44,8 @@ function formatRelative(iso: string) {
   if (h < 24) return `il y a ${h}h`;
   const d = Math.floor(h / 24);
   return `il y a ${d}j`;
+}
+
 
 export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
 
