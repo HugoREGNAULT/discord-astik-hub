@@ -211,7 +211,8 @@ function ApplicationsList({ status }: { status: AppStatus }) {
 function ApplicationDetail({ app }: { app: Application }) {
   const qc = useQueryClient();
   const decideFn = useServerFn(decideApplication);
-  const [open, setOpen] = useState<"accept" | "reject" | null>(null);
+  const validateFn = useServerFn(validateInterview);
+  const [open, setOpen] = useState<"accept" | "reject" | "interview" | null>(null);
   const [reason, setReason] = useState("");
 
   const mutation = useMutation({
@@ -219,10 +220,30 @@ function ApplicationDetail({ app }: { app: Application }) {
       decideFn({ data: { applicationId: app.id, decision, reason } }),
     onSuccess: (res) => {
       toast.success(
-        `Candidature ${open === "accept" ? "acceptée" : "refusée"}.${
+        `Candidature ${open === "accept" ? "validée (écrit)" : "refusée"}.${
           res.dmOk ? " DM Discord envoyé." : " (DM Discord échoué)"
         }`,
       );
+      setOpen(null);
+      setReason("");
+      qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const interviewMutation = useMutation({
+    mutationFn: () => validateFn({ data: { applicationId: app.id, reason } }),
+    onSuccess: (res) => {
+      if (res.roleWarnings && res.roleWarnings.length > 0) {
+        toast.warning(
+          `Entretien validé avec ${res.roleWarnings.length} alerte(s) rôle. ${res.roleWarnings[0]}`,
+          { duration: 8000 },
+        );
+      } else {
+        toast.success(
+          `Entretien validé — essai 14j.${res.dmOk ? " DM Discord envoyé." : " (DM Discord échoué)"}`,
+        );
+      }
       setOpen(null);
       setReason("");
       qc.invalidateQueries({ queryKey: ["applications"] });
@@ -267,7 +288,7 @@ function ApplicationDetail({ app }: { app: Application }) {
       {app.status === "pending" ? (
         <div className="flex gap-2 pt-2">
           <Button onClick={() => setOpen("accept")} className="bg-emerald-600 hover:bg-emerald-700">
-            <CheckCircle2 className="w-4 h-4 mr-1" /> Accepter
+            <CheckCircle2 className="w-4 h-4 mr-1" /> Accepter (écrit)
           </Button>
           <Button variant="destructive" onClick={() => setOpen("reject")}>
             <XCircle className="w-4 h-4 mr-1" /> Refuser
@@ -276,7 +297,9 @@ function ApplicationDetail({ app }: { app: Application }) {
       ) : (
         <div className="space-y-2 border-t pt-3">
           <div className="text-xs text-muted-foreground">
-            {app.status === "accepted" ? "✅ Acceptée" : "❌ Refusée"}
+            {app.status === "accepted" && "✅ Acceptée à l'écrit — en attente d'entretien"}
+            {app.status === "interview_validated" && "🎉 Entretien validé — membre en essai"}
+            {app.status === "rejected" && "❌ Refusée"}
             {app.decided_by_username && (
               <>
                 {" "}
@@ -287,15 +310,32 @@ function ApplicationDetail({ app }: { app: Application }) {
             {app.decision_reason && (
               <div className="mt-1 italic">Motif : {app.decision_reason}</div>
             )}
+            {app.status === "interview_validated" && app.interview_validated_by_username && (
+              <div className="mt-1">
+                Entretien validé par <strong>{app.interview_validated_by_username}</strong>
+                {app.interview_validated_at && (
+                  <> le {new Date(app.interview_validated_at).toLocaleDateString("fr-FR")}</>
+                )}
+              </div>
+            )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {app.status === "accepted" && (
+              <Button
+                size="sm"
+                onClick={() => setOpen("interview")}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Sparkles className="w-4 h-4 mr-1" /> Entretien validé
+              </Button>
+            )}
             {app.status === "rejected" && (
               <Button
                 size="sm"
                 onClick={() => setOpen("accept")}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                <CheckCircle2 className="w-4 h-4 mr-1" /> Finalement accepter
+                <CheckCircle2 className="w-4 h-4 mr-1" /> Finalement accepter (écrit)
               </Button>
             )}
             {app.status === "accepted" && (
@@ -306,9 +346,24 @@ function ApplicationDetail({ app }: { app: Application }) {
           </div>
           {app.status === "accepted" && (
             <p className="text-[11px] text-muted-foreground italic">
-              ⚠️ Passer cette candidature à « refusée » n'enlève pas automatiquement le membre — à
-              gérer manuellement dans la fiche membre.
+              ⏳ Le candidat a reçu le rôle « attente entretien » et un DM pour donner ses dispos.
+              Clique sur « Entretien validé » après l'entretien vocal pour le passer en essai 14j
+              et lui attribuer les rôles finaux (public + privé).
             </p>
+          )}
+          {app.status === "interview_validated" && (
+            <p className="text-[11px] text-muted-foreground italic">
+              Le membre est en période d'essai. Si certains rôles privés n'ont pas pu être posés
+              (personne pas encore sur le serveur faction), tu peux relancer « Entretien validé »
+              une fois qu'elle a rejoint.
+            </p>
+          )}
+          {app.status === "interview_validated" && (
+            <div className="pt-1">
+              <Button size="sm" variant="outline" onClick={() => setOpen("interview")}>
+                <Sparkles className="w-4 h-4 mr-1" /> Relancer attribution des rôles
+              </Button>
+            </div>
           )}
         </div>
       )}
@@ -317,19 +372,27 @@ function ApplicationDetail({ app }: { app: Application }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {open === "accept" ? "Accepter" : "Refuser"} {app.mc_name} ?
+              {open === "accept" && `Accepter la candidature écrite de ${app.mc_name} ?`}
+              {open === "reject" && `Refuser ${app.mc_name} ?`}
+              {open === "interview" && `Valider l'entretien de ${app.mc_name} ?`}
             </DialogTitle>
             <DialogDescription>
-              {open === "accept"
-                ? "Le candidat sera ajouté aux membres et notifié en DM Discord."
-                : "Le candidat sera notifié du refus en DM Discord."}
+              {open === "accept" &&
+                "Le candidat reçoit le rôle « attente entretien » et un DM pour donner ses dispos dans le salon prévu. Aucune fiche membre n'est créée à cette étape."}
+              {open === "reject" && "Le candidat sera notifié du refus en DM Discord."}
+              {open === "interview" &&
+                "Le candidat passe en période d'essai 14j, rôles public + privé attribués, DM de bienvenue. Si la personne n'est pas encore sur le serveur privé, les rôles privés échoueront silencieusement — relance ce bouton plus tard."}
             </DialogDescription>
           </DialogHeader>
           <Textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={
-              open === "accept" ? "Message de bienvenue (optionnel)" : "Motif du refus (optionnel)"
+              open === "interview"
+                ? "Message de bienvenue (optionnel)"
+                : open === "accept"
+                  ? "Message ajouté au DM (optionnel)"
+                  : "Motif du refus (optionnel)"
             }
             rows={4}
           />
@@ -338,15 +401,20 @@ function ApplicationDetail({ app }: { app: Application }) {
               Annuler
             </Button>
             <Button
-              onClick={() => mutation.mutate(open === "accept" ? "accepted" : "rejected")}
-              disabled={mutation.isPending}
+              onClick={() => {
+                if (open === "interview") interviewMutation.mutate();
+                else mutation.mutate(open === "accept" ? "accepted" : "rejected");
+              }}
+              disabled={mutation.isPending || interviewMutation.isPending}
               className={
-                open === "accept"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-red-600 hover:bg-red-700"
+                open === "reject"
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-emerald-600 hover:bg-emerald-700"
               }
             >
-              {mutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+              {(mutation.isPending || interviewMutation.isPending) && (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              )}
               Confirmer
             </Button>
           </DialogFooter>
