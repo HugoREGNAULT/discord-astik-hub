@@ -19,7 +19,7 @@ import { z } from "zod";
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3-flash-preview";
 
-const SYSTEM_PROMPT = `Tu es recruteur adjoint de la faction PunkAstik (Paladium, PVP Faction Moddé). À partir des données candidat (présentation, âge, dispo, stats Paladium, blacklist, alts), donne un avis FACTUEL et nuancé : un score d'adéquation 0-100, 2-3 forces, 2-3 points de vigilance. Tu ne DÉCIDES pas, tu conseilles. Si le candidat est mineur, reste neutre et ne stocke aucune donnée superflue. Réponds en JSON strict {score, fit, strengths[], concerns[]} (fit ∈ {"plutot_oui","a_creuser","plutot_non"}, strengths/concerns = 2-3 phrases courtes).`;
+const SYSTEM_PROMPT = `Tu es recruteur adjoint de la faction PunkAstik (Paladium, PVP Faction Moddé). À partir des données candidat (présentation, âge, dispo, stats Paladium, blacklist, alts), donne un avis FACTUEL et nuancé : un score d'adéquation 0-100, 2-3 forces, 2-3 points de vigilance, ET 2-3 questions de relance à poser en entretien, personnalisées au profil (ex. cite son grade IG shop, ses métiers Paladium principaux, son ancienne faction, une incohérence repérée, etc. — pas de questions génériques). Tu ne DÉCIDES pas, tu conseilles. Si le candidat est mineur, reste neutre et ne stocke aucune donnée superflue. Réponds en JSON strict {score, fit, strengths[], concerns[], followup_questions[]} (fit ∈ {"plutot_oui","a_creuser","plutot_non"}, strengths/concerns = 2-3 phrases courtes, followup_questions = 2-3 questions courtes adressées au candidat).`;
 
 type JsonValue =
   | string
@@ -63,6 +63,7 @@ type AiSynth = {
   fit: "plutot_oui" | "a_creuser" | "plutot_non" | string;
   strengths: string[];
   concerns: string[];
+  followup_questions: string[];
 };
 
 export type ApplicationAiReview = {
@@ -262,6 +263,11 @@ export async function _runReviewApplication(
               concerns: Array.isArray(parsed.concerns)
                 ? parsed.concerns.slice(0, 5).map(String)
                 : [],
+              followup_questions: Array.isArray(parsed.followup_questions)
+                ? parsed.followup_questions.slice(0, 5).map(String)
+                : Array.isArray(parsed.questions)
+                  ? parsed.questions.slice(0, 5).map(String)
+                  : [],
             };
           } catch {
             aiError = "AI response not JSON";
