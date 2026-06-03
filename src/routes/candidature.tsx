@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
-import { ArrowLeft, LogIn, Send, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, LogIn, Send, Loader2, CheckCircle2, Clock, Star } from "lucide-react";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { submitApplication, getMyApplication } from "@/lib/data/applications.functions";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,26 @@ export const Route = createFileRoute("/candidature")({
 });
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
-const GRADES = ["Aucun", "Héros", "Légende", "Divinité", "Staff", "Affilié"] as const;
+
+const IRL_MIN = 150;
+const GAMING_MIN = 250;
+
+// Phrases du curseur PvP. Les paliers non définis (2, 4) héritent du palier
+// inférieur le plus proche.
+const PVP_PHRASES: Record<number, string> = {
+  1: "Moi bâton, cassé caillou",
+  3: "Je sais cliqué mais pas tapé",
+  5: "Tuer Wither OK, PvP Non",
+  6: "Je suis pas bon, mais j'essaye",
+  7: "Je commence à maîtriser les sticks",
+  8: "Je maîtrise",
+  9: "J'utilise les dernières métas",
+  10: "Personne n'est meilleur que moi",
+};
+function pvpPhrase(n: number): string {
+  for (let i = n; i >= 1; i--) if (PVP_PHRASES[i]) return PVP_PHRASES[i];
+  return "";
+}
 
 function CandidaturePage() {
   const { data: user, isLoading } = useCurrentUser();
@@ -136,35 +155,40 @@ function ApplicationForm() {
     queryFn: () => getMyApp(),
   });
 
+  const [heardFrom, setHeardFrom] = useState("");
   const [mcName, setMcName] = useState("");
-  const [presentation, setPresentation] = useState("");
+  const [presentationIrl, setPresentationIrl] = useState("");
   const [age, setAge] = useState("");
   const [country, setCountry] = useState<string>("");
+  const [presentationGaming, setPresentationGaming] = useState("");
   const [schedule, setSchedule] = useState("");
-  const [weeklyPlaytime, setWeeklyPlaytime] = useState("");
-  const [firstVersion, setFirstVersion] = useState("");
-  const [igGrade, setIgGrade] = useState<string>("");
-  const [previousFactions, setPreviousFactions] = useState("");
-  const [heardFrom, setHeardFrom] = useState("");
-  const [skills, setSkills] = useState("");
-  const [knowledgeLevel, setKnowledgeLevel] = useState([5]);
+  const [objectives, setObjectives] = useState("");
+  const [pvpLevel, setPvpLevel] = useState([5]);
+  const [motivation, setMotivation] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [formRating, setFormRating] = useState(0);
+
+  const irlLen = presentationIrl.trim().length;
+  const gamingLen = presentationGaming.trim().length;
+  const irlOk = irlLen >= IRL_MIN;
+  const gamingOk = gamingLen >= GAMING_MIN;
 
   const mutation = useMutation({
     mutationFn: () =>
       submitFn({
         data: {
+          heardFrom,
           mcName,
-          presentation,
+          presentationIrl,
+          presentationGaming,
           age: Number(age),
           country: country as (typeof COUNTRIES)[number],
           schedule,
-          weeklyPlaytime,
-          firstVersion,
-          igGrade: igGrade as (typeof GRADES)[number],
-          previousFactions,
-          heardFrom,
-          skills,
-          knowledgeLevel: knowledgeLevel[0],
+          objectives,
+          pvpLevel: pvpLevel[0],
+          motivation,
+          additionalInfo,
+          formRating: formRating > 0 ? formRating : undefined,
         },
       }),
     onSuccess: () => {
@@ -213,6 +237,18 @@ function ApplicationForm() {
     );
   }
 
+  const canSubmit =
+    !mutation.isPending &&
+    heardFrom.trim().length > 1 &&
+    mcName.trim().length >= 3 &&
+    irlOk &&
+    Number(age) >= 10 &&
+    !!country &&
+    gamingOk &&
+    schedule.trim().length > 1 &&
+    objectives.trim().length > 1 &&
+    motivation.trim().length > 1;
+
   return (
     <Shell>
       <div className="mb-8 mt-4">
@@ -229,8 +265,8 @@ function ApplicationForm() {
           Candidature PunkAstik
         </h2>
         <p className="text-zinc-400 text-sm mt-2">
-          Tous les champs sont obligatoires sauf indication contraire. Sois honnête, c'est plus
-          simple pour tout le monde.
+          Prends ton temps et sois honnête — c'est plus simple pour tout le monde. Les champs
+          marqués <span className="text-pink-500">*</span> sont obligatoires.
         </p>
         {existing?.status === "rejected" && (
           <div className="mt-4 p-3 bg-red-950/40 border border-red-800/50 text-red-200 text-sm">
@@ -253,7 +289,24 @@ function ApplicationForm() {
         }}
         className="space-y-6 bg-zinc-900/90 border border-zinc-800 p-6 md:p-8"
       >
-        <Field label="Pseudo Minecraft exact" required>
+        {/* 1 — Découverte */}
+        <Field
+          label="Par quel moyen as-tu découvert notre faction ?"
+          required
+          hint="Qui a fait la promotion de la faction, et qui t'a envoyé ce formulaire ? (pseudo IG et/ou Discord)"
+        >
+          <Textarea
+            value={heardFrom}
+            onChange={(e) => setHeardFrom(e.target.value)}
+            placeholder="Ex : pub sur le Discord X par Pseudo123, formulaire envoyé par MonPote_IG…"
+            required
+            rows={3}
+            maxLength={600}
+          />
+        </Field>
+
+        {/* 2 — Pseudo Minecraft */}
+        <Field label="Quel est ton pseudonyme sur Minecraft ?" required>
           <Input
             value={mcName}
             onChange={(e) => setMcName(e.target.value)}
@@ -263,17 +316,24 @@ function ApplicationForm() {
           />
         </Field>
 
-        <Field label="Présentation (IRL + IG Paladium / Minecraft)" required>
+        {/* 3 — Présentation IRL */}
+        <Field
+          label="Présente-toi en quelques lignes sur le plan IRL"
+          required
+          hint="Qui es-tu, dans quel pays habites-tu, que fais-tu dans la vie, quelles sont tes passions…"
+        >
           <Textarea
-            value={presentation}
-            onChange={(e) => setPresentation(e.target.value)}
-            placeholder="Qui tu es dans la vie, ton parcours sur Paladium / Minecraft…"
+            value={presentationIrl}
+            onChange={(e) => setPresentationIrl(e.target.value)}
+            placeholder="Présente-toi…"
             required
-            rows={6}
+            rows={5}
             maxLength={3000}
           />
+          <CharCounter len={irlLen} min={IRL_MIN} />
         </Field>
 
+        {/* Âge + Pays (conservés) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Field label="Âge" required>
             <Input
@@ -301,95 +361,107 @@ function ApplicationForm() {
           </Field>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Field label="Horaires de connexion (heure de Paris)" required>
-            <Input
-              value={schedule}
-              onChange={(e) => setSchedule(e.target.value)}
-              placeholder="Ex : 18h-23h en semaine, journée le week-end"
-              required
-            />
-          </Field>
-          <Field label="Temps de jeu estimé / semaine" required>
-            <Input
-              value={weeklyPlaytime}
-              onChange={(e) => setWeeklyPlaytime(e.target.value)}
-              placeholder="Ex : 20h"
-              required
-            />
-          </Field>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Field label="Première version jouée sur Pala" required>
-            <Input
-              value={firstVersion}
-              onChange={(e) => setFirstVersion(e.target.value)}
-              placeholder="Ex : Pala 4"
-              required
-            />
-          </Field>
-          <Field label="Grade en jeu (Paladium)" required>
-            <Select value={igGrade} onValueChange={setIgGrade}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionne…" />
-              </SelectTrigger>
-              <SelectContent>
-                {GRADES.map((g) => (
-                  <SelectItem key={g} value={g}>
-                    {g}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
-
-        <Field label="Anciennes factions (optionnel)">
+        {/* 4 — Présentation Minecraft / Paladium */}
+        <Field
+          label="Présente-toi cette fois sur le plan Minecraft & Paladium"
+          required
+          hint="Nouveau dans ce milieu ? Dis-nous ce qui t'y intéresse et pourquoi tu as commencé. Sinon, précise si tu as déjà rejoint des factions par le passé."
+        >
           <Textarea
-            value={previousFactions}
-            onChange={(e) => setPreviousFactions(e.target.value)}
-            rows={3}
-            maxLength={1000}
-            placeholder="Liste des factions où tu étais et pourquoi tu en es parti·e"
-          />
-        </Field>
-
-        <Field label="Comment as-tu entendu parler de la PunkAstik ?" required>
-          <Input
-            value={heardFrom}
-            onChange={(e) => setHeardFrom(e.target.value)}
-            placeholder="Bouche-à-oreille, ami, recrutement…"
+            value={presentationGaming}
+            onChange={(e) => setPresentationGaming(e.target.value)}
+            placeholder="Ton expérience Minecraft / Paladium…"
             required
+            rows={5}
+            maxLength={3000}
           />
+          <CharCounter len={gamingLen} min={GAMING_MIN} />
         </Field>
 
-        <Field label="Compétences spécifiques" required>
+        {/* 5 — Disponibilités */}
+        <Field
+          label="Quelles sont tes disponibilités sur Paladium durant une semaine de travail/cours ?"
+          required
+        >
           <Textarea
-            value={skills}
-            onChange={(e) => setSkills(e.target.value)}
-            rows={3}
-            placeholder="PVP, concepteur BC, farm, QDF, donjons…"
+            value={schedule}
+            onChange={(e) => setSchedule(e.target.value)}
+            placeholder="Ex : 18h-23h en semaine, journée le week-end…"
             required
-            maxLength={1000}
+            rows={3}
+            maxLength={600}
           />
         </Field>
 
-        <Field label={`Niveau de connaissance Paladium : ${knowledgeLevel[0]}/10`} required>
+        {/* 6 — Objectifs */}
+        <Field
+          label="As-tu des objectifs concrets sur Paladium ?"
+          required
+          hint="Sois honnête : qu'est-ce qui va te donner envie de jouer ? Ça nous permet d'engager plus de moyens dans la faction pour t'aider."
+        >
+          <Textarea
+            value={objectives}
+            onChange={(e) => setObjectives(e.target.value)}
+            placeholder="Tes objectifs…"
+            required
+            rows={3}
+            maxLength={2000}
+          />
+        </Field>
+
+        {/* 7 — Niveau PvP */}
+        <Field label={`Quel est ton niveau en PvP ? — ${pvpLevel[0]}/10`} required>
           <Slider
-            value={knowledgeLevel}
-            onValueChange={setKnowledgeLevel}
-            min={0}
+            value={pvpLevel}
+            onValueChange={setPvpLevel}
+            min={1}
             max={10}
             step={1}
             className="mt-3"
           />
+          <p className="text-pink-400 text-sm italic mt-2" style={{ fontFamily: "'Space Mono'" }}>
+            « {pvpPhrase(pvpLevel[0])} »
+          </p>
+        </Field>
+
+        {/* 8 — Motivation */}
+        <Field
+          label="Pourquoi es-tu motivé à rejoindre une faction ? Et pourquoi la nôtre en particulier ?"
+          required
+        >
+          <Textarea
+            value={motivation}
+            onChange={(e) => setMotivation(e.target.value)}
+            placeholder="Ta motivation…"
+            required
+            rows={4}
+            maxLength={2000}
+          />
+        </Field>
+
+        {/* 9 — Ajout libre (optionnel) */}
+        <Field label="Souhaites-tu rajouter quelque chose ?">
+          <Textarea
+            value={additionalInfo}
+            onChange={(e) => setAdditionalInfo(e.target.value)}
+            placeholder="Optionnel — tout ce que tu veux ajouter."
+            rows={3}
+            maxLength={2000}
+          />
+        </Field>
+
+        {/* 10 — Note étoiles (optionnel) */}
+        <Field
+          label="Note ce formulaire"
+          hint="Optionnel — juste pour nous aider à l'améliorer. Ça n'influence pas ta candidature."
+        >
+          <StarRating value={formRating} onChange={setFormRating} />
         </Field>
 
         <div className="pt-2">
           <Button
             type="submit"
-            disabled={mutation.isPending || !country || !igGrade}
+            disabled={!canSubmit}
             className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-6 uppercase tracking-wider"
           >
             {mutation.isPending ? (
@@ -399,6 +471,11 @@ function ApplicationForm() {
             )}
             Envoyer ma candidature
           </Button>
+          {!canSubmit && !mutation.isPending && (
+            <p className="text-zinc-500 text-xs mt-2 text-center">
+              Complète tous les champs obligatoires (présentations comprises) pour pouvoir envoyer.
+            </p>
+          )}
         </div>
       </form>
     </Shell>
@@ -408,19 +485,94 @@ function ApplicationForm() {
 function Field({
   label,
   required,
+  hint,
   children,
 }: {
   label: string;
   required?: boolean;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-zinc-300 text-xs uppercase tracking-wider">
+      <Label className="text-zinc-300 text-xs uppercase tracking-wider block">
         {label}
         {required && <span className="text-pink-500 ml-1">*</span>}
       </Label>
+      {hint && (
+        <p className="text-[11px] leading-snug text-zinc-500 italic normal-case tracking-normal -mt-1">
+          {hint}
+        </p>
+      )}
       {children}
+    </div>
+  );
+}
+
+/** Compteur de caractères : visible UNIQUEMENT tant qu'on est sous le minimum. */
+function CharCounter({ len, min }: { len: number; min: number }) {
+  if (len >= min) {
+    return (
+      <p className="text-[11px] text-emerald-400/80 mt-1" style={{ fontFamily: "'Space Mono'" }}>
+        ✓ {len} caractères
+      </p>
+    );
+  }
+  return (
+    <p className="text-[11px] text-amber-400/90 mt-1" style={{ fontFamily: "'Space Mono'" }}>
+      {len}/{min} caractères minimum
+    </p>
+  );
+}
+
+/** Notation par étoiles avec demi-points (0,5 → 5). value=0 = non noté. */
+function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const display = hover ?? value;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex items-center" onMouseLeave={() => setHover(null)}>
+        {[0, 1, 2, 3, 4].map((i) => {
+          const fill = Math.max(0, Math.min(1, display - i));
+          return (
+            <div key={i} className="relative w-9 h-9">
+              <Star className="w-9 h-9 text-zinc-600" strokeWidth={1.5} />
+              <div
+                className="absolute inset-0 overflow-hidden pointer-events-none"
+                style={{ width: `${fill * 100}%` }}
+              >
+                <Star className="w-9 h-9 text-yellow-400 fill-yellow-400" strokeWidth={1.5} />
+              </div>
+              <button
+                type="button"
+                aria-label={`${i + 0.5} étoile(s)`}
+                className="absolute inset-y-0 left-0 w-1/2 cursor-pointer"
+                onMouseEnter={() => setHover(i + 0.5)}
+                onClick={() => onChange(i + 0.5)}
+              />
+              <button
+                type="button"
+                aria-label={`${i + 1} étoile(s)`}
+                className="absolute inset-y-0 right-0 w-1/2 cursor-pointer"
+                onMouseEnter={() => setHover(i + 1)}
+                onClick={() => onChange(i + 1)}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <span className="text-sm text-zinc-400 tabular-nums">
+        {display > 0 ? `${display}/5` : "—"}
+      </span>
+      {value > 0 && (
+        <button
+          type="button"
+          onClick={() => onChange(0)}
+          className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+        >
+          effacer
+        </button>
+      )}
     </div>
   );
 }
@@ -459,6 +611,3 @@ function StatusCard({
     </div>
   );
 }
-
-// Force "used" for XCircle to avoid unused import in some bundlers
-void XCircle;

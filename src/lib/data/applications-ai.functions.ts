@@ -19,15 +19,9 @@ import { z } from "zod";
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3-flash-preview";
 
-const SYSTEM_PROMPT = `Tu es recruteur adjoint de la faction PunkAstik (Paladium, PVP Faction Moddé). À partir des données candidat (présentation, âge, dispo, stats Paladium, blacklist, alts), donne un avis FACTUEL et nuancé : un score d'adéquation 0-100, 2-3 forces, 2-3 points de vigilance, ET 2-3 questions de relance à poser en entretien, personnalisées au profil (ex. cite son grade IG shop, ses métiers Paladium principaux, son ancienne faction, une incohérence repérée, etc. — pas de questions génériques). Tu ne DÉCIDES pas, tu conseilles. Si le candidat est mineur, reste neutre et ne stocke aucune donnée superflue. Réponds en JSON strict {score, fit, strengths[], concerns[], followup_questions[]} (fit ∈ {"plutot_oui","a_creuser","plutot_non"}, strengths/concerns = 2-3 phrases courtes, followup_questions = 2-3 questions courtes adressées au candidat).`;
+const SYSTEM_PROMPT = `Tu es recruteur adjoint de la faction PunkAstik (Paladium, PVP Faction Moddé). À partir des données candidat (présentations IRL + Minecraft/Paladium, âge, dispos, objectifs, motivation, niveau PvP auto-déclaré, stats Paladium, blacklist, alts), donne un avis FACTUEL et nuancé : un score d'adéquation 0-100, 2-3 forces, 2-3 points de vigilance, ET 2-3 questions de relance à poser en entretien, personnalisées au profil (ex. cite son grade IG shop, ses métiers Paladium principaux, son ancienne faction, une incohérence repérée, etc. — pas de questions génériques). Tu ne DÉCIDES pas, tu conseilles. Si le candidat est mineur, reste neutre et ne stocke aucune donnée superflue. Réponds en JSON strict {score, fit, strengths[], concerns[], followup_questions[]} (fit ∈ {"plutot_oui","a_creuser","plutot_non"}, strengths/concerns = 2-3 phrases courtes, followup_questions = 2-3 questions courtes adressées au candidat).`;
 
-type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [k: string]: JsonValue };
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
 
 type Evidence = {
   mc_uuid: string | null;
@@ -232,25 +226,23 @@ export async function _runReviewApplication(
   if (!apiKey) {
     aiError = "LOVABLE_API_KEY missing";
   } else {
+    const isMinor = app.age != null && app.age < 15;
+    // Présentations tronquées pour les mineurs (RGPD : minimisation).
+    const trunc = (s: string | null) => (isMinor ? (s ?? "").slice(0, 400) : (s ?? ""));
     const userPayload = {
       candidat: {
         pseudo_mc: app.mc_name,
         discord: app.discord_username,
         age: app.age,
         pays: app.country,
-        grade_ig_shop: app.ig_grade,
-        premiere_version: app.first_version,
-        horaires: app.schedule,
-        temps_jeu_semaine: app.weekly_playtime,
-        niveau_connaissance: app.knowledge_level,
-        competences: app.skills,
-        anciennes_factions: app.previous_factions ?? null,
         a_connu_via: app.heard_from,
-        // Présentation tronquée pour les mineurs (RGPD : minimisation).
-        presentation:
-          app.age != null && app.age < 15
-            ? (app.presentation ?? "").slice(0, 400)
-            : app.presentation,
+        disponibilites: app.schedule,
+        objectifs: app.objectives,
+        niveau_pvp_autodeclare: app.pvp_level,
+        presentation_irl: trunc(app.presentation),
+        presentation_minecraft_paladium: trunc(app.presentation_gaming),
+        motivation: app.motivation,
+        infos_complementaires: app.additional_info ?? null,
       },
       evidence,
     };

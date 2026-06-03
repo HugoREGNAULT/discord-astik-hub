@@ -16,26 +16,25 @@ import { GUILDS, ROLES, CHANNELS } from "@/lib/discord/constants";
 import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
-const GRADES = ["Aucun", "Héros", "Légende", "Divinité", "Staff", "Affilié"] as const;
 
 const applicationSchema = z.object({
+  heardFrom: z.string().trim().min(2, "Champ requis").max(600),
   mcName: z
     .string()
     .trim()
     .min(3, "Pseudo trop court")
     .max(16, "Max 16 caractères")
     .regex(/^[a-zA-Z0-9_]+$/, "Lettres, chiffres et _ uniquement"),
-  presentation: z.string().trim().min(30, "Min 30 caractères").max(3000),
+  presentationIrl: z.string().trim().min(150, "Min 150 caractères").max(3000),
   age: z.number().int().min(10).max(99),
   country: z.enum(COUNTRIES),
-  schedule: z.string().trim().min(3).max(300),
-  weeklyPlaytime: z.string().trim().min(1).max(100),
-  firstVersion: z.string().trim().min(1).max(50),
-  igGrade: z.enum(GRADES),
-  previousFactions: z.string().trim().max(1000).optional().default(""),
-  heardFrom: z.string().trim().min(2).max(300),
-  skills: z.string().trim().min(2).max(1000),
-  knowledgeLevel: z.number().int().min(0).max(10),
+  presentationGaming: z.string().trim().min(250, "Min 250 caractères").max(3000),
+  schedule: z.string().trim().min(2, "Champ requis").max(600),
+  objectives: z.string().trim().min(2, "Champ requis").max(2000),
+  pvpLevel: z.number().int().min(1).max(10),
+  motivation: z.string().trim().min(2, "Champ requis").max(2000),
+  additionalInfo: z.string().trim().max(2000).optional().default(""),
+  formRating: z.number().min(0.5).max(5).multipleOf(0.5).optional(),
 });
 
 async function fetchMojang(name: string): Promise<{ id: string; name: string }> {
@@ -90,7 +89,6 @@ async function submitApplicationInner(
   data: z.infer<typeof applicationSchema>,
 ) {
   {
-
     // Vérifie qu'il n'a pas déjà une candidature en attente
     const existing = await db
       .from("applications")
@@ -144,17 +142,17 @@ async function submitApplicationInner(
         discord_id: user.discordId,
         discord_username: user.username,
         mc_name: mojang.name,
-        presentation: data.presentation,
+        presentation: data.presentationIrl,
+        presentation_gaming: data.presentationGaming,
         age: data.age,
         country: data.country,
         schedule: data.schedule,
-        weekly_playtime: data.weeklyPlaytime,
-        first_version: data.firstVersion,
-        ig_grade: data.igGrade,
-        previous_factions: data.previousFactions || null,
+        objectives: data.objectives,
+        pvp_level: data.pvpLevel,
+        motivation: data.motivation,
         heard_from: data.heardFrom,
-        skills: data.skills,
-        knowledge_level: data.knowledgeLevel,
+        additional_info: data.additionalInfo || null,
+        form_rating: data.formRating ?? null,
         status: "pending",
       })
       .select("id")
@@ -194,9 +192,7 @@ async function submitApplicationInner(
         { name: "Pseudo MC", value: mojang.name, inline: true },
         { name: "Âge", value: String(data.age), inline: true },
         { name: "Pays", value: data.country, inline: true },
-        { name: "Grade IG", value: data.igGrade, inline: true },
-        { name: "Temps de jeu", value: data.weeklyPlaytime, inline: true },
-        { name: "Niveau /10", value: String(data.knowledgeLevel), inline: true },
+        { name: "PvP /10", value: String(data.pvpLevel), inline: true },
         ...blacklistField,
       ],
       footer: { text: `Application ${ins.data.id}` },
@@ -212,7 +208,7 @@ async function submitApplicationInner(
       fields: [
         { name: "Âge", value: String(data.age), inline: true },
         { name: "Pays", value: data.country, inline: true },
-        { name: "Temps de jeu", value: data.weeklyPlaytime, inline: true },
+        { name: "PvP /10", value: String(data.pvpLevel), inline: true },
         ...(blacklistMatches.length > 0
           ? [{ name: "⚠️ Blacklist", value: `${blacklistMatches.length} match(s)` }]
           : []),
@@ -238,7 +234,10 @@ export const getMyApplication = createServerFn({ method: "GET" }).handler(async 
 });
 
 export const listApplications = createServerFn({ method: "GET" })
-  .inputValidator((input: { status?: "pending" | "accepted" | "rejected" | "interview_validated" }) => input ?? {})
+  .inputValidator(
+    (input: { status?: "pending" | "accepted" | "rejected" | "interview_validated" }) =>
+      input ?? {},
+  )
   .handler(async ({ data }) => {
     await requirePermission("recruit.access");
     const { findBlacklistMatches } = await import("@/lib/data/blacklist.server");
@@ -441,9 +440,7 @@ export const decideApplication = createServerFn({ method: "POST" })
       recipientDiscordId: app.discord_id,
       kind: "application",
       title:
-        data.decision === "accepted"
-          ? "✅ Candidature écrite validée"
-          : "❌ Candidature refusée",
+        data.decision === "accepted" ? "✅ Candidature écrite validée" : "❌ Candidature refusée",
       detail:
         data.decision === "accepted"
           ? `Donne tes dispos pour l'entretien dans le salon prévu.`
@@ -503,9 +500,16 @@ export const validateInterview = createServerFn({ method: "POST" })
       removed_interview_pending: removeInterview,
     };
     const roleWarnings: string[] = [];
-    if (!memberPublic.ok) roleWarnings.push(`Rôle membre public échoué (${memberPublic.error ?? memberPublic.status})`);
-    if (!trialFaction.ok) roleWarnings.push(`Rôle essai privé échoué (${trialFaction.error ?? trialFaction.status}) — la personne a-t-elle rejoint le serveur privé ?`);
-    if (!memberFaction.ok) roleWarnings.push(`Rôle membre faction échoué (${memberFaction.error ?? memberFaction.status}) — la personne a-t-elle rejoint le serveur privé ?`);
+    if (!memberPublic.ok)
+      roleWarnings.push(`Rôle membre public échoué (${memberPublic.error ?? memberPublic.status})`);
+    if (!trialFaction.ok)
+      roleWarnings.push(
+        `Rôle essai privé échoué (${trialFaction.error ?? trialFaction.status}) — la personne a-t-elle rejoint le serveur privé ?`,
+      );
+    if (!memberFaction.ok)
+      roleWarnings.push(
+        `Rôle membre faction échoué (${memberFaction.error ?? memberFaction.status}) — la personne a-t-elle rejoint le serveur privé ?`,
+      );
 
     // Fiche membre en essai 14j (idempotent)
     const trialUntil = new Date(Date.now() + 14 * 24 * 3600 * 1000);
@@ -587,23 +591,35 @@ export const validateInterview = createServerFn({ method: "POST" })
     }`;
     const dm = await sendDiscordDM(app.discord_id, dmMessage);
 
-    await logAction(
-      "application_interview_validated",
-      staff.discordId,
-      {
-        application_id: app.id,
-        candidate: app.discord_id,
-        already_validated: alreadyValidated,
-        dm_ok: dm.ok,
-        dm_error: dm.error ?? null,
-        role_results: {
-          member_public: { ok: memberPublic.ok, status: memberPublic.status, error: memberPublic.error ?? null },
-          trial_faction: { ok: trialFaction.ok, status: trialFaction.status, error: trialFaction.error ?? null },
-          member_faction: { ok: memberFaction.ok, status: memberFaction.status, error: memberFaction.error ?? null },
-          removed_interview_pending: { ok: removeInterview.ok, status: removeInterview.status, error: removeInterview.error ?? null },
+    await logAction("application_interview_validated", staff.discordId, {
+      application_id: app.id,
+      candidate: app.discord_id,
+      already_validated: alreadyValidated,
+      dm_ok: dm.ok,
+      dm_error: dm.error ?? null,
+      role_results: {
+        member_public: {
+          ok: memberPublic.ok,
+          status: memberPublic.status,
+          error: memberPublic.error ?? null,
+        },
+        trial_faction: {
+          ok: trialFaction.ok,
+          status: trialFaction.status,
+          error: trialFaction.error ?? null,
+        },
+        member_faction: {
+          ok: memberFaction.ok,
+          status: memberFaction.status,
+          error: memberFaction.error ?? null,
+        },
+        removed_interview_pending: {
+          ok: removeInterview.ok,
+          status: removeInterview.status,
+          error: removeInterview.error ?? null,
         },
       },
-    );
+    });
 
     await logToDiscord("site", {
       title: "🎤 Entretien validé",

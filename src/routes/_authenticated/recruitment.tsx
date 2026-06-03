@@ -15,6 +15,7 @@ import {
   Users,
   Ban,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { lazy, Suspense } from "react";
 const RecruitmentTimelineChart = lazy(() => import("./-recruitment.chart"));
@@ -116,16 +117,23 @@ type Application = {
   discord_username: string;
   mc_name: string;
   presentation: string;
+  presentation_gaming: string | null;
   age: number;
   country: string;
   schedule: string;
-  weekly_playtime: string;
-  first_version: string;
-  ig_grade: string;
-  previous_factions: string | null;
+  objectives: string | null;
+  motivation: string | null;
+  additional_info: string | null;
+  pvp_level: number | null;
+  form_rating: number | null;
   heard_from: string;
-  skills: string;
-  knowledge_level: number;
+  // Anciens champs (candidatures d'avant la refonte 2026-06).
+  weekly_playtime?: string | null;
+  first_version?: string | null;
+  ig_grade?: string | null;
+  previous_factions?: string | null;
+  skills?: string | null;
+  knowledge_level?: number | null;
   status: AppStatus;
   decided_by_username: string | null;
   decided_at: string | null;
@@ -180,7 +188,7 @@ function ApplicationsList({ status }: { status: AppStatus }) {
                     <span className="text-muted-foreground text-xs">· @{app.discord_username}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {app.country} · {app.age} ans · {app.ig_grade} ·{" "}
+                    {app.country} · {app.age} ans ·{" "}
                     {new Date(app.created_at).toLocaleDateString("fr-FR")}
                   </div>
                 </div>
@@ -192,9 +200,11 @@ function ApplicationsList({ status }: { status: AppStatus }) {
                     🚫 Blacklist
                   </Badge>
                 )}
-                <Badge variant="outline" className="ml-2">
-                  {app.knowledge_level}/10
-                </Badge>
+                {(app.pvp_level ?? app.knowledge_level) != null && (
+                  <Badge variant="outline" className="ml-2">
+                    PvP {app.pvp_level ?? app.knowledge_level}/10
+                  </Badge>
+                )}
               </div>
             </AccordionTrigger>
             <AccordionContent>
@@ -272,16 +282,34 @@ function ApplicationDetail({ app }: { app: Application }) {
           ))}
         </div>
       )}
-      <Info label="Présentation">{app.presentation}</Info>
-
+      <Info label="Comment a découvert / qui l'a envoyé">{app.heard_from}</Info>
+      <Info label="Présentation (IRL)">{app.presentation}</Info>
+      {app.presentation_gaming && (
+        <Info label="Présentation (Minecraft / Paladium)">{app.presentation_gaming}</Info>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Info label="Horaires">{app.schedule}</Info>
-        <Info label="Temps de jeu / semaine">{app.weekly_playtime}</Info>
-        <Info label="Première version">{app.first_version}</Info>
-        <Info label="Comment a connu PunkAstik">{app.heard_from}</Info>
+        <Info label="Disponibilités">{app.schedule}</Info>
+        {app.objectives && <Info label="Objectifs">{app.objectives}</Info>}
       </div>
-      <Info label="Compétences">{app.skills}</Info>
-      {app.previous_factions && <Info label="Anciennes factions">{app.previous_factions}</Info>}
+      {app.motivation && <Info label="Motivation">{app.motivation}</Info>}
+      {app.additional_info && <Info label="Ajout libre">{app.additional_info}</Info>}
+      {app.form_rating != null && (
+        <Info label="Note du formulaire (feedback candidat)">
+          <StarsReadOnly value={app.form_rating} />
+        </Info>
+      )}
+      {(app.weekly_playtime || app.first_version || app.skills || app.previous_factions) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border/50 pt-3">
+          {app.weekly_playtime && (
+            <Info label="Temps de jeu / sem. (ancien)">{app.weekly_playtime}</Info>
+          )}
+          {app.first_version && <Info label="Première version (ancien)">{app.first_version}</Info>}
+          {app.skills && <Info label="Compétences (ancien)">{app.skills}</Info>}
+          {app.previous_factions && (
+            <Info label="Anciennes factions (ancien)">{app.previous_factions}</Info>
+          )}
+        </div>
+      )}
 
       <AiReview applicationId={app.id} />
 
@@ -347,8 +375,8 @@ function ApplicationDetail({ app }: { app: Application }) {
           {app.status === "accepted" && (
             <p className="text-[11px] text-muted-foreground italic">
               ⏳ Le candidat a reçu le rôle « attente entretien » et un DM pour donner ses dispos.
-              Clique sur « Entretien validé » après l'entretien vocal pour le passer en essai 14j
-              et lui attribuer les rôles finaux (public + privé).
+              Clique sur « Entretien validé » après l'entretien vocal pour le passer en essai 14j et
+              lui attribuer les rôles finaux (public + privé).
             </p>
           )}
           {app.status === "interview_validated" && (
@@ -435,6 +463,30 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
+function StarsReadOnly({ value }: { value: number }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="inline-flex">
+        {[0, 1, 2, 3, 4].map((i) => {
+          const fill = Math.max(0, Math.min(1, value - i));
+          return (
+            <span key={i} className="relative inline-block w-4 h-4">
+              <Star className="w-4 h-4 text-muted-foreground/40" strokeWidth={1.5} />
+              <span
+                className="absolute inset-0 overflow-hidden"
+                style={{ width: `${fill * 100}%` }}
+              >
+                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" strokeWidth={1.5} />
+              </span>
+            </span>
+          );
+        })}
+      </span>
+      <span className="text-xs text-muted-foreground tabular-nums">{value}/5</span>
+    </span>
+  );
+}
+
 function AiReview({ applicationId }: { applicationId: string }) {
   const qc = useQueryClient();
   const reviewFn = useServerFn(reviewApplication);
@@ -482,9 +534,7 @@ function AiReview({ applicationId }: { applicationId: string }) {
         </Button>
       </div>
 
-      {isLoading && (
-        <div className="text-xs text-muted-foreground">Chargement de l'avis…</div>
-      )}
+      {isLoading && <div className="text-xs text-muted-foreground">Chargement de l'avis…</div>}
 
       {!isLoading && !hasReview && (
         <div className="text-xs text-muted-foreground">
@@ -503,11 +553,7 @@ function AiReview({ applicationId }: { applicationId: string }) {
             <div className="h-2 w-full rounded-full bg-primary/10 overflow-hidden">
               <div
                 className={`h-full ${
-                  ai.score >= 70
-                    ? "bg-emerald-500"
-                    : ai.score >= 40
-                      ? "bg-amber-500"
-                      : "bg-red-500"
+                  ai.score >= 70 ? "bg-emerald-500" : ai.score >= 40 ? "bg-amber-500" : "bg-red-500"
                 }`}
                 style={{ width: `${Math.max(0, Math.min(100, ai.score))}%` }}
               />
@@ -632,7 +678,10 @@ function PaladiumProfilePanel({
   if (!mcUuid) {
     return (
       <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-200 flex items-center justify-between gap-2">
-        <span>UUID Mojang non résolu — le pseudo n'existe pas ou Mojang est en erreur ({mojangError ?? "?"}).</span>
+        <span>
+          UUID Mojang non résolu — le pseudo n'existe pas ou Mojang est en erreur (
+          {mojangError ?? "?"}).
+        </span>
         <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing}>
           {refreshing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Réessayer"}
         </Button>
@@ -744,7 +793,9 @@ function PaladiumProfilePanel({
               return (
                 <Badge key={i} variant="outline" className="text-[10px]">
                   {name}
-                  {lvl != null && <span className="ml-1 text-muted-foreground">lvl {String(lvl)}</span>}
+                  {lvl != null && (
+                    <span className="ml-1 text-muted-foreground">lvl {String(lvl)}</span>
+                  )}
                 </Badge>
               );
             })}
@@ -754,7 +805,13 @@ function PaladiumProfilePanel({
 
       {hasProfile && (
         <div className="pt-1">
-          <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 text-xs">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="h-7 text-xs"
+          >
             {refreshing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : "🔄"} Rafraîchir
           </Button>
         </div>
@@ -771,7 +828,6 @@ function PaladiumStat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
 
 function StatCard({
   icon: Icon,
