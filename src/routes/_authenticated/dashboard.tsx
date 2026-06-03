@@ -34,6 +34,19 @@ function formatVoice(seconds: number) {
   return `${m}m`;
 }
 
+function formatRelative(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.max(0, Math.floor(diff / 1000));
+  if (s < 60) return `il y a ${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `il y a ${h}h`;
+  const d = Math.floor(h / 24);
+  return `il y a ${d}j`;
+}
+
+
 export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
 
 const PERIOD_HOURS: Record<Exclude<LeaderboardPeriod, "all">, number> = {
@@ -230,6 +243,13 @@ function LeaderboardPage() {
     () => (period === "all" ? null : buildBaseline(histData?.snapshots ?? [], metric, period)),
     [histData?.snapshots, metric, period],
   );
+  const lastUpdate = useMemo(() => {
+    const snaps = histData?.snapshots ?? [];
+    if (!snaps.length) return null;
+    let latest = snaps[0].taken_at as string;
+    for (const s of snaps) if ((s.taken_at as string) > latest) latest = s.taken_at as string;
+    return latest;
+  }, [histData?.snapshots]);
   const sortedAll = useMemo(
     () =>
       [...entries].sort(
@@ -272,6 +292,15 @@ function LeaderboardPage() {
             onChange={(v) => setPeriod(v as LeaderboardPeriod)}
           />
         </div>
+        {lastUpdate && (
+          <div
+            className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-3"
+            style={{ fontFamily: "'Space Mono'" }}
+            title={new Date(lastUpdate).toLocaleString("fr-FR")}
+          >
+            Dernière actualisation · {formatRelative(lastUpdate)}
+          </div>
+        )}
 
         <div className="space-y-5">
           <div className="grid sm:grid-cols-3 gap-2">
