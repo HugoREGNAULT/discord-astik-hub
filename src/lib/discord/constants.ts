@@ -17,12 +17,22 @@ export const ROLES = {
   STAFF_TICKET: "1503077087160828066",
   /** Recruteur serveur public */
   RECRUITER_PUBLIC: "1485381120014024876",
-  /** Membre faction */
+  /** Membre faction (serveur privé) */
   MEMBER_FACTION: "1503030823174148216",
   /** Haut staff sur serveur public */
   HIGH_STAFF_PUBLIC: "1485420835165569146",
   /** Candidature acceptée — en attente d'entretien (serveur public) */
   INTERVIEW_PENDING_PUBLIC: "1487627885027266611",
+  /** Membre PunkAstik officiel — serveur public (après entretien validé) */
+  MEMBER_PUBLIC: "1485405351141703700",
+  /** Rôle complémentaire serveur privé attribué à l'entrée en essai */
+  TRIAL_FACTION: "1503345902343950447",
+} as const;
+
+/** Salons (channels) Discord référencés dans le code applicatif */
+export const CHANNELS = {
+  /** Salon où les candidats acceptés à l'écrit postent leurs dispos pour l'entretien */
+  INTERVIEW_AVAILABILITY: "1510035883951132694",
 } as const;
 
 /**
