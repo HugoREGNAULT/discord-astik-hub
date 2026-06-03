@@ -42,7 +42,15 @@ const PERIOD_HOURS: Record<Exclude<LeaderboardPeriod, "all">, number> = {
   "30d": 24 * 30,
 };
 
-/** Baseline par discord_id : dernière valeur de snapshot <= cutoff (sinon 0). */
+/**
+ * Baseline par discord_id pour calculer une croissance sur la fenêtre.
+ * - Idéal : dernière valeur connue AVANT le cutoff (= valeur au début de la
+ *   fenêtre exacte demandée).
+ * - Fallback : 1ère valeur connue À L'INTÉRIEUR de la fenêtre quand aucun
+ *   snapshot n'existe avant (ex. on demande 30j mais l'historique fait 5j).
+ *   On ne renvoie PAS 0 dans ce cas, sinon l'UI afficherait le total alltime
+ *   au lieu d'une croissance partielle.
+ */
 function buildBaseline(
   snapshots: Array<{
     taken_at: string;
@@ -55,22 +63,37 @@ function buildBaseline(
   period: Exclude<LeaderboardPeriod, "all">,
 ): Map<string, number> {
   const cutoff = Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
-  // dernière valeur connue <= cutoff
-  const best = new Map<string, { t: number; v: number }>();
+  const pick = (s: { astik_points: number; voice_total_seconds: number; messages_total: number }) =>
+    metric === "points"
+      ? Number(s.astik_points)
+      : metric === "voice"
+        ? s.voice_total_seconds
+        : s.messages_total;
+  // Dernière valeur connue <= cutoff
+  const before = new Map<string, { t: number; v: number }>();
+  // 1ère valeur connue > cutoff (fallback)
+  const firstAfter = new Map<string, { t: number; v: number }>();
   for (const s of snapshots) {
     const t = new Date(s.taken_at).getTime();
-    if (t > cutoff) continue;
-    const v =
-      metric === "points"
-        ? Number(s.astik_points)
-        : metric === "voice"
-          ? s.voice_total_seconds
-          : s.messages_total;
-    const cur = best.get(s.discord_id);
-    if (!cur || t > cur.t) best.set(s.discord_id, { t, v });
+    const v = pick(s);
+    if (t <= cutoff) {
+      const cur = before.get(s.discord_id);
+      if (!cur || t > cur.t) before.set(s.discord_id, { t, v });
+    } else {
+      const cur = firstAfter.get(s.discord_id);
+      if (!cur || t < cur.t) firstAfter.set(s.discord_id, { t, v });
+    }
   }
   const out = new Map<string, number>();
-  for (const [k, v] of best) out.set(k, v.v);
+  const ids = new Set<string>([...before.keys(), ...firstAfter.keys()]);
+  for (const id of ids) {
+    const b = before.get(id);
+    if (b) out.set(id, b.v);
+    else {
+      const f = firstAfter.get(id);
+      if (f) out.set(id, f.v);
+    }
+  }
   return out;
 }
 
@@ -88,7 +111,11 @@ function getValue(
 ) {
   const total = getCurrentTotal(e, metric);
   if (period === "all" || !baseline) return total;
-  const base = baseline.get(e.discord_id) ?? 0;
+  const base = baseline.get(e.discord_id);
+  // Pas de baseline du tout pour ce membre (aucun snapshot dans l'historique)
+  // → on n'a aucune info pour la fenêtre, on renvoie 0 plutôt que le total
+  // alltime pour ne pas tromper le tri.
+  if (base == null) return 0;
   return Math.max(0, total - base);
 }
 
@@ -291,7 +318,9 @@ function LeaderboardPage() {
             topEntries={top3}
             metric={metric}
             period={period}
+            baseline={baseline}
           />
+
 
           <div className="border-t border-zinc-800 pt-4 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">

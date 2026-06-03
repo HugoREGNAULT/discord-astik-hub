@@ -28,6 +28,8 @@ interface Props {
   topEntries: LeaderboardEntry[]; // already sorted top-3
   metric: LeaderboardMetric;
   period: Period;
+  /** Baseline calculée côté parent (même logique que les cartes top3). */
+  baseline: Map<string, number> | null;
 }
 
 const COLORS = ["hsl(var(--primary))", "#facc15", "#f97316"];
@@ -52,14 +54,14 @@ function formatTick(value: number, metric: LeaderboardMetric) {
   return String(value);
 }
 
-export function LeaderboardChart({ snapshots, topEntries, metric, period }: Props) {
+export function LeaderboardChart({ snapshots, topEntries, metric, period, baseline }: Props) {
   const top3 = topEntries.slice(0, 3);
 
   const data = useMemo(() => {
     if (top3.length === 0) return [];
     const allowed = new Set(top3.map((e) => e.discord_id));
-    // Append a synthetic "now" snapshot from live totals so the chart reflects
-    // the most recent updates without waiting for the next hourly capture.
+    // Snapshot synthétique "now" depuis les totaux live pour refléter
+    // les dernières mises à jour sans attendre le snapshot horaire suivant.
     const nowIso = new Date().toISOString();
     const liveSnapshots: Snapshot[] = top3.map((e) => ({
       taken_at: nowIso,
@@ -71,22 +73,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
       messages_7d: Number(e.messages_7d ?? 0),
     }));
     const allSnapshots: Snapshot[] = [...snapshots, ...liveSnapshots];
-    // Filtre la fenêtre temporelle
     const cutoff = period === "all" ? 0 : Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
-    // Baseline par membre = dernière valeur connue <= cutoff
-    const baseline = new Map<string, number>();
-    if (period !== "all") {
-      const best = new Map<string, { t: number; v: number }>();
-      for (const s of allSnapshots) {
-        if (!allowed.has(s.discord_id)) continue;
-        const t = new Date(s.taken_at).getTime();
-        if (t > cutoff) continue;
-        const v = pickTotal(s, metric);
-        const cur = best.get(s.discord_id);
-        if (!cur || t > cur.t) best.set(s.discord_id, { t, v });
-      }
-      for (const [k, v] of best) baseline.set(k, v.v);
-    }
 
     const byTime = new Map<string, Record<string, number | string>>();
     for (const s of allSnapshots) {
@@ -100,11 +87,16 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period }: Prop
         byTime.set(bucket, row);
       }
       const total = pickTotal(s, metric);
-      row[s.discord_id] =
-        period === "all" ? total : Math.max(0, total - (baseline.get(s.discord_id) ?? total));
+      if (period === "all" || !baseline) {
+        row[s.discord_id] = total;
+      } else {
+        const base = baseline.get(s.discord_id);
+        // Pas de baseline pour ce membre → on ne trace pas (évite ligne plate à 0).
+        if (base != null) row[s.discord_id] = Math.max(0, total - base);
+      }
     }
     return Array.from(byTime.values()).sort((a, b) => String(a.t).localeCompare(String(b.t)));
-  }, [snapshots, top3, metric, period]);
+  }, [snapshots, top3, metric, period, baseline]);
 
   if (data.length < 2) {
     return (
