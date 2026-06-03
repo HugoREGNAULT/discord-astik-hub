@@ -155,6 +155,33 @@ export async function addGuildMemberRole(
   return { ok: false, status: res.status, error: body || `HTTP ${res.status}` };
 }
 
+/**
+ * Retire un rôle Discord à un membre. 204 = succès, 404 = user pas dans le
+ * guild ou rôle déjà absent (considéré ok pour rester idempotent côté workflow).
+ */
+export async function removeGuildMemberRole(
+  guildId: string,
+  userId: string,
+  roleId: string,
+): Promise<{ ok: boolean; status: number; error?: string }> {
+  if (!process.env.DISCORD_BOT_TOKEN) {
+    return { ok: false, status: 0, error: "DISCORD_BOT_TOKEN missing" };
+  }
+  const res = await fetchWithRetry(
+    `${DISCORD_API}/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bot ${BOT_TOKEN()}` },
+    },
+    { bucket: "discord" },
+  );
+  if (res.status === 204 || res.status === 404) {
+    return { ok: true, status: res.status };
+  }
+  const body = await res.text().catch(() => "");
+  return { ok: false, status: res.status, error: body || `HTTP ${res.status}` };
+}
+
 /** Récupère les rôles agrégés d'un user sur les deux serveurs surveillés. */
 export async function fetchAggregatedRoles(userId: string): Promise<string[]> {
   const [pub, fac] = await Promise.all([

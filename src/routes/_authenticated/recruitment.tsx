@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   listApplications,
   decideApplication,
+  validateInterview,
   getApplicationStats,
 } from "@/lib/data/applications.functions";
 import {
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/_authenticated/recruitment")({
   ),
 });
 
-type AppStatus = "pending" | "accepted" | "rejected";
+type AppStatus = "pending" | "accepted" | "rejected" | "interview_validated";
 
 function RecruitmentPage() {
   const [tab, setTab] = useState<AppStatus>("pending");
@@ -71,7 +72,7 @@ function RecruitmentPage() {
       <PageHeader
         code="// recruitment"
         title="Candidatures"
-        description="Accepte ou refuse les candidatures à la PunkAstik. Les candidats sont notifiés en DM Discord."
+        description="Étape 1 : valider la candidature écrite (DM dispo entretien). Étape 2 : valider l'entretien (rôles finaux + essai 14j)."
       />
 
       <ApplicationStats />
@@ -82,7 +83,10 @@ function RecruitmentPage() {
             <Clock className="w-4 h-4 mr-1" /> En attente
           </TabsTrigger>
           <TabsTrigger value="accepted">
-            <CheckCircle2 className="w-4 h-4 mr-1" /> Acceptées
+            <CheckCircle2 className="w-4 h-4 mr-1" /> À entretenir
+          </TabsTrigger>
+          <TabsTrigger value="interview_validated">
+            <Sparkles className="w-4 h-4 mr-1" /> Entretien validé
           </TabsTrigger>
           <TabsTrigger value="rejected">
             <XCircle className="w-4 h-4 mr-1" /> Refusées
@@ -126,6 +130,8 @@ type Application = {
   decided_by_username: string | null;
   decided_at: string | null;
   decision_reason: string | null;
+  interview_validated_at?: string | null;
+  interview_validated_by_username?: string | null;
   created_at: string;
   blacklist_matches?: BlacklistMatch[];
 };
@@ -205,7 +211,8 @@ function ApplicationsList({ status }: { status: AppStatus }) {
 function ApplicationDetail({ app }: { app: Application }) {
   const qc = useQueryClient();
   const decideFn = useServerFn(decideApplication);
-  const [open, setOpen] = useState<"accept" | "reject" | null>(null);
+  const validateFn = useServerFn(validateInterview);
+  const [open, setOpen] = useState<"accept" | "reject" | "interview" | null>(null);
   const [reason, setReason] = useState("");
 
   const mutation = useMutation({
@@ -213,10 +220,30 @@ function ApplicationDetail({ app }: { app: Application }) {
       decideFn({ data: { applicationId: app.id, decision, reason } }),
     onSuccess: (res) => {
       toast.success(
-        `Candidature ${open === "accept" ? "acceptée" : "refusée"}.${
+        `Candidature ${open === "accept" ? "validée (écrit)" : "refusée"}.${
           res.dmOk ? " DM Discord envoyé." : " (DM Discord échoué)"
         }`,
       );
+      setOpen(null);
+      setReason("");
+      qc.invalidateQueries({ queryKey: ["applications"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const interviewMutation = useMutation({
+    mutationFn: () => validateFn({ data: { applicationId: app.id, reason } }),
+    onSuccess: (res) => {
+      if (res.roleWarnings && res.roleWarnings.length > 0) {
+        toast.warning(
+          `Entretien validé avec ${res.roleWarnings.length} alerte(s) rôle. ${res.roleWarnings[0]}`,
+          { duration: 8000 },
+        );
+      } else {
+        toast.success(
+          `Entretien validé — essai 14j.${res.dmOk ? " DM Discord envoyé." : " (DM Discord échoué)"}`,
+        );
+      }
       setOpen(null);
       setReason("");
       qc.invalidateQueries({ queryKey: ["applications"] });
@@ -261,7 +288,7 @@ function ApplicationDetail({ app }: { app: Application }) {
       {app.status === "pending" ? (
         <div className="flex gap-2 pt-2">
           <Button onClick={() => setOpen("accept")} className="bg-emerald-600 hover:bg-emerald-700">
-            <CheckCircle2 className="w-4 h-4 mr-1" /> Accepter
+            <CheckCircle2 className="w-4 h-4 mr-1" /> Accepter (écrit)
           </Button>
           <Button variant="destructive" onClick={() => setOpen("reject")}>
             <XCircle className="w-4 h-4 mr-1" /> Refuser
@@ -270,7 +297,9 @@ function ApplicationDetail({ app }: { app: Application }) {
       ) : (
         <div className="space-y-2 border-t pt-3">
           <div className="text-xs text-muted-foreground">
-            {app.status === "accepted" ? "✅ Acceptée" : "❌ Refusée"}
+            {app.status === "accepted" && "✅ Acceptée à l'écrit — en attente d'entretien"}
+            {app.status === "interview_validated" && "🎉 Entretien validé — membre en essai"}
+            {app.status === "rejected" && "❌ Refusée"}
             {app.decided_by_username && (
               <>
                 {" "}
@@ -281,15 +310,32 @@ function ApplicationDetail({ app }: { app: Application }) {
             {app.decision_reason && (
               <div className="mt-1 italic">Motif : {app.decision_reason}</div>
             )}
+            {app.status === "interview_validated" && app.interview_validated_by_username && (
+              <div className="mt-1">
+                Entretien validé par <strong>{app.interview_validated_by_username}</strong>
+                {app.interview_validated_at && (
+                  <> le {new Date(app.interview_validated_at).toLocaleDateString("fr-FR")}</>
+                )}
+              </div>
+            )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {app.status === "accepted" && (
+              <Button
+                size="sm"
+                onClick={() => setOpen("interview")}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Sparkles className="w-4 h-4 mr-1" /> Entretien validé
+              </Button>
+            )}
             {app.status === "rejected" && (
               <Button
                 size="sm"
                 onClick={() => setOpen("accept")}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                <CheckCircle2 className="w-4 h-4 mr-1" /> Finalement accepter
+                <CheckCircle2 className="w-4 h-4 mr-1" /> Finalement accepter (écrit)
               </Button>
             )}
             {app.status === "accepted" && (
@@ -300,9 +346,24 @@ function ApplicationDetail({ app }: { app: Application }) {
           </div>
           {app.status === "accepted" && (
             <p className="text-[11px] text-muted-foreground italic">
-              ⚠️ Passer cette candidature à « refusée » n'enlève pas automatiquement le membre — à
-              gérer manuellement dans la fiche membre.
+              ⏳ Le candidat a reçu le rôle « attente entretien » et un DM pour donner ses dispos.
+              Clique sur « Entretien validé » après l'entretien vocal pour le passer en essai 14j
+              et lui attribuer les rôles finaux (public + privé).
             </p>
+          )}
+          {app.status === "interview_validated" && (
+            <p className="text-[11px] text-muted-foreground italic">
+              Le membre est en période d'essai. Si certains rôles privés n'ont pas pu être posés
+              (personne pas encore sur le serveur faction), tu peux relancer « Entretien validé »
+              une fois qu'elle a rejoint.
+            </p>
+          )}
+          {app.status === "interview_validated" && (
+            <div className="pt-1">
+              <Button size="sm" variant="outline" onClick={() => setOpen("interview")}>
+                <Sparkles className="w-4 h-4 mr-1" /> Relancer attribution des rôles
+              </Button>
+            </div>
           )}
         </div>
       )}
@@ -311,19 +372,27 @@ function ApplicationDetail({ app }: { app: Application }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {open === "accept" ? "Accepter" : "Refuser"} {app.mc_name} ?
+              {open === "accept" && `Accepter la candidature écrite de ${app.mc_name} ?`}
+              {open === "reject" && `Refuser ${app.mc_name} ?`}
+              {open === "interview" && `Valider l'entretien de ${app.mc_name} ?`}
             </DialogTitle>
             <DialogDescription>
-              {open === "accept"
-                ? "Le candidat sera ajouté aux membres et notifié en DM Discord."
-                : "Le candidat sera notifié du refus en DM Discord."}
+              {open === "accept" &&
+                "Le candidat reçoit le rôle « attente entretien » et un DM pour donner ses dispos dans le salon prévu. Aucune fiche membre n'est créée à cette étape."}
+              {open === "reject" && "Le candidat sera notifié du refus en DM Discord."}
+              {open === "interview" &&
+                "Le candidat passe en période d'essai 14j, rôles public + privé attribués, DM de bienvenue. Si la personne n'est pas encore sur le serveur privé, les rôles privés échoueront silencieusement — relance ce bouton plus tard."}
             </DialogDescription>
           </DialogHeader>
           <Textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={
-              open === "accept" ? "Message de bienvenue (optionnel)" : "Motif du refus (optionnel)"
+              open === "interview"
+                ? "Message de bienvenue (optionnel)"
+                : open === "accept"
+                  ? "Message ajouté au DM (optionnel)"
+                  : "Motif du refus (optionnel)"
             }
             rows={4}
           />
@@ -332,15 +401,20 @@ function ApplicationDetail({ app }: { app: Application }) {
               Annuler
             </Button>
             <Button
-              onClick={() => mutation.mutate(open === "accept" ? "accepted" : "rejected")}
-              disabled={mutation.isPending}
+              onClick={() => {
+                if (open === "interview") interviewMutation.mutate();
+                else mutation.mutate(open === "accept" ? "accepted" : "rejected");
+              }}
+              disabled={mutation.isPending || interviewMutation.isPending}
               className={
-                open === "accept"
-                  ? "bg-emerald-600 hover:bg-emerald-700"
-                  : "bg-red-600 hover:bg-red-700"
+                open === "reject"
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-emerald-600 hover:bg-emerald-700"
               }
             >
-              {mutation.isPending && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
+              {(mutation.isPending || interviewMutation.isPending) && (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              )}
               Confirmer
             </Button>
           </DialogFooter>
@@ -475,6 +549,19 @@ function AiReview({ applicationId }: { applicationId: string }) {
               </ul>
             </div>
           )}
+
+          {ai.followup_questions && ai.followup_questions.length > 0 && (
+            <div className="rounded-md border border-primary/30 bg-background/40 p-2">
+              <div className="text-[11px] uppercase tracking-wider text-primary font-medium mb-1">
+                Questions à poser en entretien
+              </div>
+              <ul className="text-sm list-decimal pl-5 space-y-1">
+                {ai.followup_questions.map((q, i) => (
+                  <li key={i}>{q}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 
@@ -485,36 +572,34 @@ function AiReview({ applicationId }: { applicationId: string }) {
       )}
 
       {ev && (
-        <details className="text-xs text-muted-foreground border-t border-primary/20 pt-2">
-          <summary className="cursor-pointer hover:text-foreground">
-            Sources brutes (profil Paladium, blacklist, alts)
-          </summary>
-          <div className="mt-2 space-y-2">
-            <div>
-              <span className="font-medium text-foreground">UUID Mojang :</span>{" "}
-              {ev.mc_uuid ?? <em>non résolu</em>}
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Paladium :</span>{" "}
-              {ev.paladium_error
-                ? `indisponible (${ev.paladium_error.slice(0, 60)})`
-                : ev.paladium_profile
-                  ? "profil récupéré"
-                  : "aucune donnée"}
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Blacklist :</span>{" "}
-              {ev.blacklist_matches.length} match(s)
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Alts détectés :</span>{" "}
-              {ev.alt_signals.length}
-            </div>
-            <pre className="mt-2 max-h-64 overflow-auto rounded bg-background/50 p-2 text-[10px] leading-tight">
+        <div className="border-t border-primary/20 pt-3 space-y-2">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            Profil joueur Paladium
+          </div>
+          <PaladiumProfilePanel
+            mcUuid={ev.mc_uuid}
+            mojangError={ev.mojang_error}
+            paladiumError={ev.paladium_error}
+            paladiumProfile={ev.paladium_profile}
+            paladiumJobs={ev.paladium_jobs}
+            onRefresh={() => mutation.mutate(true)}
+            refreshing={mutation.isPending}
+          />
+          <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground pt-1">
+            <span>
+              <strong className="text-foreground">Blacklist :</strong> {ev.blacklist_matches.length}
+            </span>
+            <span>
+              <strong className="text-foreground">Alts :</strong> {ev.alt_signals.length}
+            </span>
+          </div>
+          <details className="text-[10px] text-muted-foreground">
+            <summary className="cursor-pointer hover:text-foreground">JSON brut</summary>
+            <pre className="mt-1 max-h-64 overflow-auto rounded bg-background/50 p-2 leading-tight">
               {JSON.stringify(ev, null, 2)}
             </pre>
-          </div>
-        </details>
+          </details>
+        </div>
       )}
 
       {review && (
@@ -526,6 +611,130 @@ function AiReview({ applicationId }: { applicationId: string }) {
     </div>
   );
 }
+
+function PaladiumProfilePanel({
+  mcUuid,
+  mojangError,
+  paladiumError,
+  paladiumProfile,
+  paladiumJobs,
+  onRefresh,
+  refreshing,
+}: {
+  mcUuid: string | null;
+  mojangError?: string;
+  paladiumError?: string;
+  paladiumProfile: unknown;
+  paladiumJobs: unknown;
+  onRefresh: () => void;
+  refreshing: boolean;
+}) {
+  if (!mcUuid) {
+    return (
+      <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-200 flex items-center justify-between gap-2">
+        <span>UUID Mojang non résolu — le pseudo n'existe pas ou Mojang est en erreur ({mojangError ?? "?"}).</span>
+        <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing}>
+          {refreshing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Réessayer"}
+        </Button>
+      </div>
+    );
+  }
+
+  const hasProfile = !!paladiumProfile && typeof paladiumProfile === "object";
+  const profile = hasProfile ? (paladiumProfile as Record<string, unknown>) : null;
+  const jobs = Array.isArray(paladiumJobs)
+    ? (paladiumJobs as Array<Record<string, unknown>>)
+    : null;
+
+  const pick = (...keys: string[]): string | number | null => {
+    if (!profile) return null;
+    for (const k of keys) {
+      const v = profile[k];
+      if (v != null && (typeof v === "string" || typeof v === "number")) return v;
+    }
+    return null;
+  };
+
+  const level = pick("level", "lvl");
+  const xp = pick("xp", "experience");
+  const money = pick("money", "balance", "coins");
+  const faction = pick("factionName", "faction", "guild", "guildName");
+  const rank = pick("rank", "grade");
+  const playtime = pick("playtime", "timePlayed", "totalPlaytime");
+
+  return (
+    <div className="space-y-2">
+      {paladiumError && (
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-200 flex items-center justify-between gap-2">
+          <span className="truncate">⚠️ API Paladium : {paladiumError.slice(0, 200)}</span>
+          <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing}>
+            {refreshing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Réessayer"}
+          </Button>
+        </div>
+      )}
+
+      {!hasProfile && !paladiumError && (
+        <div className="text-xs text-muted-foreground italic">
+          Aucune donnée Paladium pour ce joueur (jamais connecté sur le serveur ?).
+        </div>
+      )}
+
+      {hasProfile && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+          {level != null && <PaladiumStat label="Niveau" value={String(level)} />}
+          {xp != null && <PaladiumStat label="XP" value={String(xp)} />}
+          {money != null && (
+            <PaladiumStat
+              label="Money"
+              value={typeof money === "number" ? money.toLocaleString("fr-FR") : String(money)}
+            />
+          )}
+          {faction != null && <PaladiumStat label="Faction IG" value={String(faction)} />}
+          {rank != null && <PaladiumStat label="Rang shop" value={String(rank)} />}
+          {playtime != null && <PaladiumStat label="Temps de jeu" value={String(playtime)} />}
+        </div>
+      )}
+
+      {jobs && jobs.length > 0 && (
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1 mt-2">
+            Métiers ({jobs.length})
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {jobs.slice(0, 12).map((j, i) => {
+              const name = String(j.name ?? j.job ?? j.type ?? "?");
+              const lvl = j.level ?? j.lvl ?? j.tier ?? null;
+              return (
+                <Badge key={i} variant="outline" className="text-[10px]">
+                  {name}
+                  {lvl != null && <span className="ml-1 text-muted-foreground">lvl {String(lvl)}</span>}
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {hasProfile && (
+        <div className="pt-1">
+          <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 text-xs">
+            {refreshing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : "🔄"} Rafraîchir
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PaladiumStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border bg-background/40 p-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-medium truncate">{value}</div>
+    </div>
+  );
+}
+
 
 function StatCard({
   icon: Icon,

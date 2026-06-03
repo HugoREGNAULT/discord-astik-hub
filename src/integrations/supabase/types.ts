@@ -212,6 +212,9 @@ export type Database = {
           heard_from: string
           id: string
           ig_grade: string
+          interview_validated_at: string | null
+          interview_validated_by_discord_id: string | null
+          interview_validated_by_username: string | null
           knowledge_level: number
           mc_name: string
           presentation: string
@@ -237,6 +240,9 @@ export type Database = {
           heard_from: string
           id?: string
           ig_grade: string
+          interview_validated_at?: string | null
+          interview_validated_by_discord_id?: string | null
+          interview_validated_by_username?: string | null
           knowledge_level: number
           mc_name: string
           presentation: string
@@ -262,6 +268,9 @@ export type Database = {
           heard_from?: string
           id?: string
           ig_grade?: string
+          interview_validated_at?: string | null
+          interview_validated_by_discord_id?: string | null
+          interview_validated_by_username?: string | null
           knowledge_level?: number
           mc_name?: string
           presentation?: string

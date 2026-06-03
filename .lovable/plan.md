@@ -1,80 +1,93 @@
-# Unification DA — style "Outils Paladium" partout
 
-## Objectif
+# Refonte du flow recrutement
 
-Appliquer la direction artistique terminal/cyberpunk (déjà utilisée dans `/tools/*` et sur punkastik.com) à toutes les pages authentifiées de l'app, pour avoir une cohérence visuelle complète.
+Le flow devient explicitement en 2 étapes côté staff : **Accepter la candidature écrite** (donne juste le rôle attente + DM dispo entretien), puis **Entretien validé** (passe le candidat membre et applique les rôles finaux). Plus deux améliorations sur la fiche : profil Paladium correctement affiché, et 2-3 questions IA générées en fonction du profil.
 
-## La DA en question (référence)
+## Nouveau flow
 
-- **Fond** : `zinc-950` / `zinc-900/70` avec `backdrop-blur`
-- **Accents** : rose `#ec4899` (pink-500) + blurple `#5865F2` ponctuel
-- **Typo** : `Space Mono` UPPERCASE tracking large (`0.2em–0.4em`) pour labels/codes, `Space Grotesk` bold pour titres
-- **Bordures** : `border-zinc-800`, nettes, **pas de border-radius** (carré)
-- **Marqueurs "code"** : préfixes `// section` et `[NN]` partout
-- **Boutons** : pink solid avec `border-b-4 border-black/20`, uppercase tracké
-- **Tableaux** : header sticky `bg-zinc-900`, lignes `border-b border-zinc-900`, hover `bg-zinc-900/50`
+```
+postulant /candidature
+        │ submitApplication (inchangé) → status=pending
+        ▼
+[ /recruitment — fiche candidature ]
+   ┌─ Bouton "Accepter (écrit)"  ─────────────────────────┐
+   │  • status = "accepted"                                │
+   │  • rôle public INTERVIEW_PENDING_PUBLIC (déjà OK)    │
+   │  • DM : "Candidature écrite validée, dispo pour     │
+   │     entretien dans <#1510035883951132694>"           │
+   │  • PAS de fiche members, PAS de trial, PAS d'onboarding
+   └───────────────────────────────────────────────────────┘
+        │
+        ▼
+[ entretien IRL ]
+        │
+        ▼
+   ┌─ Nouveau bouton "Entretien validé" (uniquement si status=accepted)
+   │  • Tente d'ajouter sur PUBLIC : rôle 1485405351141703700
+   │  • Tente d'ajouter sur FACTION : rôles 1503345902343950447
+   │    + MEMBER_FACTION (1503030823174148216)
+   │    → si la personne n'est pas encore dans le guild faction,
+   │       on log l'échec et on affiche un warning ; le bouton
+   │       reste cliquable pour réessayer
+   │  • Crée/MAJ la fiche members en status='trial' + tasks onboarding
+   │  • status applications = "interview_validated"
+   │  • Retire le rôle INTERVIEW_PENDING_PUBLIC (cleanup)
+   │  • DM de bienvenue (équivalent de l'actuel "accepté")
+   │  • Notif staff + audit log
+   └──────────────────────────────────────────────────────
+```
 
-## Approche
+## Changements
 
-### Phase 1 — Primitives partagées (1 fichier)
+### 1. `src/lib/discord/constants.ts`
+Ajouter les 3 nouveaux IDs nommés :
+- `MEMBER_PUBLIC = "1485405351141703700"` (public)
+- `TRIAL_FACTION = "1503345902343950447"` (privé, à côté de MEMBER_FACTION — nom provisoire)
+- `INTERVIEW_CHANNEL = "1510035883951132694"` (salon dispo)
 
-Étendre `src/components/tools/ToolsUi.tsx` (déjà fait pour les outils) en **kit DA global** réutilisable hors `/tools` :
+### 2. `src/lib/data/applications.functions.ts`
+- `decideApplication` : **simplifier** la branche `accepted` — ne fait plus que rôle attente + DM "dispo entretien dans <#...>". Plus de `members.upsert`, plus de `onboarding_tasks`, plus de `trial_until`.
+- DM accepté : nouveau wording + mention du salon.
+- Nouvelle serverFn `validateInterview({ applicationId })` (perm `recruit.access`) :
+  - guard : application doit être `accepted`
+  - tente PUT sur les 3 rôles + retire le rôle attente, agrège les échecs sans tout casser
+  - upsert `members` status=`trial`, `trial_until = +14j`, insert tasks onboarding (idempotent)
+  - update applications → `status = "interview_validated"`, `interview_validated_at`, `interview_validated_by_*`
+  - DM bienvenue + log `application_interview_validated`
+- `listApplications` accepte le nouveau statut.
 
-- `PageHeader` (code + titre + description) — alias de `ToolHeader`
-- `PageCard` — alias de `ToolCard`
-- `DataTable` wrapper (header sticky pink/mono)
-- `PrimaryButton` / `GhostButton` (style pink + border-b-4)
-- `StatTile`, `EmptyBlock`, `LoadingBlock`, `ErrorBlock` (déjà existants)
-- `SectionLabel` (`// xxx` en pink mono)
+### 3. Migration DB
+- Étendre la contrainte/CHECK implicite du `status` côté code (la table n'a pas de check actif). Ajouter colonnes :
+  - `interview_validated_at TIMESTAMPTZ NULL`
+  - `interview_validated_by_discord_id TEXT NULL`
+  - `interview_validated_by_username TEXT NULL`
 
-Déplacé vers `src/components/ui/da/` pour clarifier que c'est réutilisable partout, avec ré-export depuis `tools/ToolsUi` pour ne rien casser.
+### 4. `src/lib/data/applications-ai.functions.ts`
+- Élargir le prompt système : demander aussi `followup_questions: string[]` (2-3 questions personnalisées basées sur profil Paladium + réponses) en plus de `score/fit/strengths/concerns`.
+- Étendre le type `AiSynth` et le parsing.
 
-### Phase 2 — Refonte page par page
+### 5. `src/routes/_authenticated/recruitment.tsx`
+- `AppStatus` ajoute `"interview_validated"` + 4ᵉ onglet "Entretien validé".
+- Boutons fiche candidature :
+  - status=`pending` : "Accepter (écrit)" + "Refuser" (comme avant)
+  - status=`accepted` : "Entretien validé ✅" (nouveau, vert) + "Finalement refuser"
+  - status=`interview_validated` : badge "Membre en essai" + lien vers `/members/:id`
+- Section `AiReview` :
+  - Remplacer le bloc « sources brutes » par un **panneau profil Paladium lisible** (niveau, faction IG, money, métiers principaux avec niveau) au lieu d'un simple "profil récupéré" / JSON dump. Si `paladium_error`, afficher un message clair + bouton "Réessayer".
+  - Afficher `followup_questions` IA en liste cochable (purement visuelle, pour aider le recruteur en entretien).
 
-Appliquer le kit sur chaque route, en gardant **toute la logique métier intacte** (juste le visuel) :
-
-Pages dashboard/admin :
-- `dashboard.tsx`, `me.tsx`, `profile.tsx`, `welcome.tsx`
-- `members.tsx`, `members.$id.tsx`, `effectif.tsx`, `staff.tsx`
-- `points.tsx`, `donations.tsx`, `objectives.tsx`, `absences.tsx`
-- `polls.tsx`, `polls.index.tsx`, `polls.$id.tsx`
-- `recruitment.tsx`, `blacklist.tsx`, `logs.tsx`, `admin.tsx`, `config.tsx`, `pdc.tsx`
-
-Pour chacune :
-1. Remplacer cartes shadcn `Card` → `PageCard`
-2. Remplacer titres ad-hoc → `PageHeader` avec code `// xx.yy`
-3. Remplacer boutons primaires → style pink mono uppercase
-4. Tableaux → style header pink sticky
-5. Supprimer border-radius résiduel sur les conteneurs principaux
-
-### Phase 3 — Chrome partagé
-
-- `AppSidebar.tsx` : passer en fond `zinc-950`, items en mono uppercase, accent pink sur item actif
-- `__root.tsx` / layouts : vérifier fond global `zinc-950`
-- `NotificationBell`, `CommandPalette`, `ThemeToggle` : aligner sur DA
-
-### Phase 4 — Public
-
-- `routes/index.tsx` (punkastik.com home) — déjà à priori dans la DA, vérification rapide
-- `candidature.tsx`, `login.tsx`, `legal.tsx`, `forbidden.tsx` : aligner
+### 6. Bug API/IA "on voit pas le profil"
+Cause probable : l'UI affiche seulement `"profil récupéré"` ou `"indisponible (<error>)"` dans un `<details>` replié, ce qui donne l'impression que ça ne marche pas. La data est bien là, juste pas rendue. Le fix vit dans le bloc Paladium du composant `AiReview` (point 5) : rendu structuré + bouton retry.
 
 ## Détails techniques
 
-- **Pas de refonte de la logique** : que du JSX/className. Aucun changement de data-flow, server fn, requête, route.
-- **Pas de migration de design tokens CSS** : on garde `src/styles.css` tel quel (les classes Tailwind `bg-zinc-*` / `text-pink-*` sont utilisées directement par cohérence avec l'existant outils).
-- **shadcn `Card` / `Button`** restent dispos pour les composants tiers (dialogs, dropdowns) mais ne sont plus utilisés directement dans les pages — on passe par le kit DA.
-- Build vérifié à la fin de chaque phase.
+- **Rôles à la jonction du privé** : pas d'auto-assign sur join (l'utilisateur a choisi "Nouveau bouton"). Si le bot n'arrive pas à mettre les rôles privés (404 = user pas dans le guild), `validateInterview` renvoie un warning par rôle ; le bouton reste disponible pour relance.
+- **Retrait rôle attente** : `DELETE /guilds/{public}/members/{id}/roles/{INTERVIEW_PENDING_PUBLIC}` via nouvelle helper `removeGuildMemberRole` dans `discord/api.server.ts`.
+- **Idempotence** : si on re-clique "Entretien validé" sur quelqu'un déjà `interview_validated`, on renvoie une erreur claire.
+- **Compat** : les candidatures déjà `accepted` avant la migration restent visibles ; pour elles le bouton "Entretien validé" reste utilisable et créera la fiche membre.
+- **Permissions** : `validateInterview` gated par `recruit.access` (même que decide).
+- **Audit** : nouvelle action `application_interview_validated` avec détail des succès/échecs par rôle, ajoutée au log chain.
 
-## Découpage en livraisons
-
-Vu l'ampleur, je propose de livrer en **3 PRs / 3 tours** :
-
-1. **Tour 1** : Phase 1 (kit) + Phase 3 (chrome sidebar) + 5 pages les plus visibles (`dashboard`, `members`, `members.$id`, `donations`, `points`)
-2. **Tour 2** : Toutes les autres pages auth (polls, recruitment, blacklist, logs, admin, config, effectif, staff, objectives, absences, pdc, profile, me, welcome)
-3. **Tour 3** : Pages publiques + polish (login, candidature, legal, forbidden, NotificationBell, CommandPalette)
-
-## Questions avant de démarrer
-
-1. **OK pour découper en 3 tours** ou tu veux que je tente tout d'un coup (risque de réponse incomplète) ?
-2. **`punkastik.com` (home `/`)** : à retoucher aussi ou elle est déjà nickel selon toi ?
-3. **Mode clair** : on garde le thème dark forcé (l'app est dark-only de toute façon) ou on supprime carrément `ThemeToggle` ?
+## Hors scope (à confirmer plus tard)
+- Détection automatique de la jonction au serveur privé (option non retenue).
+- Renommage des rôles `TRIAL_FACTION` / `MEMBER_PUBLIC` si tu as un nom officiel.
