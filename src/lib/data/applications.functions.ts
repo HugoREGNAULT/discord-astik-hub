@@ -11,8 +11,8 @@ import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
-import { addGuildMemberRole } from "@/lib/discord/api.server";
-import { GUILDS, ROLES } from "@/lib/discord/constants";
+import { addGuildMemberRole, removeGuildMemberRole } from "@/lib/discord/api.server";
+import { GUILDS, ROLES, CHANNELS } from "@/lib/discord/constants";
 import { fetchWithRetry } from "@/lib/http/retry.server";
 
 const COUNTRIES = ["Belgique", "France", "Canada", "Outre-Mer", "Autre"] as const;
@@ -364,10 +364,10 @@ export const decideApplication = createServerFn({ method: "POST" })
       .eq("id", data.applicationId);
     if (upd.error) throw new Error(upd.error.message);
 
-    // Sur acceptation : on crée la fiche membre en période d'essai (14j)
-    // + insertion d'un set standard de tâches d'onboarding.
+    // Sur acceptation (écrite) : on attribue simplement le rôle "attente
+    // d'entretien" + DM demandant les dispos. La création de fiche membre
+    // est repoussée à `validateInterview` (étape 2, après l'entretien).
     let roleAssigned: { ok: boolean; error?: string } = { ok: false };
-    let trialUntilIso: string | null = null;
     if (data.decision === "accepted") {
       const r = await addGuildMemberRole(
         GUILDS.PUBLIC,
@@ -375,71 +375,12 @@ export const decideApplication = createServerFn({ method: "POST" })
         ROLES.INTERVIEW_PENDING_PUBLIC,
       );
       roleAssigned = { ok: r.ok, error: r.error };
-
-      const trialUntil = new Date(Date.now() + 14 * 24 * 3600 * 1000);
-      trialUntilIso = trialUntil.toISOString();
-
-      // Upsert fiche membre en status 'trial'
-      const existing = await db
-        .from("members")
-        .select("discord_id")
-        .eq("discord_id", app.discord_id)
-        .maybeSingle();
-      if (existing.data) {
-        await db
-          .from("members")
-          .update({
-            discord_username: app.discord_username,
-            ig_name: app.mc_name,
-            status: "trial",
-            trial_until: trialUntilIso,
-            arrival_date: new Date().toISOString().slice(0, 10),
-          })
-          .eq("discord_id", app.discord_id);
-      } else {
-        await db.from("members").insert({
-          discord_id: app.discord_id,
-          discord_username: app.discord_username,
-          ig_name: app.mc_name,
-          status: "trial",
-          trial_until: trialUntilIso,
-          arrival_date: new Date().toISOString().slice(0, 10),
-          recruiter_discord_id: staff.discordId,
-        });
-      }
-
-      // Tâches d'onboarding standard (idempotent : on évite les doublons si on
-      // réaccepte une candidature)
-      const existingTasks = await db
-        .from("onboarding_tasks")
-        .select("id")
-        .eq("member_discord_id", app.discord_id)
-        .limit(1);
-      if (!existingTasks.data || existingTasks.data.length === 0) {
-        const defaults = [
-          { key: "discord_faction", label: "Rejoindre le Discord faction" },
-          { key: "base_setup", label: "Configurer sa base / claim" },
-          { key: "first_raid", label: "Participer à un 1er raid" },
-          { key: "rules_read", label: "Lire le règlement" },
-        ];
-        await db.from("onboarding_tasks").insert(
-          defaults.map((t, i) => ({
-            member_discord_id: app.discord_id,
-            label: t.label,
-            template_key: t.key,
-            display_order: i,
-          })),
-        );
-      }
     }
 
     // Notification DM Discord
-    const trialDateStr = trialUntilIso
-      ? new Date(trialUntilIso).toLocaleDateString("fr-FR")
-      : "";
     const message =
       data.decision === "accepted"
-        ? `✅ **Bienvenue en période d'essai !**\n\nTa candidature à la PunkAstik a été retenue par **${staff.username}**.\n\n⏳ Tu es en **période d'essai jusqu'au ${trialDateStr}**. Pendant cette période, complète les tâches d'onboarding sur ton espace perso et fais bonne impression — le staff votera ensuite pour ta titularisation.${
+        ? `✅ **Candidature écrite validée !**\n\nBonne nouvelle, ta candidature à la PunkAstik a été retenue à l'écrit par **${staff.username}**.\n\n🎤 Prochaine étape : **l'entretien vocal**. Indique-nous tes disponibilités dans le salon <#${CHANNELS.INTERVIEW_AVAILABILITY}> dès que possible.${
             data.reason ? `\n\n💬 ${data.reason}` : ""
           }`
         : `❌ **Candidature refusée**\n\nDésolé, ta candidature à la PunkAstik n'a pas été retenue par **${staff.username}**.${
@@ -470,11 +411,13 @@ export const decideApplication = createServerFn({ method: "POST" })
       title: isRedecision
         ? `🔄 Décision modifiée — ${data.decision === "accepted" ? "acceptée" : "refusée"}`
         : data.decision === "accepted"
-          ? "✅ Candidature acceptée"
+          ? "✅ Candidature acceptée (écrite)"
           : "❌ Candidature refusée",
       color: data.decision === "accepted" ? COLORS.success : COLORS.danger,
       description: `Candidature de **${app.discord_username}** (\`${app.mc_name}\`) ${isRedecision ? `re-traitée (de \`${previousStatus}\` → \`${data.decision}\`)` : "traitée"} par **${staff.username}**.${
-        data.decision === "accepted" && !isRedecision ? "\n\n*En attente d'entretien — rôle public attribué.*" : ""
+        data.decision === "accepted" && !isRedecision
+          ? "\n\n*En attente d'entretien — rôle public attribué.*"
+          : ""
       }`,
       fields: [
         { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },
@@ -493,18 +436,17 @@ export const decideApplication = createServerFn({ method: "POST" })
       ],
     });
 
-    // Notif persistée — candidat
     const { notify } = await import("@/lib/data/notify.server");
     void notify({
       recipientDiscordId: app.discord_id,
       kind: "application",
       title:
         data.decision === "accepted"
-          ? "✅ Candidature acceptée"
+          ? "✅ Candidature écrite validée"
           : "❌ Candidature refusée",
       detail:
         data.decision === "accepted"
-          ? `Bienvenue ! Période d'essai jusqu'au ${trialDateStr}.`
+          ? `Donne tes dispos pour l'entretien dans le salon prévu.`
           : data.reason || undefined,
       href: "/me",
     });
@@ -514,5 +456,193 @@ export const decideApplication = createServerFn({ method: "POST" })
       dmOk: dm.ok,
       dmError: dm.error ?? null,
       roleAssigned: data.decision === "accepted" ? roleAssigned.ok : null,
+    };
+  });
+
+// ===========================================================================
+// Étape 2 : Entretien validé → titularisation en période d'essai
+// ===========================================================================
+
+const validateInterviewSchema = z.object({
+  applicationId: z.string().uuid(),
+  reason: z.string().trim().max(1000).optional().default(""),
+});
+
+export const validateInterview = createServerFn({ method: "POST" })
+  .inputValidator((input) => validateInterviewSchema.parse(input))
+  .handler(async ({ data }) => {
+    const staff = await requirePermission("recruit.access");
+
+    const appRes = await db
+      .from("applications")
+      .select("*")
+      .eq("id", data.applicationId)
+      .maybeSingle();
+    if (appRes.error) throw new Error(appRes.error.message);
+    if (!appRes.data) throw new Error("Candidature introuvable.");
+    const app = appRes.data;
+    if (app.status !== "accepted" && app.status !== "interview_validated") {
+      throw new Error(
+        "L'entretien ne peut être validé que sur une candidature acceptée à l'écrit.",
+      );
+    }
+    const alreadyValidated = app.status === "interview_validated";
+
+    // Tentative des 3 rôles + retrait rôle attente (continue même en cas d'échec)
+    const [memberPublic, trialFaction, memberFaction, removeInterview] = await Promise.all([
+      addGuildMemberRole(GUILDS.PUBLIC, app.discord_id, ROLES.MEMBER_PUBLIC),
+      addGuildMemberRole(GUILDS.FACTION, app.discord_id, ROLES.TRIAL_FACTION),
+      addGuildMemberRole(GUILDS.FACTION, app.discord_id, ROLES.MEMBER_FACTION),
+      removeGuildMemberRole(GUILDS.PUBLIC, app.discord_id, ROLES.INTERVIEW_PENDING_PUBLIC),
+    ]);
+
+    const roleResults = {
+      member_public: memberPublic,
+      trial_faction: trialFaction,
+      member_faction: memberFaction,
+      removed_interview_pending: removeInterview,
+    };
+    const roleWarnings: string[] = [];
+    if (!memberPublic.ok) roleWarnings.push(`Rôle membre public échoué (${memberPublic.error ?? memberPublic.status})`);
+    if (!trialFaction.ok) roleWarnings.push(`Rôle essai privé échoué (${trialFaction.error ?? trialFaction.status}) — la personne a-t-elle rejoint le serveur privé ?`);
+    if (!memberFaction.ok) roleWarnings.push(`Rôle membre faction échoué (${memberFaction.error ?? memberFaction.status}) — la personne a-t-elle rejoint le serveur privé ?`);
+
+    // Fiche membre en essai 14j (idempotent)
+    const trialUntil = new Date(Date.now() + 14 * 24 * 3600 * 1000);
+    const trialUntilIso = trialUntil.toISOString();
+    const arrivalDate = new Date().toISOString().slice(0, 10);
+
+    const existing = await db
+      .from("members")
+      .select("discord_id, status")
+      .eq("discord_id", app.discord_id)
+      .maybeSingle();
+    if (existing.data) {
+      // Ne dégrade pas un membre déjà titularisé ('active') : on touche
+      // uniquement si la fiche n'existe pas encore en active.
+      if (existing.data.status !== "active") {
+        await db
+          .from("members")
+          .update({
+            discord_username: app.discord_username,
+            ig_name: app.mc_name,
+            status: "trial",
+            trial_until: trialUntilIso,
+            arrival_date: arrivalDate,
+          })
+          .eq("discord_id", app.discord_id);
+      }
+    } else {
+      await db.from("members").insert({
+        discord_id: app.discord_id,
+        discord_username: app.discord_username,
+        ig_name: app.mc_name,
+        status: "trial",
+        trial_until: trialUntilIso,
+        arrival_date: arrivalDate,
+        recruiter_discord_id: staff.discordId,
+      });
+    }
+
+    // Onboarding tasks par défaut (idempotent)
+    const existingTasks = await db
+      .from("onboarding_tasks")
+      .select("id")
+      .eq("member_discord_id", app.discord_id)
+      .limit(1);
+    if (!existingTasks.data || existingTasks.data.length === 0) {
+      const defaults = [
+        { key: "discord_faction", label: "Rejoindre le Discord faction" },
+        { key: "base_setup", label: "Configurer sa base / claim" },
+        { key: "first_raid", label: "Participer à un 1er raid" },
+        { key: "rules_read", label: "Lire le règlement" },
+      ];
+      await db.from("onboarding_tasks").insert(
+        defaults.map((t, i) => ({
+          member_discord_id: app.discord_id,
+          label: t.label,
+          template_key: t.key,
+          display_order: i,
+        })),
+      );
+    }
+
+    // MAJ statut candidature
+    if (!alreadyValidated) {
+      await db
+        .from("applications")
+        .update({
+          status: "interview_validated",
+          interview_validated_at: new Date().toISOString(),
+          interview_validated_by_discord_id: staff.discordId,
+          interview_validated_by_username: staff.username,
+        })
+        .eq("id", app.id);
+    }
+
+    // DM bienvenue
+    const trialDateStr = trialUntil.toLocaleDateString("fr-FR");
+    const dmMessage = `🎉 **Bienvenue dans la PunkAstik !**\n\nTon entretien a été validé par **${staff.username}**. Tu es maintenant en **période d'essai jusqu'au ${trialDateStr}**.\n\nPendant cette période, complète les tâches d'onboarding sur ton espace perso et fais bonne impression — le staff votera ensuite pour ta titularisation.${
+      data.reason ? `\n\n💬 ${data.reason}` : ""
+    }`;
+    const dm = await sendDiscordDM(app.discord_id, dmMessage);
+
+    await logAction(
+      "application_interview_validated",
+      staff.discordId,
+      {
+        application_id: app.id,
+        candidate: app.discord_id,
+        already_validated: alreadyValidated,
+        dm_ok: dm.ok,
+        dm_error: dm.error ?? null,
+        role_results: {
+          member_public: { ok: memberPublic.ok, status: memberPublic.status, error: memberPublic.error ?? null },
+          trial_faction: { ok: trialFaction.ok, status: trialFaction.status, error: trialFaction.error ?? null },
+          member_faction: { ok: memberFaction.ok, status: memberFaction.status, error: memberFaction.error ?? null },
+          removed_interview_pending: { ok: removeInterview.ok, status: removeInterview.status, error: removeInterview.error ?? null },
+        },
+      },
+    );
+
+    await logToDiscord("site", {
+      title: "🎤 Entretien validé",
+      color: COLORS.success,
+      description: `**${app.discord_username}** (\`${app.mc_name}\`) titularisé en essai (14j) par **${staff.username}**.${
+        roleWarnings.length > 0 ? `\n\n⚠️ ${roleWarnings.length} alerte(s) sur les rôles.` : ""
+      }`,
+      fields: [
+        { name: "Candidat", value: `<@${app.discord_id}>`, inline: true },
+        { name: "Par", value: `<@${staff.discordId}>`, inline: true },
+        { name: "DM envoyé", value: dm.ok ? "Oui" : `Non (${dm.error ?? "?"})`, inline: true },
+        {
+          name: "Rôles",
+          value: [
+            `• Membre public : ${memberPublic.ok ? "✅" : `❌ ${memberPublic.error ?? memberPublic.status}`}`,
+            `• Essai privé : ${trialFaction.ok ? "✅" : `❌ ${trialFaction.error ?? trialFaction.status}`}`,
+            `• Membre faction : ${memberFaction.ok ? "✅" : `❌ ${memberFaction.error ?? memberFaction.status}`}`,
+            `• Retrait attente : ${removeInterview.ok ? "✅" : `❌ ${removeInterview.error ?? removeInterview.status}`}`,
+          ].join("\n"),
+        },
+        ...(data.reason ? [{ name: "Note", value: data.reason }] : []),
+      ],
+    });
+
+    const { notify } = await import("@/lib/data/notify.server");
+    void notify({
+      recipientDiscordId: app.discord_id,
+      kind: "application",
+      title: "🎉 Bienvenue en période d'essai",
+      detail: `Tu es membre essai jusqu'au ${trialDateStr}.`,
+      href: "/me",
+    });
+
+    return {
+      ok: true,
+      dmOk: dm.ok,
+      dmError: dm.error ?? null,
+      roleResults,
+      roleWarnings,
+      trialUntil: trialUntilIso,
     };
   });
