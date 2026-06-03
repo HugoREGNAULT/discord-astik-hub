@@ -122,22 +122,42 @@ export async function _runReviewApplication(
   const mojang = await fetchMojangUuid(app.mc_name);
 
   // 2) Paladium (try/catch tolérant — on n'échoue JAMAIS la review pour ça)
+  //    L'API Paladium accepte uuid OU username sur /player/profile/{uuid|username}.
+  //    Certains UUID retournent 404 alors que le pseudo fonctionne (et inversement,
+  //    ex. pseudo changé récemment). On essaye donc uuid puis fallback username.
   let paladiumProfile: unknown | null = null;
   let paladiumJobs: unknown | null = null;
   let paladiumError: string | undefined;
-  if (mojang?.id) {
+
+  const candidates = [mojang?.id, app.mc_name].filter(
+    (v): v is string => typeof v === "string" && v.length > 0,
+  );
+
+  for (const id of candidates) {
     try {
-      const profileRes = await fetchPaladium(`/v1/paladium/player/profile/${mojang.id}`);
+      const profileRes = await fetchPaladium(
+        `/v1/paladium/player/profile/${encodeURIComponent(id)}`,
+      );
       paladiumProfile = profileRes.data ?? null;
+      paladiumError = undefined;
+      break;
     } catch (err) {
       paladiumError = err instanceof Error ? err.message : "paladium profile failed";
     }
-    try {
-      const jobsRes = await fetchPaladium(`/v1/paladium/player/profile/${mojang.id}/jobs`);
-      paladiumJobs = jobsRes.data ?? null;
-    } catch (err) {
-      paladiumError = (paladiumError ? paladiumError + " | " : "") +
-        (err instanceof Error ? err.message : "paladium jobs failed");
+  }
+
+  if (paladiumProfile) {
+    for (const id of candidates) {
+      try {
+        const jobsRes = await fetchPaladium(
+          `/v1/paladium/player/profile/${encodeURIComponent(id)}/jobs`,
+        );
+        paladiumJobs = jobsRes.data ?? null;
+        break;
+      } catch (err) {
+        paladiumError = (paladiumError ? paladiumError + " | " : "") +
+          (err instanceof Error ? err.message : "paladium jobs failed");
+      }
     }
   }
 
