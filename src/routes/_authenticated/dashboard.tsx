@@ -292,6 +292,15 @@ function LeaderboardPage() {
             onChange={(v) => setPeriod(v as LeaderboardPeriod)}
           />
         </div>
+        {lastUpdate && (
+          <div
+            className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-3"
+            style={{ fontFamily: "'Space Mono'" }}
+            title={new Date(lastUpdate).toLocaleString("fr-FR")}
+          >
+            Dernière actualisation · {formatRelative(lastUpdate)}
+          </div>
+        )}
 
         <div className="space-y-5">
           <div className="grid sm:grid-cols-3 gap-2">
