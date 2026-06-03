@@ -146,18 +146,29 @@ export async function _runReviewApplication(
     }
   }
 
+  // Jobs endpoint : 404 = joueur n'a jamais joué (pas de métiers) → on ignore
+  // silencieusement. On ne remonte une erreur que si tous les essais échouent
+  // sans aucun 404 (ex. 429/5xx réel).
   if (paladiumProfile) {
+    const jobsErrors: string[] = [];
+    let sawNotFound = false;
     for (const id of candidates) {
       try {
         const jobsRes = await fetchPaladium(
           `/v1/paladium/player/profile/${encodeURIComponent(id)}/jobs`,
         );
         paladiumJobs = jobsRes.data ?? null;
+        sawNotFound = false;
+        jobsErrors.length = 0;
         break;
       } catch (err) {
-        paladiumError = (paladiumError ? paladiumError + " | " : "") +
-          (err instanceof Error ? err.message : "paladium jobs failed");
+        const msg = err instanceof Error ? err.message : "paladium jobs failed";
+        if (/\b404\b/.test(msg)) sawNotFound = true;
+        jobsErrors.push(msg);
       }
+    }
+    if (!paladiumJobs && jobsErrors.length > 0 && !sawNotFound) {
+      paladiumError = (paladiumError ? paladiumError + " | " : "") + jobsErrors.join(" | ");
     }
   }
 
