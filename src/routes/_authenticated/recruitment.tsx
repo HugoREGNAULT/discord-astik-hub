@@ -612,6 +612,130 @@ function AiReview({ applicationId }: { applicationId: string }) {
   );
 }
 
+function PaladiumProfilePanel({
+  mcUuid,
+  mojangError,
+  paladiumError,
+  paladiumProfile,
+  paladiumJobs,
+  onRefresh,
+  refreshing,
+}: {
+  mcUuid: string | null;
+  mojangError?: string;
+  paladiumError?: string;
+  paladiumProfile: unknown;
+  paladiumJobs: unknown;
+  onRefresh: () => void;
+  refreshing: boolean;
+}) {
+  if (!mcUuid) {
+    return (
+      <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-200 flex items-center justify-between gap-2">
+        <span>UUID Mojang non résolu — le pseudo n'existe pas ou Mojang est en erreur ({mojangError ?? "?"}).</span>
+        <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing}>
+          {refreshing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Réessayer"}
+        </Button>
+      </div>
+    );
+  }
+
+  const hasProfile = paladiumProfile && typeof paladiumProfile === "object";
+  const profile = hasProfile ? (paladiumProfile as Record<string, unknown>) : null;
+  const jobs = Array.isArray(paladiumJobs)
+    ? (paladiumJobs as Array<Record<string, unknown>>)
+    : null;
+
+  const pick = (...keys: string[]): string | number | null => {
+    if (!profile) return null;
+    for (const k of keys) {
+      const v = profile[k];
+      if (v != null && (typeof v === "string" || typeof v === "number")) return v;
+    }
+    return null;
+  };
+
+  const level = pick("level", "lvl");
+  const xp = pick("xp", "experience");
+  const money = pick("money", "balance", "coins");
+  const faction = pick("factionName", "faction", "guild", "guildName");
+  const rank = pick("rank", "grade");
+  const playtime = pick("playtime", "timePlayed", "totalPlaytime");
+
+  return (
+    <div className="space-y-2">
+      {paladiumError && (
+        <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-200 flex items-center justify-between gap-2">
+          <span className="truncate">⚠️ API Paladium : {paladiumError.slice(0, 200)}</span>
+          <Button size="sm" variant="outline" onClick={onRefresh} disabled={refreshing}>
+            {refreshing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Réessayer"}
+          </Button>
+        </div>
+      )}
+
+      {!hasProfile && !paladiumError && (
+        <div className="text-xs text-muted-foreground italic">
+          Aucune donnée Paladium pour ce joueur (jamais connecté sur le serveur ?).
+        </div>
+      )}
+
+      {hasProfile && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+          {level != null && <PaladiumStat label="Niveau" value={String(level)} />}
+          {xp != null && <PaladiumStat label="XP" value={String(xp)} />}
+          {money != null && (
+            <PaladiumStat
+              label="Money"
+              value={typeof money === "number" ? money.toLocaleString("fr-FR") : String(money)}
+            />
+          )}
+          {faction != null && <PaladiumStat label="Faction IG" value={String(faction)} />}
+          {rank != null && <PaladiumStat label="Rang shop" value={String(rank)} />}
+          {playtime != null && <PaladiumStat label="Temps de jeu" value={String(playtime)} />}
+        </div>
+      )}
+
+      {jobs && jobs.length > 0 && (
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1 mt-2">
+            Métiers ({jobs.length})
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {jobs.slice(0, 12).map((j, i) => {
+              const name = String(j.name ?? j.job ?? j.type ?? "?");
+              const lvl = j.level ?? j.lvl ?? j.tier ?? null;
+              return (
+                <Badge key={i} variant="outline" className="text-[10px]">
+                  {name}
+                  {lvl != null && <span className="ml-1 text-muted-foreground">lvl {String(lvl)}</span>}
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {hasProfile && (
+        <div className="pt-1">
+          <Button size="sm" variant="ghost" onClick={onRefresh} disabled={refreshing} className="h-7 text-xs">
+            {refreshing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : "🔄"} Rafraîchir
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PaladiumStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border bg-background/40 p-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-medium truncate">{value}</div>
+    </div>
+  );
+}
+
+
 function StatCard({
   icon: Icon,
   label,
