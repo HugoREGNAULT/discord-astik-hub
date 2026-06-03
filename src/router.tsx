@@ -1,6 +1,11 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { installDomTranslationGuard } from "./lib/dom-translation-guard";
+
+// Évite le crash "removeChild NotFoundError" quand le navigateur traduit la page
+// (Google Translate / Edge), notamment côté candidats. Client-only, idempotent.
+installDomTranslationGuard();
 
 export const getRouter = () => {
   const queryClient = new QueryClient({
