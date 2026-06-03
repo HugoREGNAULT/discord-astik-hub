@@ -230,6 +230,13 @@ function LeaderboardPage() {
     () => (period === "all" ? null : buildBaseline(histData?.snapshots ?? [], metric, period)),
     [histData?.snapshots, metric, period],
   );
+  const lastUpdate = useMemo(() => {
+    const snaps = histData?.snapshots ?? [];
+    if (!snaps.length) return null;
+    let latest = snaps[0].taken_at as string;
+    for (const s of snaps) if ((s.taken_at as string) > latest) latest = s.taken_at as string;
+    return latest;
+  }, [histData?.snapshots]);
   const sortedAll = useMemo(
     () =>
       [...entries].sort(
