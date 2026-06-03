@@ -48,7 +48,9 @@ export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(a
         "taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d",
       )
       .gte("taken_at", since)
-      .order("taken_at", { ascending: true })
+      // Les plus RÉCENTS d'abord : si le volume dépasse la limite, on tronque le
+      // passé lointain, jamais le présent (sinon "dernière actualisation" gèle).
+      .order("taken_at", { ascending: false })
       .limit(20000),
     db
       .from("members")
@@ -57,6 +59,10 @@ export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(a
   ]);
   if (error) throw new Error(error.message);
   if (membersError) throw new Error(membersError.message);
-  const allowedIds = new Set(filterFactionMembers(members ?? []).map((member: any) => member.discord_id));
-  return { snapshots: (snapshots ?? []).filter((snapshot) => allowedIds.has(snapshot.discord_id)) };
+  const allowedIds = new Set(
+    filterFactionMembers(members ?? []).map((member: any) => member.discord_id),
+  );
+  // Remis en ordre chronologique (ascendant) pour le graphique et la baseline.
+  const chrono = (snapshots ?? []).slice().reverse();
+  return { snapshots: chrono.filter((snapshot) => allowedIds.has(snapshot.discord_id)) };
 });
