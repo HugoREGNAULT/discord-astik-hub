@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   listApplications,
   decideApplication,
+  validateInterview,
   getApplicationStats,
 } from "@/lib/data/applications.functions";
 import {
@@ -61,7 +62,7 @@ export const Route = createFileRoute("/_authenticated/recruitment")({
   ),
 });
 
-type AppStatus = "pending" | "accepted" | "rejected";
+type AppStatus = "pending" | "accepted" | "rejected" | "interview_validated";
 
 function RecruitmentPage() {
   const [tab, setTab] = useState<AppStatus>("pending");
@@ -71,7 +72,7 @@ function RecruitmentPage() {
       <PageHeader
         code="// recruitment"
         title="Candidatures"
-        description="Accepte ou refuse les candidatures à la PunkAstik. Les candidats sont notifiés en DM Discord."
+        description="Étape 1 : valider la candidature écrite (DM dispo entretien). Étape 2 : valider l'entretien (rôles finaux + essai 14j)."
       />
 
       <ApplicationStats />
@@ -82,7 +83,10 @@ function RecruitmentPage() {
             <Clock className="w-4 h-4 mr-1" /> En attente
           </TabsTrigger>
           <TabsTrigger value="accepted">
-            <CheckCircle2 className="w-4 h-4 mr-1" /> Acceptées
+            <CheckCircle2 className="w-4 h-4 mr-1" /> À entretenir
+          </TabsTrigger>
+          <TabsTrigger value="interview_validated">
+            <Sparkles className="w-4 h-4 mr-1" /> Entretien validé
           </TabsTrigger>
           <TabsTrigger value="rejected">
             <XCircle className="w-4 h-4 mr-1" /> Refusées
