@@ -34,6 +34,17 @@ function formatVoice(seconds: number) {
   return `${m}m`;
 }
 
+function formatRelative(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.max(0, Math.floor(diff / 1000));
+  if (s < 60) return `il y a ${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `il y a ${h}h`;
+  const d = Math.floor(h / 24);
+  return `il y a ${d}j`;
+
 export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
 
 const PERIOD_HOURS: Record<Exclude<LeaderboardPeriod, "all">, number> = {
