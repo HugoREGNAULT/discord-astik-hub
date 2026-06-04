@@ -292,7 +292,8 @@ function Countdown() {
   return (
     <section className="fade-up">
       <SectionLabel code="01" title="Compte à rebours" />
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
+        <CountdownBlock label="Réunion générale" target={MEETING_DATE} color="#10b981" />
         <CountdownBlock label="Live Paladium" target={LIVE_DATE} color={NEON} />
         <CountdownBlock label="Ouverture V12" target={OPEN_DATE} color={BLURPLE} />
       </div>
