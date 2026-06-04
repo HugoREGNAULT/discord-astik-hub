@@ -153,6 +153,13 @@ const SECTIONS: Section[] = [
         accent: "pink",
       },
       {
+        title: "Réunion 19 juin · V12",
+        url: "/staff/reunion/juin-19",
+        icon: Rocket,
+        perm: "members.view",
+        accent: "pink",
+      },
+      {
         title: "Analytics site",
         url: "/staff-analytics",
         icon: BarChart3,
