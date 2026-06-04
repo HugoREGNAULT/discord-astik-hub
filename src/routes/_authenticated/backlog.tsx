@@ -102,9 +102,9 @@ function BacklogPage() {
   });
 
   const importMutation = useMutation({
-    mutationFn: async (files: FileList) => {
+    mutationFn: async (files: File[]) => {
       const results: { source: string; count: number }[] = [];
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         const content = await file.text();
         const res = await importFn({ data: { filename: file.name, content } });
         results.push({ source: res.source, count: res.count });
@@ -161,8 +161,12 @@ function BacklogPage() {
           multiple
           className="hidden"
           onChange={(e) => {
-            if (e.target.files && e.target.files.length > 0) importMutation.mutate(e.target.files);
+            const arr = e.target.files ? Array.from(e.target.files) : [];
             e.target.value = "";
+            if (arr.length > 0) {
+              toast.info(`Lecture de ${arr.length} fichier(s)…`);
+              importMutation.mutate(arr);
+            }
           }}
         />
         <Button
