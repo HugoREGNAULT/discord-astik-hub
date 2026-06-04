@@ -55,8 +55,16 @@ export interface LegacyApplication {
   mojang_uuid: string | null;
   mojang_current_name: string | null;
   mojang_checked_at: string | null;
+  paladium_status: "found" | "not_found" | "error" | null;
+  paladium_faction: string | null;
+  paladium_level: number | null;
+  paladium_first_join: string | null;
+  paladium_last_seen: string | null;
+  paladium_checked_at: string | null;
   /** Calculé à la volée : le pseudo IG correspond à une entrée blacklist (mc_name). */
   is_blacklisted?: boolean;
+  /** Calculé à la volée : le pseudo correspond à un membre actif de la PunkAstik. */
+  is_member?: boolean;
 }
 
 const listSchema = z
@@ -77,9 +85,10 @@ export const listLegacyApplications = createServerFn({ method: "GET" })
     if (data.source) q = q.eq("source", data.source);
     const s = data.search?.trim();
     if (s) q = q.or(`ig_name.ilike.%${s}%,discord_name.ilike.%${s}%`);
-    const [res, bl] = await Promise.all([
+    const [res, bl, mem] = await Promise.all([
       q.order("submitted_at", { ascending: false, nullsFirst: false }).limit(3000),
       db.from("blacklist").select("mc_name, added_by_username"),
+      db.from("members").select("ig_name, mc_uuid").eq("status", "active"),
     ]);
     if (res.error) throw new Error(res.error.message);
 
@@ -92,6 +101,18 @@ export const listLegacyApplications = createServerFn({ method: "GET" })
       ),
     );
     const blSet = new Set(blNames);
+
+    // Membres actuels (status actif) — pour le badge "déjà membre" automatique.
+    const memberNames = new Set(
+      (mem.data ?? [])
+        .map((m) => (m.ig_name ?? "").toLowerCase().trim())
+        .filter((s) => s.length >= 3),
+    );
+    const memberUuids = new Set(
+      (mem.data ?? [])
+        .map((m) => (m.mc_uuid ?? "").replace(/-/g, "").toLowerCase())
+        .filter((s) => s.length === 32),
+    );
 
     const rows = (res.data ?? []) as unknown as LegacyApplication[];
     for (const r of rows) {
@@ -113,6 +134,14 @@ export const listLegacyApplications = createServerFn({ method: "GET" })
         if (hit) break;
       }
       r.is_blacklisted = hit;
+
+      const igl = (r.ig_name ?? "").toLowerCase().trim();
+      const curl = (r.mojang_current_name ?? "").toLowerCase().trim();
+      const uul = (r.mojang_uuid ?? "").replace(/-/g, "").toLowerCase();
+      r.is_member =
+        (igl.length >= 3 && memberNames.has(igl)) ||
+        (curl.length >= 3 && memberNames.has(curl)) ||
+        (uul.length === 32 && memberUuids.has(uul));
     }
     return rows;
   });
@@ -441,4 +470,134 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
     }
 
     return { processed: valid + notFound, remaining: await remainingMojang(), valid, notFound };
+  });
+
+// ---------------------------------------------------------------------------
+// Stats Paladium par lots (faction actuelle, niveau, ancienneté) pour repérer
+// les joueurs encore actifs. 1 requête/joueur (pas de bulk), respecte le rate
+// limit. Appelée en boucle depuis la page jusqu'à `remaining` = 0.
+// ---------------------------------------------------------------------------
+
+const paladiumSchema = z.object({
+  limit: z.number().int().min(1).max(60).optional().default(25),
+});
+
+async function remainingPaladium(): Promise<number> {
+  const r = await db
+    .from("legacy_applications")
+    .select("id", { count: "exact", head: true })
+    .is("paladium_checked_at", null)
+    .or("mojang_uuid.not.is.null,ig_name.not.is.null");
+  return r.count ?? 0;
+}
+
+export const verifyLegacyPaladium = createServerFn({ method: "POST" })
+  .inputValidator((input) => paladiumSchema.parse(input ?? {}))
+  .handler(async ({ data }) => {
+    await requirePermission("admin.access");
+    const { fetchPaladium, dashUuid, PaladiumServerError } =
+      await import("@/lib/paladium/paladium.server");
+    const res = await db
+      .from("legacy_applications")
+      .select("id, ig_name, mojang_uuid")
+      .is("paladium_checked_at", null)
+      .or("mojang_uuid.not.is.null,ig_name.not.is.null")
+      .limit(data.limit);
+    if (res.error) throw new Error(res.error.message);
+    const rows = (res.data ?? []) as Array<{
+      id: string;
+      ig_name: string | null;
+      mojang_uuid: string | null;
+    }>;
+    if (rows.length === 0) {
+      return { processed: 0, remaining: await remainingPaladium(), found: 0, rateLimited: false };
+    }
+
+    const pickStr = (o: Record<string, unknown>, ...keys: string[]): string | null => {
+      for (const k of keys) {
+        const v = o[k];
+        if (typeof v === "string" && v.trim()) return v.trim();
+        if (typeof v === "number" && Number.isFinite(v)) return String(v);
+      }
+      return null;
+    };
+    const pickNum = (o: Record<string, unknown>, ...keys: string[]): number | null => {
+      for (const k of keys) {
+        const v = o[k];
+        if (typeof v === "number" && Number.isFinite(v)) return v;
+        if (typeof v === "string" && v.trim() && Number.isFinite(Number(v))) return Number(v);
+      }
+      return null;
+    };
+
+    const now = new Date().toISOString();
+    let found = 0;
+    let rateLimited = false;
+    for (const r of rows) {
+      // UUID Mojang d'abord (plus fiable), puis pseudo en repli.
+      const ids: string[] = [];
+      if (r.mojang_uuid) ids.push(dashUuid(r.mojang_uuid));
+      if (r.ig_name?.trim()) ids.push(r.ig_name.trim());
+      let profile: Record<string, unknown> | null = null;
+      let stop = false;
+      for (const id of ids) {
+        try {
+          const pr = await fetchPaladium(`/v1/paladium/player/profile/${encodeURIComponent(id)}`);
+          profile = (pr.data ?? null) as Record<string, unknown> | null;
+          if (pr.rate.remaining != null && pr.rate.remaining <= 2) {
+            await new Promise((rsv) => setTimeout(rsv, 1500));
+          }
+          if (profile) break;
+        } catch (e) {
+          if (e instanceof PaladiumServerError && e.status === 404) continue;
+          if (
+            e instanceof PaladiumServerError &&
+            (e.status === 429 || e.status === 0 || e.status >= 500)
+          ) {
+            stop = true;
+            break;
+          }
+          // autre erreur : on passe au candidat suivant
+        }
+      }
+      if (stop) {
+        rateLimited = true;
+        break; // on retentera ce lot au prochain appel (checked_at reste null)
+      }
+
+      let update: Record<string, unknown>;
+      if (profile) {
+        found++;
+        update = {
+          paladium_status: "found",
+          paladium_faction: pickStr(profile, "factionName", "faction", "guildName", "guild"),
+          paladium_level: pickNum(profile, "level", "lvl"),
+          paladium_first_join: pickStr(
+            profile,
+            "firstJoin",
+            "firstSeen",
+            "createdAt",
+            "created_at",
+          ),
+          paladium_last_seen: pickStr(
+            profile,
+            "lastSeen",
+            "lastLogin",
+            "lastConnection",
+            "lastPlayed",
+            "disconnectTime",
+            "updatedAt",
+          ),
+          paladium_checked_at: now,
+        };
+      } else {
+        update = { paladium_status: "not_found", paladium_checked_at: now };
+      }
+      await db
+        .from("legacy_applications")
+        .update(update as never)
+        .eq("id", r.id);
+    }
+
+    return { processed: rows.length, remaining: await remainingPaladium(), found, rateLimited };
   });

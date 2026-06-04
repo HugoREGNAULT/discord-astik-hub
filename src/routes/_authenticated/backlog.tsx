@@ -12,6 +12,7 @@ import {
   setLegacyContactStatus,
   importLegacyCsv,
   verifyLegacyMojang,
+  verifyLegacyPaladium,
   type LegacyApplication,
   type ContactStatus,
 } from "@/lib/data/legacy.functions";
@@ -33,6 +34,7 @@ import {
   Loader2,
   UserCheck,
   RefreshCw,
+  Swords,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/backlog")({
@@ -78,7 +80,7 @@ const STATUS_META: Record<
   },
 };
 
-type SortKey = "date" | "age" | "name";
+type SortKey = "date" | "age" | "name" | "paladium";
 const PER_PAGE = 50;
 
 function fmtDate(iso: string | null) {
@@ -88,12 +90,22 @@ function fmtDate(iso: string | null) {
   return d.toLocaleDateString("fr-FR");
 }
 
+/** Paladium renvoie soit un epoch (s ou ms), soit une date ISO. */
+function fmtPaladiumDate(v: string | null): string {
+  if (!v) return "—";
+  const n = Number(v);
+  const d = Number.isFinite(n) && v.trim() !== "" ? new Date(n > 1e12 ? n : n * 1000) : new Date(v);
+  if (isNaN(d.getTime())) return v;
+  return d.toLocaleDateString("fr-FR");
+}
+
 function BacklogPage() {
   const listFn = useServerFn(listLegacyApplications);
   const overviewFn = useServerFn(getLegacyOverview);
   const setStatusFn = useServerFn(setLegacyContactStatus);
   const importFn = useServerFn(importLegacyCsv);
   const verifyFn = useServerFn(verifyLegacyMojang);
+  const paladiumFn = useServerFn(verifyLegacyPaladium);
   const fileRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
 
@@ -168,6 +180,30 @@ function BacklogPage() {
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
+  const paladiumMutation = useMutation({
+    mutationFn: async () => {
+      let total = 0;
+      let found = 0;
+      for (let i = 0; i < 60; i++) {
+        const res = await paladiumFn({ data: { limit: 25 } });
+        total += res.processed;
+        found += res.found;
+        if (res.processed === 0 || res.remaining === 0) break;
+        if (res.rateLimited) await new Promise((r) => setTimeout(r, 3000));
+      }
+      return { total, found };
+    },
+    onSuccess: (r) => {
+      toast.success(
+        r.total === 0
+          ? "Stats Paladium déjà à jour."
+          : `Paladium : ${r.total} profils vérifiés (${r.found} trouvés sur le serveur).`,
+      );
+      qc.invalidateQueries({ queryKey: ["legacy"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
   const toggleSort = (k: SortKey) => {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -197,7 +233,12 @@ function BacklogPage() {
       if (sortKey === "age") cmp = (a.age ?? -1) - (b.age ?? -1);
       else if (sortKey === "name")
         cmp = (a.ig_name ?? a.discord_name ?? "").localeCompare(b.ig_name ?? b.discord_name ?? "");
-      else cmp = (a.submitted_at ?? "").localeCompare(b.submitted_at ?? "");
+      else if (sortKey === "paladium") {
+        // Actifs d'abord : ceux qui ont une faction, puis le niveau le plus élevé.
+        const score = (x: LegacyApplication) =>
+          (x.paladium_faction ? 1_000_000 : 0) + (x.paladium_level ?? 0);
+        cmp = score(a) - score(b);
+      } else cmp = (a.submitted_at ?? "").localeCompare(b.submitted_at ?? "");
       return sortDir === "asc" ? cmp : -cmp;
     });
     return arr;
@@ -257,6 +298,18 @@ function BacklogPage() {
               <RefreshCw className="w-4 h-4 mr-2" />
             )}
             Vérifier les pseudos
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => paladiumMutation.mutate()}
+            disabled={paladiumMutation.isPending}
+          >
+            {paladiumMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Swords className="w-4 h-4 mr-2" />
+            )}
+            Stats Paladium
           </Button>
         </div>
       </div>
@@ -368,6 +421,14 @@ function BacklogPage() {
                       onSort={toggleSort}
                       className="hidden lg:table-cell"
                     />
+                    <SortTh
+                      label="Paladium"
+                      k="paladium"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleSort}
+                      className="hidden md:table-cell"
+                    />
                     <th className="px-3 py-2 font-medium">Statut / action</th>
                   </tr>
                 </thead>
@@ -408,18 +469,21 @@ function BacklogPage() {
                                   🚫 BL
                                 </Badge>
                               )}
-                              {row.mojang_status === "not_found" &&
-                                !row.mojang_current_name && (
-                                  <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/40 text-[9px] px-1.5">
-                                    pseudo introuvable
-                                  </Badge>
-                                )}
-                              {row.mojang_status === "not_found" &&
-                                row.mojang_current_name && (
-                                  <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/40 text-[9px] px-1.5">
-                                    pseudo changé
-                                  </Badge>
-                                )}
+                              {row.mojang_status === "not_found" && !row.mojang_current_name && (
+                                <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/40 text-[9px] px-1.5">
+                                  pseudo introuvable
+                                </Badge>
+                              )}
+                              {row.mojang_status === "not_found" && row.mojang_current_name && (
+                                <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/40 text-[9px] px-1.5">
+                                  pseudo changé
+                                </Badge>
+                              )}
+                              {row.is_member && (
+                                <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/40 text-[9px] px-1.5">
+                                  ✓ Membre
+                                </Badge>
+                              )}
                             </div>
                             {row.discord_name && row.ig_name && (
                               <div className="text-xs text-muted-foreground">
@@ -439,6 +503,25 @@ function BacklogPage() {
                       </td>
                       <td className="px-3 py-2 hidden lg:table-cell text-muted-foreground whitespace-nowrap">
                         {fmtDate(row.submitted_at)}
+                      </td>
+                      <td className="px-3 py-2 hidden md:table-cell text-xs whitespace-nowrap">
+                        {row.paladium_faction ? (
+                          <span className="text-indigo-300">
+                            {row.paladium_faction}
+                            {row.paladium_level != null && (
+                              <span className="text-muted-foreground">
+                                {" "}
+                                · niv. {row.paladium_level}
+                              </span>
+                            )}
+                          </span>
+                        ) : row.paladium_status === "not_found" ? (
+                          <span className="text-muted-foreground/50">hors serveur</span>
+                        ) : row.paladium_level != null ? (
+                          <span className="text-muted-foreground">niv. {row.paladium_level}</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </td>
                       <td className="px-3 py-2">
                         <div className="flex flex-wrap gap-1">
@@ -605,6 +688,32 @@ function DetailDialog({ app, onClose }: { app: LegacyApplication | null; onClose
               {app.mojang_status === "not_found" && (
                 <div className="text-amber-400">
                   ⚠️ Pseudo introuvable sur Mojang (changé ou compte supprimé).
+                </div>
+              )}
+              {app.is_member && (
+                <div className="text-emerald-400">
+                  ✓ Déjà membre actif de la PunkAstik (pseudo ou UUID reconnu).
+                </div>
+              )}
+              {app.paladium_status === "found" && (
+                <div className="text-indigo-300">
+                  ⚔ Paladium :{" "}
+                  {app.paladium_faction ? (
+                    <>
+                      faction <span className="font-medium">{app.paladium_faction}</span>
+                    </>
+                  ) : (
+                    "sans faction"
+                  )}
+                  {app.paladium_level != null && <> · niveau {app.paladium_level}</>}
+                  {app.paladium_first_join && (
+                    <> · 1ʳᵉ connexion {fmtPaladiumDate(app.paladium_first_join)}</>
+                  )}
+                </div>
+              )}
+              {app.paladium_status === "not_found" && (
+                <div className="text-muted-foreground">
+                  ⚔ Jamais vu sur Paladium (pseudo introuvable sur le serveur).
                 </div>
               )}
             </div>
