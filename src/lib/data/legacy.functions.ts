@@ -7,6 +7,35 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 
+/** Distance de Levenshtein (itérative, O(n*m)). */
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const prev = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    let cur = i;
+    for (let j = 1; j <= b.length; j++) {
+      const ins = cur + 1;
+      const del = prev[j] + 1;
+      const sub = prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1);
+      prev[j - 1] = cur;
+      cur = Math.min(ins, del, sub);
+    }
+    prev[b.length] = cur;
+  }
+  return prev[b.length];
+}
+
+/** Similarité 0..1 (1 = identique). */
+function similarity(a: string, b: string): number {
+  if (!a && !b) return 1;
+  const max = Math.max(a.length, b.length);
+  if (max === 0) return 1;
+  return 1 - levenshtein(a, b) / max;
+}
+
 export type ContactStatus = "to_contact" | "contacted" | "do_not_contact" | "already_member";
 
 export interface LegacyApplication {
@@ -50,15 +79,40 @@ export const listLegacyApplications = createServerFn({ method: "GET" })
     if (s) q = q.or(`ig_name.ilike.%${s}%,discord_name.ilike.%${s}%`);
     const [res, bl] = await Promise.all([
       q.order("submitted_at", { ascending: false, nullsFirst: false }).limit(3000),
-      db.from("blacklist").select("mc_name"),
+      db.from("blacklist").select("mc_name, added_by_username"),
     ]);
     if (res.error) throw new Error(res.error.message);
-    const blset = new Set(
-      (bl.data ?? []).map((b) => (b.mc_name ?? "").toLowerCase().trim()).filter(Boolean),
+
+    // Liste de pseudos blacklistés (mc_name uniquement — c'est le "pseudo" disponible).
+    const blNames = Array.from(
+      new Set(
+        (bl.data ?? [])
+          .map((b) => (b.mc_name ?? "").toLowerCase().trim())
+          .filter((s) => s.length >= 3),
+      ),
     );
+    const blSet = new Set(blNames);
+
     const rows = (res.data ?? []) as unknown as LegacyApplication[];
     for (const r of rows) {
-      r.is_blacklisted = !!r.ig_name && blset.has(r.ig_name.toLowerCase().trim());
+      const candidates = [r.ig_name, r.discord_name, r.mojang_current_name]
+        .map((s) => (s ?? "").toLowerCase().trim())
+        .filter((s) => s.length >= 3);
+      let hit = false;
+      for (const c of candidates) {
+        if (blSet.has(c)) {
+          hit = true;
+          break;
+        }
+        for (const b of blNames) {
+          if (similarity(c, b) >= 0.8) {
+            hit = true;
+            break;
+          }
+        }
+        if (hit) break;
+      }
+      r.is_blacklisted = hit;
     }
     return rows;
   });
@@ -323,6 +377,28 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
       }
     }
 
+    // Fallback : pour les pseudos non résolus, tente ashcon (résout les anciens
+    // pseudos vers le compte actuel — utile si la personne a changé de pseudo).
+    const unresolved = entries.filter(([k]) => !resolved.has(k));
+    const renamed = new Map<string, { uuid: string; name: string }>();
+    await Promise.all(
+      unresolved.map(async ([k, v]) => {
+        try {
+          const r = await fetch(
+            `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(v.display)}`,
+          );
+          if (!r.ok) return;
+          const j = (await r.json()) as { uuid?: string; username?: string };
+          if (j?.uuid && j?.username) {
+            const uuid = j.uuid.replace(/-/g, "");
+            renamed.set(k, { uuid, name: j.username });
+          }
+        } catch {
+          /* ignore */
+        }
+      }),
+    );
+
     let valid = 0;
     let notFound = 0;
     const now = new Date().toISOString();
@@ -340,11 +416,27 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
           } as never)
           .in("id", v.ids);
       } else {
-        notFound += v.ids.length;
-        await db
-          .from("legacy_applications")
-          .update({ mojang_status: "not_found", mojang_checked_at: now } as never)
-          .in("id", v.ids);
+        const ren = renamed.get(k);
+        if (ren) {
+          // Pseudo changé : on stocke le pseudo actuel mais on garde "not_found"
+          // pour signaler le changement à l'UI.
+          valid += v.ids.length;
+          await db
+            .from("legacy_applications")
+            .update({
+              mojang_status: "not_found",
+              mojang_uuid: ren.uuid,
+              mojang_current_name: ren.name,
+              mojang_checked_at: now,
+            } as never)
+            .in("id", v.ids);
+        } else {
+          notFound += v.ids.length;
+          await db
+            .from("legacy_applications")
+            .update({ mojang_status: "not_found", mojang_checked_at: now } as never)
+            .in("id", v.ids);
+        }
       }
     }
 

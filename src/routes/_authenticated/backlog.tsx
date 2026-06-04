@@ -378,26 +378,55 @@ function BacklogPage() {
                         <button
                           type="button"
                           onClick={() => setSelected(row)}
-                          className="text-left group"
+                          className="text-left group flex items-start gap-2"
                         >
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-medium text-foreground group-hover:text-primary group-hover:underline">
-                              {row.ig_name || row.discord_name || "—"}
-                            </span>
-                            {row.is_blacklisted && (
-                              <Badge className="bg-red-500/15 text-red-300 border-red-500/40 text-[9px] px-1.5">
-                                🚫 BL
-                              </Badge>
-                            )}
-                            {row.mojang_status === "not_found" && (
-                              <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/40 text-[9px] px-1.5">
-                                pseudo introuvable
-                              </Badge>
+                          <img
+                            src={`https://mc-heads.net/avatar/${encodeURIComponent(row.mojang_uuid || row.ig_name || row.discord_name || "MHF_Steve")}/28`}
+                            alt=""
+                            loading="lazy"
+                            className="w-7 h-7 rounded-sm border border-border shrink-0 mt-0.5"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src =
+                                "https://mc-heads.net/avatar/MHF_Steve/28";
+                            }}
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-medium text-foreground group-hover:text-primary group-hover:underline">
+                                {row.ig_name || row.discord_name || "—"}
+                              </span>
+                              {row.mojang_current_name &&
+                                row.ig_name &&
+                                row.mojang_current_name.toLowerCase() !==
+                                  row.ig_name.toLowerCase() && (
+                                  <span className="text-xs text-muted-foreground italic">
+                                    ({row.mojang_current_name})
+                                  </span>
+                                )}
+                              {row.is_blacklisted && (
+                                <Badge className="bg-red-500/15 text-red-300 border-red-500/40 text-[9px] px-1.5">
+                                  🚫 BL
+                                </Badge>
+                              )}
+                              {row.mojang_status === "not_found" &&
+                                !row.mojang_current_name && (
+                                  <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/40 text-[9px] px-1.5">
+                                    pseudo introuvable
+                                  </Badge>
+                                )}
+                              {row.mojang_status === "not_found" &&
+                                row.mojang_current_name && (
+                                  <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/40 text-[9px] px-1.5">
+                                    pseudo changé
+                                  </Badge>
+                                )}
+                            </div>
+                            {row.discord_name && row.ig_name && (
+                              <div className="text-xs text-muted-foreground">
+                                @{row.discord_name}
+                              </div>
                             )}
                           </div>
-                          {row.discord_name && row.ig_name && (
-                            <div className="text-xs text-muted-foreground">@{row.discord_name}</div>
-                          )}
                         </button>
                       </td>
                       <td className="px-3 py-2 hidden sm:table-cell text-muted-foreground">
