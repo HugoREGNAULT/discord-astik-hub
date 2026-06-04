@@ -86,6 +86,7 @@ import { Route as ApiPublicBotMessageRouteImport } from './routes/api/public/bot
 import { Route as ApiPublicBotMemberRouteImport } from './routes/api/public/bot/member'
 import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/public/bot/mc-link-confirm'
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
+import { Route as AuthenticatedStaffReunionJuin19RouteImport } from './routes/_authenticated/staff.reunion.juin-19'
 import { Route as ApiStaffMembersIdWarningsRouteImport } from './routes/api/staff/members.$id.warnings'
 import { Route as ApiStaffMembersIdNotesRouteImport } from './routes/api/staff/members.$id.notes'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
@@ -513,6 +514,12 @@ const ApiPublicBotImportRoute = ApiPublicBotImportRouteImport.update({
   path: '/api/public/bot/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedStaffReunionJuin19Route =
+  AuthenticatedStaffReunionJuin19RouteImport.update({
+    id: '/reunion/juin-19',
+    path: '/reunion/juin-19',
+    getParentRoute: () => AuthenticatedStaffRoute,
+  } as any)
 const ApiStaffMembersIdWarningsRoute =
   ApiStaffMembersIdWarningsRouteImport.update({
     id: '/api/staff/members/$id/warnings',
@@ -606,6 +613,7 @@ export interface FileRoutesByFullPath {
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls/': typeof AuthenticatedPollsIndexRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
+  '/staff/reunion/juin-19': typeof AuthenticatedStaffReunionJuin19Route
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -688,6 +696,7 @@ export interface FileRoutesByTo {
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/polls': typeof AuthenticatedPollsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
+  '/staff/reunion/juin-19': typeof AuthenticatedStaffReunionJuin19Route
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -774,6 +783,7 @@ export interface FileRoutesById {
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/_authenticated/polls/': typeof AuthenticatedPollsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
+  '/_authenticated/staff/reunion/juin-19': typeof AuthenticatedStaffReunionJuin19Route
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -860,6 +870,7 @@ export interface FileRouteTypes {
     | '/api/test/seed-poll'
     | '/polls/'
     | '/tools/'
+    | '/staff/reunion/juin-19'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -942,6 +953,7 @@ export interface FileRouteTypes {
     | '/api/test/seed-poll'
     | '/polls'
     | '/tools'
+    | '/staff/reunion/juin-19'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -1027,6 +1039,7 @@ export interface FileRouteTypes {
     | '/api/test/seed-poll'
     | '/_authenticated/polls/'
     | '/_authenticated/tools/'
+    | '/_authenticated/staff/reunion/juin-19'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -1635,6 +1648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBotImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/staff/reunion/juin-19': {
+      id: '/_authenticated/staff/reunion/juin-19'
+      path: '/reunion/juin-19'
+      fullPath: '/staff/reunion/juin-19'
+      preLoaderRoute: typeof AuthenticatedStaffReunionJuin19RouteImport
+      parentRoute: typeof AuthenticatedStaffRoute
+    }
     '/api/staff/members/$id/warnings': {
       id: '/api/staff/members/$id/warnings'
       path: '/api/staff/members/$id/warnings'
@@ -1718,11 +1738,13 @@ const AuthenticatedPollsRouteWithChildren =
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
+  AuthenticatedStaffReunionJuin19Route: typeof AuthenticatedStaffReunionJuin19Route
 }
 
 const AuthenticatedStaffRouteChildren: AuthenticatedStaffRouteChildren = {
   AuthenticatedStaffAnnounceRoute: AuthenticatedStaffAnnounceRoute,
   AuthenticatedStaffAppealsRoute: AuthenticatedStaffAppealsRoute,
+  AuthenticatedStaffReunionJuin19Route: AuthenticatedStaffReunionJuin19Route,
 }
 
 const AuthenticatedStaffRouteWithChildren =
@@ -1872,13 +1894,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
