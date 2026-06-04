@@ -24,7 +24,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/staff/reunion/juin-19")({
+export const Route = createFileRoute("/_authenticated/reunion-v12")({
   errorComponent: RouteError,
   head: () => ({
     meta: [
