@@ -7,6 +7,35 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 
+/** Distance de Levenshtein (itérative, O(n*m)). */
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  const prev = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    let cur = i;
+    for (let j = 1; j <= b.length; j++) {
+      const ins = cur + 1;
+      const del = prev[j] + 1;
+      const sub = prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1);
+      prev[j - 1] = cur;
+      cur = Math.min(ins, del, sub);
+    }
+    prev[b.length] = cur;
+  }
+  return prev[b.length];
+}
+
+/** Similarité 0..1 (1 = identique). */
+function similarity(a: string, b: string): number {
+  if (!a && !b) return 1;
+  const max = Math.max(a.length, b.length);
+  if (max === 0) return 1;
+  return 1 - levenshtein(a, b) / max;
+}
+
 export type ContactStatus = "to_contact" | "contacted" | "do_not_contact" | "already_member";
 
 export interface LegacyApplication {
