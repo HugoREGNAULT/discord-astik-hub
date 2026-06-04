@@ -377,6 +377,28 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
       }
     }
 
+    // Fallback : pour les pseudos non résolus, tente ashcon (résout les anciens
+    // pseudos vers le compte actuel — utile si la personne a changé de pseudo).
+    const unresolved = entries.filter(([k]) => !resolved.has(k));
+    const renamed = new Map<string, { uuid: string; name: string }>();
+    await Promise.all(
+      unresolved.map(async ([k, v]) => {
+        try {
+          const r = await fetch(
+            `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(v.display)}`,
+          );
+          if (!r.ok) return;
+          const j = (await r.json()) as { uuid?: string; username?: string };
+          if (j?.uuid && j?.username) {
+            const uuid = j.uuid.replace(/-/g, "");
+            renamed.set(k, { uuid, name: j.username });
+          }
+        } catch {
+          /* ignore */
+        }
+      }),
+    );
+
     let valid = 0;
     let notFound = 0;
     const now = new Date().toISOString();
