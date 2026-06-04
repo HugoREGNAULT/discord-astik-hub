@@ -50,6 +50,7 @@ export const Route = createFileRoute("/_authenticated/reunion-v12")({
 const NEON = "#ec4899";
 const BLURPLE = "#5865F2";
 
+const MEETING_DATE = new Date("2026-06-14T15:00:00+02:00");
 const LIVE_DATE = new Date("2026-06-19T18:00:00+02:00");
 const OPEN_DATE = new Date("2026-06-19T19:00:00+02:00");
 
