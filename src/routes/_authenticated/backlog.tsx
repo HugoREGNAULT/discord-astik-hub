@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, PageCard } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
   listLegacyApplications,
   getLegacyOverview,
   setLegacyContactStatus,
+  importLegacyCsv,
   type LegacyApplication,
   type ContactStatus,
 } from "@/lib/data/legacy.functions";
@@ -20,7 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { CardListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
-import { Clock, PhoneCall, Ban, Search, Users, Archive } from "lucide-react";
+import { Clock, PhoneCall, Ban, Search, Users, Archive, Upload, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/backlog")({
   component: () => (
@@ -71,6 +72,8 @@ function BacklogPage() {
   const listFn = useServerFn(listLegacyApplications);
   const overviewFn = useServerFn(getLegacyOverview);
   const setStatusFn = useServerFn(setLegacyContactStatus);
+  const importFn = useServerFn(importLegacyCsv);
+  const fileRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
 
   const [status, setStatus] = useState<ContactStatus | "all">("all");
@@ -92,6 +95,25 @@ function BacklogPage() {
     mutationFn: (v: { id: string; status: ContactStatus }) =>
       setStatusFn({ data: { id: v.id, status: v.status } }),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["legacy"] });
+      qc.invalidateQueries({ queryKey: ["legacy-overview"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const importMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      const results: { source: string; count: number }[] = [];
+      for (const file of Array.from(files)) {
+        const content = await file.text();
+        const res = await importFn({ data: { filename: file.name, content } });
+        results.push({ source: res.source, count: res.count });
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const total = results.reduce((s, r) => s + r.count, 0);
+      toast.success(`Import terminé : ${total} candidature(s) sur ${results.length} fichier(s).`);
       qc.invalidateQueries({ queryKey: ["legacy"] });
       qc.invalidateQueries({ queryKey: ["legacy-overview"] });
     },
@@ -123,6 +145,39 @@ function BacklogPage() {
         title="Backlog candidatures"
         description="Anciennes candidatures importées (multi-formulaires). Suis tes prises de contact et ouvre chaque candidature au clic."
       />
+
+      {/* Import temporaire (à retirer une fois l'import terminé) */}
+      <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-xs text-muted-foreground max-w-2xl">
+          <span className="font-medium text-foreground">Import CSV</span> — dépose tes exports
+          Google Forms (.csv, plusieurs à la fois). Détection auto des colonnes. Ré-importer un
+          fichier remplace sa source (pas de doublon).{" "}
+          <span className="italic">Outil temporaire.</span>
+        </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv,text/csv"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) importMutation.mutate(e.target.files);
+            e.target.value = "";
+          }}
+        />
+        <Button
+          onClick={() => fileRef.current?.click()}
+          disabled={importMutation.isPending}
+          className="shrink-0"
+        >
+          {importMutation.isPending ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4 mr-2" />
+          )}
+          Importer des CSV
+        </Button>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
