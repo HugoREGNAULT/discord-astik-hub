@@ -305,60 +305,181 @@ function Countdown() {
  * [02] TIMELINE
  * ====================================================================== */
 
-const TIMELINE = [
-  { when: "19 Juin · 18h", what: "Live Paladium", icon: Sparkles },
-  { when: "19 Juin · 19h", what: "Ouverture V12", icon: Rocket },
-  { when: "J+3", what: "Baby Wither", icon: Skull },
-  { when: "J+10", what: "Wither Normal", icon: Skull },
-  { when: "J+30", what: "Passif", icon: ShieldCheck },
-  { when: "J+60", what: "Prédateur", icon: Swords },
-  { when: "J+75", what: "Thirsty", icon: Skull },
-  { when: "J+120", what: "Suprême", icon: Crown },
+type TimelineStep = {
+  when: string;
+  what: string;
+  icon: typeof Rocket;
+  desc: string;
+  tag?: string;
+  color?: string;
+};
+
+const TIMELINE: TimelineStep[] = [
+  {
+    when: "J+0",
+    what: "Ouverture V12",
+    icon: Rocket,
+    desc: "Connexion immédiate, regroupement vocal, répartition des rôles. Tous les comptes prêts en spawn.",
+    tag: "GO",
+    color: NEON,
+  },
+  {
+    when: "J+10 min",
+    what: "Création de la faction",
+    icon: ShieldCheck,
+    desc: "50 lingots de paladium nécessaires (potentiellement +). Coût à reconfirmer au vu des changements V12.",
+    tag: "Critique",
+    color: NEON,
+  },
+  {
+    when: "J+15 min",
+    what: "Recrutement éclair",
+    icon: Crown,
+    desc: "Inviter un maximum de membres en priorité les joueurs de nuit. Vérifier le leak du passage 20 → 35 membres dès la création.",
+    tag: "Priorité",
+  },
+  {
+    when: "J+30 min",
+    what: "Capture de zone (DC)",
+    icon: Target,
+    desc: "Si la zone de capture existe encore : envoyer un double compte la prendre dès la faction créée. +1 gloire / minute.",
+    tag: "À vérifier",
+  },
+  {
+    when: "J+45 min",
+    what: "Quête de Faction",
+    icon: Sparkles,
+    desc: "Focus QDF si disponible dès l'ouverture. Plus tôt elle est finie, plus l'avantage sur les autres factions est grand.",
+    tag: "Focus",
+    color: BLURPLE,
+  },
+  {
+    when: "J+1 h",
+    what: "Équipe Nether + Enchantements",
+    icon: Hammer,
+    desc: "Équipe Nether le plus vite possible, table d'enchantement full pour débloquer les pioches Paladium E5 U3 F3.",
+    color: "#f59e0b",
+  },
+  {
+    when: "J+1 h",
+    what: "Équipe Gronder",
+    icon: Pickaxe,
+    desc: "Une seconde équipe dédiée à la création du Gronder en parallèle du Nether.",
+    color: "#f59e0b",
+  },
+  {
+    when: "J+1 h",
+    what: "Obsidienne + Mini BC/BK",
+    icon: Vault,
+    desc: "5 personnes sur la prod d'obsidienne en masse. 2 chargés d'aller loin pour établir une mini BC / BK.",
+  },
+  {
+    when: "J+2 h",
+    what: "Donjons",
+    icon: Swords,
+    desc: "1 équipe de 4 (ou 2 équipes de 4 en switch) sur les donjons pour gérer les prérequis de passage de métiers.",
+    tag: "Rotation",
+  },
+  {
+    when: "J+2 h",
+    what: "Boss d'ouverture",
+    icon: Skull,
+    desc: "À vérifier : si un boss spawn dans les 2h après l'ouverture V12, le faire si > 30 personnes. Tout stuff déposé dans le Bunker de Faction.",
+    tag: "Si > 30",
+  },
+  {
+    when: "À vos marques · 20h30",
+    what: "Reset classement faction",
+    icon: Crown,
+    desc: "Moment décisif pour le classement de faction et la QDF. Tout le monde connecté et prêt à pousser.",
+    tag: "Décisif",
+    color: NEON,
+  },
+  {
+    when: "Cycle quotidien",
+    what: "Boss (×2/jour)",
+    icon: Skull,
+    desc: "Normalement 2 boss par jour. Toujours stuff complet déposé au Bunker avant kill. Pas de stuff sur soi.",
+  },
+  {
+    when: "J+3",
+    what: "Baby Wither",
+    icon: Skull,
+    desc: "Premier wither accessible — préparation matos et équipe dédiée.",
+    color: BLURPLE,
+  },
+  {
+    when: "J+10",
+    what: "Wither Normal",
+    icon: Skull,
+    desc: "Palier wither standard, à enchaîner après le Baby.",
+    color: BLURPLE,
+  },
+  {
+    when: "J+14",
+    what: "Consolidation",
+    icon: ShieldCheck,
+    desc: "Bilan deux semaines : BC/BK stables, métiers débloqués, faction full membres, économie en route.",
+    color: BLURPLE,
+  },
 ];
 
 function Timeline() {
   return (
     <section className="fade-up">
-      <SectionLabel code="02" title="Timeline V12" />
+      <SectionLabel code="02" title="Timeline V12 — Plan de bataille J+0 → J+14" />
       <div className="relative">
         <div
           className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px"
           style={{
             background:
-              "linear-gradient(180deg, transparent, #ec4899 20%, #5865F2 80%, transparent)",
+              "linear-gradient(180deg, transparent, #ec4899 10%, #f59e0b 50%, #5865F2 90%, transparent)",
           }}
         />
         <div className="space-y-6">
           {TIMELINE.map((step, i) => {
             const Icon = step.icon;
             const left = i % 2 === 0;
+            const accent = step.color ?? "#a1a1aa";
             return (
               <div
-                key={step.what}
+                key={step.what + step.when}
                 className={`relative flex ${left ? "md:flex-row" : "md:flex-row-reverse"} items-start gap-4 md:gap-8`}
               >
                 <div className="relative z-10 md:w-1/2 pl-12 md:pl-0 md:px-8">
-                  <CyberCard accent={i < 2 ? NEON : BLURPLE} className="p-4">
-                    <div className="flex items-center gap-3">
+                  <CyberCard accent={accent} className="p-4">
+                    <div className="flex items-start gap-3">
                       <div
-                        className="size-9 grid place-items-center border"
+                        className="size-9 grid place-items-center border shrink-0"
                         style={{
-                          borderColor: i < 2 ? NEON : BLURPLE,
-                          boxShadow: `0 0 12px ${(i < 2 ? NEON : BLURPLE) + "55"}`,
+                          borderColor: accent,
+                          boxShadow: `0 0 12px ${accent}55`,
                         }}
                       >
-                        <Icon className="size-4" style={{ color: i < 2 ? NEON : BLURPLE }} />
+                        <Icon className="size-4" style={{ color: accent }} />
                       </div>
-                      <div>
-                        <div
-                          className="text-[10px] uppercase tracking-widest text-zinc-500"
-                          style={{ fontFamily: "'Space Mono'" }}
-                        >
-                          {step.when}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className="text-[10px] uppercase tracking-widest text-zinc-500"
+                            style={{ fontFamily: "'Space Mono'" }}
+                          >
+                            {step.when}
+                          </span>
+                          {step.tag && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0 h-4"
+                              style={{ borderColor: `${accent}80`, color: accent }}
+                            >
+                              {step.tag}
+                            </Badge>
+                          )}
                         </div>
-                        <div className="text-base font-bold uppercase tracking-tight text-white">
+                        <div className="text-base font-bold uppercase tracking-tight text-white mt-0.5">
                           {step.what}
                         </div>
+                        <p className="text-xs text-zinc-400 mt-2 leading-relaxed">{step.desc}</p>
                       </div>
                     </div>
                   </CyberCard>
@@ -366,8 +487,8 @@ function Timeline() {
                 <span
                   className="absolute left-4 md:left-1/2 top-4 -translate-x-1/2 size-3 rounded-full"
                   style={{
-                    background: i < 2 ? NEON : BLURPLE,
-                    boxShadow: `0 0 12px ${i < 2 ? NEON : BLURPLE}`,
+                    background: accent,
+                    boxShadow: `0 0 12px ${accent}`,
                   }}
                 />
                 <div className="hidden md:block md:w-1/2" />
