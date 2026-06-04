@@ -416,11 +416,27 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
           } as never)
           .in("id", v.ids);
       } else {
-        notFound += v.ids.length;
-        await db
-          .from("legacy_applications")
-          .update({ mojang_status: "not_found", mojang_checked_at: now } as never)
-          .in("id", v.ids);
+        const ren = renamed.get(k);
+        if (ren) {
+          // Pseudo changé : on stocke le pseudo actuel mais on garde "not_found"
+          // pour signaler le changement à l'UI.
+          valid += v.ids.length;
+          await db
+            .from("legacy_applications")
+            .update({
+              mojang_status: "not_found",
+              mojang_uuid: ren.uuid,
+              mojang_current_name: ren.name,
+              mojang_checked_at: now,
+            } as never)
+            .in("id", v.ids);
+        } else {
+          notFound += v.ids.length;
+          await db
+            .from("legacy_applications")
+            .update({ mojang_status: "not_found", mojang_checked_at: now } as never)
+            .in("id", v.ids);
+        }
       }
     }
 
