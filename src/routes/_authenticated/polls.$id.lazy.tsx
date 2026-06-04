@@ -10,6 +10,7 @@ import {
   X,
   Lock,
   Crown,
+  Loader2,
   RefreshCw,
   Upload,
   UserX,
@@ -161,20 +162,26 @@ function PollDetail() {
     setMyVotes(mine);
   }, [data]);
 
+  // Le vote est passé en argument (pas lu depuis `myVotes`) pour éviter la closure
+  // périmée quand on enregistre immédiatement au clic sur un sondage question.
   const mVote = useMutation({
-    mutationFn: () =>
-      voteFn({
-        data: {
-          pollId: id,
-          votes: Object.entries(myVotes).map(([optionId, choice]) => ({ optionId, choice })),
-        },
-      }),
+    mutationFn: (votes: { optionId: string; choice: Choice }[]) =>
+      voteFn({ data: { pollId: id, votes } }),
     onSuccess: () => {
       toast.success("Vote enregistré");
       qc.invalidateQueries({ queryKey: ["poll", id] });
     },
-    onError: (e: any) => toast.error(toUserMessage(e)),
+    onError: (e: any) => {
+      toast.error(toUserMessage(e));
+      // Resynchronise l'UI sur l'état réel du serveur : annule la sélection
+      // optimiste pour ne pas laisser croire à un vote enregistré.
+      qc.invalidateQueries({ queryKey: ["poll", id] });
+    },
   });
+
+  // Réponse en cours d'enregistrement (sondage question) — pour le spinner.
+  const savingOptionId =
+    mVote.isPending && mVote.variables ? (mVote.variables[0]?.optionId ?? null) : null;
 
   const mClose = useMutation({
     mutationFn: (winningOptionId: string | null) =>
@@ -485,11 +492,22 @@ function PollDetail() {
                               <Button
                                 size="sm"
                                 variant={isMyChoice ? "default" : "outline"}
-                                onClick={() => setMyVotes({ [o.id]: "yes" })}
+                                disabled={mVote.isPending}
+                                onClick={() => {
+                                  // Choix unique : enregistré immédiatement. Re-cliquer une
+                                  // autre réponse remplace le vote (possible tant que le
+                                  // sondage est ouvert) — gère un changement d'avis de dernière minute.
+                                  setMyVotes({ [o.id]: "yes" });
+                                  mVote.mutate([{ optionId: o.id, choice: "yes" }]);
+                                }}
                               >
-                                {isMyChoice ? (
+                                {savingOptionId === o.id ? (
                                   <>
-                                    <Check className="size-4" /> Choisi
+                                    <Loader2 className="size-4 animate-spin" /> Enregistrement…
+                                  </>
+                                ) : isMyChoice ? (
+                                  <>
+                                    <Check className="size-4" /> Mon choix
                                   </>
                                 ) : (
                                   "Choisir"
@@ -537,15 +555,25 @@ function PollDetail() {
               </tbody>
             </table>
           </div>
-          {isOpen && (
+          {isOpen && !isQuestion && (
             <div className="mt-4 flex justify-end">
               <Button
-                onClick={() => mVote.mutate()}
+                onClick={() =>
+                  mVote.mutate(
+                    Object.entries(myVotes).map(([optionId, choice]) => ({ optionId, choice })),
+                  )
+                }
                 disabled={Object.keys(myVotes).length === 0 || mVote.isPending}
               >
                 Enregistrer mon vote
               </Button>
             </div>
+          )}
+          {isOpen && isQuestion && (
+            <p className="mt-4 text-xs text-muted-foreground text-right">
+              Ton vote est enregistré automatiquement. Tu peux le changer à tout moment tant que le
+              sondage est ouvert.
+            </p>
           )}
         </CardContent>
       </Card>
