@@ -154,7 +154,7 @@ const SECTIONS: Section[] = [
       },
       {
         title: "Réunion 19 juin · V12",
-        url: "/staff/reunion/juin-19",
+        url: "/reunion-v12",
         icon: Rocket,
         perm: "members.view",
         accent: "pink",
