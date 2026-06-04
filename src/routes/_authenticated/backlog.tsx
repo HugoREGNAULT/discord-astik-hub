@@ -184,12 +184,24 @@ function BacklogPage() {
     mutationFn: async () => {
       let total = 0;
       let found = 0;
-      for (let i = 0; i < 60; i++) {
-        const res = await paladiumFn({ data: { limit: 25 } });
-        total += res.processed;
-        found += res.found;
-        if (res.processed === 0 || res.remaining === 0) break;
-        if (res.rateLimited) await new Promise((r) => setTimeout(r, 3000));
+      const tid = toast.loading("Stats Paladium : démarrage…");
+      try {
+        for (let i = 0; i < 100; i++) {
+          const res = await paladiumFn({ data: { limit: 20 } });
+          total += res.processed;
+          found += res.found;
+          toast.loading(
+            `Stats Paladium : ${total} traités · ${found} trouvés` +
+              (res.remaining ? ` · ${res.remaining} restants…` : "…"),
+            { id: tid },
+          );
+          // Rafraîchit la colonne toutes les ~5 passes (≈100 profils) sans surcharger.
+          if (i % 5 === 4) qc.invalidateQueries({ queryKey: ["legacy"] });
+          if (res.processed === 0 || res.remaining === 0) break;
+          if (res.rateLimited) await new Promise((r) => setTimeout(r, 3000));
+        }
+      } finally {
+        toast.dismiss(tid);
       }
       return { total, found };
     },
@@ -197,7 +209,7 @@ function BacklogPage() {
       toast.success(
         r.total === 0
           ? "Stats Paladium déjà à jour."
-          : `Paladium : ${r.total} profils vérifiés (${r.found} trouvés sur le serveur).`,
+          : `Paladium terminé : ${r.total} profils vérifiés (${r.found} trouvés sur le serveur).`,
       );
       qc.invalidateQueries({ queryKey: ["legacy"] });
     },
