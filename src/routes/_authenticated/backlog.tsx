@@ -522,7 +522,7 @@ function BacklogPage() {
                                   ✓ Membre
                                 </Badge>
                               )}
-                              {row.paladium_played_v11 && (
+                              {row.paladium_played_v11 && !row.is_member && (
                                 <Badge className="bg-green-500/20 text-green-300 border-green-500/50 text-[9px] px-1.5">
                                   ⚡ Actif V11
                                 </Badge>
