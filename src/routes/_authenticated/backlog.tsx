@@ -99,6 +99,18 @@ function fmtPaladiumDate(v: string | null): string {
   return d.toLocaleDateString("fr-FR");
 }
 
+function fmtPaladiumYear(v: string | null): string {
+  if (!v) return "";
+  const n = Number(v);
+  const d = Number.isFinite(n) && v.trim() !== "" ? new Date(n > 1e12 ? n : n * 1000) : new Date(v);
+  return isNaN(d.getTime()) ? "" : String(d.getFullYear());
+}
+
+function fmtMoney(n: number | null): string {
+  if (n == null) return "—";
+  return n.toLocaleString("fr-FR") + " $";
+}
+
 function BacklogPage() {
   const listFn = useServerFn(listLegacyApplications);
   const overviewFn = useServerFn(getLegacyOverview);
@@ -116,6 +128,7 @@ function BacklogPage() {
   const [selected, setSelected] = useState<LegacyApplication | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [activeV11Only, setActiveV11Only] = useState(false);
 
   const { data: overview } = useQuery({
     queryKey: ["legacy-overview"],
@@ -187,7 +200,7 @@ function BacklogPage() {
       const tid = toast.loading("Stats Paladium : démarrage…");
       try {
         for (let i = 0; i < 100; i++) {
-          const res = await paladiumFn({ data: { limit: 20 } });
+          const res = await paladiumFn({ data: { limit: 10 } });
           total += res.processed;
           found += res.found;
           toast.loading(
@@ -228,6 +241,7 @@ function BacklogPage() {
     let r = allItems ?? [];
     if (status !== "all") r = r.filter((x) => x.contact_status === status);
     if (source !== "all") r = r.filter((x) => x.source === source);
+    if (activeV11Only) r = r.filter((x) => x.paladium_played_v11);
     const s = search.trim().toLowerCase();
     if (s)
       r = r.filter(
@@ -236,7 +250,7 @@ function BacklogPage() {
           (x.discord_name ?? "").toLowerCase().includes(s),
       );
     return r;
-  }, [allItems, status, source, search]);
+  }, [allItems, status, source, search, activeV11Only]);
 
   const sorted = useMemo(() => {
     const arr = [...filtered];
@@ -246,9 +260,12 @@ function BacklogPage() {
       else if (sortKey === "name")
         cmp = (a.ig_name ?? a.discord_name ?? "").localeCompare(b.ig_name ?? b.discord_name ?? "");
       else if (sortKey === "paladium") {
-        // Actifs d'abord : ceux qui ont une faction, puis le niveau le plus élevé.
+        // Actifs V11 d'abord, puis en faction, puis par niveau total de métiers.
         const score = (x: LegacyApplication) =>
-          (x.paladium_faction ? 1_000_000 : 0) + (x.paladium_level ?? 0);
+          (x.paladium_played_v11 ? 1e12 : 0) +
+          (x.paladium_faction ? 1e8 : 0) +
+          (x.paladium_job_total ?? 0) * 1e3 +
+          Math.min(x.paladium_money ?? 0, 1e9) / 1e9;
         cmp = score(a) - score(b);
       } else cmp = (a.submitted_at ?? "").localeCompare(b.submitted_at ?? "");
       return sortDir === "asc" ? cmp : -cmp;
@@ -389,6 +406,15 @@ function BacklogPage() {
                 {STATUS_META[st].short}
               </FilterChip>
             ))}
+            <FilterChip
+              active={activeV11Only}
+              onClick={() => {
+                setActiveV11Only((v) => !v);
+                setPage(1);
+              }}
+            >
+              ⚡ Actif V11
+            </FilterChip>
           </div>
         </div>
 
@@ -496,6 +522,11 @@ function BacklogPage() {
                                   ✓ Membre
                                 </Badge>
                               )}
+                              {row.paladium_played_v11 && (
+                                <Badge className="bg-green-500/20 text-green-300 border-green-500/50 text-[9px] px-1.5">
+                                  ⚡ Actif V11
+                                </Badge>
+                              )}
                             </div>
                             {row.discord_name && row.ig_name && (
                               <div className="text-xs text-muted-foreground">
@@ -517,20 +548,24 @@ function BacklogPage() {
                         {fmtDate(row.submitted_at)}
                       </td>
                       <td className="px-3 py-2 hidden md:table-cell text-xs whitespace-nowrap">
-                        {row.paladium_faction ? (
-                          <span className="text-indigo-300">
-                            {row.paladium_faction}
-                            {row.paladium_level != null && (
+                        {row.paladium_played_v11 ? (
+                          <span className="text-green-300">
+                            ⚡ {row.paladium_faction || "Actif V11"}
+                            {row.paladium_job_total != null && row.paladium_job_total > 0 && (
                               <span className="text-muted-foreground">
                                 {" "}
-                                · niv. {row.paladium_level}
+                                · {row.paladium_job_total} niv.
                               </span>
                             )}
                           </span>
+                        ) : row.paladium_status === "found" ? (
+                          <span className="text-muted-foreground/70">
+                            {row.paladium_first_join
+                              ? `depuis ${fmtPaladiumYear(row.paladium_first_join)}`
+                              : "a déjà joué"}
+                          </span>
                         ) : row.paladium_status === "not_found" ? (
                           <span className="text-muted-foreground/50">hors serveur</span>
-                        ) : row.paladium_level != null ? (
-                          <span className="text-muted-foreground">niv. {row.paladium_level}</span>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}
@@ -707,20 +742,38 @@ function DetailDialog({ app, onClose }: { app: LegacyApplication | null; onClose
                   ✓ Déjà membre actif de la PunkAstik (pseudo ou UUID reconnu).
                 </div>
               )}
-              {app.paladium_status === "found" && (
-                <div className="text-indigo-300">
-                  ⚔ Paladium :{" "}
-                  {app.paladium_faction ? (
-                    <>
-                      faction <span className="font-medium">{app.paladium_faction}</span>
-                    </>
-                  ) : (
-                    "sans faction"
+              {app.paladium_played_v11 && (
+                <div className="rounded-md border border-green-500/30 bg-green-500/5 p-2 space-y-1 text-foreground">
+                  <div className="font-medium text-green-300">⚡ Actif cette saison (V11)</div>
+                  {app.paladium_faction && (
+                    <div>
+                      Faction : <span className="font-medium">{app.paladium_faction}</span>
+                    </div>
                   )}
-                  {app.paladium_level != null && <> · niveau {app.paladium_level}</>}
+                  {app.paladium_money != null && <div>Argent : {fmtMoney(app.paladium_money)}</div>}
+                  {app.paladium_jobs && Object.keys(app.paladium_jobs).length > 0 && (
+                    <div>
+                      Métiers :{" "}
+                      {Object.entries(app.paladium_jobs)
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([name, lvl]) => `${name} ${lvl}`)
+                        .join(" · ")}
+                    </div>
+                  )}
                   {app.paladium_first_join && (
-                    <> · 1ʳᵉ connexion {fmtPaladiumDate(app.paladium_first_join)}</>
+                    <div className="text-muted-foreground">
+                      Joue depuis {fmtPaladiumDate(app.paladium_first_join)}
+                    </div>
                   )}
+                </div>
+              )}
+              {app.paladium_status === "found" && !app.paladium_played_v11 && (
+                <div className="text-muted-foreground">
+                  ⚔ Compte Paladium existant mais aucune activité cette saison (V11)
+                  {app.paladium_first_join && (
+                    <> · joue depuis {fmtPaladiumDate(app.paladium_first_join)}</>
+                  )}
+                  .
                 </div>
               )}
               {app.paladium_status === "not_found" && (

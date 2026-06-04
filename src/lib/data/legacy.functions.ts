@@ -60,6 +60,10 @@ export interface LegacyApplication {
   paladium_level: number | null;
   paladium_first_join: string | null;
   paladium_last_seen: string | null;
+  paladium_money: number | null;
+  paladium_jobs: Record<string, number> | null;
+  paladium_job_total: number | null;
+  paladium_played_v11: boolean | null;
   paladium_checked_at: string | null;
   /** Calculé à la volée : le pseudo IG correspond à une entrée blacklist (mc_name). */
   is_blacklisted?: boolean;
@@ -479,14 +483,18 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
 // ---------------------------------------------------------------------------
 
 const paladiumSchema = z.object({
-  limit: z.number().int().min(1).max(60).optional().default(25),
+  limit: z.number().int().min(1).max(30).optional().default(12),
 });
 
+// À (re)traiter : pas encore de verdict V11 (played_v11 NULL), et soit jamais
+// vérifié (status NULL) soit déjà trouvé (status 'found' → on l'enrichit avec
+// argent/métiers). Les 'not_found' sont laissés tranquilles.
 async function remainingPaladium(): Promise<number> {
   const r = await db
     .from("legacy_applications")
     .select("id", { count: "exact", head: true })
-    .is("paladium_checked_at", null)
+    .is("paladium_played_v11", null)
+    .or("paladium_status.is.null,paladium_status.eq.found")
     .or("mojang_uuid.not.is.null,ig_name.not.is.null");
   return r.count ?? 0;
 }
@@ -500,7 +508,8 @@ export const verifyLegacyPaladium = createServerFn({ method: "POST" })
     const res = await db
       .from("legacy_applications")
       .select("id, ig_name, mojang_uuid")
-      .is("paladium_checked_at", null)
+      .is("paladium_played_v11", null)
+      .or("paladium_status.is.null,paladium_status.eq.found")
       .or("mojang_uuid.not.is.null,ig_name.not.is.null")
       .limit(data.limit);
     if (res.error) throw new Error(res.error.message);
@@ -539,6 +548,7 @@ export const verifyLegacyPaladium = createServerFn({ method: "POST" })
       if (r.mojang_uuid) ids.push(dashUuid(r.mojang_uuid));
       if (r.ig_name?.trim()) ids.push(r.ig_name.trim());
       let profile: Record<string, unknown> | null = null;
+      let usedId: string | null = null;
       let stop = false;
       for (const id of ids) {
         try {
@@ -547,7 +557,10 @@ export const verifyLegacyPaladium = createServerFn({ method: "POST" })
           if (pr.rate.remaining != null && pr.rate.remaining <= 2) {
             await new Promise((rsv) => setTimeout(rsv, 1500));
           }
-          if (profile) break;
+          if (profile) {
+            usedId = id;
+            break;
+          }
         } catch (e) {
           if (e instanceof PaladiumServerError && e.status === 404) continue;
           if (
@@ -568,10 +581,54 @@ export const verifyLegacyPaladium = createServerFn({ method: "POST" })
       let update: Record<string, unknown>;
       if (profile) {
         found++;
+        const faction = pickStr(profile, "factionName", "faction", "guildName", "guild");
+        const money = pickNum(profile, "money", "coins", "balance");
+        // Métiers (reset chaque saison) via un 2e appel. Forme officielle :
+        // { miner: { level, xp }, farmer: {...}, ... } ; on tolère aussi { jobs: [...] }.
+        const jobs: Record<string, number> = {};
+        let jobTotal = 0;
+        try {
+          const jr = await fetchPaladium(
+            `/v1/paladium/player/profile/${encodeURIComponent(usedId ?? ids[0])}/jobs`,
+          );
+          const jraw = (jr.data ?? {}) as Record<string, unknown>;
+          const arr = (jraw as { jobs?: Array<{ name?: string; level?: number }> }).jobs;
+          if (Array.isArray(arr)) {
+            for (const j of arr) {
+              const lvl = Number(j?.level ?? 0);
+              if (j?.name && lvl > 0) {
+                jobs[String(j.name).toLowerCase()] = lvl;
+                jobTotal += lvl;
+              }
+            }
+          } else {
+            for (const [name, v] of Object.entries(jraw)) {
+              if (v && typeof v === "object") {
+                const lvl = Number((v as { level?: number }).level ?? 0);
+                if (lvl > 0) {
+                  jobs[name.toLowerCase()] = lvl;
+                  jobTotal += lvl;
+                }
+              }
+            }
+          }
+          if (jr.rate.remaining != null && jr.rate.remaining <= 2) {
+            await new Promise((rsv) => setTimeout(rsv, 1500));
+          }
+        } catch (e) {
+          if (
+            e instanceof PaladiumServerError &&
+            (e.status === 429 || e.status === 0 || e.status >= 500)
+          ) {
+            rateLimited = true;
+            break; // jobs rate-limité : on retentera ce joueur (played_v11 reste null)
+          }
+          // autre erreur jobs : on continue avec jobTotal = 0
+        }
+        const playedV11 = (money != null && money > 0) || jobTotal > 0 || !!faction;
         update = {
           paladium_status: "found",
-          paladium_faction: pickStr(profile, "factionName", "faction", "guildName", "guild"),
-          paladium_level: pickNum(profile, "level", "lvl"),
+          paladium_faction: faction,
           paladium_first_join: pickStr(
             profile,
             "firstJoin",
@@ -579,19 +636,18 @@ export const verifyLegacyPaladium = createServerFn({ method: "POST" })
             "createdAt",
             "created_at",
           ),
-          paladium_last_seen: pickStr(
-            profile,
-            "lastSeen",
-            "lastLogin",
-            "lastConnection",
-            "lastPlayed",
-            "disconnectTime",
-            "updatedAt",
-          ),
+          paladium_money: money,
+          paladium_jobs: Object.keys(jobs).length ? jobs : null,
+          paladium_job_total: jobTotal,
+          paladium_played_v11: playedV11,
           paladium_checked_at: now,
         };
       } else {
-        update = { paladium_status: "not_found", paladium_checked_at: now };
+        update = {
+          paladium_status: "not_found",
+          paladium_played_v11: false,
+          paladium_checked_at: now,
+        };
       }
       await db
         .from("legacy_applications")

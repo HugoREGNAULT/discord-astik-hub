@@ -941,6 +941,10 @@ export type Database = {
           paladium_last_seen: string | null;
           paladium_level: number | null;
           paladium_status: string | null;
+          paladium_money: number | null;
+          paladium_jobs: Json | null;
+          paladium_job_total: number | null;
+          paladium_played_v11: boolean | null;
           raw: Json;
           source: string;
           submitted_at: string | null;
@@ -966,6 +970,10 @@ export type Database = {
           paladium_last_seen?: string | null;
           paladium_level?: number | null;
           paladium_status?: string | null;
+          paladium_money?: number | null;
+          paladium_jobs?: Json | null;
+          paladium_job_total?: number | null;
+          paladium_played_v11?: boolean | null;
           raw?: Json;
           source: string;
           submitted_at?: string | null;
@@ -991,6 +999,10 @@ export type Database = {
           paladium_last_seen?: string | null;
           paladium_level?: number | null;
           paladium_status?: string | null;
+          paladium_money?: number | null;
+          paladium_jobs?: Json | null;
+          paladium_job_total?: number | null;
+          paladium_played_v11?: boolean | null;
           raw?: Json;
           source?: string;
           submitted_at?: string | null;
