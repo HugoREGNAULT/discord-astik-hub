@@ -937,6 +937,10 @@ export type Database = {
           discord_name: string | null
           id: string
           ig_name: string | null
+          mojang_checked_at: string | null
+          mojang_current_name: string | null
+          mojang_status: string | null
+          mojang_uuid: string | null
           raw: Json
           source: string
           submitted_at: string | null
@@ -952,6 +956,10 @@ export type Database = {
           discord_name?: string | null
           id?: string
           ig_name?: string | null
+          mojang_checked_at?: string | null
+          mojang_current_name?: string | null
+          mojang_status?: string | null
+          mojang_uuid?: string | null
           raw?: Json
           source: string
           submitted_at?: string | null
@@ -967,6 +975,10 @@ export type Database = {
           discord_name?: string | null
           id?: string
           ig_name?: string | null
+          mojang_checked_at?: string | null
+          mojang_current_name?: string | null
+          mojang_status?: string | null
+          mojang_uuid?: string | null
           raw?: Json
           source?: string
           submitted_at?: string | null
