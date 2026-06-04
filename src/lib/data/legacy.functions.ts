@@ -50,15 +50,40 @@ export const listLegacyApplications = createServerFn({ method: "GET" })
     if (s) q = q.or(`ig_name.ilike.%${s}%,discord_name.ilike.%${s}%`);
     const [res, bl] = await Promise.all([
       q.order("submitted_at", { ascending: false, nullsFirst: false }).limit(3000),
-      db.from("blacklist").select("mc_name"),
+      db.from("blacklist").select("mc_name, added_by_username"),
     ]);
     if (res.error) throw new Error(res.error.message);
-    const blset = new Set(
-      (bl.data ?? []).map((b) => (b.mc_name ?? "").toLowerCase().trim()).filter(Boolean),
+
+    // Liste de pseudos blacklistés (mc_name uniquement — c'est le "pseudo" disponible).
+    const blNames = Array.from(
+      new Set(
+        (bl.data ?? [])
+          .map((b) => (b.mc_name ?? "").toLowerCase().trim())
+          .filter((s) => s.length >= 3),
+      ),
     );
+    const blSet = new Set(blNames);
+
     const rows = (res.data ?? []) as unknown as LegacyApplication[];
     for (const r of rows) {
-      r.is_blacklisted = !!r.ig_name && blset.has(r.ig_name.toLowerCase().trim());
+      const candidates = [r.ig_name, r.discord_name, r.mojang_current_name]
+        .map((s) => (s ?? "").toLowerCase().trim())
+        .filter((s) => s.length >= 3);
+      let hit = false;
+      for (const c of candidates) {
+        if (blSet.has(c)) {
+          hit = true;
+          break;
+        }
+        for (const b of blNames) {
+          if (similarity(c, b) >= 0.8) {
+            hit = true;
+            break;
+          }
+        }
+        if (hit) break;
+      }
+      r.is_blacklisted = hit;
     }
     return rows;
   });
