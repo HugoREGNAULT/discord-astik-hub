@@ -39,6 +39,7 @@ import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
+import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
@@ -248,6 +249,11 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
   id: '/blacklist',
   path: '/blacklist',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedBacklogRoute = AuthenticatedBacklogRouteImport.update({
+  id: '/backlog',
+  path: '/backlog',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
@@ -562,6 +568,7 @@ export interface FileRoutesByFullPath {
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/assistant': typeof AuthenticatedAssistantRoute
+  '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -647,6 +654,7 @@ export interface FileRoutesByTo {
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/assistant': typeof AuthenticatedAssistantRoute
+  '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -732,6 +740,7 @@ export interface FileRoutesById {
   '/_authenticated/absences': typeof AuthenticatedAbsencesRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
+  '/_authenticated/backlog': typeof AuthenticatedBacklogRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -819,6 +828,7 @@ export interface FileRouteTypes {
     | '/absences'
     | '/admin'
     | '/assistant'
+    | '/backlog'
     | '/blacklist'
     | '/config'
     | '/dashboard'
@@ -904,6 +914,7 @@ export interface FileRouteTypes {
     | '/absences'
     | '/admin'
     | '/assistant'
+    | '/backlog'
     | '/blacklist'
     | '/config'
     | '/dashboard'
@@ -988,6 +999,7 @@ export interface FileRouteTypes {
     | '/_authenticated/absences'
     | '/_authenticated/admin'
     | '/_authenticated/assistant'
+    | '/_authenticated/backlog'
     | '/_authenticated/blacklist'
     | '/_authenticated/config'
     | '/_authenticated/dashboard'
@@ -1316,6 +1328,13 @@ declare module '@tanstack/react-router' {
       path: '/blacklist'
       fullPath: '/blacklist'
       preLoaderRoute: typeof AuthenticatedBlacklistRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/backlog': {
+      id: '/_authenticated/backlog'
+      path: '/backlog'
+      fullPath: '/backlog'
+      preLoaderRoute: typeof AuthenticatedBacklogRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/assistant': {
@@ -1788,6 +1807,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
+  AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1817,6 +1837,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAbsencesRoute: AuthenticatedAbsencesRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
+  AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1893,3 +1914,4 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+

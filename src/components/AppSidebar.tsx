@@ -130,9 +130,6 @@ const SECTIONS: Section[] = [
         perm: "profile.self",
         accent: "pink",
       },
-
-
-
     ],
   },
   {
@@ -206,6 +203,13 @@ const SECTIONS: Section[] = [
         url: "/trials",
         icon: CalendarCheck,
         perm: "recruit.access",
+        accent: "pink",
+      },
+      {
+        title: "Backlog candidatures",
+        url: "/backlog",
+        icon: FileText,
+        perm: "admin.access",
         accent: "pink",
       },
     ],
