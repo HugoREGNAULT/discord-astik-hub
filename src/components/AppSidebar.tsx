@@ -22,6 +22,7 @@ import {
   Eye,
   Award,
   BarChart3,
+  Rocket,
 } from "lucide-react";
 
 import {
