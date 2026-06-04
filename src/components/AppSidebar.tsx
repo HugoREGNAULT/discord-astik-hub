@@ -22,6 +22,7 @@ import {
   Eye,
   Award,
   BarChart3,
+  Rocket,
 } from "lucide-react";
 
 import {
@@ -148,6 +149,13 @@ const SECTIONS: Section[] = [
         title: "Récap",
         url: "/staff-recap",
         icon: Eye,
+        perm: "members.view",
+        accent: "pink",
+      },
+      {
+        title: "Réunion 19 juin · V12",
+        url: "/staff/reunion/juin-19",
+        icon: Rocket,
         perm: "members.view",
         accent: "pink",
       },
