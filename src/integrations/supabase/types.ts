@@ -14,54 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      legacy_applications: {
-        Row: {
-          age: number | null;
-          contact_note: string | null;
-          contact_status: string;
-          contact_updated_at: string | null;
-          contact_updated_by_discord_id: string | null;
-          contact_updated_by_username: string | null;
-          created_at: string;
-          discord_name: string | null;
-          id: string;
-          ig_name: string | null;
-          raw: Json;
-          source: string;
-          submitted_at: string | null;
-        };
-        Insert: {
-          age?: number | null;
-          contact_note?: string | null;
-          contact_status?: string;
-          contact_updated_at?: string | null;
-          contact_updated_by_discord_id?: string | null;
-          contact_updated_by_username?: string | null;
-          created_at?: string;
-          discord_name?: string | null;
-          id?: string;
-          ig_name?: string | null;
-          raw?: Json;
-          source: string;
-          submitted_at?: string | null;
-        };
-        Update: {
-          age?: number | null;
-          contact_note?: string | null;
-          contact_status?: string;
-          contact_updated_at?: string | null;
-          contact_updated_by_discord_id?: string | null;
-          contact_updated_by_username?: string | null;
-          created_at?: string;
-          discord_name?: string | null;
-          id?: string;
-          ig_name?: string | null;
-          raw?: Json;
-          source?: string;
-          submitted_at?: string | null;
-        };
-        Relationships: [];
-      };
       absences: {
         Row: {
           created_at: string
@@ -970,6 +922,54 @@ export type Database = {
           taken_at?: string
           voice_7d_seconds?: number
           voice_total_seconds?: number
+        }
+        Relationships: []
+      }
+      legacy_applications: {
+        Row: {
+          age: number | null
+          contact_note: string | null
+          contact_status: string
+          contact_updated_at: string | null
+          contact_updated_by_discord_id: string | null
+          contact_updated_by_username: string | null
+          created_at: string
+          discord_name: string | null
+          id: string
+          ig_name: string | null
+          raw: Json
+          source: string
+          submitted_at: string | null
+        }
+        Insert: {
+          age?: number | null
+          contact_note?: string | null
+          contact_status?: string
+          contact_updated_at?: string | null
+          contact_updated_by_discord_id?: string | null
+          contact_updated_by_username?: string | null
+          created_at?: string
+          discord_name?: string | null
+          id?: string
+          ig_name?: string | null
+          raw?: Json
+          source: string
+          submitted_at?: string | null
+        }
+        Update: {
+          age?: number | null
+          contact_note?: string | null
+          contact_status?: string
+          contact_updated_at?: string | null
+          contact_updated_by_discord_id?: string | null
+          contact_updated_by_username?: string | null
+          created_at?: string
+          discord_name?: string | null
+          id?: string
+          ig_name?: string | null
+          raw?: Json
+          source?: string
+          submitted_at?: string | null
         }
         Relationships: []
       }
