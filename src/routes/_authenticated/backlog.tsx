@@ -11,6 +11,7 @@ import {
   getLegacyOverview,
   setLegacyContactStatus,
   importLegacyCsv,
+  verifyLegacyMojang,
   type LegacyApplication,
   type ContactStatus,
 } from "@/lib/data/legacy.functions";
@@ -21,7 +22,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { CardListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
-import { Clock, PhoneCall, Ban, Search, Users, Archive, Upload, Loader2 } from "lucide-react";
+import {
+  Clock,
+  PhoneCall,
+  Ban,
+  Search,
+  Users,
+  Archive,
+  Upload,
+  Loader2,
+  UserCheck,
+  RefreshCw,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/backlog")({
   component: () => (
@@ -31,7 +43,7 @@ export const Route = createFileRoute("/_authenticated/backlog")({
   ),
 });
 
-const STATUSES: ContactStatus[] = ["to_contact", "contacted", "do_not_contact"];
+const STATUSES: ContactStatus[] = ["to_contact", "contacted", "do_not_contact", "already_member"];
 const STATUS_META: Record<
   ContactStatus,
   { label: string; short: string; icon: typeof Clock; btn: string; badge: string }
@@ -57,8 +69,16 @@ const STATUS_META: Record<
     btn: "bg-red-600 hover:bg-red-700 text-white",
     badge: "bg-red-500/15 text-red-300 border-red-500/40",
   },
+  already_member: {
+    label: "Déjà membre",
+    short: "Déjà membre",
+    icon: UserCheck,
+    btn: "bg-blue-600 hover:bg-blue-700 text-white",
+    badge: "bg-blue-500/15 text-blue-300 border-blue-500/40",
+  },
 };
 
+type SortKey = "date" | "age" | "name";
 const PER_PAGE = 50;
 
 function fmtDate(iso: string | null) {
@@ -73,6 +93,7 @@ function BacklogPage() {
   const overviewFn = useServerFn(getLegacyOverview);
   const setStatusFn = useServerFn(setLegacyContactStatus);
   const importFn = useServerFn(importLegacyCsv);
+  const verifyFn = useServerFn(verifyLegacyMojang);
   const fileRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
 
@@ -81,6 +102,8 @@ function BacklogPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<LegacyApplication | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const { data: overview } = useQuery({
     queryKey: ["legacy-overview"],
@@ -120,6 +143,39 @@ function BacklogPage() {
     onError: (e: Error) => toast.error(toUserMessage(e)),
   });
 
+  const mojangMutation = useMutation({
+    mutationFn: async () => {
+      let total = 0;
+      let valid = 0;
+      let notFound = 0;
+      for (let i = 0; i < 40; i++) {
+        const res = await verifyFn({ data: { limit: 150 } });
+        total += res.processed;
+        valid += res.valid;
+        notFound += res.notFound;
+        if (res.processed === 0 || res.remaining === 0) break;
+      }
+      return { total, valid, notFound };
+    },
+    onSuccess: (r) => {
+      toast.success(
+        r.total === 0
+          ? "Tous les pseudos sont déjà vérifiés."
+          : `Mojang : ${r.total} vérifiés (${r.valid} valides, ${r.notFound} introuvables).`,
+      );
+      qc.invalidateQueries({ queryKey: ["legacy"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const toggleSort = (k: SortKey) => {
+    if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir(k === "name" ? "asc" : "desc");
+    }
+  };
+
   const filtered = useMemo(() => {
     let r = allItems ?? [];
     if (status !== "all") r = r.filter((x) => x.contact_status === status);
@@ -134,9 +190,22 @@ function BacklogPage() {
     return r;
   }, [allItems, status, source, search]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const sorted = useMemo(() => {
+    const arr = [...filtered];
+    arr.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "age") cmp = (a.age ?? -1) - (b.age ?? -1);
+      else if (sortKey === "name")
+        cmp = (a.ig_name ?? a.discord_name ?? "").localeCompare(b.ig_name ?? b.discord_name ?? "");
+      else cmp = (a.submitted_at ?? "").localeCompare(b.submitted_at ?? "");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [filtered, sortKey, sortDir]);
+
+  const pageCount = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
   const safePage = Math.min(page, pageCount);
-  const paged = getPagedSlice(filtered, safePage, PER_PAGE);
+  const paged = getPagedSlice(sorted, safePage, PER_PAGE);
 
   return (
     <div className="space-y-5 max-w-6xl">
@@ -146,45 +215,54 @@ function BacklogPage() {
         description="Anciennes candidatures importées (multi-formulaires). Suis tes prises de contact et ouvre chaque candidature au clic."
       />
 
-      {/* Import temporaire (à retirer une fois l'import terminé) */}
+      {/* Outils temporaires (import + vérif Mojang) */}
       <div className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3 flex items-center justify-between gap-3 flex-wrap">
-        <div className="text-xs text-muted-foreground max-w-2xl">
+        <div className="text-xs text-muted-foreground max-w-xl">
           <span className="font-medium text-foreground">Import CSV</span> — dépose tes exports
-          Google Forms (.csv, plusieurs à la fois). Détection auto des colonnes. Ré-importer un
-          fichier remplace sa source (pas de doublon).{" "}
-          <span className="italic">Outil temporaire.</span>
+          Google Forms (.csv, plusieurs à la fois).{" "}
+          <span className="italic">Outils temporaires.</span>
         </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".csv,text/csv"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            const arr = e.target.files ? Array.from(e.target.files) : [];
-            e.target.value = "";
-            if (arr.length > 0) {
-              toast.info(`Lecture de ${arr.length} fichier(s)…`);
-              importMutation.mutate(arr);
-            }
-          }}
-        />
-        <Button
-          onClick={() => fileRef.current?.click()}
-          disabled={importMutation.isPending}
-          className="shrink-0"
-        >
-          {importMutation.isPending ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Upload className="w-4 h-4 mr-2" />
-          )}
-          Importer des CSV
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".csv,text/csv"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const arr = e.target.files ? Array.from(e.target.files) : [];
+              e.target.value = "";
+              if (arr.length > 0) {
+                toast.info(`Lecture de ${arr.length} fichier(s)…`);
+                importMutation.mutate(arr);
+              }
+            }}
+          />
+          <Button onClick={() => fileRef.current?.click()} disabled={importMutation.isPending}>
+            {importMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="w-4 h-4 mr-2" />
+            )}
+            Importer des CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => mojangMutation.mutate()}
+            disabled={mojangMutation.isPending}
+          >
+            {mojangMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Vérifier les pseudos
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <StatCard icon={Archive} label="Total" value={overview?.total ?? 0} />
         {STATUSES.map((st) => {
           const M = STATUS_META[st];
@@ -230,7 +308,7 @@ function BacklogPage() {
               </option>
             ))}
           </select>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <FilterChip active={status === "all"} onClick={() => setStatus("all")}>
               Tous
             </FilterChip>
@@ -251,7 +329,7 @@ function BacklogPage() {
 
         {isLoading ? (
           <CardListSkeleton count={6} />
-        ) : filtered.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <EmptyState
             icon={Users}
             title="Aucune candidature"
@@ -260,16 +338,36 @@ function BacklogPage() {
         ) : (
           <>
             <div className="text-xs text-muted-foreground mb-2">
-              {filtered.length} candidature{filtered.length > 1 ? "s" : ""}
+              {sorted.length} candidature{sorted.length > 1 ? "s" : ""}
             </div>
             <div className="overflow-x-auto rounded-lg border border-border">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
-                    <th className="px-3 py-2 font-medium">Pseudo</th>
-                    <th className="px-3 py-2 font-medium hidden sm:table-cell">Âge</th>
+                    <SortTh
+                      label="Pseudo"
+                      k="name"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleSort}
+                    />
+                    <SortTh
+                      label="Âge"
+                      k="age"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleSort}
+                      className="hidden sm:table-cell"
+                    />
                     <th className="px-3 py-2 font-medium hidden md:table-cell">Source</th>
-                    <th className="px-3 py-2 font-medium hidden lg:table-cell">Date</th>
+                    <SortTh
+                      label="Date"
+                      k="date"
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={toggleSort}
+                      className="hidden lg:table-cell"
+                    />
                     <th className="px-3 py-2 font-medium">Statut / action</th>
                   </tr>
                 </thead>
@@ -282,8 +380,20 @@ function BacklogPage() {
                           onClick={() => setSelected(row)}
                           className="text-left group"
                         >
-                          <div className="font-medium text-foreground group-hover:text-primary group-hover:underline">
-                            {row.ig_name || row.discord_name || "—"}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-medium text-foreground group-hover:text-primary group-hover:underline">
+                              {row.ig_name || row.discord_name || "—"}
+                            </span>
+                            {row.is_blacklisted && (
+                              <Badge className="bg-red-500/15 text-red-300 border-red-500/40 text-[9px] px-1.5">
+                                🚫 BL
+                              </Badge>
+                            )}
+                            {row.mojang_status === "not_found" && (
+                              <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/40 text-[9px] px-1.5">
+                                pseudo introuvable
+                              </Badge>
+                            )}
                           </div>
                           {row.discord_name && row.ig_name && (
                             <div className="text-xs text-muted-foreground">@{row.discord_name}</div>
@@ -338,6 +448,32 @@ function BacklogPage() {
 
       <DetailDialog app={selected} onClose={() => setSelected(null)} />
     </div>
+  );
+}
+
+function SortTh({
+  label,
+  k,
+  sortKey,
+  sortDir,
+  onSort,
+  className,
+}: {
+  label: string;
+  k: SortKey;
+  sortKey: SortKey;
+  sortDir: "asc" | "desc";
+  onSort: (k: SortKey) => void;
+  className?: string;
+}) {
+  const active = sortKey === k;
+  return (
+    <th
+      className={`px-3 py-2 font-medium cursor-pointer select-none hover:text-foreground ${className ?? ""}`}
+      onClick={() => onSort(k)}
+    >
+      {label} {active ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+    </th>
   );
 }
 
@@ -408,14 +544,39 @@ function DetailDialog({ app, onClose }: { app: LegacyApplication | null; onClose
                 >
                   {STATUS_META[app.contact_status].label}
                 </Badge>
+                {app.is_blacklisted && (
+                  <Badge className="bg-red-500/15 text-red-300 border-red-500/40 text-[10px]">
+                    🚫 Blacklist
+                  </Badge>
+                )}
               </DialogTitle>
             </DialogHeader>
-            <div className="text-xs text-muted-foreground -mt-2 mb-2">
-              {app.discord_name && <>Discord : {app.discord_name} · </>}
-              {app.age != null && <>{app.age} ans · </>}
-              Candidaté le {fmtDate(app.submitted_at)}
-              {app.contact_updated_by_username && (
-                <> · dernier statut par {app.contact_updated_by_username}</>
+            <div className="text-xs text-muted-foreground -mt-2 mb-2 space-y-1">
+              <div>
+                {app.discord_name && <>Discord : {app.discord_name} · </>}
+                {app.age != null && <>{app.age} ans · </>}
+                Candidaté le {fmtDate(app.submitted_at)}
+                {app.contact_updated_by_username && (
+                  <> · dernier statut par {app.contact_updated_by_username}</>
+                )}
+              </div>
+              {app.mojang_status === "valid" && app.mojang_uuid && (
+                <div>
+                  ✅ Pseudo Mojang valide :{" "}
+                  <a
+                    href={`https://fr.namemc.com/profile/${app.mojang_uuid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-foreground"
+                  >
+                    {app.mojang_current_name ?? app.ig_name}
+                  </a>
+                </div>
+              )}
+              {app.mojang_status === "not_found" && (
+                <div className="text-amber-400">
+                  ⚠️ Pseudo introuvable sur Mojang (changé ou compte supprimé).
+                </div>
               )}
             </div>
             <div className="space-y-3">

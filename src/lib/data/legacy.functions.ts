@@ -7,7 +7,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
 
-export type ContactStatus = "to_contact" | "contacted" | "do_not_contact";
+export type ContactStatus = "to_contact" | "contacted" | "do_not_contact" | "already_member";
 
 export interface LegacyApplication {
   id: string;
@@ -22,11 +22,17 @@ export interface LegacyApplication {
   contact_updated_at: string | null;
   contact_updated_by_username: string | null;
   created_at: string;
+  mojang_status: "valid" | "not_found" | null;
+  mojang_uuid: string | null;
+  mojang_current_name: string | null;
+  mojang_checked_at: string | null;
+  /** Calculé à la volée : le pseudo IG correspond à une entrée blacklist (mc_name). */
+  is_blacklisted?: boolean;
 }
 
 const listSchema = z
   .object({
-    status: z.enum(["to_contact", "contacted", "do_not_contact"]).optional(),
+    status: z.enum(["to_contact", "contacted", "do_not_contact", "already_member"]).optional(),
     source: z.string().max(200).optional(),
     search: z.string().max(100).optional(),
   })
@@ -42,9 +48,19 @@ export const listLegacyApplications = createServerFn({ method: "GET" })
     if (data.source) q = q.eq("source", data.source);
     const s = data.search?.trim();
     if (s) q = q.or(`ig_name.ilike.%${s}%,discord_name.ilike.%${s}%`);
-    const res = await q.order("submitted_at", { ascending: false, nullsFirst: false }).limit(3000);
+    const [res, bl] = await Promise.all([
+      q.order("submitted_at", { ascending: false, nullsFirst: false }).limit(3000),
+      db.from("blacklist").select("mc_name"),
+    ]);
     if (res.error) throw new Error(res.error.message);
-    return (res.data ?? []) as unknown as LegacyApplication[];
+    const blset = new Set(
+      (bl.data ?? []).map((b) => (b.mc_name ?? "").toLowerCase().trim()).filter(Boolean),
+    );
+    const rows = (res.data ?? []) as unknown as LegacyApplication[];
+    for (const r of rows) {
+      r.is_blacklisted = !!r.ig_name && blset.has(r.ig_name.toLowerCase().trim());
+    }
+    return rows;
   });
 
 export const getLegacyOverview = createServerFn({ method: "GET" }).handler(async () => {
@@ -57,6 +73,7 @@ export const getLegacyOverview = createServerFn({ method: "GET" }).handler(async
     to_contact: 0,
     contacted: 0,
     do_not_contact: 0,
+    already_member: 0,
   };
   for (const r of rows) {
     sources.set(r.source, (sources.get(r.source) ?? 0) + 1);
@@ -73,7 +90,7 @@ export const getLegacyOverview = createServerFn({ method: "GET" }).handler(async
 
 const setStatusSchema = z.object({
   id: z.string().uuid(),
-  status: z.enum(["to_contact", "contacted", "do_not_contact"]),
+  status: z.enum(["to_contact", "contacted", "do_not_contact", "already_member"]),
   note: z.string().trim().max(2000).optional().default(""),
 });
 
@@ -238,4 +255,98 @@ export const importLegacyCsv = createServerFn({ method: "POST" })
       filename: data.filename,
     });
     return { ok: true, source, count: records.length };
+  });
+
+// ---------------------------------------------------------------------------
+// Vérification Mojang par lots (API bulk : 10 pseudos/requête). Appelée en
+// boucle depuis la page jusqu'à `remaining` = 0.
+// ---------------------------------------------------------------------------
+
+const mojangSchema = z.object({
+  limit: z.number().int().min(1).max(300).optional().default(150),
+});
+
+async function remainingMojang(): Promise<number> {
+  const r = await db
+    .from("legacy_applications")
+    .select("id", { count: "exact", head: true })
+    .is("mojang_checked_at", null)
+    .not("ig_name", "is", null);
+  return r.count ?? 0;
+}
+
+export const verifyLegacyMojang = createServerFn({ method: "POST" })
+  .inputValidator((input) => mojangSchema.parse(input ?? {}))
+  .handler(async ({ data }) => {
+    await requirePermission("admin.access");
+    const res = await db
+      .from("legacy_applications")
+      .select("id, ig_name")
+      .is("mojang_checked_at", null)
+      .not("ig_name", "is", null)
+      .limit(data.limit);
+    if (res.error) throw new Error(res.error.message);
+    const rows = (res.data ?? []) as Array<{ id: string; ig_name: string | null }>;
+    if (rows.length === 0) {
+      return { processed: 0, remaining: await remainingMojang(), valid: 0, notFound: 0 };
+    }
+
+    // Dédoublonne par pseudo (insensible casse) pour limiter les requêtes.
+    const byName = new Map<string, { display: string; ids: string[] }>();
+    for (const r of rows) {
+      const n = (r.ig_name ?? "").trim();
+      if (!n) continue;
+      const k = n.toLowerCase();
+      const e = byName.get(k);
+      if (e) e.ids.push(r.id);
+      else byName.set(k, { display: n, ids: [r.id] });
+    }
+    const entries = Array.from(byName.entries());
+
+    const resolved = new Map<string, { uuid: string; name: string }>();
+    for (let i = 0; i < entries.length; i += 10) {
+      const slice = entries.slice(i, i + 10).map(([, v]) => v.display);
+      try {
+        const r = await fetch("https://api.mojang.com/profiles/minecraft", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(slice),
+        });
+        if (r.ok) {
+          const arr = (await r.json()) as Array<{ id?: string; name?: string }>;
+          for (const p of arr) {
+            if (p?.id && p?.name) resolved.set(p.name.toLowerCase(), { uuid: p.id, name: p.name });
+          }
+        }
+      } catch {
+        /* lot ignoré, sera re-tenté (mojang_checked_at reste null) */
+      }
+    }
+
+    let valid = 0;
+    let notFound = 0;
+    const now = new Date().toISOString();
+    for (const [k, v] of entries) {
+      const hit = resolved.get(k);
+      if (hit) {
+        valid += v.ids.length;
+        await db
+          .from("legacy_applications")
+          .update({
+            mojang_status: "valid",
+            mojang_uuid: hit.uuid,
+            mojang_current_name: hit.name,
+            mojang_checked_at: now,
+          } as never)
+          .in("id", v.ids);
+      } else {
+        notFound += v.ids.length;
+        await db
+          .from("legacy_applications")
+          .update({ mojang_status: "not_found", mojang_checked_at: now } as never)
+          .in("id", v.ids);
+      }
+    }
+
+    return { processed: valid + notFound, remaining: await remainingMojang(), valid, notFound };
   });
