@@ -7,7 +7,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
-import { isFactionMember } from "@/lib/data/faction-members";
+import { isFactionMember, filterFactionMembers } from "@/lib/data/faction-members";
 import { ROLE_TAG_IDS, MAX_ROLE_TAGS, MAX_BIO_LENGTH } from "@/lib/profile-roles";
 
 function normalizeUuid(id: string): string {
@@ -369,3 +369,174 @@ export const toggleMyOnboardingTask = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ---------- Progression de grade (vue membre) ---------- */
+
+function daysSince(dateStr: string | null): number | null {
+  if (!dateStr) return null;
+  const t = new Date(dateStr).getTime();
+  if (Number.isNaN(t)) return null;
+  return Math.max(0, Math.floor((Date.now() - t) / 86_400_000));
+}
+
+/** Calcule la progression du membre connecté vers son prochain grade. */
+export const getMyRankupProgress = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+
+  const [memberRes, thrRes] = await Promise.all([
+    db
+      .from("members")
+      .select(
+        "current_grade, astik_points, arrival_date, last_rankup, messages_7d, voice_7d_seconds",
+      )
+      .eq("discord_id", user.discordId)
+      .maybeSingle(),
+    db
+      .from("grade_thresholds")
+      .select("*")
+      .eq("active", true)
+      .order("display_order", { ascending: true }),
+  ]);
+  if (memberRes.error) throw new Error(memberRes.error.message);
+
+  const m = memberRes.data;
+  const thresholds = thrRes.data ?? [];
+  if (!m || thresholds.length === 0) {
+    return { configured: false as const };
+  }
+
+  const current = thresholds.find((t) => t.grade_label === m.current_grade) ?? null;
+  const currentOrder = current?.display_order ?? -1;
+  const next = thresholds.find((t) => t.display_order > currentOrder) ?? null;
+
+  if (!next) {
+    return {
+      configured: true as const,
+      isMax: true as const,
+      currentGrade: m.current_grade ?? null,
+    };
+  }
+
+  const daysInFaction = daysSince(m.arrival_date) ?? 0;
+  const daysSinceRankup = daysSince(m.last_rankup ?? m.arrival_date) ?? daysInFaction;
+  const voiceHours = Math.round((m.voice_7d_seconds ?? 0) / 360) / 10;
+  const needVoiceHours = Math.round((next.min_voice_7d_seconds ?? 0) / 360) / 10;
+
+  const req = {
+    points: { have: m.astik_points ?? 0, need: next.min_points ?? 0 },
+    daysInFaction: { have: daysInFaction, need: next.min_days_in_faction ?? 0 },
+    messages7d: { have: m.messages_7d ?? 0, need: next.min_messages_7d ?? 0 },
+    voice7dHours: { have: voiceHours, need: needVoiceHours },
+    daysSinceRankup: { have: daysSinceRankup, need: next.min_days_since_rankup ?? 0 },
+  };
+  const allMet = Object.values(req).every((r) => r.have >= r.need);
+
+  return {
+    configured: true as const,
+    isMax: false as const,
+    currentGrade: m.current_grade ?? null,
+    nextGrade: next.grade_label,
+    requirements: req,
+    allMet,
+  };
+});
+
+/* ---------- Mes recrues (vue membre) ---------- */
+
+/** Liste les membres recrutés par le membre connecté (filtrés vrais membres faction). */
+export const listMyRecruits = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const { data, error } = await db
+    .from("members")
+    .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid, status")
+    .eq("recruiter_discord_id", user.discordId)
+    .order("arrival_date", { ascending: false, nullsFirst: false });
+  if (error) throw new Error(error.message);
+  return { recruits: filterFactionMembers(data) };
+});
+
+/* ---------- Mon salaire (vue membre) ---------- */
+
+/** Salaire hebdo (selon grade) + historique des versements du membre connecté. */
+export const getMySalary = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const memberRes = await db
+    .from("members")
+    .select("current_grade, voice_7d_seconds")
+    .eq("discord_id", user.discordId)
+    .maybeSingle();
+  if (memberRes.error) throw new Error(memberRes.error.message);
+  const grade = memberRes.data?.current_grade ?? null;
+
+  let weeklyPoints: number | null = null;
+  let minActivitySeconds = 0;
+  if (grade) {
+    const g = await db
+      .from("salary_grades")
+      .select("weekly_points, min_activity_seconds, active")
+      .eq("grade_label", grade)
+      .eq("active", true)
+      .maybeSingle();
+    if (g.data) {
+      weeklyPoints = g.data.weekly_points;
+      minActivitySeconds = g.data.min_activity_seconds ?? 0;
+    }
+  }
+
+  const histRes = await db
+    .from("points_ledger")
+    .select("id, amount, reason, total_after, created_at")
+    .eq("member_discord_id", user.discordId)
+    .eq("action_type", "salary")
+    .order("created_at", { ascending: false })
+    .limit(12);
+
+  const activitySeconds = memberRes.data?.voice_7d_seconds ?? 0;
+  return {
+    grade,
+    weeklyPoints,
+    minActivitySeconds,
+    activitySeconds,
+    eligible: activitySeconds >= minActivitySeconds,
+    history: histRes.data ?? [],
+  };
+});
+
+/* ---------- Mes absences (vue membre) ---------- */
+
+/** Liste les absences du membre connecté. */
+export const listMyAbsences = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const { data, error } = await db
+    .from("absences")
+    .select("id, type, reason, starts_on, ends_on, created_at")
+    .eq("member_discord_id", user.discordId)
+    .order("starts_on", { ascending: false });
+  if (error) throw new Error(error.message);
+  return { absences: data ?? [] };
+});
+
+/* ---------- Mes objectifs (vue membre) ---------- */
+
+/** Objectifs de faction actifs + contribution cumulée du membre connecté. */
+export const getMyObjectives = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+  const [objRes, contribRes] = await Promise.all([
+    db
+      .from("objectives")
+      .select("id, title, description, target_value, unit, current_value, reward_points, done")
+      .eq("done", false)
+      .order("display_order", { ascending: true }),
+    db
+      .from("objective_contributions")
+      .select("objective_id, amount")
+      .eq("member_discord_id", user.discordId),
+  ]);
+  if (objRes.error) throw new Error(objRes.error.message);
+
+  const myContributions: Record<string, number> = {};
+  for (const c of contribRes.data ?? []) {
+    myContributions[c.objective_id] = (myContributions[c.objective_id] ?? 0) + (c.amount ?? 0);
+  }
+  return { objectives: objRes.data ?? [], myContributions };
+});

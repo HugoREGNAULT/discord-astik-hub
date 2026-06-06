@@ -2,23 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import {
-  Coins,
-  ShieldAlert,
-  UserCircle2,
-  Gamepad2,
-  Clock,
-  Copy,
-  Check,
-  Pencil,
-} from "lucide-react";
+import { Coins, UserCircle2, Gamepad2, Clock, Copy, Check, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getMyOverview,
-  listMyWarnings,
-  completeOnboarding,
-  updateMyProfile,
-} from "@/lib/data/me.functions";
+import { getMyOverview, completeOnboarding, updateMyProfile } from "@/lib/data/me.functions";
 import { avatarUrl } from "@/lib/paladium/api";
 import { toUserMessage } from "@/lib/errors";
 import { ROLE_TAGS, MAX_BIO_LENGTH, MAX_ROLE_TAGS, roleLabel, roleIcon } from "@/lib/profile-roles";
@@ -29,6 +15,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { GamificationCard } from "@/components/GamificationCard";
+import { RankupProgressCard } from "@/components/me/RankupProgressCard";
+import { ObjectivesCard } from "@/components/me/ObjectivesCard";
+import { SalaryCard } from "@/components/me/SalaryCard";
+import { AbsencesCard } from "@/components/me/AbsencesCard";
+import { MyRecruitsCard } from "@/components/me/MyRecruitsCard";
+import { McVerifyCard } from "@/components/me/McVerifyCard";
+import { WarningsCard } from "@/components/me/WarningsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { MonoLabel } from "@/components/tools/ToolsUi";
@@ -40,7 +33,6 @@ export const Route = createFileRoute("/_authenticated/me")({
 
 function MyProfile() {
   const overviewFn = useServerFn(getMyOverview);
-  const warningsFn = useServerFn(listMyWarnings);
 
   const { data, isLoading } = useQuery({
     queryKey: ["me", "overview"],
@@ -50,13 +42,11 @@ function MyProfile() {
     refetchIntervalInBackground: false,
     staleTime: 0,
   });
-  const { data: warningsData } = useQuery({
-    queryKey: ["me", "warnings"],
-    queryFn: () => warningsFn(),
-  });
 
   if (isLoading || !data) return <DetailPageSkeleton />;
   const m = data.member;
+  // Vrai membre faction (≠ simple visiteur connecté) : conditionne les cartes faction.
+  const isMember = Boolean(m.ig_name || m.current_grade || m.arrival_date || m.mc_uuid);
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -91,12 +81,24 @@ function MyProfile() {
 
           <AboutCard bio={m.bio ?? null} roles={m.roles ?? []} />
 
+          {isMember && <RankupProgressCard />}
+
           <GamificationCard scope="me" />
+
+          {isMember && <ObjectivesCard />}
         </div>
 
         {/* Colonne secondaire : compte MC + activité */}
         <div className="space-y-6">
           <MinecraftAccountCard mcUuid={m.mc_uuid} igName={m.ig_name} />
+
+          {isMember && <McVerifyCard mcUuid={m.mc_uuid} igName={m.ig_name} />}
+
+          {isMember && <SalaryCard />}
+
+          {isMember && <AbsencesCard />}
+
+          {isMember && <MyRecruitsCard />}
 
           <Card>
             <CardHeader>
@@ -194,34 +196,7 @@ function MyProfile() {
             </CardContent>
           </Card>
 
-          {warningsData && warningsData.warnings.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base">
-                  <span className="flex items-center gap-2">
-                    <ShieldAlert className="size-4 text-destructive" /> Mes avertissements
-                  </span>
-                  <Badge variant="outline">{warningsData.warnings.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {warningsData.warnings.map((w) => (
-                    <li key={w.id} className="text-sm border border-border rounded-md p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline">{w.severity ?? "minor"}</Badge>
-                        <Badge variant="secondary">{w.status}</Badge>
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          {new Date(w.created_at).toLocaleDateString("fr-FR")}
-                        </span>
-                      </div>
-                      <div>{w.body}</div>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+          <WarningsCard />
         </div>
       </div>
     </div>
