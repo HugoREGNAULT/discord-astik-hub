@@ -24,6 +24,7 @@ import { McVerifyCard } from "@/components/me/McVerifyCard";
 import { WarningsCard } from "@/components/me/WarningsCard";
 import { ActivityHeatmapCard } from "@/components/me/ActivityHeatmapCard";
 import { MonthlyRecapCard } from "@/components/me/MonthlyRecapCard";
+import { QuestsCard } from "@/components/me/QuestsCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { MonoLabel } from "@/components/tools/ToolsUi";
@@ -88,6 +89,8 @@ function MyProfile() {
           {isMember && <RankupProgressCard />}
 
           <GamificationCard scope="me" />
+
+          {isMember && <QuestsCard />}
 
           {isMember && <ObjectivesCard />}
 

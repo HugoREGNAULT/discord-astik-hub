@@ -6,6 +6,7 @@ import {
   Coins,
   ShoppingCart,
   Settings2,
+  Swords,
   ListTree,
   Target,
   ShieldAlert,
@@ -222,6 +223,13 @@ const SECTIONS: Section[] = [
         url: "/points",
         icon: Coins,
         perm: "points.manage",
+        accent: "pink",
+      },
+      {
+        title: "Quêtes hebdo",
+        url: "/quests-admin",
+        icon: Swords,
+        perm: "quests.manage",
         accent: "pink",
       },
       {

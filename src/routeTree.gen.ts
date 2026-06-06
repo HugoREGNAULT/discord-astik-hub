@@ -26,6 +26,7 @@ import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedReunionV12RouteImport } from './routes/_authenticated/reunion-v12'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
+import { Route as AuthenticatedQuestsAdminRouteImport } from './routes/_authenticated/quests-admin'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedPollsRouteImport } from './routes/_authenticated/polls'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
@@ -181,6 +182,12 @@ const AuthenticatedRecruitmentRoute =
   AuthenticatedRecruitmentRouteImport.update({
     id: '/recruitment',
     path: '/recruitment',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedQuestsAdminRoute =
+  AuthenticatedQuestsAdminRouteImport.update({
+    id: '/quests-admin',
+    path: '/quests-admin',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
@@ -582,6 +589,7 @@ export interface FileRoutesByFullPath {
   '/points': typeof AuthenticatedPointsRoute
   '/polls': typeof AuthenticatedPollsRouteWithChildren
   '/projects': typeof AuthenticatedProjectsRoute
+  '/quests-admin': typeof AuthenticatedQuestsAdminRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/reunion-v12': typeof AuthenticatedReunionV12Route
   '/shop': typeof AuthenticatedShopRoute
@@ -667,6 +675,7 @@ export interface FileRoutesByTo {
   '/pdc': typeof AuthenticatedPdcRoute
   '/points': typeof AuthenticatedPointsRoute
   '/projects': typeof AuthenticatedProjectsRoute
+  '/quests-admin': typeof AuthenticatedQuestsAdminRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/reunion-v12': typeof AuthenticatedReunionV12Route
   '/shop': typeof AuthenticatedShopRoute
@@ -754,6 +763,7 @@ export interface FileRoutesById {
   '/_authenticated/points': typeof AuthenticatedPointsRoute
   '/_authenticated/polls': typeof AuthenticatedPollsRouteWithChildren
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
+  '/_authenticated/quests-admin': typeof AuthenticatedQuestsAdminRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/reunion-v12': typeof AuthenticatedReunionV12Route
   '/_authenticated/shop': typeof AuthenticatedShopRoute
@@ -842,6 +852,7 @@ export interface FileRouteTypes {
     | '/points'
     | '/polls'
     | '/projects'
+    | '/quests-admin'
     | '/recruitment'
     | '/reunion-v12'
     | '/shop'
@@ -927,6 +938,7 @@ export interface FileRouteTypes {
     | '/pdc'
     | '/points'
     | '/projects'
+    | '/quests-admin'
     | '/recruitment'
     | '/reunion-v12'
     | '/shop'
@@ -1013,6 +1025,7 @@ export interface FileRouteTypes {
     | '/_authenticated/points'
     | '/_authenticated/polls'
     | '/_authenticated/projects'
+    | '/_authenticated/quests-admin'
     | '/_authenticated/recruitment'
     | '/_authenticated/reunion-v12'
     | '/_authenticated/shop'
@@ -1237,6 +1250,13 @@ declare module '@tanstack/react-router' {
       path: '/recruitment'
       fullPath: '/recruitment'
       preLoaderRoute: typeof AuthenticatedRecruitmentRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/quests-admin': {
+      id: '/_authenticated/quests-admin'
+      path: '/quests-admin'
+      fullPath: '/quests-admin'
+      preLoaderRoute: typeof AuthenticatedQuestsAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/projects': {
@@ -1821,6 +1841,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
   AuthenticatedPollsRoute: typeof AuthenticatedPollsRouteWithChildren
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+  AuthenticatedQuestsAdminRoute: typeof AuthenticatedQuestsAdminRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedReunionV12Route: typeof AuthenticatedReunionV12Route
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
@@ -1851,6 +1872,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
   AuthenticatedPollsRoute: AuthenticatedPollsRouteWithChildren,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+  AuthenticatedQuestsAdminRoute: AuthenticatedQuestsAdminRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedReunionV12Route: AuthenticatedReunionV12Route,
   AuthenticatedShopRoute: AuthenticatedShopRoute,

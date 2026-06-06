@@ -8,6 +8,93 @@ export type Database = {
   };
   public: {
     Tables: {
+      quest_templates: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          description: string | null;
+          display_order: number;
+          id: string;
+          quest_type: string;
+          reward_points: number;
+          target_value: number;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          description?: string | null;
+          display_order?: number;
+          id?: string;
+          quest_type: string;
+          reward_points?: number;
+          target_value: number;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          description?: string | null;
+          display_order?: number;
+          id?: string;
+          quest_type?: string;
+          reward_points?: number;
+          target_value?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      quest_periods: {
+        Row: {
+          created_at: string;
+          ends_on: string;
+          id: string;
+          starts_on: string;
+        };
+        Insert: {
+          created_at?: string;
+          ends_on: string;
+          id?: string;
+          starts_on: string;
+        };
+        Update: {
+          created_at?: string;
+          ends_on?: string;
+          id?: string;
+          starts_on?: string;
+        };
+        Relationships: [];
+      };
+      member_quest_claims: {
+        Row: {
+          claimed_at: string;
+          id: string;
+          member_discord_id: string;
+          period_id: string;
+          reward_points: number;
+          template_id: string;
+        };
+        Insert: {
+          claimed_at?: string;
+          id?: string;
+          member_discord_id: string;
+          period_id: string;
+          reward_points?: number;
+          template_id: string;
+        };
+        Update: {
+          claimed_at?: string;
+          id?: string;
+          member_discord_id?: string;
+          period_id?: string;
+          reward_points?: number;
+          template_id?: string;
+        };
+        Relationships: [];
+      };
       absences: {
         Row: {
           created_at: string;
