@@ -22,6 +22,8 @@ import { AbsencesCard } from "@/components/me/AbsencesCard";
 import { MyRecruitsCard } from "@/components/me/MyRecruitsCard";
 import { McVerifyCard } from "@/components/me/McVerifyCard";
 import { WarningsCard } from "@/components/me/WarningsCard";
+import { ActivityHeatmapCard } from "@/components/me/ActivityHeatmapCard";
+import { MonthlyRecapCard } from "@/components/me/MonthlyRecapCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { MonoLabel } from "@/components/tools/ToolsUi";
@@ -79,6 +81,8 @@ function MyProfile() {
             <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
           </div>
 
+          {isMember && <MonthlyRecapCard />}
+
           <AboutCard bio={m.bio ?? null} roles={m.roles ?? []} />
 
           {isMember && <RankupProgressCard />}
@@ -86,6 +90,8 @@ function MyProfile() {
           <GamificationCard scope="me" />
 
           {isMember && <ObjectivesCard />}
+
+          {isMember && <ActivityHeatmapCard />}
         </div>
 
         {/* Colonne secondaire : compte MC + activité */}

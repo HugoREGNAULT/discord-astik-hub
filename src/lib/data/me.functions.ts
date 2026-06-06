@@ -540,3 +540,87 @@ export const getMyObjectives = createServerFn({ method: "GET" }).handler(async (
   }
   return { objectives: objRes.data ?? [], myContributions };
 });
+
+/* ---------- Heatmap d'activité (vue membre) ---------- */
+
+/** Connexions par jour du membre connecté, sur N jours (heatmap façon GitHub). */
+export const getMyActivityHeatmap = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ days: z.number().int().min(7).max(366).default(182) }).parse(input ?? {}),
+  )
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const since = new Date(Date.now() - data.days * 86_400_000).toISOString();
+
+    const { data: rows, error } = await db
+      .from("logs")
+      .select("created_at")
+      .eq("action", "login")
+      .eq("actor_discord_id", user.discordId)
+      .gte("created_at", since);
+    if (error) throw new Error(error.message);
+
+    const byDay: Record<string, number> = {};
+    for (const r of rows ?? []) {
+      const day = new Date(r.created_at).toISOString().slice(0, 10);
+      byDay[day] = (byDay[day] ?? 0) + 1;
+    }
+
+    const heatmap: Array<{ day: string; count: number }> = [];
+    for (let i = data.days - 1; i >= 0; i--) {
+      const day = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
+      heatmap.push({ day, count: byDay[day] ?? 0 });
+    }
+    const activeDays = Object.keys(byDay).length;
+    return { heatmap, activeDays };
+  });
+
+/* ---------- Récap mensuel (vue membre) ---------- */
+
+/** « Ton mois en chiffres » : points gagnés, dons, activité 7j (sur N derniers jours). */
+export const getMyMonthlyRecap = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ days: z.number().int().min(7).max(366).default(30) }).parse(input ?? {}),
+  )
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const since = new Date(Date.now() - data.days * 86_400_000).toISOString();
+
+    const [ledgerRes, memberRes] = await Promise.all([
+      db
+        .from("points_ledger")
+        .select("action_type, amount, created_at")
+        .eq("member_discord_id", user.discordId)
+        .gte("created_at", since),
+      db
+        .from("members")
+        .select("messages_7d, voice_7d_seconds")
+        .eq("discord_id", user.discordId)
+        .maybeSingle(),
+    ]);
+    if (ledgerRes.error) throw new Error(ledgerRes.error.message);
+
+    let pointsGained = 0;
+    let pointsLost = 0;
+    let donationPoints = 0;
+    let donationCount = 0;
+    for (const row of ledgerRes.data ?? []) {
+      const amt = row.amount ?? 0;
+      if (amt >= 0) pointsGained += amt;
+      else pointsLost += amt;
+      if (row.action_type === "donation") {
+        donationPoints += amt;
+        donationCount += 1;
+      }
+    }
+
+    return {
+      days: data.days,
+      pointsGained,
+      pointsLost,
+      donationPoints,
+      donationCount,
+      messages7d: memberRes.data?.messages_7d ?? 0,
+      voice7dSeconds: memberRes.data?.voice_7d_seconds ?? 0,
+    };
+  });
