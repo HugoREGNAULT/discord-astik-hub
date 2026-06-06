@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { isFactionMember } from "@/lib/data/faction-members";
+import { ROLE_TAG_IDS, MAX_ROLE_TAGS, MAX_BIO_LENGTH } from "@/lib/profile-roles";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
@@ -215,6 +216,42 @@ export const completeOnboarding = createServerFn({ method: "POST" })
       alts: alts.length,
     });
     return { ok: true, igName: mojang.name, mcUuid: normalizeUuid(mojang.id) };
+  });
+
+/* ---------- Personnalisation du profil (bio + tags de rôle) ---------- */
+
+const profileSchema = z.object({
+  // Bornes larges côté schéma ; on trim/slice/filtre dans le handler (source de vérité serveur).
+  bio: z
+    .string()
+    .max(MAX_BIO_LENGTH * 4)
+    .optional()
+    .default(""),
+  roles: z.array(z.string().max(32)).max(50).optional().default([]),
+});
+
+/** Met à jour la bio et les tags de rôle du membre connecté. */
+export const updateMyProfile = createServerFn({ method: "POST" })
+  .inputValidator((input) => profileSchema.parse(input))
+  .handler(async ({ data }) => {
+    const user = await requireSession();
+    const bio = (data.bio ?? "").trim().slice(0, MAX_BIO_LENGTH);
+    const roles = [...new Set((data.roles ?? []).filter((r) => ROLE_TAG_IDS.includes(r)))].slice(
+      0,
+      MAX_ROLE_TAGS,
+    );
+
+    const upd = await db
+      .from("members")
+      .update({ bio: bio || null, roles })
+      .eq("discord_id", user.discordId);
+    if (upd.error) throw new Error(upd.error.message);
+
+    await logAction("profile_update", user.discordId, {
+      roles: roles.length,
+      bioLen: bio.length,
+    });
+    return { ok: true, bio: bio || null, roles };
   });
 
 /* ---------- Sanctions & appeals (vue membre) ---------- */

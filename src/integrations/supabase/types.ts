@@ -1294,6 +1294,7 @@ export type Database = {
           arrival_date: string | null;
           astik_points: number;
           avatar_url: string | null;
+          bio: string | null;
           created_at: string;
           current_grade: string | null;
           discord_id: string;
@@ -1305,6 +1306,7 @@ export type Database = {
           messages_7d: number;
           messages_total: number;
           recruiter_discord_id: string | null;
+          roles: string[];
           status: string;
           trial_until: string | null;
           updated_at: string;
@@ -1315,6 +1317,7 @@ export type Database = {
           arrival_date?: string | null;
           astik_points?: number;
           avatar_url?: string | null;
+          bio?: string | null;
           created_at?: string;
           current_grade?: string | null;
           discord_id: string;
@@ -1326,6 +1329,7 @@ export type Database = {
           messages_7d?: number;
           messages_total?: number;
           recruiter_discord_id?: string | null;
+          roles?: string[];
           status?: string;
           trial_until?: string | null;
           updated_at?: string;
@@ -1336,6 +1340,7 @@ export type Database = {
           arrival_date?: string | null;
           astik_points?: number;
           avatar_url?: string | null;
+          bio?: string | null;
           created_at?: string;
           current_grade?: string | null;
           discord_id?: string;
@@ -1347,6 +1352,7 @@ export type Database = {
           messages_7d?: number;
           messages_total?: number;
           recruiter_discord_id?: string | null;
+          roles?: string[];
           status?: string;
           trial_until?: string | null;
           updated_at?: string;

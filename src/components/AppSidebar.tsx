@@ -357,7 +357,7 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
                 {user.globalName ?? user.username}
               </div>
               <div
-                className="text-[9px] text-zinc-500 truncate uppercase tracking-[0.2em]"
+                className="text-[11px] text-zinc-400 truncate uppercase tracking-wide"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 @{user.username}
