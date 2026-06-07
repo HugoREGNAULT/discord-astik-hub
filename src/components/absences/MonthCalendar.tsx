@@ -177,38 +177,47 @@ export function MonthCalendar({
                 for (let i = s.weekStartIdx; i <= s.weekEndIdx; i++) hiddenByDay[i]++;
               }
             }
-            const gridTemplateRows = `1.5rem repeat(${MAX_BARS_PER_WEEK}, 1.25rem) 1rem`;
+            // Hauteur des rows : numéro / 4 slots barres / +N. minmax(0,…) empêche le contenu d'étirer la row.
+            const gridTemplateRows = `minmax(0, 1.5rem) repeat(${MAX_BARS_PER_WEEK}, minmax(0, 1.5rem)) minmax(0, 1rem)`;
             return (
               <div key={wi} className="grid grid-cols-7 gap-1" style={{ gridTemplateRows }}>
-                {/* Cellules de fond cliquables — 1 colonne, span toutes les rows */}
+                {/* Fond cliquable par jour — span toutes les rows, sans contenu (le numéro est rendu à part). */}
                 {weekDays.map((d, i) => {
                   const inMonth = d.getMonth() === cursor.getMonth();
                   const isToday = sameDay(d, today);
                   return (
                     <button
-                      key={toISODate(d)}
+                      key={`bg-${toISODate(d)}`}
                       type="button"
                       onClick={() => setDayDetail(d)}
                       style={{ gridColumn: i + 1, gridRow: "1 / -1" }}
-                      className={`text-left border rounded-md px-1 pt-1 transition-colors min-w-0 ${
+                      className={`border rounded-md transition-colors min-w-0 ${
                         inMonth
                           ? "bg-card hover:bg-accent/40"
                           : "bg-muted/30 opacity-60 hover:opacity-100"
                       } ${isToday ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`}
                       aria-label={`Voir les absences du ${d.toLocaleDateString("fr-FR")}`}
-                    >
-                      <span
-                        className={`text-[10px] font-medium ${
-                          isToday ? "text-primary" : "text-muted-foreground"
-                        }`}
-                      >
-                        {d.getDate()}
-                      </span>
-                    </button>
+                    />
                   );
                 })}
 
-                {/* Barres multi-jours — placées en gridColumn (span) + gridRow (slot) */}
+                {/* Numéro du jour — séparé du fond, en row 1, non cliquable (le clic descend au fond). */}
+                {weekDays.map((d, i) => {
+                  const isToday = sameDay(d, today);
+                  return (
+                    <span
+                      key={`num-${toISODate(d)}`}
+                      style={{ gridColumn: i + 1, gridRow: 1 }}
+                      className={`pointer-events-none relative z-20 px-1 pt-0.5 text-[10px] font-medium leading-none ${
+                        isToday ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      {d.getDate()}
+                    </span>
+                  );
+                })}
+
+                {/* Barres multi-jours — gridColumn span + gridRow slot. z-10 pour passer au-dessus du fond. */}
                 {shown.map((seg) => {
                   const meta = TYPE_META[seg.absence.type as AbsenceType] ?? TYPE_META.other;
                   const span = seg.weekEndIdx - seg.weekStartIdx + 1;
@@ -225,7 +234,7 @@ export function MonthCalendar({
                         gridColumnEnd: `span ${span}`,
                         gridRow: 2 + seg.slot,
                       }}
-                      className={`relative z-10 mx-0.5 self-center text-[10px] leading-tight px-1.5 py-0.5 rounded border text-white truncate text-left ${meta.bar}`}
+                      className={`relative z-10 mx-0.5 self-center min-w-0 text-[10px] leading-tight px-1.5 py-0.5 rounded border text-white truncate text-left ${meta.bar}`}
                       title={`${seg.absence.member_name} — ${meta.label} (${seg.absence.starts_on} → ${seg.absence.ends_on})`}
                     >
                       {seg.absence.member_name}
@@ -233,7 +242,7 @@ export function MonthCalendar({
                   );
                 })}
 
-                {/* « +N » jours qui cachent des absences — sur la dernière row */}
+                {/* « +N » sur la dernière row pour les jours qui cachent des absences. */}
                 {hiddenByDay.map((n, i) =>
                   n > 0 ? (
                     <button
@@ -244,7 +253,7 @@ export function MonthCalendar({
                         setDayDetail(weekDays[i]);
                       }}
                       style={{ gridColumn: i + 1, gridRow: -2 }}
-                      className="relative z-10 mx-1 text-[10px] text-muted-foreground hover:text-foreground text-left"
+                      className="relative z-10 mx-1 text-[10px] text-muted-foreground hover:text-foreground text-left leading-none"
                     >
                       +{n}
                     </button>
