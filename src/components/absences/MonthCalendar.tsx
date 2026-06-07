@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   toISODate,
-  parseISODate,
   startOfMonth,
   endOfMonth,
   startOfWeek,
@@ -166,104 +165,91 @@ export function MonthCalendar({
           ))}
         </div>
 
+        {/* Une grille CSS 2D par semaine : 7 colonnes × (1 row d'en-tête jour + N slots de barres + 1 row +N).
+            Tout est placé via gridColumn/gridRow, plus aucun position:absolute → les barres respectent leurs jours. */}
         <div className="space-y-1">
           {weeks.map((weekDays, wi) => {
             const segments = buildWeekSegments(absences, weekDays);
             const shown = segments.filter((s) => s.slot < MAX_BARS_PER_WEEK);
-            // Comptage des absences NON montrées par cellule (pour le « +N »)
             const hiddenByDay: number[] = new Array(7).fill(0);
             for (const s of segments) {
               if (s.slot >= MAX_BARS_PER_WEEK) {
                 for (let i = s.weekStartIdx; i <= s.weekEndIdx; i++) hiddenByDay[i]++;
               }
             }
-            const rowHeight = `${(MAX_BARS_PER_WEEK + 1) * 20 + 16}px`;
+            const gridTemplateRows = `1.5rem repeat(${MAX_BARS_PER_WEEK}, 1.25rem) 1rem`;
             return (
-              <div key={wi} className="relative" style={{ minHeight: rowHeight }}>
-                {/* Cellules de fond + numéro du jour + clic pour ouvrir la modal */}
-                <div className="grid grid-cols-7 gap-1 absolute inset-0">
-                  {weekDays.map((d) => {
-                    const inMonth = d.getMonth() === cursor.getMonth();
-                    const isToday = sameDay(d, today);
-                    return (
-                      <button
-                        key={toISODate(d)}
-                        type="button"
-                        onClick={() => setDayDetail(d)}
-                        className={`text-left border rounded-md p-1 transition-colors ${
-                          inMonth
-                            ? "bg-card hover:bg-accent/40"
-                            : "bg-muted/30 opacity-60 hover:opacity-100"
-                        } ${isToday ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`}
+              <div key={wi} className="grid grid-cols-7 gap-1" style={{ gridTemplateRows }}>
+                {/* Cellules de fond cliquables — 1 colonne, span toutes les rows */}
+                {weekDays.map((d, i) => {
+                  const inMonth = d.getMonth() === cursor.getMonth();
+                  const isToday = sameDay(d, today);
+                  return (
+                    <button
+                      key={toISODate(d)}
+                      type="button"
+                      onClick={() => setDayDetail(d)}
+                      style={{ gridColumn: i + 1, gridRow: "1 / -1" }}
+                      className={`text-left border rounded-md px-1 pt-1 transition-colors min-w-0 ${
+                        inMonth
+                          ? "bg-card hover:bg-accent/40"
+                          : "bg-muted/30 opacity-60 hover:opacity-100"
+                      } ${isToday ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`}
+                      aria-label={`Voir les absences du ${d.toLocaleDateString("fr-FR")}`}
+                    >
+                      <span
+                        className={`text-[10px] font-medium ${
+                          isToday ? "text-primary" : "text-muted-foreground"
+                        }`}
                       >
-                        <div className="flex items-center justify-between text-[10px]">
-                          <span
-                            className={`font-medium ${
-                              isToday ? "text-primary" : "text-muted-foreground"
-                            }`}
-                          >
-                            {d.getDate()}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        {d.getDate()}
+                      </span>
+                    </button>
+                  );
+                })}
 
-                {/* Couche des barres (par dessus, pointer-events désactivés sauf sur la barre) */}
-                <div className="grid grid-cols-7 gap-1 absolute inset-0 pointer-events-none">
-                  {shown.map((seg) => {
-                    const meta = TYPE_META[seg.absence.type as AbsenceType] ?? TYPE_META.other;
-                    const span = seg.weekEndIdx - seg.weekStartIdx + 1;
-                    const top = 22 + seg.slot * 20;
-                    return (
-                      <div
-                        key={`${seg.absence.id}-${wi}`}
-                        className="pointer-events-none"
-                        style={{
-                          gridColumnStart: seg.weekStartIdx + 1,
-                          gridColumnEnd: `span ${span}`,
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDayDetail(parseISODate(seg.absence.starts_on));
-                          }}
-                          className={`pointer-events-auto absolute left-1 right-1 text-[10px] leading-tight px-1.5 py-0.5 rounded border text-white truncate ${meta.bar}`}
-                          style={{ top: `${top}px` }}
-                          title={`${seg.absence.member_name} — ${meta.label} (${seg.absence.starts_on} → ${seg.absence.ends_on})`}
-                        >
-                          {seg.absence.member_name}
-                        </button>
-                      </div>
-                    );
-                  })}
+                {/* Barres multi-jours — placées en gridColumn (span) + gridRow (slot) */}
+                {shown.map((seg) => {
+                  const meta = TYPE_META[seg.absence.type as AbsenceType] ?? TYPE_META.other;
+                  const span = seg.weekEndIdx - seg.weekStartIdx + 1;
+                  return (
+                    <button
+                      key={`${seg.absence.id}-${wi}`}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDayDetail(weekDays[seg.weekStartIdx]);
+                      }}
+                      style={{
+                        gridColumnStart: seg.weekStartIdx + 1,
+                        gridColumnEnd: `span ${span}`,
+                        gridRow: 2 + seg.slot,
+                      }}
+                      className={`relative z-10 mx-0.5 self-center text-[10px] leading-tight px-1.5 py-0.5 rounded border text-white truncate text-left ${meta.bar}`}
+                      title={`${seg.absence.member_name} — ${meta.label} (${seg.absence.starts_on} → ${seg.absence.ends_on})`}
+                    >
+                      {seg.absence.member_name}
+                    </button>
+                  );
+                })}
 
-                  {/* « +N » sous les barres pour les cellules qui en cachent */}
-                  {hiddenByDay.map((n, i) =>
-                    n > 0 ? (
-                      <div
-                        key={`more-${wi}-${i}`}
-                        className="pointer-events-none"
-                        style={{ gridColumnStart: i + 1 }}
-                      >
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDayDetail(weekDays[i]);
-                          }}
-                          className="pointer-events-auto absolute left-1 text-[10px] text-muted-foreground hover:text-foreground"
-                          style={{ top: `${22 + MAX_BARS_PER_WEEK * 20}px` }}
-                        >
-                          +{n}
-                        </button>
-                      </div>
-                    ) : null,
-                  )}
-                </div>
+                {/* « +N » jours qui cachent des absences — sur la dernière row */}
+                {hiddenByDay.map((n, i) =>
+                  n > 0 ? (
+                    <button
+                      key={`more-${wi}-${i}`}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDayDetail(weekDays[i]);
+                      }}
+                      style={{ gridColumn: i + 1, gridRow: -2 }}
+                      className="relative z-10 mx-1 text-[10px] text-muted-foreground hover:text-foreground text-left"
+                    >
+                      +{n}
+                    </button>
+                  ) : null,
+                )}
               </div>
             );
           })}
