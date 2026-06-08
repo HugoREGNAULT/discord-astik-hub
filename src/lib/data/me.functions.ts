@@ -624,3 +624,120 @@ export const getMyMonthlyRecap = createServerFn({ method: "GET" })
       voice7dSeconds: memberRes.data?.voice_7d_seconds ?? 0,
     };
   });
+
+/* ---------- Bento « La faction en chiffres » (vue membre faction) ---------- */
+
+/**
+ * Agrégats faction visibles par tout membre faction : effectif, candidatures,
+ * richesse totale (argent en jeu via mc_player_stats + ventes en cours), ventes
+ * réalisées sur 30 j (série journalière pour le graphe) et AstikPoints cumulés.
+ * Réservé aux vrais membres faction (isFactionMember) — sinon { eligible:false }.
+ */
+export const getFactionBento = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+
+  const meRow = await db
+    .from("members")
+    .select("ig_name, current_grade, arrival_date, mc_uuid")
+    .eq("discord_id", user.discordId)
+    .maybeSingle();
+  if (!meRow.data || !isFactionMember(meRow.data)) {
+    return { eligible: false as const };
+  }
+
+  const since30Iso = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  const since30Date = since30Iso.slice(0, 10);
+
+  const [membersRes, pendingAppsRes, apps30Res] = await Promise.all([
+    db
+      .from("members")
+      .select("ig_name, current_grade, arrival_date, mc_uuid, astik_points")
+      .eq("status", "active"),
+    db.from("applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    db
+      .from("applications")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since30Iso),
+  ]);
+
+  const faction = filterFactionMembers(membersRes.data ?? []);
+  const memberCount = faction.length;
+  const totalAstikPoints = faction.reduce(
+    (acc, m) => acc + ((m as { astik_points?: number }).astik_points ?? 0),
+    0,
+  );
+  const arrivals30d = faction.filter((m) => m.arrival_date && m.arrival_date >= since30Date).length;
+  const uuids = faction.map((m) => m.mc_uuid).filter((u): u is string => Boolean(u));
+
+  // Argent en jeu : dernier snapshot par joueur (mc_player_stats).
+  let totalIngameMoney = 0;
+  let moneyTracked = 0;
+  if (uuids.length) {
+    const { data: stats } = await db
+      .from("mc_player_stats")
+      .select("mc_uuid, money, snapshot_at")
+      .in("mc_uuid", uuids)
+      .order("snapshot_at", { ascending: false })
+      .limit(20000);
+    const seen = new Set<string>();
+    for (const s of (stats ?? []) as Array<{ mc_uuid: string; money: number | null }>) {
+      if (seen.has(s.mc_uuid)) continue; // on garde le snapshot le plus récent
+      seen.add(s.mc_uuid);
+      if (s.money != null) {
+        totalIngameMoney += Number(s.money);
+        moneyTracked += 1;
+      }
+    }
+  }
+
+  // Ventes : listings HDV des membres sur 30 j (réalisées + en cours).
+  let soldValue = 0;
+  let listedValue = 0;
+  const dayTotals = new Map<string, number>();
+  if (uuids.length) {
+    const { data: listings } = await db
+      .from("paladium_player_listings_history")
+      .select("quantity, price, sold_at, first_seen_at")
+      .in("player_uuid", uuids)
+      .gte("first_seen_at", since30Iso)
+      .limit(50000);
+    for (const l of (listings ?? []) as Array<{
+      quantity: number | null;
+      price: number | null;
+      sold_at: string | null;
+    }>) {
+      const value = Number(l.price ?? 0) * Number(l.quantity ?? 0);
+      if (l.sold_at) {
+        soldValue += value;
+        const day = String(l.sold_at).slice(0, 10);
+        dayTotals.set(day, (dayTotals.get(day) ?? 0) + value);
+      } else {
+        listedValue += value;
+      }
+    }
+  }
+
+  const salesSeries: Array<{ day: string; value: number }> = [];
+  for (let i = 29; i >= 0; i--) {
+    const day = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
+    salesSeries.push({ day, value: Math.round(dayTotals.get(day) ?? 0) });
+  }
+
+  return {
+    eligible: true as const,
+    memberCount,
+    arrivals30d,
+    pendingApplications: pendingAppsRes.count ?? 0,
+    applications30d: apps30Res.count ?? 0,
+    totalAstikPoints,
+    totalIngameMoney: Math.round(totalIngameMoney),
+    moneyTracked,
+    // Richesse totale = argent en jeu + valeur des ventes encore en ligne.
+    totalWealth: Math.round(totalIngameMoney + listedValue),
+    sales: {
+      soldValue: Math.round(soldValue),
+      listedValue: Math.round(listedValue),
+      series: salesSeries,
+    },
+  };
+});

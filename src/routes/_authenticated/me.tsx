@@ -1,30 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
-import { Coins, UserCircle2, Gamepad2, Clock, Copy, Check, Pencil } from "lucide-react";
+import { useState } from "react";
+import { Coins, UserCircle2, Gamepad2, Clock, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { getMyOverview, completeOnboarding, updateMyProfile } from "@/lib/data/me.functions";
+import { getMyOverview, completeOnboarding } from "@/lib/data/me.functions";
 import { avatarUrl } from "@/lib/paladium/api";
 import { toUserMessage } from "@/lib/errors";
-import { ROLE_TAGS, MAX_BIO_LENGTH, MAX_ROLE_TAGS, roleLabel, roleIcon } from "@/lib/profile-roles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { GamificationCard } from "@/components/GamificationCard";
-import { RankupProgressCard } from "@/components/me/RankupProgressCard";
 import { ObjectivesCard } from "@/components/me/ObjectivesCard";
-import { SalaryCard } from "@/components/me/SalaryCard";
 import { AbsencesCard } from "@/components/me/AbsencesCard";
-import { MyRecruitsCard } from "@/components/me/MyRecruitsCard";
-import { McVerifyCard } from "@/components/me/McVerifyCard";
 import { WarningsCard } from "@/components/me/WarningsCard";
 import { ActivityHeatmapCard } from "@/components/me/ActivityHeatmapCard";
 import { MonthlyRecapCard } from "@/components/me/MonthlyRecapCard";
 import { QuestsCard } from "@/components/me/QuestsCard";
+import { FactionBentoCard } from "@/components/me/FactionBentoCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { MonoLabel } from "@/components/tools/ToolsUi";
@@ -76,17 +71,14 @@ function MyProfile() {
       <div className="grid gap-6 xl:grid-cols-3 items-start">
         {/* Colonne principale : identité, progression */}
         <div className="space-y-6 xl:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Stat label="AstikPoints" value={m.astik_points} accent />
-            <Stat label="Grade" value={m.current_grade ?? "—"} />
             <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
           </div>
 
+          {isMember && <FactionBentoCard />}
+
           {isMember && <MonthlyRecapCard />}
-
-          <AboutCard bio={m.bio ?? null} roles={m.roles ?? []} />
-
-          {isMember && <RankupProgressCard />}
 
           <GamificationCard scope="me" />
 
@@ -101,13 +93,7 @@ function MyProfile() {
         <div className="space-y-6">
           <MinecraftAccountCard mcUuid={m.mc_uuid} igName={m.ig_name} />
 
-          {isMember && <McVerifyCard mcUuid={m.mc_uuid} igName={m.ig_name} />}
-
-          {isMember && <SalaryCard />}
-
           {isMember && <AbsencesCard />}
-
-          {isMember && <MyRecruitsCard />}
 
           <Card>
             <CardHeader>
@@ -248,149 +234,6 @@ function Stat({
       </CardHeader>
       <CardContent>
         <div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
-
-/** Carte « À propos de moi » : bio courte + tags de rôle, éditables. */
-function AboutCard({ bio, roles }: { bio: string | null; roles: string[] }) {
-  const queryClient = useQueryClient();
-  const submit = useServerFn(updateMyProfile);
-  const [editing, setEditing] = useState(false);
-  const [draftBio, setDraftBio] = useState(bio ?? "");
-  const [draftRoles, setDraftRoles] = useState<string[]>(roles);
-
-  // Resync sur les données serveur (refetch) tant qu'on n'édite pas.
-  useEffect(() => {
-    if (!editing) {
-      setDraftBio(bio ?? "");
-      setDraftRoles(roles);
-    }
-  }, [bio, roles, editing]);
-
-  const mutation = useMutation({
-    mutationFn: () => submit({ data: { bio: draftBio, roles: draftRoles } }),
-    onSuccess: () => {
-      toast.success("Profil mis à jour");
-      setEditing(false);
-      queryClient.invalidateQueries({ queryKey: ["me", "overview"] });
-    },
-    onError: (e: Error) => toast.error(toUserMessage(e)),
-  });
-
-  const toggleRole = (id: string) => {
-    setDraftRoles((prev) =>
-      prev.includes(id)
-        ? prev.filter((r) => r !== id)
-        : prev.length >= MAX_ROLE_TAGS
-          ? prev
-          : [...prev, id],
-    );
-  };
-
-  const hasContent = (bio?.trim().length ?? 0) > 0 || roles.length > 0;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <UserCircle2 className="size-4 text-primary" /> À propos de moi
-          </span>
-          {!editing && (
-            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => setEditing(true)}>
-              <Pencil className="size-3.5" /> {hasContent ? "Modifier" : "Compléter"}
-            </Button>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {editing ? (
-          <>
-            <div className="space-y-1.5">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={draftBio}
-                onChange={(e) => setDraftBio(e.target.value.slice(0, MAX_BIO_LENGTH))}
-                rows={3}
-                maxLength={MAX_BIO_LENGTH}
-                placeholder="Présente-toi en quelques mots…"
-              />
-              <div className="text-right text-xs text-muted-foreground">
-                {draftBio.length}/{MAX_BIO_LENGTH}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>
-                Tags de rôle{" "}
-                <span className="text-muted-foreground font-normal">
-                  ({draftRoles.length}/{MAX_ROLE_TAGS})
-                </span>
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {ROLE_TAGS.map((t) => {
-                  const on = draftRoles.includes(t.id);
-                  const disabled = !on && draftRoles.length >= MAX_ROLE_TAGS;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => toggleRole(t.id)}
-                      disabled={disabled}
-                      aria-pressed={on}
-                      className={`inline-flex items-center gap-1 px-2.5 py-1 text-sm rounded-md border transition-colors ${
-                        on
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/50"
-                      } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
-                    >
-                      <span>{t.icon}</span>
-                      <span>{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-                {mutation.isPending ? "Enregistrement…" : "Enregistrer"}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setEditing(false);
-                  setDraftBio(bio ?? "");
-                  setDraftRoles(roles);
-                }}
-              >
-                Annuler
-              </Button>
-            </div>
-          </>
-        ) : hasContent ? (
-          <>
-            {bio?.trim() ? <p className="text-sm whitespace-pre-wrap">{bio}</p> : null}
-            {roles.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {roles.map((r) => (
-                  <span
-                    key={r}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-md border border-primary/40 text-primary"
-                  >
-                    <span>{roleIcon(r)}</span>
-                    <span>{roleLabel(r)}</span>
-                  </span>
-                ))}
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Ajoute une bio et des tags de rôle pour personnaliser ton profil.
-          </p>
-        )}
       </CardContent>
     </Card>
   );

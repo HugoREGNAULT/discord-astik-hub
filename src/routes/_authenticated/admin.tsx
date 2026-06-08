@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
 import { Pencil, ExternalLink } from "lucide-react";
 
-import { getAdminOverview } from "@/lib/data/admin.functions";
+import { getAdminOverview, backfillArrivalDates } from "@/lib/data/admin.functions";
 import { listMembers, updateMember } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +69,8 @@ function AdminPage() {
 
       <MembersAdminSection />
 
+      <MaintenanceCard />
+
       <Card>
         <CardHeader>
           <CardTitle>Erreurs récentes</CardTitle>
@@ -87,6 +89,46 @@ function AdminPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/* ---------- Maintenance ---------- */
+
+function MaintenanceCard() {
+  const queryClient = useQueryClient();
+  const backfillFn = useServerFn(backfillArrivalDates);
+  const mutation = useMutation({
+    mutationFn: () => backfillFn(),
+    onSuccess: (r) => {
+      toast.success(
+        `Dates d'arrivée : ${r.updated} corrigée(s), ${r.notFound} introuvable(s), ${r.failed} échec(s) sur ${r.scanned} membre(s).`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Maintenance</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-sm font-medium">Corriger les dates d'arrivée</div>
+            <p className="text-xs text-muted-foreground">
+              Renseigne la date d'arrivée manquante de chaque membre faction depuis son entrée sur
+              le serveur privé (Discord faction). N'écrase jamais une date déjà définie.
+            </p>
+          </div>
+          <Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
+            {mutation.isPending ? "Correction…" : "Corriger"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
