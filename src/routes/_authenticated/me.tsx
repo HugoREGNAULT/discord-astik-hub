@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Coins, UserCircle2, Gamepad2, Clock, Copy, Check } from "lucide-react";
+import { Coins, Gamepad2, Clock, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, completeOnboarding } from "@/lib/data/me.functions";
 import { avatarUrl } from "@/lib/paladium/api";
@@ -12,7 +12,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GamificationCard } from "@/components/GamificationCard";
 import { ObjectivesCard } from "@/components/me/ObjectivesCard";
 import { AbsencesCard } from "@/components/me/AbsencesCard";
 import { WarningsCard } from "@/components/me/WarningsCard";
@@ -80,8 +79,6 @@ function MyProfile() {
 
           {isMember && <MonthlyRecapCard />}
 
-          <GamificationCard scope="me" />
-
           {isMember && <QuestsCard />}
 
           {isMember && <ObjectivesCard />}
@@ -124,22 +121,6 @@ function MyProfile() {
               )}
             </CardContent>
           </Card>
-
-          {data.recruiter && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <UserCircle2 className="size-4 text-primary" /> Recruteur
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm">
-                {data.recruiter.ig_name ?? data.recruiter.discord_username}
-                <span className="text-sm text-muted-foreground ml-2">
-                  @{data.recruiter.discord_username ?? "—"}
-                </span>
-              </CardContent>
-            </Card>
-          )}
 
           <Card>
             <CardHeader>
