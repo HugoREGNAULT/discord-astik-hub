@@ -97,7 +97,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
     // - "all" : point avec les valeurs actuelles il y a 1h (évite data.length=1
     //   quand tous les snapshots tombent dans le même bucket horaire "now").
     if (period !== "all" && baseline != null) {
-      const startBucket = new Date(cutoff).toISOString().slice(0, 13);
+      const startBucket = new Date(cutoff).toISOString().slice(0, 16);
       const startRow: Record<string, number | string> = { t: startBucket };
       for (const e of top10) {
         if (baseline.has(e.discord_id)) startRow[e.discord_id] = 0;
@@ -106,7 +106,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
     } else if (period === "all") {
       // Pour "all", si on n'a qu'un seul bucket (snapshots récents tous à "now"),
       // on ajoute un point 1h avant avec les valeurs actuelles comme ancre visuelle.
-      const prevBucket = new Date(Date.now() - 3600 * 1000).toISOString().slice(0, 13);
+      const prevBucket = new Date(Date.now() - 3600 * 1000).toISOString().slice(0, 16);
       if (!byTime.has(prevBucket)) {
         const anchorRow: Record<string, number | string> = { t: prevBucket };
         for (const e of top10)
@@ -128,7 +128,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
       if (!allowed.has(s.discord_id)) continue;
       const t = new Date(s.taken_at).getTime();
       if (t < cutoff) continue;
-      const bucket = new Date(s.taken_at).toISOString().slice(0, 13); // hour bucket
+      const bucket = new Date(s.taken_at).toISOString().slice(0, 16); // minute bucket
       let row = byTime.get(bucket);
       if (!row) {
         row = { t: bucket };
@@ -163,9 +163,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
             dataKey="t"
             tick={{ fontSize: 11, fill: "#e4e4e7" }}
             stroke="#52525b"
-            tickFormatter={(v: string) =>
-              v.slice(5, 10).replace("-", "/") + " " + v.slice(11) + "h"
-            }
+            tickFormatter={(v: string) => v.slice(5, 10).replace("-", "/") + " " + v.slice(11, 16)}
             minTickGap={32}
           />
           <YAxis
@@ -184,7 +182,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
             }}
             labelStyle={{ color: "#fafafa" }}
             formatter={(v: number, name: string) => [formatTick(v, metric), name]}
-            labelFormatter={(l: string) => l.replace("T", " ") + "h"}
+            labelFormatter={(l: string) => l.replace("T", " ")}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           {top10.map((e, i) => (
