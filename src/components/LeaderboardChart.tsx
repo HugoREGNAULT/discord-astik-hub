@@ -32,7 +32,18 @@ interface Props {
   baseline: Map<string, number> | null;
 }
 
-const COLORS = ["hsl(var(--primary))", "#facc15", "#f97316"];
+const COLORS = [
+  "hsl(var(--primary))",
+  "#facc15",
+  "#f97316",
+  "#4ade80",
+  "#60a5fa",
+  "#c084fc",
+  "#fb7185",
+  "#34d399",
+  "#fbbf24",
+  "#a78bfa",
+];
 const PERIOD_HOURS: Record<Exclude<Period, "all">, number> = {
   "24h": 24,
   "7d": 24 * 7,
@@ -55,15 +66,15 @@ function formatTick(value: number, metric: LeaderboardMetric) {
 }
 
 export function LeaderboardChart({ snapshots, topEntries, metric, period, baseline }: Props) {
-  const top3 = topEntries.slice(0, 3);
+  const top10 = topEntries.slice(0, 10);
 
   const data = useMemo(() => {
-    if (top3.length === 0) return [];
-    const allowed = new Set(top3.map((e) => e.discord_id));
+    if (top10.length === 0) return [];
+    const allowed = new Set(top10.map((e) => e.discord_id));
     // Snapshot synthétique "now" depuis les totaux live pour refléter
     // les dernières mises à jour sans attendre le snapshot horaire suivant.
     const nowIso = new Date().toISOString();
-    const liveSnapshots: Snapshot[] = top3.map((e) => ({
+    const liveSnapshots: Snapshot[] = top10.map((e) => ({
       taken_at: nowIso,
       discord_id: e.discord_id,
       astik_points: Number(e.astik_points ?? 0),
@@ -76,6 +87,18 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
     const cutoff = period === "all" ? 0 : Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
 
     const byTime = new Map<string, Record<string, number | string>>();
+
+    // Injecter un point de départ à t=cutoff avec valeur 0 pour chaque membre
+    // qui a une baseline → garantit ≥2 points même sans snapshot historique.
+    if (period !== "all" && baseline != null) {
+      const startBucket = new Date(cutoff).toISOString().slice(0, 13);
+      const startRow: Record<string, number | string> = { t: startBucket };
+      for (const e of top10) {
+        if (baseline.has(e.discord_id)) startRow[e.discord_id] = 0;
+      }
+      byTime.set(startBucket, startRow);
+    }
+
     for (const s of allSnapshots) {
       if (!allowed.has(s.discord_id)) continue;
       const t = new Date(s.taken_at).getTime();
@@ -96,7 +119,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
       }
     }
     return Array.from(byTime.values()).sort((a, b) => String(a.t).localeCompare(String(b.t)));
-  }, [snapshots, top3, metric, period, baseline]);
+  }, [snapshots, top10, metric, period, baseline]);
 
   if (data.length < 2) {
     return (
@@ -139,7 +162,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
             labelFormatter={(l: string) => l.replace("T", " ") + "h"}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          {top3.map((e, i) => (
+          {top10.map((e, i) => (
             <Line
               key={e.discord_id}
               type="monotone"

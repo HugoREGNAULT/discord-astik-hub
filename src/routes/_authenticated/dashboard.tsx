@@ -19,8 +19,6 @@ import { RecentCartsPanel } from "@/components/RecentCartsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 import { PageHeader, PageCard, DaChip, ErrorBlock } from "@/components/tools/ToolsUi";
 
-
-
 export const Route = createFileRoute("/_authenticated/dashboard")({
   errorComponent: RouteError,
   head: () => ({ meta: [{ title: "Classement · PunkAstik" }] }),
@@ -45,7 +43,6 @@ function formatRelative(iso: string) {
   const d = Math.floor(h / 24);
   return `il y a ${d}j`;
 }
-
 
 export type LeaderboardPeriod = "all" | "24h" | "7d" | "30d";
 
@@ -76,7 +73,11 @@ function buildBaseline(
   period: Exclude<LeaderboardPeriod, "all">,
 ): Map<string, number> {
   const cutoff = Date.now() - PERIOD_HOURS[period] * 3600 * 1000;
-  const pick = (s: { astik_points: number; voice_total_seconds: number; messages_total: number }) =>
+  const pick = (s: {
+    astik_points: number;
+    voice_total_seconds: number;
+    messages_total: number;
+  }) =>
     metric === "points"
       ? Number(s.astik_points)
       : metric === "voice"
@@ -233,6 +234,8 @@ function LeaderboardPage() {
     queryKey: ["leaderboard-history"],
     queryFn: () => fetchHist(),
     refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
   const [metric, setMetric] = useState<LeaderboardMetric>("points");
   const [period, setPeriod] = useState<LeaderboardPeriod>("all");
@@ -266,9 +269,6 @@ function LeaderboardPage() {
         title="Classement"
         description="Le top de la faction — AstikPoints, vocal et messages."
       />
-      
-
-
 
       <PageCard>
         <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
@@ -344,12 +344,11 @@ function LeaderboardPage() {
           </div>
           <LeaderboardChart
             snapshots={histData?.snapshots ?? []}
-            topEntries={top3}
+            topEntries={sortedAll.slice(0, 10)}
             metric={metric}
             period={period}
             baseline={baseline}
           />
-
 
           <div className="border-t border-zinc-800 pt-4 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
