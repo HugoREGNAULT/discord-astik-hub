@@ -92,8 +92,10 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
 
     const byTime = new Map<string, Record<string, number | string>>();
 
-    // Injecter un point de départ à t=cutoff avec valeur 0 pour chaque membre
-    // qui a une baseline → garantit ≥2 points même sans snapshot historique.
+    // Injecter un point de départ pour garantir ≥2 points même sans historique.
+    // - Périodes bornées (24h/7j/30j) : point à 0 au cutoff (début de fenêtre).
+    // - "all" : point avec les valeurs actuelles il y a 1h (évite data.length=1
+    //   quand tous les snapshots tombent dans le même bucket horaire "now").
     if (period !== "all" && baseline != null) {
       const startBucket = new Date(cutoff).toISOString().slice(0, 13);
       const startRow: Record<string, number | string> = { t: startBucket };
@@ -101,6 +103,25 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
         if (baseline.has(e.discord_id)) startRow[e.discord_id] = 0;
       }
       byTime.set(startBucket, startRow);
+    } else if (period === "all") {
+      // Pour "all", si on n'a qu'un seul bucket (snapshots récents tous à "now"),
+      // on ajoute un point 1h avant avec les valeurs actuelles comme ancre visuelle.
+      const prevBucket = new Date(Date.now() - 3600 * 1000).toISOString().slice(0, 13);
+      if (!byTime.has(prevBucket)) {
+        const anchorRow: Record<string, number | string> = { t: prevBucket };
+        for (const e of top10)
+          anchorRow[e.discord_id] = pickTotal(
+            {
+              astik_points: Number(e.astik_points ?? 0),
+              voice_total_seconds: Number(e.voice_total_seconds ?? 0),
+              voice_7d_seconds: Number(e.voice_7d_seconds ?? 0),
+              messages_total: Number(e.messages_total ?? 0),
+              messages_7d: Number(e.messages_7d ?? 0),
+            } as Snapshot,
+            metric,
+          );
+        byTime.set(prevBucket, anchorRow);
+      }
     }
 
     for (const s of allSnapshots) {
@@ -128,7 +149,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
   if (data.length < 2) {
     return (
       <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground border border-dashed border-border rounded-md">
-        Pas encore assez d'historique — un snapshot est capturé chaque heure.
+        Pas encore assez d'historique — un snapshot est capturé toutes les 5 minutes.
       </div>
     );
   }
