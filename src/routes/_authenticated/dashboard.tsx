@@ -228,12 +228,14 @@ function LeaderboardPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
-    refetchInterval: 60_000,
+    refetchInterval: 30_000, // 30s : le point live du graphe suit le vocal en quasi-temps-reel
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
   const { data: histData } = useQuery({
     queryKey: ["leaderboard-history"],
     queryFn: () => fetchHist(),
-    refetchInterval: 60_000,
+    refetchInterval: 60_000, // 60s : l'historique ne change que toutes les 5 min (cron)
     refetchOnWindowFocus: true,
     staleTime: 0,
   });
