@@ -32,17 +32,18 @@ interface Props {
   baseline: Map<string, number> | null;
 }
 
+// hsl(var(--primary)) ne fonctionne pas dans un SVG Recharts (hors DOM) -> hex explicite
 const COLORS = [
-  "hsl(var(--primary))",
-  "#facc15",
-  "#f97316",
-  "#4ade80",
-  "#60a5fa",
-  "#c084fc",
-  "#fb7185",
-  "#34d399",
-  "#fbbf24",
-  "#a78bfa",
+  "#ec4899", // pink-500 = primary
+  "#facc15", // yellow
+  "#f97316", // orange
+  "#4ade80", // green
+  "#60a5fa", // blue
+  "#c084fc", // purple
+  "#fb7185", // rose
+  "#34d399", // emerald
+  "#fbbf24", // amber
+  "#a78bfa", // violet
 ];
 const PERIOD_HOURS: Record<Exclude<Period, "all">, number> = {
   "24h": 24,
@@ -59,8 +60,11 @@ function pickTotal(s: Snapshot, metric: LeaderboardMetric) {
 function formatTick(value: number, metric: LeaderboardMetric) {
   if (metric === "voice") {
     const h = Math.floor(value / 3600);
-    return `${h}h`;
+    const m = Math.floor((value % 3600) / 60);
+    if (h > 0) return m > 0 ? `${h}h${m}` : `${h}h`;
+    return `${m}m`;
   }
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return String(value);
 }
@@ -158,7 +162,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
               color: "#e4e4e7",
             }}
             labelStyle={{ color: "#fafafa" }}
-            formatter={(v: number) => formatTick(v, metric)}
+            formatter={(v: number, name: string) => [formatTick(v, metric), name]}
             labelFormatter={(l: string) => l.replace("T", " ") + "h"}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
