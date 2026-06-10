@@ -38,19 +38,38 @@ const applicationSchema = z.object({
 });
 
 async function fetchMojang(name: string): Promise<{ id: string; name: string }> {
-  const res = await fetchWithRetry(
+  // Endpoints testés dans l'ordre. api.mojang.com est devenu peu fiable
+  // depuis 2024 (5xx/timeouts intermittents) — on essaie d'abord le nouvel
+  // endpoint Minecraft Services, identique en schéma.
+  const endpoints = [
+    `https://api.minecraftservices.com/minecraft/profile/lookup/name/${encodeURIComponent(name)}`,
     `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
-    {},
-    { retries: 3, timeoutMs: 8000 },
+  ];
+  let lastStatus = 0;
+  for (const url of endpoints) {
+    try {
+      const res = await fetchWithRetry(url, {}, { retries: 2, timeoutMs: 8000 });
+      if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
+      if (!res.ok) {
+        lastStatus = res.status;
+        continue; // on tente l'endpoint suivant
+      }
+      const body = (await res.json()) as { id?: string; name?: string };
+      if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
+      return { id: body.id, name: body.name };
+    } catch (e) {
+      const msg = (e as Error).message;
+      // Erreur "pseudo inexistant" → on remonte directement.
+      if (msg.includes("n'existe pas") || msg.includes("Réponse Mojang invalide")) throw e;
+      // Sinon (réseau / timeout), on tente l'endpoint suivant.
+      lastStatus = lastStatus || -1;
+    }
+  }
+  throw new Error(
+    `Impossible de vérifier le pseudo (API Mojang temporairement indisponible${
+      lastStatus > 0 ? `, HTTP ${lastStatus}` : ""
+    }, réessaie dans quelques minutes).`,
   );
-  if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
-  if (!res.ok)
-    throw new Error(
-      "Impossible de vérifier le pseudo (API Mojang temporairement indisponible, réessaie dans un instant).",
-    );
-  const body = (await res.json()) as { id?: string; name?: string };
-  if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
-  return { id: body.id, name: body.name };
 }
 
 const RATE_LIMIT_HOURS = 6;
