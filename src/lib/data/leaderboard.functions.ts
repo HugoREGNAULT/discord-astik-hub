@@ -42,16 +42,10 @@ export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(a
   // 30 derniers jours de snapshots
   const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
   const [{ data: snapshots, error }, { data: members, error: membersError }] = await Promise.all([
-    db
-      .from("leaderboard_snapshots")
-      .select(
-        "taken_at,discord_id,astik_points,voice_total_seconds,voice_7d_seconds,messages_total,messages_7d",
-      )
-      .gte("taken_at", since)
-      // Les plus RÉCENTS d'abord : si le volume dépasse la limite, on tronque le
-      // passé lointain, jamais le présent (sinon "dernière actualisation" gèle).
-      .order("taken_at", { ascending: false })
-      .limit(20000),
+    // Échantillonnage horaire (1 point/membre/heure) via RPC : le volume reste borné
+    // par la fenêtre 30 j même si le job écrit toutes les 5 min. Cf. migration
+    // 20260610133359_leaderboard_history_hourly.sql.
+    db.rpc("leaderboard_history_hourly", { p_since: since }),
     db
       .from("members")
       .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
@@ -62,7 +56,10 @@ export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(a
   const allowedIds = new Set(
     filterFactionMembers(members ?? []).map((member: any) => member.discord_id),
   );
-  // Remis en ordre chronologique (ascendant) pour le graphique et la baseline.
-  const chrono = (snapshots ?? []).slice().reverse();
-  return { snapshots: chrono.filter((snapshot) => allowedIds.has(snapshot.discord_id)) };
+  // La RPC ordonne par (membre, heure) : on retrie en ordre chronologique global
+  // pour le graphique et la baseline.
+  const chrono = (snapshots ?? [])
+    .slice()
+    .sort((a: any, b: any) => String(a.taken_at).localeCompare(String(b.taken_at)));
+  return { snapshots: chrono.filter((snapshot: any) => allowedIds.has(snapshot.discord_id)) };
 });

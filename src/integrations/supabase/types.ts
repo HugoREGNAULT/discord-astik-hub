@@ -2943,6 +2943,19 @@ export type Database = {
         Args: { p_discord_id: string; p_inc: number };
         Returns: number;
       };
+      leaderboard_history_hourly: {
+        Args: { p_since: string };
+        Returns: {
+          astik_points: number;
+          discord_id: string;
+          id: number;
+          messages_7d: number;
+          messages_total: number;
+          taken_at: string;
+          voice_7d_seconds: number;
+          voice_total_seconds: number;
+        }[];
+      };
       level_for_xp: { Args: { p_xp: number }; Returns: number };
       recompute_member_xp: { Args: never; Returns: undefined };
       set_member_points: {
