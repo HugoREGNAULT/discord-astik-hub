@@ -38,42 +38,65 @@ const applicationSchema = z.object({
 });
 
 async function fetchMojang(name: string): Promise<{ id: string; name: string }> {
-  // Endpoints testés dans l'ordre. api.mojang.com est devenu peu fiable
-  // depuis 2024 (5xx/timeouts intermittents) — on essaie d'abord le nouvel
-  // endpoint Minecraft Services, identique en schéma.
-  const endpoints = [
-    `https://api.minecraftservices.com/minecraft/profile/lookup/name/${encodeURIComponent(name)}`,
-    `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
-  ];
-  // User-Agent explicite : sur runtime serverless (Lovable/Workers/edge),
-  // fetch n'envoie pas de UA par defaut → Mojang refuse en 403 (anti-scraping).
-  // Symptome chez Layzzen le 2026-06-10 : 403 sur les deux endpoints.
+  // Cascade :
+  // 1) PlayerDB.co — proxy tiers stable, NON bloqué par anti-scraping Mojang
+  //    (Mojang blackliste régulièrement les IPs cloud / serverless).
+  // 2) api.minecraftservices.com — endpoint officiel actuel.
+  // 3) api.mojang.com — ancien endpoint, gardé en dernier recours.
+  // UA explicite + Accept JSON pour les endpoints Mojang directs.
   const headers = {
     "User-Agent": "PunkAstik-Site/1.0 (+https://punkastik.com)",
     Accept: "application/json",
   };
+
+  // --- 1) PlayerDB
+  try {
+    const res = await fetchWithRetry(
+      `https://playerdb.co/api/player/minecraft/${encodeURIComponent(name)}`,
+      { headers },
+      { retries: 2, timeoutMs: 8000 },
+    );
+    if (res.ok) {
+      const body = (await res.json()) as {
+        success?: boolean;
+        code?: string;
+        data?: { player?: { username?: string; raw_id?: string } };
+      };
+      if (body.success && body.data?.player?.raw_id && body.data.player.username) {
+        return { id: body.data.player.raw_id, name: body.data.player.username };
+      }
+      // success:false → si c'est un pseudo invalide, on bascule sur Mojang
+      // qui sait répondre 404 proprement (PlayerDB confond parfois).
+    }
+  } catch {
+    // ignore, on tente Mojang.
+  }
+
+  // --- 2-3) Mojang direct (avec UA)
+  const mojangEndpoints = [
+    `https://api.minecraftservices.com/minecraft/profile/lookup/name/${encodeURIComponent(name)}`,
+    `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
+  ];
   let lastStatus = 0;
-  for (const url of endpoints) {
+  for (const url of mojangEndpoints) {
     try {
       const res = await fetchWithRetry(url, { headers }, { retries: 2, timeoutMs: 8000 });
       if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
       if (!res.ok) {
         lastStatus = res.status;
-        continue; // on tente l'endpoint suivant
+        continue;
       }
       const body = (await res.json()) as { id?: string; name?: string };
       if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
       return { id: body.id, name: body.name };
     } catch (e) {
       const msg = (e as Error).message;
-      // Erreur "pseudo inexistant" → on remonte directement.
       if (msg.includes("n'existe pas") || msg.includes("Réponse Mojang invalide")) throw e;
-      // Sinon (réseau / timeout), on tente l'endpoint suivant.
       lastStatus = lastStatus || -1;
     }
   }
   throw new Error(
-    `Impossible de vérifier le pseudo (API Mojang temporairement indisponible${
+    `Impossible de vérifier le pseudo (services Mojang temporairement indisponibles${
       lastStatus > 0 ? `, HTTP ${lastStatus}` : ""
     }, réessaie dans quelques minutes).`,
   );
