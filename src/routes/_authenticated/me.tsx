@@ -46,7 +46,7 @@ function MyProfile() {
   const isMember = Boolean(m.ig_name || m.current_grade || m.arrival_date || m.mc_uuid);
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="space-y-6 w-full mx-auto 2xl:max-w-[2000px]">
       <div className="flex flex-wrap items-center gap-4">
         {m.avatar_url ? (
           <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
