@@ -230,6 +230,30 @@ function PollDetail() {
     return Array.from(map.entries()).map(([id, v]) => ({ id, name: v.name, choice: v.choice }));
   }, [data]);
 
+  // [Admin only] Détail "qui a voté quoi".
+  // - Question : pour chaque option, liste les votants qui l'ont choisie.
+  // - Schedule : matrice votant × option avec yes/maybe/no.
+  const adminBreakdown = useMemo(() => {
+    if (!data || !canManage) return null;
+    const byOption = new Map<string, { id: string; name: string; choice: Choice }[]>();
+    const byVoter = new Map<string, { name: string; choices: Record<string, Choice> }>();
+    for (const v of data.votes as any[]) {
+      const name = v.voter_username ?? v.voter_discord_id;
+      const arr = byOption.get(v.option_id) ?? [];
+      arr.push({ id: v.voter_discord_id, name, choice: v.choice });
+      byOption.set(v.option_id, arr);
+      const row = byVoter.get(v.voter_discord_id) ?? { name, choices: {} };
+      row.choices[v.option_id] = v.choice;
+      byVoter.set(v.voter_discord_id, row);
+    }
+    return {
+      byOption,
+      voters: Array.from(byVoter.entries())
+        .map(([id, r]) => ({ id, name: r.name, choices: r.choices }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }, [data, canManage]);
+
   // Liste des membres faction (utilisée pour l'import CSV des sondages planification).
   const membersFn = useServerFn(listMembers);
   const { data: membersData } = useQuery({
@@ -591,6 +615,93 @@ function PollDetail() {
                 </Badge>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {canManage && adminBreakdown && voters.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Crown className="size-4 text-primary" /> Qui a voté quoi (staff)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isQuestion ? (
+              <div className="space-y-3">
+                {data.options.map((o: any) => {
+                  const list = adminBreakdown.byOption.get(o.id) ?? [];
+                  return (
+                    <div key={o.id}>
+                      <div className="text-sm font-medium mb-1">
+                        {o.label || "—"}{" "}
+                        <span className="text-xs text-muted-foreground">({list.length})</span>
+                      </div>
+                      {list.length === 0 ? (
+                        <div className="text-xs text-muted-foreground">Aucun vote</div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {list.map((v) => (
+                            <Badge key={v.id} variant="secondary" className="text-xs">
+                              {v.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
+                      <th className="py-2 pr-3">Votant</th>
+                      {data.options.map((o: any) => (
+                        <th key={o.id} className="py-2 px-2 text-center font-normal">
+                          {new Date(o.starts_at).toLocaleString("fr-FR", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminBreakdown.voters.map((v) => (
+                      <tr key={v.id} className="border-b border-border/50">
+                        <td className="py-2 pr-3 font-medium">{v.name}</td>
+                        {data.options.map((o: any) => {
+                          const c = v.choices[o.id];
+                          const cls =
+                            c === "yes"
+                              ? "text-green-500"
+                              : c === "maybe"
+                                ? "text-amber-500"
+                                : c === "no"
+                                  ? "text-destructive"
+                                  : "text-muted-foreground/40";
+                          const sym =
+                            c === "yes" ? "✓" : c === "maybe" ? "?" : c === "no" ? "✗" : "·";
+                          return (
+                            <td
+                              key={o.id}
+                              className={`py-2 px-2 text-center font-mono ${cls}`}
+                              title={c ?? "pas de vote"}
+                            >
+                              {sym}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
