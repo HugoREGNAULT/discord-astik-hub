@@ -39,6 +39,7 @@ import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authe
 import { Route as AuthenticatedEffectifRouteImport } from './routes/_authenticated/effectif'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
+import { Route as AuthenticatedCheckBcRouteImport } from './routes/_authenticated/check-bc'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
@@ -251,6 +252,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   id: '/config',
   path: '/config',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCheckBcRoute = AuthenticatedCheckBcRouteImport.update({
+  id: '/check-bc',
+  path: '/check-bc',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
@@ -577,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
+  '/check-bc': typeof AuthenticatedCheckBcRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/effectif': typeof AuthenticatedEffectifRoute
@@ -664,6 +671,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
+  '/check-bc': typeof AuthenticatedCheckBcRoute
   '/config': typeof AuthenticatedConfigRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/effectif': typeof AuthenticatedEffectifRoute
@@ -751,6 +759,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/backlog': typeof AuthenticatedBacklogRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
+  '/_authenticated/check-bc': typeof AuthenticatedCheckBcRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/effectif': typeof AuthenticatedEffectifRoute
@@ -840,6 +849,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/backlog'
     | '/blacklist'
+    | '/check-bc'
     | '/config'
     | '/dashboard'
     | '/effectif'
@@ -927,6 +937,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/backlog'
     | '/blacklist'
+    | '/check-bc'
     | '/config'
     | '/dashboard'
     | '/effectif'
@@ -1013,6 +1024,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant'
     | '/_authenticated/backlog'
     | '/_authenticated/blacklist'
+    | '/_authenticated/check-bc'
     | '/_authenticated/config'
     | '/_authenticated/dashboard'
     | '/_authenticated/effectif'
@@ -1341,6 +1353,13 @@ declare module '@tanstack/react-router' {
       path: '/config'
       fullPath: '/config'
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/check-bc': {
+      id: '/_authenticated/check-bc'
+      path: '/check-bc'
+      fullPath: '/check-bc'
+      preLoaderRoute: typeof AuthenticatedCheckBcRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/blacklist': {
@@ -1829,6 +1848,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
+  AuthenticatedCheckBcRoute: typeof AuthenticatedCheckBcRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEffectifRoute: typeof AuthenticatedEffectifRoute
@@ -1860,6 +1880,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
+  AuthenticatedCheckBcRoute: AuthenticatedCheckBcRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEffectifRoute: AuthenticatedEffectifRoute,
@@ -1936,3 +1957,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

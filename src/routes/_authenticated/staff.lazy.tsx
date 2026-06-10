@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
-import { getChurnRisk, getRetentionCohorts, type ChurnRow, type CohortRow } from "@/lib/data/churn.functions";
+import {
+  getChurnRisk,
+  getRetentionCohorts,
+  type ChurnRow,
+  type CohortRow,
+} from "@/lib/data/churn.functions";
 import {
   LayoutDashboard,
   Users,
@@ -39,9 +44,19 @@ import {
 } from "lucide-react";
 
 import { Guard } from "@/components/Guard";
-import { getStaffDashboard, getInactivityBuckets, getNeverConnectedMembers, getMembersWithoutMc, setMemberMcByStaff } from "@/lib/data/staff.functions";
+import {
+  getStaffDashboard,
+  getInactivityBuckets,
+  getNeverConnectedMembers,
+  getMembersWithoutMc,
+  setMemberMcByStaff,
+} from "@/lib/data/staff.functions";
 import { getInactivityQueue, sendInactivityPing } from "@/lib/data/inactivity.functions";
-import { getOpenAnomalies, updateAnomalyStatus, type OpenAnomalyRow } from "@/lib/data/anomaly.functions";
+import {
+  getOpenAnomalies,
+  updateAnomalyStatus,
+  type OpenAnomalyRow,
+} from "@/lib/data/anomaly.functions";
 import { getFactionHealth } from "@/lib/data/health.functions";
 import { getLatestDigest, generateDigestManually } from "@/lib/data/digest.functions";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
@@ -105,10 +120,7 @@ function StaffPage() {
 
   // Realtime — invalide les caches dépendant des tables applications/donations/warnings.
   // Le push ne sert qu'à invalider : aucune donnée sensible ne transite côté client.
-  const invalidatedKeys = [
-    ["staff-dashboard"],
-    ["faction-health"],
-  ];
+  const invalidatedKeys = [["staff-dashboard"], ["faction-health"]];
   useRealtimeChannel("applications", "*", invalidatedKeys);
   useRealtimeChannel("donations", "*", invalidatedKeys);
   useRealtimeChannel("warnings", "*", invalidatedKeys);
@@ -155,7 +167,6 @@ function StaffPage() {
           />
         ) : null}
       </div>
-
 
       {/* KPIs */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -209,9 +220,6 @@ function StaffPage() {
       {/* Risque de départ + cohortes de rétention */}
       <ChurnSection />
 
-
-
-
       {/* Applications timeline + global stats */}
       <ApplicationsTimelineCard
         timeline={data.applicationsTimeline ?? []}
@@ -219,8 +227,6 @@ function StaffPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-
-
         {/* Candidatures en attente */}
         <Card>
           <CardHeader>
@@ -1306,12 +1312,17 @@ function BulkDmHistoryList({ items }: { items: HistoryItem[] }) {
   const [search, setSearch] = useState("");
   const [audienceFilter, setAudienceFilter] = useState<AudienceKind | "all">("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const { bdmSort: sortKey, bdmDir: sortDir } = useSearch({ from: "/_authenticated/staff" });
-  const navigate = useNavigate({ from: "/_authenticated/staff" });
+  const { bdmSort: sortKey, bdmDir: sortDir } = useSearch({
+    from: "/_authenticated/staff" as any,
+  }) as StaffSearch;
+  const navigate = useNavigate({ from: "/_authenticated/staff" as any });
   const setSortKey = (v: SortKey) =>
-    navigate({ search: (prev: StaffSearch) => ({ ...prev, bdmSort: v }), replace: true });
+    (navigate as any)({
+      search: (prev: StaffSearch) => ({ ...prev, bdmSort: v }),
+      replace: true,
+    });
   const setSortDir = (updater: (d: SortDir) => SortDir) =>
-    navigate({
+    (navigate as any)({
       search: (prev: StaffSearch) => ({ ...prev, bdmDir: updater(prev.bdmDir ?? "desc") }),
       replace: true,
     });
@@ -1544,7 +1555,7 @@ function NeverConnectedCard() {
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
     staleTime: 0,
-    });
+  });
 
   return (
     <Card>
@@ -1567,8 +1578,8 @@ function NeverConnectedCard() {
         ) : (
           <>
             <p className="text-[11px] text-muted-foreground mb-2">
-              Membres de la faction privée qui n'ont jamais ouvert le site. Envoie-leur un DM
-              pour les inviter à se connecter.
+              Membres de la faction privée qui n'ont jamais ouvert le site. Envoie-leur un DM pour
+              les inviter à se connecter.
             </p>
             {(data?.members ?? []).map((m: any) => (
               <NeverConnectedRow key={m.discord_id} member={m} />
@@ -1714,7 +1725,7 @@ function InactivityQueueCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["inactivity-queue"],
     queryFn: () => fn(),
-    });
+  });
 
   const rows: InactivityRow[] = (data?.rows ?? []) as InactivityRow[];
 
@@ -1739,8 +1750,8 @@ function InactivityQueueCard() {
         ) : (
           <>
             <p className="text-[11px] text-muted-foreground mb-2">
-              Triés par jours d&apos;inactivité décroissants. Les membres en absence
-              déclarée sont signalés — pense à vérifier avant de relancer.
+              Triés par jours d&apos;inactivité décroissants. Les membres en absence déclarée sont
+              signalés — pense à vérifier avant de relancer.
             </p>
             <div className="hidden md:grid grid-cols-[1fr_90px_140px_140px_110px] gap-2 px-2 text-[11px] uppercase tracking-wide text-muted-foreground">
               <div>Membre</div>
@@ -1769,8 +1780,7 @@ function InactivityRowItem({ member }: { member: InactivityRow }) {
   );
 
   const mut = useMutation({
-    mutationFn: () =>
-      sendFn({ data: { memberDiscordId: member.discord_id, message: content } }),
+    mutationFn: () => sendFn({ data: { memberDiscordId: member.discord_id, message: content } }),
     onSuccess: () => {
       toast.success("Relance envoyée");
       setOpen(false);
@@ -1821,9 +1831,7 @@ function InactivityRowItem({ member }: { member: InactivityRow }) {
         )}
       </div>
 
-      <div className="text-[11px] text-muted-foreground">
-        {formatDate(member.lastPingAt)}
-      </div>
+      <div className="text-[11px] text-muted-foreground">{formatDate(member.lastPingAt)}</div>
 
       <div className="md:text-right">
         <Button
@@ -1857,9 +1865,7 @@ function InactivityRowItem({ member }: { member: InactivityRow }) {
             rows={6}
             maxLength={1800}
           />
-          <div className="text-[11px] text-muted-foreground text-right">
-            {content.length}/1800
-          </div>
+          <div className="text-[11px] text-muted-foreground text-right">{content.length}/1800</div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>
               Annuler
@@ -1902,7 +1908,7 @@ function AnomaliesCard() {
   const { data, isLoading } = useQuery({
     queryKey: ["anomaly-flags-open"],
     queryFn: () => fn(),
-    });
+  });
 
   const mut = useMutation({
     mutationFn: (vars: { id: string; status: "reviewed" | "dismissed" }) =>
@@ -2014,11 +2020,9 @@ function AnomaliesCard() {
   );
 }
 
-
 // ==========================================================
 // ChurnSection : risque de départ + cohortes de rétention
 // ==========================================================
-
 
 function ChurnSection() {
   const fnRisk = useServerFn(getChurnRisk);
@@ -2079,15 +2083,15 @@ function ChurnSection() {
                     </div>
                   </div>
                   <Badge
-                    variant={r.score >= 70 ? "destructive" : r.score >= 40 ? "secondary" : "outline"}
+                    variant={
+                      r.score >= 70 ? "destructive" : r.score >= 40 ? "secondary" : "outline"
+                    }
                   >
                     {r.score}
                   </Badge>
                 </Link>
               ))}
-              <p className="text-[10px] text-muted-foreground pt-2">
-                {risk!.formula}
-              </p>
+              <p className="text-[10px] text-muted-foreground pt-2">{risk!.formula}</p>
             </>
           )}
         </CardContent>
@@ -2275,11 +2279,7 @@ function MissingMcRow({
       >
         <MessageCircle className="size-3.5" />
       </Button>
-      <Button
-        size="sm"
-        onClick={() => setOpen(true)}
-        title="Lier son pseudo MC"
-      >
+      <Button size="sm" onClick={() => setOpen(true)} title="Lier son pseudo MC">
         Lier
       </Button>
 

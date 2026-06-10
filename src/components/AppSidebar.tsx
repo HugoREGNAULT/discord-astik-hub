@@ -119,7 +119,7 @@ const SECTIONS: Section[] = [
       },
       {
         title: "Check BC",
-        url: "/tools/check-bc",
+        url: "/check-bc",
         icon: ShieldAlert,
         perm: "profile.self",
         accent: "pink",
