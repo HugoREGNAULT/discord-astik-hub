@@ -242,7 +242,10 @@ function PollDetail() {
       const arr = byOption.get(v.option_id) ?? [];
       arr.push({ id: v.voter_discord_id, name, choice: v.choice });
       byOption.set(v.option_id, arr);
-      const row = byVoter.get(v.voter_discord_id) ?? { name, choices: {} };
+      const row = byVoter.get(v.voter_discord_id) ?? {
+        name,
+        choices: {} as Record<string, Choice>,
+      };
       row.choices[v.option_id] = v.choice;
       byVoter.set(v.voter_discord_id, row);
     }
