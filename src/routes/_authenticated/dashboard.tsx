@@ -229,7 +229,12 @@ function LeaderboardPage() {
   const [period, setPeriod] = useState<LeaderboardPeriod>("all");
   const [query, setQuery] = useState("");
 
-  const { data, isLoading, error } = useQuery({
+  const {
+    data,
+    isLoading,
+    error,
+    dataUpdatedAt: liveUpdatedAt,
+  } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
     refetchInterval: 30_000, // 30s : le point live du graphe suit le vocal en quasi-temps-reel
@@ -253,12 +258,16 @@ function LeaderboardPage() {
     [histData?.snapshots, metric, period],
   );
   const lastUpdate = useMemo(() => {
+    // Le point "live" (totaux actuels, refetch 30s) est la vraie dernière actualisation.
+    // Les snapshots des rollups portent l'horodatage de DÉBUT de bucket (00:00 pour le
+    // tier jour) qui sous-estime la fraîcheur — on s'appuie donc sur le fetch live.
+    if (liveUpdatedAt) return new Date(liveUpdatedAt).toISOString();
     const snaps = histData?.snapshots ?? [];
     if (!snaps.length) return null;
     let latest = snaps[0].taken_at as string;
     for (const s of snaps) if ((s.taken_at as string) > latest) latest = s.taken_at as string;
     return latest;
-  }, [histData?.snapshots]);
+  }, [liveUpdatedAt, histData?.snapshots]);
   const sortedAll = useMemo(
     () =>
       [...entries].sort(
