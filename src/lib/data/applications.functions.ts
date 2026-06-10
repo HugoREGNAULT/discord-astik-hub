@@ -45,10 +45,17 @@ async function fetchMojang(name: string): Promise<{ id: string; name: string }> 
     `https://api.minecraftservices.com/minecraft/profile/lookup/name/${encodeURIComponent(name)}`,
     `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
   ];
+  // User-Agent explicite : sur runtime serverless (Lovable/Workers/edge),
+  // fetch n'envoie pas de UA par defaut → Mojang refuse en 403 (anti-scraping).
+  // Symptome chez Layzzen le 2026-06-10 : 403 sur les deux endpoints.
+  const headers = {
+    "User-Agent": "PunkAstik-Site/1.0 (+https://punkastik.com)",
+    Accept: "application/json",
+  };
   let lastStatus = 0;
   for (const url of endpoints) {
     try {
-      const res = await fetchWithRetry(url, {}, { retries: 2, timeoutMs: 8000 });
+      const res = await fetchWithRetry(url, { headers }, { retries: 2, timeoutMs: 8000 });
       if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
       if (!res.ok) {
         lastStatus = res.status;
