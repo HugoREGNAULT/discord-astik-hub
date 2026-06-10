@@ -27,6 +27,8 @@ export default defineConfig({
         command: "bun run dev",
         url: "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
+        // 240s : cold-start TanStack Start + vite dev sur runner GitHub Actions
+        // peut depasser 120s (deps + warm-up SSR). Voir CI commit fc3ef82.
+        timeout: 240_000,
       },
 });
