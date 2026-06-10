@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSession } from "@/lib/auth/require.server";
 import { listAllGuildMembers, type DiscordGuildMember } from "@/lib/discord/api.server";
-import { GUILDS, EFFECTIF_GRADES } from "@/lib/discord/constants";
+import { GUILDS, EFFECTIF_GRADES, ROLES } from "@/lib/discord/constants";
 import { db } from "@/lib/db.server";
 
 interface EffectifMember {
@@ -35,10 +35,14 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     return { label: g.label, roleIds: ids };
   });
 
-  // Liste les membres du guild
+  // Liste les membres du guild faction + du guild public (pour les recruteurs)
   let members: DiscordGuildMember[] = [];
+  let publicMembers: DiscordGuildMember[] = [];
   try {
-    members = await listAllGuildMembers(GUILDS.FACTION);
+    [members, publicMembers] = await Promise.all([
+      listAllGuildMembers(GUILDS.FACTION),
+      listAllGuildMembers(GUILDS.PUBLIC).catch(() => [] as DiscordGuildMember[]),
+    ]);
   } catch (e) {
     await db.from("logs").insert({
       level: "error",
@@ -48,8 +52,20 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     throw e;
   }
 
-  // Récupère les IG names et la blacklist en une fois
-  const allDiscordIds = members.map((m) => m.user?.id).filter(Boolean) as string[];
+  // Recruteurs = porteurs du rôle RECRUITER_PUBLIC sur le guild public.
+  const publicById = new Map<string, DiscordGuildMember>();
+  for (const m of publicMembers) if (m.user?.id) publicById.set(m.user.id, m);
+  const recruiterIds = new Set<string>(
+    publicMembers
+      .filter((m) => m.roles?.includes(ROLES.RECRUITER_PUBLIC))
+      .map((m) => m.user?.id)
+      .filter(Boolean) as string[],
+  );
+
+  // Récupère les IG names et la blacklist en une fois (faction + recruteurs publics)
+  const allDiscordIds = Array.from(
+    new Set([...(members.map((m) => m.user?.id).filter(Boolean) as string[]), ...recruiterIds]),
+  );
   const [{ data: dbMembers }, { data: blacklistRows }] = await Promise.all([
     db
       .from("members")
@@ -64,57 +80,52 @@ export const getEffectif = createServerFn({ method: "GET" }).handler(async () =>
     (blacklistRows ?? []).flatMap((b) => (b.discord_id ? [b.discord_id] : [])),
   );
 
+  const factionById = new Map<string, DiscordGuildMember>();
+  for (const m of members) if (m.user?.id) factionById.set(m.user.id, m);
+
+  const buildMember = (uid: string, src: DiscordGuildMember): EffectifMember => {
+    const igName = igByDiscord.get(uid) ?? null;
+    // Priorité : IG name (DB) → nick Discord → global_name → username
+    const displayName = igName || src.nick || src.user?.global_name || src.user?.username || uid;
+    return {
+      discord_id: uid,
+      name: displayName,
+      ig_name: igName,
+      avatarUrl: src.user?.avatar
+        ? `https://cdn.discordapp.com/avatars/${uid}/${src.user.avatar}.png`
+        : null,
+      blacklisted: blacklisted.has(uid),
+    };
+  };
+
   const seen = new Set<string>();
   const groups: EffectifGroup[] = gradeRoleIds.map((g) => {
     const list: EffectifMember[] = [];
-    for (const m of members) {
-      const uid = m.user?.id;
-      if (!uid || seen.has(uid)) continue;
-      if (g.roleIds.some((rid) => m.roles.includes(rid))) {
+    if (g.label === "Recruteur") {
+      // Recruteur = rôle RECRUITER_PUBLIC sur le serveur public.
+      // Source d'affichage : profil faction si existant, sinon profil public.
+      for (const uid of recruiterIds) {
+        if (seen.has(uid)) continue;
+        const src = factionById.get(uid) ?? publicById.get(uid);
+        if (!src) continue;
         seen.add(uid);
-        const igName = igByDiscord.get(uid) ?? null;
-        // Priorité : IG name (DB) → nick Discord → global_name → username
-        const displayName = igName || m.nick || m.user?.global_name || m.user?.username || uid;
-        list.push({
-          discord_id: uid,
-          name: displayName,
-          ig_name: igName,
-          avatarUrl: m.user?.avatar
-            ? `https://cdn.discordapp.com/avatars/${uid}/${m.user.avatar}.png`
-            : null,
-          blacklisted: blacklisted.has(uid),
-        });
+        list.push(buildMember(uid, src));
+      }
+    } else {
+      for (const m of members) {
+        const uid = m.user?.id;
+        if (!uid || seen.has(uid)) continue;
+        if (g.roleIds.some((rid) => m.roles.includes(rid))) {
+          seen.add(uid);
+          list.push(buildMember(uid, m));
+        }
       }
     }
-    // tri alphabétique pour stabilité
     list.sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
     return { label: g.label, members: list };
   });
 
-  const unassigned: EffectifMember[] = members
-    .filter((m) => {
-      const uid = m.user?.id;
-      return Boolean(uid && !seen.has(uid));
-    })
-    .map((m) => {
-      const uid = m.user!.id;
-      const igName = igByDiscord.get(uid) ?? null;
-      return {
-        discord_id: uid,
-        name: igName || m.nick || m.user?.global_name || m.user?.username || uid,
-        ig_name: igName,
-        avatarUrl: m.user?.avatar
-          ? `https://cdn.discordapp.com/avatars/${uid}/${m.user.avatar}.png`
-          : null,
-        blacklisted: blacklisted.has(uid),
-      };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name, "fr", { sensitivity: "base" }));
-
-  if (unassigned.length > 0) {
-    groups.push({ label: "Sans grade", members: unassigned });
-  }
-
-  const total = members.filter((m) => m.user?.id).length;
+  // Total = uniquement les membres classés dans un grade (pas de "Sans grade").
+  const total = groups.reduce((s, g) => s + g.members.length, 0);
   return { groups, total };
 });
