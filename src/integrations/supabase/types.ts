@@ -8,6 +8,27 @@ export type Database = {
   };
   public: {
     Tables: {
+      feature_flags: {
+        Row: {
+          enabled: boolean;
+          key: string;
+          updated_at: string;
+          updated_by_discord_id: string | null;
+        };
+        Insert: {
+          enabled?: boolean;
+          key: string;
+          updated_at?: string;
+          updated_by_discord_id?: string | null;
+        };
+        Update: {
+          enabled?: boolean;
+          key?: string;
+          updated_at?: string;
+          updated_by_discord_id?: string | null;
+        };
+        Relationships: [];
+      };
       quest_templates: {
         Row: {
           active: boolean;

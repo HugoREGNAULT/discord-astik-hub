@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { RouteError } from "@/components/RouteError";
@@ -7,6 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useCurrentUser, hasPerm } from "@/lib/auth/use-current-user";
+import { getFeatureFlag, setFeatureFlag } from "@/lib/data/feature-flags.functions";
+import { toUserMessage } from "@/lib/errors";
 import {
   Swords,
   Coins,
@@ -22,7 +28,13 @@ import {
   Lock,
   Skull,
   ShieldCheck,
+  Eye,
+  EyeOff,
+  Loader2,
+  Clock,
 } from "lucide-react";
+
+const PUBLISH_FLAG = "reunion_v12_published";
 
 export const Route = createFileRoute("/_authenticated/reunion-v12")({
   errorComponent: RouteError,
@@ -37,7 +49,7 @@ export const Route = createFileRoute("/_authenticated/reunion-v12")({
     ],
   }),
   component: () => (
-    <Guard perm="members.view">
+    <Guard perm="profile.self">
       <ReunionV12Page />
     </Guard>
   ),
@@ -138,6 +150,38 @@ function SectionLabel({ code, title }: { code: string; title: string }) {
  * ====================================================================== */
 
 function ReunionV12Page() {
+  const { data: user } = useCurrentUser();
+  const canPublish = hasPerm(user, "members.view");
+
+  const getFlag = useServerFn(getFeatureFlag);
+  const setFlag = useServerFn(setFeatureFlag);
+  const qc = useQueryClient();
+
+  const { data: flag, isLoading } = useQuery({
+    queryKey: ["feature-flag", PUBLISH_FLAG],
+    queryFn: () => getFlag({ data: { key: PUBLISH_FLAG } }),
+    staleTime: 30_000,
+  });
+  const published = !!flag?.enabled;
+
+  const toggleMut = useMutation({
+    mutationFn: (enabled: boolean) => setFlag({ data: { key: PUBLISH_FLAG, enabled } }),
+    onSuccess: (res) => {
+      qc.setQueryData(["feature-flag", PUBLISH_FLAG], { enabled: res.enabled });
+      toast.success(
+        res.enabled
+          ? "Page publiée — visible par tous les membres."
+          : "Page masquée — visible du staff uniquement.",
+      );
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  // Membre non-staff tant que la page n'est pas publiée → écran d'attente.
+  if (!canPublish && !published) {
+    return <ComingSoon loading={isLoading} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white -mx-4 -my-4 md:-mx-6 md:-my-6">
       <PageHeader
@@ -145,6 +189,14 @@ function ReunionV12Page() {
         title="Réunion générale — 19 juin"
         description="Dossier de pré-lancement V12 · leaks, objectifs et plan de bataille."
       />
+
+      {canPublish && (
+        <PublishBar
+          published={published}
+          pending={toggleMut.isPending}
+          onToggle={() => toggleMut.mutate(!published)}
+        />
+      )}
 
       <div className="px-4 md:px-6 pb-24 space-y-20">
         <Hero />
@@ -178,6 +230,107 @@ function ReunionV12Page() {
         }
         .fade-up { animation: fadeUp 0.6s ease-out both; }
       `}</style>
+    </div>
+  );
+}
+
+/* =========================================================================
+ * Contrôle staff de publication + écran d'attente membre
+ * ====================================================================== */
+
+function PublishBar({
+  published,
+  pending,
+  onToggle,
+}: {
+  published: boolean;
+  pending: boolean;
+  onToggle: () => void;
+}) {
+  const accent = published ? "#10b981" : "#f59e0b";
+  return (
+    <div className="px-4 md:px-6 mt-6">
+      <CyberCard accent={accent} className="p-4 md:p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className="size-9 grid place-items-center border shrink-0"
+              style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}55` }}
+            >
+              {published ? (
+                <Eye className="size-4" style={{ color: accent }} />
+              ) : (
+                <EyeOff className="size-4" style={{ color: accent }} />
+              )}
+            </div>
+            <div>
+              <div
+                className="text-[10px] uppercase tracking-[0.3em]"
+                style={{ fontFamily: "'Space Mono'", color: accent }}
+              >
+                // contrôle staff
+              </div>
+              <div className="text-sm font-bold uppercase tracking-tight text-white">
+                {published ? "En ligne · visible des membres" : "Brouillon · staff uniquement"}
+              </div>
+            </div>
+          </div>
+
+          <Button
+            onClick={onToggle}
+            disabled={pending}
+            className={`uppercase tracking-widest font-bold text-black border-b-4 border-black/30 ${
+              published ? "bg-amber-500 hover:bg-amber-600" : "bg-emerald-500 hover:bg-emerald-600"
+            }`}
+          >
+            {pending ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : published ? (
+              <EyeOff className="size-4 mr-2" />
+            ) : (
+              <Eye className="size-4 mr-2" />
+            )}
+            {published ? "Masquer" : "Publier"}
+          </Button>
+        </div>
+      </CyberCard>
+    </div>
+  );
+}
+
+function ComingSoon({ loading }: { loading: boolean }) {
+  return (
+    <div className="min-h-[60vh] grid place-items-center px-4">
+      <CyberCard className="p-8 md:p-12 max-w-lg w-full text-center">
+        <div
+          className="size-14 grid place-items-center border mx-auto mb-6"
+          style={{ borderColor: NEON, boxShadow: `0 0 16px ${NEON}55` }}
+        >
+          {loading ? (
+            <Loader2 className="size-6 animate-spin" style={{ color: NEON }} />
+          ) : (
+            <Clock className="size-6" style={{ color: NEON }} />
+          )}
+        </div>
+        <div
+          className="text-pink-500 text-[10px] uppercase tracking-[0.3em] mb-2"
+          style={{ fontFamily: "'Space Mono'" }}
+        >
+          // pre_launch_dossier
+        </div>
+        <h1
+          className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white"
+          style={{ fontFamily: "'Space Grotesk'" }}
+        >
+          {loading ? "Chargement…" : "Bientôt disponible"}
+        </h1>
+        {!loading && (
+          <p className="mt-3 text-sm text-zinc-400">
+            Le dossier de pré-lancement V12 sera publié ici très prochainement. Reviens vite — la
+            réunion générale approche.
+          </p>
+        )}
+      </CyberCard>
     </div>
   );
 }
@@ -861,9 +1014,7 @@ function PointsRepartition() {
                   <span className="uppercase tracking-wider text-sm">{a.label}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-zinc-500 text-xs font-mono">
-                    {a.pct.toFixed(0)}%
-                  </span>
+                  <span className="text-zinc-500 text-xs font-mono">{a.pct.toFixed(0)}%</span>
                   <span className="font-bold tabular-nums">{a.val}</span>
                 </div>
               </div>
@@ -960,11 +1111,7 @@ const PLAN = [
   {
     when: "J+30",
     color: "#10b981",
-    items: [
-      "Développement économique",
-      "Développement militaire",
-      "Préparation endgame",
-    ],
+    items: ["Développement économique", "Développement militaire", "Préparation endgame"],
   },
 ];
 
@@ -1016,9 +1163,7 @@ function StaffSection() {
             <Lock className="size-5" style={{ color: BLURPLE }} />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-bold uppercase tracking-tight mb-2">
-              Zone confidentielle
-            </h3>
+            <h3 className="text-lg font-bold uppercase tracking-tight mb-2">Zone confidentielle</h3>
             <p className="text-sm text-zinc-400 mb-4">
               Accès restreint aux membres du staff via Discord. Cette section accueillera
               prochainement :
