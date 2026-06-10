@@ -2943,8 +2943,8 @@ export type Database = {
         Args: { p_discord_id: string; p_inc: number };
         Returns: number;
       };
-      leaderboard_history_hourly: {
-        Args: { p_since: string };
+      leaderboard_history: {
+        Args: { p_period: string };
         Returns: {
           astik_points: number;
           discord_id: string;

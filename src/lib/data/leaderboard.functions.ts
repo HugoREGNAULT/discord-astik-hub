@@ -37,29 +37,34 @@ export interface LeaderboardHistoryPoint {
   values: Record<string, number>; // discord_id -> value
 }
 
-export const getLeaderboardHistory = createServerFn({ method: "GET" }).handler(async () => {
-  await requirePermission("profile.self");
-  // 30 derniers jours de snapshots
-  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-  const [{ data: snapshots, error }, { data: members, error: membersError }] = await Promise.all([
-    // Échantillonnage horaire (1 point/membre/heure) via RPC : le volume reste borné
-    // par la fenêtre 30 j même si le job écrit toutes les 5 min. Cf. migration
-    // 20260610133359_leaderboard_history_hourly.sql.
-    db.rpc("leaderboard_history_hourly", { p_since: since }),
-    db
-      .from("members")
-      .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
-      .eq("status", "active"),
-  ]);
-  if (error) throw new Error(error.message);
-  if (membersError) throw new Error(membersError.message);
-  const allowedIds = new Set(
-    filterFactionMembers(members ?? []).map((member: any) => member.discord_id),
-  );
-  // La RPC ordonne par (membre, heure) : on retrie en ordre chronologique global
-  // pour le graphique et la baseline.
-  const chrono = (snapshots ?? [])
-    .slice()
-    .sort((a: any, b: any) => String(a.taken_at).localeCompare(String(b.taken_at)));
-  return { snapshots: chrono.filter((snapshot: any) => allowedIds.has(snapshot.discord_id)) };
-});
+type HistoryPeriod = "24h" | "7d" | "30d" | "all";
+const HISTORY_PERIODS = new Set<HistoryPeriod>(["24h", "7d", "30d", "all"]);
+
+export const getLeaderboardHistory = createServerFn({ method: "GET" })
+  .inputValidator((d: { period?: string } | undefined) => {
+    const p = d?.period as HistoryPeriod | undefined;
+    return { period: p && HISTORY_PERIODS.has(p) ? p : ("30d" as HistoryPeriod) };
+  })
+  .handler(async ({ data }: { data: { period: HistoryPeriod } }) => {
+    await requirePermission("profile.self");
+    // Lecture routée par tier (downsampling) : 24h -> fine, 7j -> rollup 2h,
+    // 30j/all -> rollup 1j. Cf. migration 20260610134500_leaderboard_tiered_retention.sql.
+    const [{ data: snapshots, error }, { data: members, error: membersError }] = await Promise.all([
+      db.rpc("leaderboard_history", { p_period: data.period }),
+      db
+        .from("members")
+        .select("discord_id, ig_name, current_grade, arrival_date, mc_uuid")
+        .eq("status", "active"),
+    ]);
+    if (error) throw new Error(error.message);
+    if (membersError) throw new Error(membersError.message);
+    const allowedIds = new Set(
+      filterFactionMembers(members ?? []).map((member: any) => member.discord_id),
+    );
+    // La RPC ordonne par (membre, bucket) : on retrie en ordre chronologique global
+    // pour le graphique et la baseline.
+    const chrono = (snapshots ?? [])
+      .slice()
+      .sort((a: any, b: any) => String(a.taken_at).localeCompare(String(b.taken_at)));
+    return { snapshots: chrono.filter((snapshot: any) => allowedIds.has(snapshot.discord_id)) };
+  });

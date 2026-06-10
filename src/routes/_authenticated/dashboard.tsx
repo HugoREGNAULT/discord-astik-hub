@@ -225,6 +225,10 @@ function LeaderboardPage() {
   const fetchHist = useServerFn(getLeaderboardHistory);
   const { data: currentUser } = useCurrentUser();
   const canSeeCarts = hasPerm(currentUser, "donations.manage");
+  const [metric, setMetric] = useState<LeaderboardMetric>("points");
+  const [period, setPeriod] = useState<LeaderboardPeriod>("all");
+  const [query, setQuery] = useState("");
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["leaderboard"],
     queryFn: () => fetchLb(),
@@ -232,16 +236,16 @@ function LeaderboardPage() {
     refetchOnWindowFocus: true,
     staleTime: 0,
   });
+  // L'historique est lu dans le tier adapté à la période (24h=fine 5min,
+  // 7j=rollup 2h, 30j/all=rollup 1j). On rafraîchit à la cadence de la résolution.
+  const histRefetchMs = period === "24h" ? 60_000 : period === "7d" ? 10 * 60_000 : 60 * 60_000;
   const { data: histData } = useQuery({
-    queryKey: ["leaderboard-history"],
-    queryFn: () => fetchHist(),
-    refetchInterval: 60_000, // 60s : l'historique ne change que toutes les 5 min (cron)
+    queryKey: ["leaderboard-history", period],
+    queryFn: () => fetchHist({ data: { period } }),
+    refetchInterval: histRefetchMs,
     refetchOnWindowFocus: true,
     staleTime: 0,
   });
-  const [metric, setMetric] = useState<LeaderboardMetric>("points");
-  const [period, setPeriod] = useState<LeaderboardPeriod>("all");
-  const [query, setQuery] = useState("");
 
   const entries = data?.entries ?? [];
   const baseline = useMemo(
