@@ -36,20 +36,28 @@ export const getFactionSalesOverview = createServerFn({ method: "GET" }).handler
 
   const uuids = ms.map((m) => m.mc_uuid).filter(Boolean);
   if (uuids.length === 0) {
-    return { rows: [], topItems: [], series: [], totals: { soldValue: 0, listedValue: 0 } };
+    return {
+      linkedMembers: 0,
+      rows: [],
+      topItems: [],
+      series: [],
+      totals: { soldValue: 0, listedValue: 0 },
+    };
   }
 
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { data: listings, error: lErr } = await db
     .from("paladium_player_listings_history")
-    .select("id, player_uuid, item_name, quantity, price, price_pb, first_seen_at, last_seen_at, sold_at")
+    .select(
+      "id, player_uuid, item_name, quantity, price, price_pb, first_seen_at, last_seen_at, sold_at",
+    )
     .in("player_uuid", uuids)
     .gte("first_seen_at", since)
     .limit(50000);
   if (lErr) throw new Error(lErr.message);
   const ls = (listings ?? []) as Listing[];
 
-  const byUuid = new Map<string, typeof ms[number]>();
+  const byUuid = new Map<string, (typeof ms)[number]>();
   for (const m of ms) byUuid.set(m.mc_uuid, m);
 
   const byMember = new Map<
@@ -72,17 +80,15 @@ export const getFactionSalesOverview = createServerFn({ method: "GET" }).handler
     const m = byUuid.get(l.player_uuid);
     if (!m) continue;
     const key = m.discord_id;
-    const row =
-      byMember.get(key) ??
-      {
-        discord_id: m.discord_id,
-        name: m.ig_name ?? m.discord_username ?? m.discord_id,
-        avatar_url: m.avatar_url,
-        openCount: 0,
-        soldCount: 0,
-        listedValue: 0,
-        soldValue: 0,
-      };
+    const row = byMember.get(key) ?? {
+      discord_id: m.discord_id,
+      name: m.ig_name ?? m.discord_username ?? m.discord_id,
+      avatar_url: m.avatar_url,
+      openCount: 0,
+      soldCount: 0,
+      listedValue: 0,
+      soldValue: 0,
+    };
     const value = Number(l.price ?? 0) * Number(l.quantity ?? 0);
     if (l.sold_at) {
       row.soldCount += 1;
@@ -117,7 +123,7 @@ export const getFactionSalesOverview = createServerFn({ method: "GET" }).handler
     { soldValue: 0, listedValue: 0 },
   );
 
-  return { rows, topItems, series, totals };
+  return { linkedMembers: ms.length, rows, topItems, series, totals };
 });
 
 export const getMemberSales = createServerFn({ method: "POST" })

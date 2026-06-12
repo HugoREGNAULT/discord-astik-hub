@@ -56,7 +56,11 @@ function FactionEconomyPage() {
   if (!canAccess) {
     return (
       <div className="space-y-6">
-        <PageHeader code="staff/economy" title="Économie faction" description="Accès staff requis." />
+        <PageHeader
+          code="staff/economy"
+          title="Économie faction"
+          description="Accès staff requis."
+        />
         <EmptyState title="Accès refusé" description="Permission staff requise." />
       </div>
     );
@@ -83,7 +87,7 @@ function FactionEconomyPage() {
               value={fmt(data.totals.listedValue)}
               suffix="$"
             />
-            <StatCard label="Membres trackés" value={String(data.rows.length)} />
+            <StatCard label="Membres liés" value={String(data.linkedMembers ?? data.rows.length)} />
           </div>
 
           <PageCard>
@@ -96,7 +100,10 @@ function FactionEconomyPage() {
               ) : (
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data.series} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                    <AreaChart
+                      data={data.series}
+                      margin={{ top: 4, right: 8, left: -16, bottom: 0 }}
+                    >
                       <defs>
                         <linearGradient id="ecoGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
@@ -155,8 +162,16 @@ function FactionEconomyPage() {
               </div>
               {data.rows.length === 0 ? (
                 <EmptyState
-                  title="Aucun membre tracké"
-                  description="Aucun membre actif n'a de pseudo Minecraft lié pour le moment."
+                  title={
+                    (data.linkedMembers ?? 0) === 0
+                      ? "Aucun membre lié"
+                      : "Aucune donnée HDV collectée"
+                  }
+                  description={
+                    (data.linkedMembers ?? 0) === 0
+                      ? "Aucun membre actif n'a de pseudo Minecraft lié pour le moment."
+                      : `${data.linkedMembers} membres liés, mais aucune annonce HDV trackée pour l'instant — le snapshot tourne toutes les 10 min, les données arrivent dès qu'un membre liste un item.`
+                  }
                 />
               ) : (
                 <Table>
