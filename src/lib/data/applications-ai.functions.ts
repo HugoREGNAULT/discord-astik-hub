@@ -15,6 +15,7 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { fetchMojangProfileOrNull } from "@/lib/paladium/mojang-resolve.server";
 
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-3-flash-preview";
@@ -69,18 +70,7 @@ export type ApplicationAiReview = {
 };
 
 async function fetchMojangUuid(name: string): Promise<{ id: string; name: string } | null> {
-  try {
-    const res = await fetch(
-      `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
-      { headers: { Accept: "application/json" } },
-    );
-    if (!res.ok) return null;
-    const body = (await res.json()) as { id?: string; name?: string };
-    if (!body.id || !body.name) return null;
-    return { id: body.id, name: body.name };
-  } catch {
-    return null;
-  }
+  return fetchMojangProfileOrNull(name);
 }
 
 /**

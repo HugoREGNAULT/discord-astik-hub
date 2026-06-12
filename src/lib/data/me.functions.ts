@@ -9,6 +9,11 @@ import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { isFactionMember, filterFactionMembers } from "@/lib/data/faction-members";
 import { ROLE_TAG_IDS, MAX_ROLE_TAGS, MAX_BIO_LENGTH } from "@/lib/profile-roles";
+import {
+  fetchMojangProfile,
+  MojangNotFoundError,
+  MojangUnavailableError,
+} from "@/lib/paladium/mojang-resolve.server";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
@@ -133,16 +138,17 @@ const onboardingSchema = z.object({
     .default([]),
 });
 
-/** Valide le pseudo MC via l'API Mojang. Renvoie { id, name } officiels. */
+/** Valide le pseudo MC via le resolver centralisé (cascade + UA). */
 async function fetchMojang(name: string): Promise<{ id: string; name: string }> {
-  const res = await fetch(
-    `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
-  );
-  if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
-  if (!res.ok) throw new Error("Impossible de vérifier le pseudo (API Mojang).");
-  const body = (await res.json()) as { id?: string; name?: string };
-  if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
-  return { id: body.id, name: body.name };
+  try {
+    return await fetchMojangProfile(name);
+  } catch (e) {
+    if (e instanceof MojangNotFoundError) throw new Error("Ce pseudo Minecraft n'existe pas.");
+    if (e instanceof MojangUnavailableError) {
+      throw new Error("Impossible de vérifier le pseudo (API Mojang).");
+    }
+    throw e;
+  }
 }
 
 export const completeOnboarding = createServerFn({ method: "POST" })

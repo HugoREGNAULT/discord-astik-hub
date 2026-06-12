@@ -6,8 +6,6 @@ import { callPaladium } from "./paladium.functions";
 import { resolveMojangUuid } from "./mojang.functions";
 import { updateRate } from "./rate-limits";
 
-const MOJANG_BASE = "https://api.mojang.com";
-
 export class PaladiumApiError extends Error {
   status: number;
   constructor(message: string, status: number) {

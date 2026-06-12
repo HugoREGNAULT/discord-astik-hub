@@ -6,6 +6,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
+import { fetchProfilesByNamesBatch } from "@/lib/paladium/mojang-resolve.server";
 
 /** Distance de Levenshtein (itérative, O(n*m)). */
 function levenshtein(a: string, b: string): number {
@@ -391,23 +392,13 @@ export const verifyLegacyMojang = createServerFn({ method: "POST" })
     const entries = Array.from(byName.entries());
 
     const resolved = new Map<string, { uuid: string; name: string }>();
-    for (let i = 0; i < entries.length; i += 10) {
-      const slice = entries.slice(i, i + 10).map(([, v]) => v.display);
-      try {
-        const r = await fetch("https://api.mojang.com/profiles/minecraft", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(slice),
-        });
-        if (r.ok) {
-          const arr = (await r.json()) as Array<{ id?: string; name?: string }>;
-          for (const p of arr) {
-            if (p?.id && p?.name) resolved.set(p.name.toLowerCase(), { uuid: p.id, name: p.name });
-          }
-        }
-      } catch {
-        /* lot ignoré, sera re-tenté (mojang_checked_at reste null) */
-      }
+    const allNames = entries.map(([, v]) => v.display);
+    // Helper centralisé : essaie minecraftservices (UA) puis api.mojang.com en fallback.
+    // Tolérant aux erreurs réseau lot par lot — les pseudos non résolus seront re-tentés
+    // au prochain cron (mojang_checked_at reste null).
+    const batchResults = await fetchProfilesByNamesBatch(allNames);
+    for (const p of batchResults) {
+      resolved.set(p.name.toLowerCase(), { uuid: p.id, name: p.name });
     }
 
     // Fallback : pour les pseudos non résolus, tente ashcon (résout les anciens

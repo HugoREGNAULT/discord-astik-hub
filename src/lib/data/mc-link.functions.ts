@@ -36,6 +36,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, logAction } from "@/lib/auth/require.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
+import { fetchMojangProfileOrNull } from "@/lib/paladium/mojang-resolve.server";
 
 const CHALLENGE_TTL_MIN = 15;
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans 0/O/1/I
@@ -58,17 +59,9 @@ function normalizeUuid(id: string): string {
 }
 
 async function mojangLookup(username: string): Promise<{ uuid: string; name: string } | null> {
-  try {
-    const res = await fetch(
-      `https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(username)}`,
-    );
-    if (res.status === 204 || res.status === 404) return null;
-    if (!res.ok) return null;
-    const j = (await res.json()) as { id: string; name: string };
-    return { uuid: normalizeUuid(j.id), name: j.name };
-  } catch {
-    return null;
-  }
+  const j = await fetchMojangProfileOrNull(username);
+  if (!j) return null;
+  return { uuid: normalizeUuid(j.id), name: j.name };
 }
 
 /* ===== startMcLink ===== */
@@ -166,8 +159,8 @@ export interface VerifyMcLinkResult {
   verified_at?: string;
 }
 
-export const verifyMcLink = createServerFn({ method: "POST" })
-  .handler(async (): Promise<VerifyMcLinkResult> => {
+export const verifyMcLink = createServerFn({ method: "POST" }).handler(
+  async (): Promise<VerifyMcLinkResult> => {
     const user = await requireSession();
 
     const { data: row } = await db
@@ -202,7 +195,8 @@ export const verifyMcLink = createServerFn({ method: "POST" })
       expires_at: row.expires_at,
       verified_at: row.verified_at ?? undefined,
     };
-  });
+  },
+);
 
 /* ===== Helper interne appelé par le hook bot ===== */
 
@@ -236,14 +230,8 @@ export async function _botConfirmMcLink(
   if (row.status === "verified") {
     return { ok: false, reason: "already_verified", mc_uuid: row.mc_uuid ?? undefined };
   }
-  if (
-    row.status === "expired" ||
-    new Date(row.expires_at).getTime() < Date.now()
-  ) {
-    await db
-      .from("mc_link_challenges")
-      .update({ status: "expired" })
-      .eq("id", row.id);
+  if (row.status === "expired" || new Date(row.expires_at).getTime() < Date.now()) {
+    await db.from("mc_link_challenges").update({ status: "expired" }).eq("id", row.id);
     return { ok: false, reason: "expired" };
   }
 
@@ -284,9 +272,7 @@ export interface McStatsResult {
 import { requirePermission } from "@/lib/auth/require.server";
 
 export const getMemberMcStats = createServerFn({ method: "POST" })
-  .inputValidator((input) =>
-    z.object({ discordId: z.string().regex(/^\d{15,25}$/) }).parse(input),
-  )
+  .inputValidator((input) => z.object({ discordId: z.string().regex(/^\d{15,25}$/) }).parse(input))
   .handler(async ({ data }): Promise<McStatsResult> => {
     await requirePermission("members.view");
 
@@ -325,4 +311,3 @@ export const getMemberMcStats = createServerFn({ method: "POST" })
       history_count: count ?? 0,
     };
   });
-
