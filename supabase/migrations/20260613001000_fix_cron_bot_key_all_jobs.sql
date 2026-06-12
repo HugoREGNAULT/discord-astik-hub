@@ -1,29 +1,26 @@
 -- Répare les crons HTTP morts depuis le durcissement requireBotAuth (31 mai).
 --
 -- Constat (audit prod 2026-06-13) :
---   - `current_setting('app.bot_api_key', true)` n'a JAMAIS été configuré
---     → les 3 jobs qui l'utilisaient envoyaient un header null → 401 silencieux.
---   - 7 autres jobs n'envoyaient AUCUNE clé → 401 silencieux aussi.
+--   - Le GUC `app.bot_api_key` n'a JAMAIS été configuré (et le rôle du SQL
+--     editor n'a pas le droit de faire ALTER DATABASE ... SET → impossible à
+--     poser) → les 3 jobs qui l'utilisaient envoyaient un header null → 401.
+--   - 8 autres jobs n'envoyaient AUCUNE clé → 401 silencieux aussi.
 --   - pg_net affiche "succeeded" même sur un 401 (il ne lit pas la réponse),
 --     d'où des semaines de pannes invisibles (paladium_player_listings_history
 --     vide, digests/anomalies/automations/reviews IA jamais déclenchés par cron).
 --   - Doublon : `paladium-sync-listings` tapait la même URL que `paladium-sync`.
 --
+-- Correctif : la clé est lue depuis Supabase Vault (chiffré, accessible aux
+-- jobs pg_cron qui tournent en postgres).
+--
 -- ⚠️ ACTION MANUELLE REQUISE (une fois, AVANT que cette migration ait un effet
--- utile) — poser le secret au niveau de la base via le SQL editor (la valeur
--- est dans Lovable Cloud → Secrets → BOT_API_KEY ; ne JAMAIS la committer) :
+-- utile) — créer le secret dans Vault via le SQL editor (valeur dans Lovable
+-- Cloud → Secrets → BOT_API_KEY ; ne JAMAIS la committer) :
 --
---   ALTER DATABASE postgres SET app.bot_api_key = '<valeur de BOT_API_KEY>';
---
--- Les jobs pg_cron ouvrent une nouvelle connexion à chaque run → ils héritent
--- du setting dès le tick suivant.
+--   SELECT vault.create_secret('<valeur de BOT_API_KEY>', 'bot_api_key');
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE EXTENSION IF NOT EXISTS pg_net;
-
--- Helper local : tous les jobs postent avec le même header authentifié.
--- (Pas de fonction permanente : on inline le jsonb_build_object partout pour
--- rester lisible dans cron.job.)
 
 -- 1) Supprimer le doublon.
 DO $do$
@@ -32,7 +29,7 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN NULL;
 END$do$;
 
--- 2) Re-scheduler les jobs SANS clé avec le header GUC.
+-- 2) Re-scheduler TOUS les jobs HTTP avec le header lu depuis Vault.
 --    (Mêmes schedules qu'avant ; URL unifiée sur project--<id>.lovable.app.)
 
 DO $do$
@@ -48,7 +45,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/generate-digest',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -68,7 +65,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/paladium-admin-shop-sync',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -88,7 +85,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/paladium-market-sync',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -108,7 +105,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/paladium-status-sync',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -128,7 +125,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/process-application-reviews',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -148,7 +145,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/run-automation',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -168,7 +165,7 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/generate-salary-preview',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
@@ -188,12 +185,71 @@ SELECT cron.schedule(
     url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/scan-anomalies',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-bot-key', current_setting('app.bot_api_key', true)
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
     ),
     body := '{}'::jsonb
   ) AS request_id;
   $$
 );
 
--- 3) paladium-sync, import-mc-stats et sync-discord-presence utilisaient déjà
---    le GUC : ils repartent dès que le ALTER DATABASE est posé. Rien à faire.
+-- 3) Les 3 jobs qui utilisaient l'ancien pattern GUC passent aussi sur Vault.
+
+DO $do$
+BEGIN
+  PERFORM cron.unschedule('paladium-sync');
+EXCEPTION WHEN OTHERS THEN NULL;
+END$do$;
+SELECT cron.schedule(
+  'paladium-sync',
+  '*/10 * * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/paladium-sync',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
+    ),
+    body := '{}'::jsonb
+  ) AS request_id;
+  $$
+);
+
+DO $do$
+BEGIN
+  PERFORM cron.unschedule('import-mc-stats');
+EXCEPTION WHEN OTHERS THEN NULL;
+END$do$;
+SELECT cron.schedule(
+  'import-mc-stats',
+  '23 */6 * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/import-mc-stats',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
+    ),
+    body := '{}'::jsonb
+  ) AS request_id;
+  $$
+);
+
+DO $do$
+BEGIN
+  PERFORM cron.unschedule('sync-discord-presence');
+EXCEPTION WHEN OTHERS THEN NULL;
+END$do$;
+SELECT cron.schedule(
+  'sync-discord-presence',
+  '* * * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://project--ef9e0d95-9980-4550-bd4b-e772a54f1e82.lovable.app/api/public/hooks/sync-discord-presence',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-bot-key', (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'bot_api_key')
+    ),
+    body := '{}'::jsonb
+  ) AS request_id;
+  $$
+);
