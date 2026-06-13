@@ -9,6 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requireSession, requirePermission, logAction } from "@/lib/auth/require.server";
+import { userError, stripUserMsgPrefix } from "@/lib/errors";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
 import { addGuildMemberRole, removeGuildMemberRole } from "@/lib/discord/api.server";
@@ -81,13 +82,13 @@ async function fetchMojang(name: string): Promise<{ id: string; name: string }> 
   for (const url of mojangEndpoints) {
     try {
       const res = await fetchWithRetry(url, { headers }, { retries: 2, timeoutMs: 8000 });
-      if (res.status === 404) throw new Error("Ce pseudo Minecraft n'existe pas.");
+      if (res.status === 404) throw userError("Ce pseudo Minecraft n'existe pas.");
       if (!res.ok) {
         lastStatus = res.status;
         continue;
       }
       const body = (await res.json()) as { id?: string; name?: string };
-      if (!body.id || !body.name) throw new Error("Réponse Mojang invalide.");
+      if (!body.id || !body.name) throw userError("Réponse Mojang invalide.");
       return { id: body.id, name: body.name };
     } catch (e) {
       const msg = (e as Error).message;
@@ -95,7 +96,7 @@ async function fetchMojang(name: string): Promise<{ id: string; name: string }> 
       lastStatus = lastStatus || -1;
     }
   }
-  throw new Error(
+  throw userError(
     `Impossible de vérifier le pseudo (services Mojang temporairement indisponibles${
       lastStatus > 0 ? `, HTTP ${lastStatus}` : ""
     }, réessaie dans quelques minutes).`,
@@ -112,6 +113,8 @@ export const submitApplication = createServerFn({ method: "POST" })
       return await submitApplicationInner(user, data);
     } catch (e) {
       const err = e as Error;
+      // Message nettoyé du marqueur "destiné à l'utilisateur" pour des logs lisibles.
+      const cleanMsg = stripUserMsgPrefix(err.message ?? "unknown");
       // Log structuré : permet d'identifier les bugs de dépôt (Mojang KO,
       // RLS, rate-limit, blacklist DB en erreur, etc.)
       await logAction(
@@ -119,7 +122,7 @@ export const submitApplication = createServerFn({ method: "POST" })
         user.discordId,
         {
           mc_name: data.mcName,
-          error: err.message?.slice(0, 500) ?? "unknown",
+          error: cleanMsg.slice(0, 500),
         },
         "warn",
       );
@@ -127,7 +130,7 @@ export const submitApplication = createServerFn({ method: "POST" })
         title: "⚠️ Échec dépôt candidature",
         color: COLORS.warn,
         description: `**${user.username}** (<@${user.discordId}>) — \`${data.mcName}\``,
-        fields: [{ name: "Erreur", value: "```" + err.message.slice(0, 900) + "```" }],
+        fields: [{ name: "Erreur", value: "```" + cleanMsg.slice(0, 900) + "```" }],
       });
       throw e;
     }
@@ -146,7 +149,7 @@ async function submitApplicationInner(
       .in("status", ["pending"])
       .maybeSingle();
     if (existing.data) {
-      throw new Error("Tu as déjà une candidature en attente.");
+      throw userError("Tu as déjà une candidature en attente.");
     }
 
     // Rate-limit : pas plus d'une candidature toutes les RATE_LIMIT_HOURS heures
@@ -159,7 +162,7 @@ async function submitApplicationInner(
       .gte("created_at", since)
       .limit(1);
     if (recent.data && recent.data.length > 0) {
-      throw new Error(
+      throw userError(
         `Tu dois attendre ${RATE_LIMIT_HOURS}h entre deux candidatures. Reviens plus tard.`,
       );
     }
@@ -171,7 +174,7 @@ async function submitApplicationInner(
       .eq("discord_id", user.discordId)
       .maybeSingle();
     if (isMember.data?.ig_name) {
-      throw new Error("Tu es déjà membre de la PunkAstik.");
+      throw userError("Tu es déjà membre de la PunkAstik.");
     }
 
     // Validation du pseudo Minecraft
