@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -146,6 +146,51 @@ function LoginGate() {
   );
 }
 
+// --- Brouillon auto-sauvegardé (localStorage) -----------------------------
+// Permet de fermer / recharger la page sans perdre ce qui a été écrit.
+const DRAFT_KEY = "punkastik:candidature:draft:v1";
+
+type Draft = {
+  heardFrom: string;
+  mcName: string;
+  presentationIrl: string;
+  age: string;
+  country: string;
+  presentationGaming: string;
+  schedule: string;
+  objectives: string;
+  pvpLevel: number[];
+  motivation: string;
+  additionalInfo: string;
+  formRating: number;
+};
+
+function readDraft(): Partial<Draft> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    return raw ? (JSON.parse(raw) as Partial<Draft>) : null;
+  } catch {
+    return null;
+  }
+}
+function writeDraft(d: Draft) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  } catch {
+    // quota plein / mode privé : on ignore silencieusement.
+  }
+}
+function clearDraft() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(DRAFT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 function ApplicationForm() {
   const navigate = useNavigate();
   const getMyApp = useServerFn(getMyApplication);
@@ -167,6 +212,95 @@ function ApplicationForm() {
   const [motivation, setMotivation] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [formRating, setFormRating] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Restaure le brouillon au montage, APRÈS l'hydratation SSR (le HTML serveur
+  // n'a pas accès à localStorage → sinon mismatch d'hydratation).
+  useEffect(() => {
+    const d = readDraft();
+    if (d) {
+      if (typeof d.heardFrom === "string") setHeardFrom(d.heardFrom);
+      if (typeof d.mcName === "string") setMcName(d.mcName);
+      if (typeof d.presentationIrl === "string") setPresentationIrl(d.presentationIrl);
+      if (typeof d.age === "string") setAge(d.age);
+      if (typeof d.country === "string") setCountry(d.country);
+      if (typeof d.presentationGaming === "string") setPresentationGaming(d.presentationGaming);
+      if (typeof d.schedule === "string") setSchedule(d.schedule);
+      if (typeof d.objectives === "string") setObjectives(d.objectives);
+      if (Array.isArray(d.pvpLevel) && typeof d.pvpLevel[0] === "number")
+        setPvpLevel([d.pvpLevel[0]]);
+      if (typeof d.motivation === "string") setMotivation(d.motivation);
+      if (typeof d.additionalInfo === "string") setAdditionalInfo(d.additionalInfo);
+      if (typeof d.formRating === "number") setFormRating(d.formRating);
+    }
+    setHydrated(true);
+  }, []);
+
+  // Sauvegarde auto à chaque frappe (une fois hydraté). On ne persiste que si au
+  // moins un champ "réel" est rempli (le curseur PvP par défaut ne compte pas).
+  useEffect(() => {
+    if (!hydrated) return;
+    const filled =
+      heardFrom ||
+      mcName ||
+      presentationIrl ||
+      age ||
+      country ||
+      presentationGaming ||
+      schedule ||
+      objectives ||
+      motivation ||
+      additionalInfo ||
+      formRating > 0;
+    if (!filled) {
+      clearDraft();
+      return;
+    }
+    writeDraft({
+      heardFrom,
+      mcName,
+      presentationIrl,
+      age,
+      country,
+      presentationGaming,
+      schedule,
+      objectives,
+      pvpLevel,
+      motivation,
+      additionalInfo,
+      formRating,
+    });
+  }, [
+    hydrated,
+    heardFrom,
+    mcName,
+    presentationIrl,
+    age,
+    country,
+    presentationGaming,
+    schedule,
+    objectives,
+    pvpLevel,
+    motivation,
+    additionalInfo,
+    formRating,
+  ]);
+
+  function resetDraft() {
+    setHeardFrom("");
+    setMcName("");
+    setPresentationIrl("");
+    setAge("");
+    setCountry("");
+    setPresentationGaming("");
+    setSchedule("");
+    setObjectives("");
+    setPvpLevel([5]);
+    setMotivation("");
+    setAdditionalInfo("");
+    setFormRating(0);
+    clearDraft();
+  }
 
   const irlLen = presentationIrl.trim().length;
   const gamingLen = presentationGaming.trim().length;
@@ -193,6 +327,7 @@ function ApplicationForm() {
       }),
     onSuccess: () => {
       toast.success("Candidature envoyée ! Tu seras notifié·e en DM.");
+      clearDraft();
       refetch();
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
@@ -249,6 +384,21 @@ function ApplicationForm() {
     objectives.trim().length > 1 &&
     motivation.trim().length > 1;
 
+  const hasDraft =
+    hydrated &&
+    !!(
+      heardFrom ||
+      mcName ||
+      presentationIrl ||
+      age ||
+      presentationGaming ||
+      schedule ||
+      objectives ||
+      motivation ||
+      additionalInfo ||
+      formRating > 0
+    );
+
   return (
     <Shell>
       <div className="mb-8 mt-4">
@@ -268,6 +418,18 @@ function ApplicationForm() {
           Prends ton temps et sois honnête — c'est plus simple pour tout le monde. Les champs
           marqués <span className="text-pink-500">*</span> sont obligatoires.
         </p>
+        {hasDraft && (
+          <p
+            className="mt-3 text-[11px] text-zinc-500 flex flex-wrap items-center gap-2"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
+            <span className="text-emerald-400">●</span>
+            Brouillon enregistré sur cet appareil — tu peux recharger ou revenir plus tard.
+            <button type="button" onClick={resetDraft} className="underline hover:text-zinc-300">
+              effacer
+            </button>
+          </p>
+        )}
         {existing?.status === "rejected" && (
           <div className="mt-4 p-3 bg-red-950/40 border border-red-800/50 text-red-200 text-sm">
             Ta précédente candidature a été refusée
