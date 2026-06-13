@@ -30,7 +30,8 @@ export async function requireSession(): Promise<SessionUser> {
     .select("status")
     .eq("discord_id", data.discordId)
     .maybeSingle();
-  if (m?.status === "left") throw new AppError("FORBIDDEN_LEFT_GUILD", 403, ERROR_MESSAGES.FORBIDDEN_LEFT_GUILD);
+  if (m?.status === "left")
+    throw new AppError("FORBIDDEN_LEFT_GUILD", 403, ERROR_MESSAGES.FORBIDDEN_LEFT_GUILD);
   return toSessionUser(data);
 }
 
@@ -104,8 +105,8 @@ export async function logAction(
     void (async () => {
       try {
         const { postToChannel, COLORS } = await import("@/lib/discord/log.server");
-        const { NOTIFY_CHANNELS } = await import("@/lib/discord/constants");
-        if (!NOTIFY_CHANNELS.STAFF) return;
+        const { notifyChannels } = await import("@/lib/discord/notify-channels.server");
+        if (!notifyChannels.STAFF) return;
         const fields = Object.entries(payload)
           .slice(0, 10)
           .map(([k, v]) => ({
@@ -113,7 +114,7 @@ export async function logAction(
             value: "```" + JSON.stringify(v).slice(0, 900) + "```",
             inline: false,
           }));
-        await postToChannel(NOTIFY_CHANNELS.STAFF, {
+        await postToChannel(notifyChannels.STAFF, {
           embeds: [
             {
               title: `🔐 Action sensible · ${action}`,
@@ -131,4 +132,3 @@ export async function logAction(
     })();
   }
 }
-

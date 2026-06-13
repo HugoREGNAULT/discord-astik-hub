@@ -112,7 +112,10 @@ async function runScan(): Promise<{
   const med = median(positives);
   const m = mad(positives, med);
   const madScale = m === 0 ? 1 : 1.4826 * m; // scale MAD → sigma
-  const p90 = quantile(positives.filter((v) => v > 0), 0.9);
+  const p90 = quantile(
+    positives.filter((v) => v > 0),
+    0.9,
+  );
 
   const flags: FlagInput[] = [];
 
@@ -299,14 +302,16 @@ async function runScan(): Promise<{
 }
 
 /**
- * Server function : scanAnomalies.
- * - Si appelée avec un header `x-bot-key` valide (via hook public), authentifie via requireBotAuth.
- * - Sinon, gatée par requirePermission("members.edit") n'est PAS faite ici (réservé au bot/cron).
- *   L'appel direct depuis l'UI doit passer par un endpoint dédié.
+ * Server function : scanAnomalies (déclenchement manuel staff).
+ * Le bot/cron passe par le hook public /api/public/hooks/scan-anomalies qui
+ * appelle directement `_runAnomalyScan` (auth via x-bot-key). Cet export, lui,
+ * est exposé en HTTP et DOIT être gardé : sans `requirePermission`, n'importe
+ * qui pourrait déclencher un scan (lourd) et écrire des flags.
  */
 export const scanAnomalies = createServerFn({ method: "POST" })
   .inputValidator((input) => ScanInput.parse(input))
   .handler(async () => {
+    await requirePermission("members.edit");
     return runScan();
   });
 
@@ -345,9 +350,7 @@ export const getOpenAnomalies = createServerFn({ method: "GET" }).handler(async 
 
   const { data: flags } = await db
     .from("anomaly_flags")
-    .select(
-      "id, member_discord_id, kind, severity, score, evidence, ai_explanation, created_at",
-    )
+    .select("id, member_discord_id, kind, severity, score, evidence, ai_explanation, created_at")
     .eq("status", "open")
     .order("created_at", { ascending: false })
     .limit(200);
@@ -443,4 +446,3 @@ export const updateAnomalyStatus = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
-

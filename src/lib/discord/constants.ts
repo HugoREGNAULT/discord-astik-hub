@@ -69,8 +69,10 @@ export const LOG_CHANNELS = {
 
 /**
  * Salons de notifications fonctionnelles (différents des logs techniques).
- * TODO: remplir les IDs réels — demander à l'utilisateur. Tant que vide,
- * `postNotify()` est silencieux.
+ * Surchargeables en prod SANS recommit via les variables d'env
+ * DISCORD_NOTIFY_CHANNEL_RECRUIT / DISCORD_NOTIFY_CHANNEL_STAFF — résolues côté
+ * serveur par `notifyChannels` (notify-channels.server.ts). Tant que ni l'env
+ * ni la valeur ci-dessous ne sont définies, postNotify() est silencieux.
  */
 export const NOTIFY_CHANNELS = {
   /** Salon recrutement : nouvelles candidatures */

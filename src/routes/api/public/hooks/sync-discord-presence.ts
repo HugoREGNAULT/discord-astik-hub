@@ -41,7 +41,10 @@ export const Route = createFileRoute("/api/public/hooks/sync-discord-presence")(
         const toActive: string[] = [];
         for (const r of rows ?? []) {
           const present = presentIds.has(r.discord_id);
-          if (!present && r.status !== "left") toLeft.push(r.discord_id);
+          // Ne marque "left" QUE les membres actuellement "active" : on ne doit
+          // pas écraser les statuts gérés manuellement (trial / former / away)
+          // sur une simple déconnexion temporaire du Discord.
+          if (!present && r.status === "active") toLeft.push(r.discord_id);
           else if (present && r.status === "left") toActive.push(r.discord_id);
         }
 

@@ -257,8 +257,8 @@ async function submitApplicationInner(
 
     // Notif cross-post dans le salon recrutement (silencieux si non configuré).
     const { postNotify } = await import("@/lib/discord/log.server");
-    const { NOTIFY_CHANNELS } = await import("@/lib/discord/constants");
-    void postNotify(NOTIFY_CHANNELS.RECRUIT, {
+    const { notifyChannels } = await import("@/lib/discord/notify-channels.server");
+    void postNotify(notifyChannels.RECRUIT, {
       title: "📝 Nouvelle candidature à examiner",
       color: blacklistMatches.length > 0 ? COLORS.danger : COLORS.info,
       description: `**${user.username}** (<@${user.discordId}>) — \`${mojang.name}\``,
@@ -582,7 +582,7 @@ export const validateInterview = createServerFn({ method: "POST" })
       // Ne dégrade pas un membre déjà titularisé ('active') : on touche
       // uniquement si la fiche n'existe pas encore en active.
       if (existing.data.status !== "active") {
-        await db
+        const updMember = await db
           .from("members")
           .update({
             discord_username: app.discord_username,
@@ -592,9 +592,13 @@ export const validateInterview = createServerFn({ method: "POST" })
             arrival_date: arrivalDate,
           })
           .eq("discord_id", app.discord_id);
+        if (updMember.error)
+          throw userError(
+            "Impossible de passer la recrue en période d'essai (statut 'trial' refusé par la base ?). Préviens un admin.",
+          );
       }
     } else {
-      await db.from("members").insert({
+      const insMember = await db.from("members").insert({
         discord_id: app.discord_id,
         discord_username: app.discord_username,
         ig_name: app.mc_name,
@@ -603,6 +607,10 @@ export const validateInterview = createServerFn({ method: "POST" })
         arrival_date: arrivalDate,
         recruiter_discord_id: staff.discordId,
       });
+      if (insMember.error)
+        throw userError(
+          "Impossible de créer la fiche membre en période d'essai (statut 'trial' refusé par la base ?). Préviens un admin.",
+        );
     }
 
     // Onboarding tasks par défaut (idempotent)
@@ -630,7 +638,7 @@ export const validateInterview = createServerFn({ method: "POST" })
 
     // MAJ statut candidature
     if (!alreadyValidated) {
-      await db
+      const updApp = await db
         .from("applications")
         .update({
           status: "interview_validated",
@@ -639,6 +647,10 @@ export const validateInterview = createServerFn({ method: "POST" })
           interview_validated_by_username: staff.username,
         })
         .eq("id", app.id);
+      if (updApp.error)
+        throw userError(
+          "L'entretien n'a pas pu être enregistré (statut 'interview_validated' refusé par la base ?). Applique la migration applications_status puis réessaie.",
+        );
     }
 
     // DM bienvenue

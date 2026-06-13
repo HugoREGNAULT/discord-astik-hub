@@ -10,6 +10,8 @@ import { requireSession, requirePermission, logAction } from "@/lib/auth/require
 import { isStaffFaction } from "@/lib/auth/permissions";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
 import { logToDiscord, COLORS } from "@/lib/discord/log.server";
+import { removeGuildMemberRole } from "@/lib/discord/api.server";
+import { GUILDS, ROLES } from "@/lib/discord/constants";
 
 function daysLeft(iso: string | null): number | null {
   if (!iso) return null;
@@ -29,10 +31,7 @@ export const listTrials = createServerFn({ method: "GET" }).handler(async () => 
   if (ids.length === 0) return { trials: [] };
 
   const [tasksRes, votesRes] = await Promise.all([
-    db
-      .from("onboarding_tasks")
-      .select("member_discord_id, done")
-      .in("member_discord_id", ids),
+    db.from("onboarding_tasks").select("member_discord_id, done").in("member_discord_id", ids),
     db.from("trial_votes").select("member_discord_id, vote").in("member_discord_id", ids),
   ]);
   const tasksByMember = new Map<string, { total: number; done: number }>();
@@ -42,13 +41,9 @@ export const listTrials = createServerFn({ method: "GET" }).handler(async () => 
     if (t.done) e.done++;
     tasksByMember.set(t.member_discord_id, e);
   }
-  const votesByMember = new Map<
-    string,
-    { keep: number; reject: number; abstain: number }
-  >();
+  const votesByMember = new Map<string, { keep: number; reject: number; abstain: number }>();
   for (const v of votesRes.data ?? []) {
-    const e =
-      votesByMember.get(v.member_discord_id) ?? { keep: 0, reject: 0, abstain: 0 };
+    const e = votesByMember.get(v.member_discord_id) ?? { keep: 0, reject: 0, abstain: 0 };
     if (v.vote === "keep") e.keep++;
     else if (v.vote === "reject") e.reject++;
     else if (v.vote === "abstain") e.abstain++;
@@ -65,9 +60,7 @@ export const listTrials = createServerFn({ method: "GET" }).handler(async () => 
 });
 
 export const getTrialPanel = createServerFn({ method: "POST" })
-  .inputValidator((input) =>
-    z.object({ memberDiscordId: z.string().min(1).max(32) }).parse(input),
-  )
+  .inputValidator((input) => z.object({ memberDiscordId: z.string().min(1).max(32) }).parse(input))
   .handler(async ({ data }) => {
     await requirePermission("recruit.access");
     const { data: member } = await db
@@ -131,18 +124,16 @@ export const castTrialVote = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const user = await requireSession();
     if (!isStaffFaction(user)) throw new Error("FORBIDDEN");
-    const { error } = await db
-      .from("trial_votes")
-      .upsert(
-        {
-          member_discord_id: data.memberDiscordId,
-          voter_discord_id: user.discordId,
-          voter_username: user.username,
-          vote: data.vote,
-          comment: data.comment ?? null,
-        },
-        { onConflict: "member_discord_id,voter_discord_id" },
-      );
+    const { error } = await db.from("trial_votes").upsert(
+      {
+        member_discord_id: data.memberDiscordId,
+        voter_discord_id: user.discordId,
+        voter_username: user.username,
+        vote: data.vote,
+        comment: data.comment ?? null,
+      },
+      { onConflict: "member_discord_id,voter_discord_id" },
+    );
     if (error) throw new Error(error.message);
     await logAction("trial_vote", user.discordId, {
       target: data.memberDiscordId,
@@ -169,6 +160,18 @@ export const decideTrial = createServerFn({ method: "POST" })
       .eq("discord_id", data.memberDiscordId);
     if (error) throw new Error(error.message);
 
+    // Synchronise les rôles Discord avec la décision (symétrique de validateInterview).
+    // Reject : révoque TOUS les accès faction/public. Keep : retire le seul rôle d'essai.
+    const roleResults = await Promise.all(
+      data.outcome === "reject"
+        ? [
+            removeGuildMemberRole(GUILDS.PUBLIC, data.memberDiscordId, ROLES.MEMBER_PUBLIC),
+            removeGuildMemberRole(GUILDS.FACTION, data.memberDiscordId, ROLES.TRIAL_FACTION),
+            removeGuildMemberRole(GUILDS.FACTION, data.memberDiscordId, ROLES.MEMBER_FACTION),
+          ]
+        : [removeGuildMemberRole(GUILDS.FACTION, data.memberDiscordId, ROLES.TRIAL_FACTION)],
+    );
+
     const dmMsg =
       data.outcome === "keep"
         ? `🎉 **Bienvenue officielle dans la PunkAstik !**\n\nTa période d'essai est validée par **${staff.username}**. Tu es désormais membre titulaire.`
@@ -179,10 +182,10 @@ export const decideTrial = createServerFn({ method: "POST" })
       target: data.memberDiscordId,
       outcome: data.outcome,
       dm_ok: dm.ok,
+      roles: roleResults.map((r) => ({ ok: r.ok, status: r.status, error: r.error ?? null })),
     });
     void logToDiscord("site", {
-      title:
-        data.outcome === "keep" ? "✅ Titularisation" : "❌ Fin de période d'essai",
+      title: data.outcome === "keep" ? "✅ Titularisation" : "❌ Fin de période d'essai",
       color: data.outcome === "keep" ? COLORS.success : COLORS.danger,
       description: `<@${data.memberDiscordId}> — décidé par **${staff.username}**`,
     });

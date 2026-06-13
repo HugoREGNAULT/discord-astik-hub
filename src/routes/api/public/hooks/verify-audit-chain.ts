@@ -17,7 +17,8 @@ import { preflight, requireBotAuth } from "@/lib/bot-auth.server";
 import { db } from "@/lib/db.server";
 import { postToChannel, COLORS } from "@/lib/discord/log.server";
 import { sendDiscordDM } from "@/lib/discord/dm.server";
-import { NOTIFY_CHANNELS, ROLES } from "@/lib/discord/constants";
+import { ROLES } from "@/lib/discord/constants";
+import { notifyChannels } from "@/lib/discord/notify-channels.server";
 
 type VerifyRow = {
   ok: boolean;
@@ -51,8 +52,8 @@ async function alertBroken(brokenAtSeq: number | null, detail: string): Promise<
     .filter(Boolean)
     .join("\n");
 
-  if (NOTIFY_CHANNELS.STAFF) {
-    await postToChannel(NOTIFY_CHANNELS.STAFF, {
+  if (notifyChannels.STAFF) {
+    await postToChannel(notifyChannels.STAFF, {
       embeds: [
         {
           title: "⚠️ Audit log — intégrité",
@@ -86,10 +87,10 @@ export const Route = createFileRoute("/api/public/hooks/verify-audit-chain")({
           const { data, error } = await db.rpc("verify_logs_chain");
           if (error) {
             console.error("verify-audit-chain rpc error", error);
-            return new Response(
-              JSON.stringify({ ok: false, error: error.message }),
-              { status: 500, headers: { "Content-Type": "application/json" } },
-            );
+            return new Response(JSON.stringify({ ok: false, error: error.message }), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            });
           }
           const row = (Array.isArray(data) ? data[0] : data) as VerifyRow | undefined;
           const ok = row?.ok ?? false;
