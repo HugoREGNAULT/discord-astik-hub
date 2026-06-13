@@ -51,6 +51,7 @@ import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiPublicMarketRouteImport } from './routes/api/public/market'
 import { Route as ApiAuthWhoamiRouteImport } from './routes/api/auth/whoami'
+import { Route as ApiAuthTestLoginRouteImport } from './routes/api/auth/test-login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
@@ -312,6 +313,11 @@ const ApiPublicMarketRoute = ApiPublicMarketRouteImport.update({
 const ApiAuthWhoamiRoute = ApiAuthWhoamiRouteImport.update({
   id: '/api/auth/whoami',
   path: '/api/auth/whoami',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthTestLoginRoute = ApiAuthTestLoginRouteImport.update({
+  id: '/api/auth/test-login',
+  path: '/api/auth/test-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
@@ -629,6 +635,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
@@ -715,6 +722,7 @@ export interface FileRoutesByTo {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
@@ -805,6 +813,7 @@ export interface FileRoutesById {
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/test-login': typeof ApiAuthTestLoginRoute
   '/api/auth/whoami': typeof ApiAuthWhoamiRoute
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
@@ -895,6 +904,7 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
+    | '/api/auth/test-login'
     | '/api/auth/whoami'
     | '/api/public/market'
     | '/api/test/login'
@@ -981,6 +991,7 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
+    | '/api/auth/test-login'
     | '/api/auth/whoami'
     | '/api/public/market'
     | '/api/test/login'
@@ -1070,6 +1081,7 @@ export interface FileRouteTypes {
     | '/api/auth/callback'
     | '/api/auth/login'
     | '/api/auth/logout'
+    | '/api/auth/test-login'
     | '/api/auth/whoami'
     | '/api/public/market'
     | '/api/test/login'
@@ -1113,6 +1125,7 @@ export interface RootRouteChildren {
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthTestLoginRoute: typeof ApiAuthTestLoginRoute
   ApiAuthWhoamiRoute: typeof ApiAuthWhoamiRoute
   ApiPublicMarketRoute: typeof ApiPublicMarketRoute
   ApiTestLoginRoute: typeof ApiTestLoginRoute
@@ -1437,6 +1450,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/whoami'
       fullPath: '/api/auth/whoami'
       preLoaderRoute: typeof ApiAuthWhoamiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/test-login': {
+      id: '/api/auth/test-login'
+      path: '/api/auth/test-login'
+      fullPath: '/api/auth/test-login'
+      preLoaderRoute: typeof ApiAuthTestLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/logout': {
@@ -1921,6 +1941,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthTestLoginRoute: ApiAuthTestLoginRoute,
   ApiAuthWhoamiRoute: ApiAuthWhoamiRoute,
   ApiPublicMarketRoute: ApiPublicMarketRoute,
   ApiTestLoginRoute: ApiTestLoginRoute,
