@@ -12,13 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import logo from "@/assets/logo.png";
 
@@ -638,18 +631,25 @@ function ApplicationForm() {
             />
           </Field>
           <Field label="Pays de résidence" required>
-            <Select value={country} onValueChange={setCountry}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionne…" />
-              </SelectTrigger>
-              <SelectContent>
-                {COUNTRIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* <select> natif (et non Radix) : la valeur est portée par l'attribut
+                `value`, donc insensible à la traduction du navigateur qui cassait
+                le menu Radix (« Sélectionne…FranceFrance » → pays jamais retenu). */}
+            <select
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              translate="no"
+              required
+              className="notranslate flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&>option]:bg-zinc-900 [&>option]:text-white"
+            >
+              <option value="" disabled>
+                Sélectionne…
+              </option>
+              {COUNTRIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
 
