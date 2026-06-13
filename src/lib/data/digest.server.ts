@@ -95,12 +95,16 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
       .eq("status", "active"),
     db
       .from("members")
-       .select("discord_id, ig_name, discord_username, arrival_date, recruiter_discord_id, current_grade, mc_uuid")
+      .select(
+        "discord_id, ig_name, discord_username, arrival_date, recruiter_discord_id, current_grade, mc_uuid",
+      )
       .gte("arrival_date", weekStart)
       .lt("arrival_date", weekEndIso.slice(0, 10)),
     db
       .from("members")
-       .select("discord_id, ig_name, discord_username, updated_at, current_grade, arrival_date, mc_uuid")
+      .select(
+        "discord_id, ig_name, discord_username, updated_at, current_grade, arrival_date, mc_uuid",
+      )
       .eq("status", "former")
       .gte("updated_at", weekStartIso)
       .lt("updated_at", weekEndIso),
@@ -132,11 +136,27 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
       .limit(2000),
   ]);
 
+  // Nouveaux dont la fiche n'a pas d'`arrival_date` renseignée (recrutement hors
+  // flux candidature, import bot sans date…) : la requête `arrivals` filtrée sur
+  // `arrival_date` les manque. On les rattrape via `created_at` (date d'insertion
+  // de la fiche) sur la même semaine.
+  const { data: arrivalsNoDate } = await db
+    .from("members")
+    .select(
+      "discord_id, ig_name, discord_username, arrival_date, recruiter_discord_id, current_grade, mc_uuid",
+    )
+    .is("arrival_date", null)
+    .gte("created_at", weekStartIso)
+    .lt("created_at", weekEndIso);
+
   // Agrégats
-   const factionActiveMembers = filterFactionMembers(activeMembers.data ?? []);
-   const factionArrivals = filterFactionMembers(arrivals.data ?? []);
-   const factionDepartures = filterFactionMembers(departures.data ?? []);
-   const apps = applications.data ?? [];
+  const factionActiveMembers = filterFactionMembers(activeMembers.data ?? []);
+  const factionArrivals = filterFactionMembers([
+    ...(arrivals.data ?? []),
+    ...(arrivalsNoDate ?? []),
+  ]);
+  const factionDepartures = filterFactionMembers(departures.data ?? []);
+  const apps = applications.data ?? [];
   const accepted = apps.filter((a) => a.status === "accepted").length;
   const rejected = apps.filter((a) => a.status === "rejected").length;
   const pending = apps.filter((a) => a.status === "pending").length;
@@ -161,19 +181,21 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
   if (topIds.length > 0) {
     const { data: m } = await db
       .from("members")
-       .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid")
+      .select("discord_id, ig_name, discord_username, current_grade, arrival_date, mc_uuid")
       .in(
         "discord_id",
         topIds.map(([id]) => id),
       );
-     const byId = new Map(filterFactionMembers(m ?? []).map((x) => [x.discord_id, x]));
-     topContribs = topIds.filter(([id]) => byId.has(id)).map(([id, points]) => {
-       const found = byId.get(id);
-       return {
-         name: found?.ig_name ?? found?.discord_username ?? id,
-         points,
-       };
-     });
+    const byId = new Map(filterFactionMembers(m ?? []).map((x) => [x.discord_id, x]));
+    topContribs = topIds
+      .filter(([id]) => byId.has(id))
+      .map(([id, points]) => {
+        const found = byId.get(id);
+        return {
+          name: found?.ig_name ?? found?.discord_username ?? id,
+          points,
+        };
+      });
   }
 
   const actionsByType = new Map<string, number>();
@@ -216,7 +238,6 @@ export async function generateWeeklyDigest(opts: GenerateOptions = {}): Promise<
     top_contributors: topContribs,
     staff_actions: Object.fromEntries(actionsByType),
   };
-
 
   // 2. Appel IA
   const systemPrompt = `Tu es l'historien officiel de la faction Minecraft "PunkAstik" sur le serveur Paladium. Tu rédiges un compte-rendu hebdomadaire pour le staff, en français, ton décontracté mais factuel, sans emojis excessifs (2-3 max sur tout le doc). Structure attendue en markdown :

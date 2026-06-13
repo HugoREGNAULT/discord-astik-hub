@@ -104,7 +104,9 @@ export const getStaffDashboard = createServerFn({ method: "GET" }).handler(async
   if (topIds.length > 0) {
     const { data: members } = await db
       .from("members")
-      .select("discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid")
+      .select(
+        "discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid",
+      )
       .in(
         "discord_id",
         topIds.map(([id]) => id),
@@ -363,6 +365,17 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
     if (row.actor_discord_id) connected.add(row.actor_discord_id);
   }
 
+  // 2c) Votants aux sondages. Voter via le site exige une session (donc un login
+  // tracé) : si un membre a une ligne `poll_votes` mais aucun login, son vote a été
+  // importé en masse par le staff (CSV Framadate via importPollVotes) — il n'a donc
+  // réellement jamais ouvert le site. On le garde dans la liste mais on le signale
+  // pour éviter une relance inutile.
+  const { data: votesRes } = await db.from("poll_votes").select("voter_discord_id").limit(100_000);
+  const voters = new Set<string>();
+  for (const row of (votesRes ?? []) as Array<{ voter_discord_id: string | null }>) {
+    if (row.voter_discord_id) voters.add(row.voter_discord_id);
+  }
+
   // 2b) Dernier DM staff envoyé (action 'member_dm', payload.target = discord_id cible).
   const { data: dmLogs } = await db
     .from("logs")
@@ -421,12 +434,11 @@ export const getNeverConnectedMembers = createServerFn({ method: "GET" }).handle
         arrival_date: null as string | null,
         mc_uuid: null as string | null,
         last_dm_at: lastDmByTarget.get(id) ?? null,
+        has_voted: voters.has(id),
       };
     })
     .sort((a, b) =>
-      (a.ig_name ?? a.discord_username ?? "").localeCompare(
-        b.ig_name ?? b.discord_username ?? "",
-      ),
+      (a.ig_name ?? a.discord_username ?? "").localeCompare(b.ig_name ?? b.discord_username ?? ""),
     );
 
   return { members: neverConnected, total: neverConnected.length };
@@ -450,9 +462,7 @@ export const getMembersWithoutMc = createServerFn({ method: "GET" }).handler(asy
 
   // Garde les vrais membres faction (au moins ig_name ou grade ou arrivée renseignés)
   const members = filterFactionMembers(data ?? []).sort((a, b) =>
-    (a.ig_name ?? a.discord_username ?? "").localeCompare(
-      b.ig_name ?? b.discord_username ?? "",
-    ),
+    (a.ig_name ?? a.discord_username ?? "").localeCompare(b.ig_name ?? b.discord_username ?? ""),
   );
   return { members, total: members.length };
 });

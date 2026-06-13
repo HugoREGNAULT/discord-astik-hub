@@ -709,7 +709,7 @@ function FactionHealthSection() {
 
         <div>
           <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
-            Évolution effectif (90 jours)
+            Évolution effectif · inactifs · absents (90 jours)
           </div>
           <Suspense fallback={<div className="h-48 animate-pulse rounded-md bg-muted" />}>
             <StaffHealthChart evolution={data.evolution} />
@@ -1601,6 +1601,7 @@ function NeverConnectedRow({
     avatar_url?: string | null;
     current_grade?: string | null;
     last_dm_at?: string | null;
+    has_voted?: boolean;
   };
 }) {
   const dmFn = useServerFn(dmMember);
@@ -1639,6 +1640,11 @@ function NeverConnectedRow({
           <div className="text-[11px] text-muted-foreground truncate">
             @{member.discord_username ?? "—"} · {member.current_grade ?? "—"}
           </div>
+          {member.has_voted && (
+            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 truncate">
+              A participé à un sondage (vote importé)
+            </div>
+          )}
           {member.last_dm_at ? (
             <div className="text-[10px] text-amber-600 dark:text-amber-400 truncate">
               Relancé le{" "}

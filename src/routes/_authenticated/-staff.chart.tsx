@@ -6,12 +6,21 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
 } from "recharts";
 
 interface Point {
   date: string;
   count: number;
+  inactive?: number;
+  absent?: number;
 }
+
+const SERIES_LABELS: Record<string, string> = {
+  count: "Effectif",
+  inactive: "Inactifs",
+  absent: "Absents",
+};
 
 export default function StaffHealthChart({ evolution }: { evolution: Point[] }) {
   return (
@@ -22,6 +31,14 @@ export default function StaffHealthChart({ evolution }: { evolution: Point[] }) 
             <linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
               <stop offset="100%" stopColor="#ec4899" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="inactiveGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="absentGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -53,7 +70,12 @@ export default function StaffHealthChart({ evolution }: { evolution: Point[] }) 
             }}
             labelStyle={{ color: "#fafafa" }}
             labelFormatter={(l: string) => new Date(l).toLocaleDateString("fr-FR")}
-            formatter={(v: number) => [`${v} membres`, "Effectif"]}
+            formatter={(v: number, name: string) => [v, SERIES_LABELS[name] ?? name]}
+          />
+          <Legend
+            iconType="plainline"
+            wrapperStyle={{ fontSize: 11, color: "#e4e4e7" }}
+            formatter={(name: string) => SERIES_LABELS[name] ?? name}
           />
           <Area
             type="monotone"
@@ -61,6 +83,20 @@ export default function StaffHealthChart({ evolution }: { evolution: Point[] }) 
             stroke="#ec4899"
             strokeWidth={2}
             fill="url(#healthGrad)"
+          />
+          <Area
+            type="monotone"
+            dataKey="inactive"
+            stroke="#f59e0b"
+            strokeWidth={2}
+            fill="url(#inactiveGrad)"
+          />
+          <Area
+            type="monotone"
+            dataKey="absent"
+            stroke="#6366f1"
+            strokeWidth={2}
+            fill="url(#absentGrad)"
           />
         </AreaChart>
       </ResponsiveContainer>

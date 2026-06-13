@@ -16,15 +16,18 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   const since90dIso = new Date(now - 90 * 86_400_000).toISOString();
   const since30dDate = since30dIso.slice(0, 10);
   const since90dDate = since90dIso.slice(0, 10);
+  const todayDate = new Date(now).toISOString().slice(0, 10);
 
-  const [activeMembers, snapshots, recentArrivals, recentDepartures] = await Promise.all([
+  const [activeMembers, snapshots, recentArrivals, recentDepartures, absences] = await Promise.all([
     db
       .from("members")
-      .select("discord_id, recruiter_discord_id, messages_7d, voice_7d_seconds, arrival_date, ig_name, current_grade, mc_uuid")
+      .select(
+        "discord_id, recruiter_discord_id, messages_7d, voice_7d_seconds, arrival_date, ig_name, current_grade, mc_uuid",
+      )
       .eq("status", "active"),
     db
       .from("leaderboard_snapshots")
-      .select("discord_id, taken_at")
+      .select("discord_id, taken_at, messages_7d, voice_7d_seconds")
       .gte("taken_at", since90dIso)
       .order("taken_at", { ascending: true })
       .limit(200_000),
@@ -37,10 +40,18 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
       .order("arrival_date", { ascending: false }),
     db
       .from("members")
-      .select("discord_id, ig_name, discord_username, updated_at, status, current_grade, arrival_date, mc_uuid")
+      .select(
+        "discord_id, ig_name, discord_username, updated_at, status, current_grade, arrival_date, mc_uuid",
+      )
       .eq("status", "former")
       .gte("updated_at", since30dIso)
       .order("updated_at", { ascending: false }),
+    // Absences déclarées qui chevauchent la fenêtre 90j (pour la courbe "absents/jour")
+    db
+      .from("absences")
+      .select("member_discord_id, starts_on, ends_on")
+      .lte("starts_on", todayDate)
+      .gte("ends_on", since90dDate),
   ]);
 
   const active = (activeMembers.data ?? []).filter((member) => isFactionMember(member));
@@ -50,21 +61,59 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   ).length;
   const activityRate = total > 0 ? Math.round((activeCount / total) * 100) : 0;
 
-  // Evolution effectif par jour à partir des snapshots (compte distinct par jour)
-  const byDay = new Map<string, Set<string>>();
+  // Evolution par jour (90j) : effectif présent, inactifs, absents déclarés.
+  //  - présents : discord_id distincts ayant un snapshot ce jour-là
+  //  - inactifs : parmi eux, ceux dont le snapshot du jour a 0 message ET 0 vocal
+  //    (on garde le dernier snapshot du jour, les snapshots sont triés croissants)
+  //  - absents  : membres couverts par une absence déclarée ce jour-là
+  const days: string[] = [];
   for (let i = 89; i >= 0; i--) {
-    const d = new Date(now - i * 86_400_000).toISOString().slice(0, 10);
-    byDay.set(d, new Set());
+    days.push(new Date(now - i * 86_400_000).toISOString().slice(0, 10));
   }
-  for (const s of (snapshots.data ?? []) as Array<{ discord_id: string; taken_at: string }>) {
+  const presentByDay = new Map<string, Set<string>>();
+  const inactiveByDay = new Map<string, Map<string, boolean>>();
+  for (const d of days) {
+    presentByDay.set(d, new Set());
+    inactiveByDay.set(d, new Map());
+  }
+  for (const s of (snapshots.data ?? []) as Array<{
+    discord_id: string;
+    taken_at: string;
+    messages_7d: number | null;
+    voice_7d_seconds: number | null;
+  }>) {
     const key = s.taken_at.slice(0, 10);
-    const bucket = byDay.get(key);
-    if (bucket) bucket.add(s.discord_id);
+    const present = presentByDay.get(key);
+    if (!present) continue;
+    present.add(s.discord_id);
+    inactiveByDay
+      .get(key)!
+      .set(s.discord_id, (s.messages_7d ?? 0) === 0 && (s.voice_7d_seconds ?? 0) === 0);
   }
-  const evolution = Array.from(byDay.entries()).map(([date, set]) => ({
-    date,
-    count: set.size,
-  }));
+
+  const absenceRows = (absences.data ?? []) as Array<{
+    member_discord_id: string;
+    starts_on: string;
+    ends_on: string;
+  }>;
+  const absentCountOn = (d: string) => {
+    const set = new Set<string>();
+    for (const a of absenceRows) {
+      if (a.starts_on <= d && a.ends_on >= d) set.add(a.member_discord_id);
+    }
+    return set.size;
+  };
+
+  const evolution = days.map((date) => {
+    let inactive = 0;
+    for (const v of inactiveByDay.get(date)!.values()) if (v) inactive++;
+    return {
+      date,
+      count: presentByDay.get(date)!.size,
+      inactive,
+      absent: absentCountOn(date),
+    };
+  });
 
   // Top recruteurs sur les 30 et 90 derniers jours (depuis arrival_date)
   const recruiters30 = new Map<string, number>();
@@ -88,7 +137,9 @@ export const getFactionHealth = createServerFn({ method: "GET" }).handler(async 
   if (topRecruiterIds.length > 0) {
     const { data: recs } = await db
       .from("members")
-      .select("discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid")
+      .select(
+        "discord_id, ig_name, discord_username, avatar_url, current_grade, arrival_date, mc_uuid",
+      )
       .in("discord_id", topRecruiterIds);
     recruiterMap = new Map(
       (recs ?? [])
