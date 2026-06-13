@@ -16,6 +16,8 @@ import {
   Ban,
   Sparkles,
   Star,
+  FileEdit,
+  AlertTriangle,
 } from "lucide-react";
 import { lazy, Suspense } from "react";
 const RecruitmentTimelineChart = lazy(() => import("./-recruitment.chart"));
@@ -31,6 +33,7 @@ import {
   getApplicationAiReview,
   type ApplicationAiReview,
 } from "@/lib/data/applications-ai.functions";
+import { listActiveDrafts, type ApplicationDraft } from "@/lib/data/application-drafts.functions";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,9 +67,10 @@ export const Route = createFileRoute("/_authenticated/recruitment")({
 });
 
 type AppStatus = "pending" | "accepted" | "rejected" | "interview_validated";
+type Tab = AppStatus | "drafts";
 
 function RecruitmentPage() {
-  const [tab, setTab] = useState<AppStatus>("pending");
+  const [tab, setTab] = useState<Tab>("pending");
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -78,8 +82,11 @@ function RecruitmentPage() {
 
       <ApplicationStats />
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as AppStatus)}>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
         <TabsList>
+          <TabsTrigger value="drafts">
+            <FileEdit className="w-4 h-4 mr-1" /> En cours
+          </TabsTrigger>
           <TabsTrigger value="pending">
             <Clock className="w-4 h-4 mr-1" /> En attente
           </TabsTrigger>
@@ -94,7 +101,7 @@ function RecruitmentPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value={tab} className="mt-4">
-          <ApplicationsList status={tab} />
+          {tab === "drafts" ? <DraftsList /> : <ApplicationsList status={tab} />}
         </TabsContent>
       </Tabs>
     </div>
@@ -214,6 +221,169 @@ function ApplicationsList({ status }: { status: AppStatus }) {
         ))}
       </Accordion>
       <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+    </div>
+  );
+}
+
+// --- Candidatures en cours (brouillons non soumis) ------------------------
+
+/** Heuristique indicative de copier-coller / IA à partir des signaux de saisie. */
+function pasteSuspicion(d: ApplicationDraft): {
+  level: "none" | "watch" | "high";
+  label: string;
+} {
+  const typedRatio = d.char_count > 0 ? d.keystroke_count / d.char_count : 1;
+  const biggestPaste = d.paste_events.reduce((mx, e) => Math.max(mx, e.len), 0);
+  if (biggestPaste >= 400 || (d.char_count >= 500 && typedRatio < 0.3)) {
+    return { level: "high", label: "Collage massif" };
+  }
+  if (d.paste_total_chars >= 150 || (d.char_count >= 300 && typedRatio < 0.6)) {
+    return { level: "watch", label: "À vérifier" };
+  }
+  return { level: "none", label: "" };
+}
+
+function DraftsList() {
+  const listFn = useServerFn(listActiveDrafts);
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useQuery({
+    queryKey: ["application-drafts"],
+    queryFn: () => listFn() as Promise<ApplicationDraft[]>,
+    refetchInterval: 30_000,
+  });
+
+  const items = data ?? [];
+  const pageCount = Math.max(1, Math.ceil(items.length / PER_PAGE));
+  const paged = getPagedSlice(items, page, PER_PAGE);
+
+  if (isLoading) return <CardListSkeleton count={3} />;
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={FileEdit}
+        title="Aucune candidature en cours"
+        description="Les candidats qui ont commencé sans envoyer apparaîtront ici (rafraîchi automatiquement)."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Candidatures commencées mais non envoyées. Les signaux de collage / frappe sont indicatifs —
+        un gros collage peut aussi être un texte rédigé ailleurs, pas forcément de l'IA.
+      </p>
+      <Accordion type="single" collapsible className="space-y-2">
+        {paged.map((d) => {
+          const susp = pasteSuspicion(d);
+          return (
+            <AccordionItem
+              key={d.discord_id}
+              value={d.discord_id}
+              className="border rounded-lg bg-card px-4"
+            >
+              <AccordionTrigger className="hover:no-underline">
+                <div className="flex items-center gap-3 flex-1 text-left">
+                  <img
+                    src={`https://mc-heads.net/avatar/${encodeURIComponent(d.mc_name || "Steve")}/32`}
+                    alt=""
+                    className="w-8 h-8 rounded-sm"
+                    loading="lazy"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">
+                      {d.mc_name || "(pseudo non renseigné)"}{" "}
+                      <span className="text-muted-foreground text-xs">
+                        · @{d.discord_username ?? "?"}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {d.char_count} car. · modifié {new Date(d.updated_at).toLocaleString("fr-FR")}
+                    </div>
+                  </div>
+                  {susp.level !== "none" && (
+                    <Badge
+                      variant="outline"
+                      className={
+                        susp.level === "high"
+                          ? "ml-2 bg-destructive/15 text-destructive border-destructive/40"
+                          : "ml-2 bg-amber-500/15 text-amber-300 border-amber-500/40"
+                      }
+                    >
+                      <AlertTriangle className="w-3 h-3 mr-1" /> {susp.label}
+                    </Badge>
+                  )}
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <DraftDetail d={d} />
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
+      <Paginator page={page} pageCount={pageCount} onPageChange={setPage} />
+    </div>
+  );
+}
+
+function DraftDetail({ d }: { d: ApplicationDraft }) {
+  const minutes = Math.round(d.typing_ms / 60000);
+  const typedRatio = d.char_count > 0 ? Math.round((d.keystroke_count / d.char_count) * 100) : 0;
+  const biggest = d.paste_events.reduce((mx, e) => Math.max(mx, e.len), 0);
+  return (
+    <div className="space-y-4 pt-2 pb-1">
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+        <Metric label="Collages" value={String(d.paste_count)} />
+        <Metric label="Car. collés" value={String(d.paste_total_chars)} />
+        <Metric label="Plus gros collage" value={`${biggest} car.`} />
+        <Metric label="Frappes" value={String(d.keystroke_count)} />
+        <Metric label="Frappes / caractère" value={`${typedRatio}%`} />
+        <Metric label="Saisie active" value={minutes > 0 ? `${minutes} min` : "<1 min"} />
+      </div>
+      {d.paste_events.length > 0 && (
+        <details className="text-[11px] text-muted-foreground">
+          <summary className="cursor-pointer hover:text-foreground">
+            Détail des {d.paste_events.length} collage(s)
+          </summary>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {d.paste_events.slice(-30).map((e, i) => (
+              <Badge key={i} variant="outline" className="text-[10px]">
+                {e.len} car.
+              </Badge>
+            ))}
+          </div>
+        </details>
+      )}
+      {d.heard_from && <Info label="Comment a découvert / qui l'a envoyé">{d.heard_from}</Info>}
+      {d.presentation && <Info label="Présentation (IRL)">{d.presentation}</Info>}
+      {d.presentation_gaming && (
+        <Info label="Présentation (Minecraft / Paladium)">{d.presentation_gaming}</Info>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {(d.age != null || d.country) && (
+          <Info label="Âge / Pays">
+            {(d.age ?? "?") + " ans"} · {d.country ?? "?"}
+          </Info>
+        )}
+        {d.schedule && <Info label="Disponibilités">{d.schedule}</Info>}
+      </div>
+      {d.objectives && <Info label="Objectifs">{d.objectives}</Info>}
+      {d.motivation && <Info label="Motivation">{d.motivation}</Info>}
+      {d.additional_info && <Info label="Ajout libre">{d.additional_info}</Info>}
+      {d.pvp_level != null && <Info label="Niveau PvP">{d.pvp_level}/10</Info>}
+      <p className="text-[10px] text-muted-foreground italic">
+        Candidature non envoyée — visible ici tant que le candidat ne l'a pas soumise.
+      </p>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border bg-background/40 p-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-sm font-medium truncate">{value}</div>
     </div>
   );
 }

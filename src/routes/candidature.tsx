@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { toUserMessage } from "@/lib/errors";
 import { ArrowLeft, LogIn, Send, Loader2, CheckCircle2, Clock, Star } from "lucide-react";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
 import { submitApplication, getMyApplication } from "@/lib/data/applications.functions";
+import { saveDraft } from "@/lib/data/application-drafts.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -191,6 +192,54 @@ function clearDraft() {
   }
 }
 
+// --- Signaux d'authenticité (anti copier-coller / IA) ---------------------
+// Compteurs accumulés pendant la saisie, persistés localement pour survivre à
+// un rechargement, et envoyés au serveur avec le brouillon.
+const META_KEY = "punkastik:candidature:meta:v1";
+type DraftMeta = {
+  pasteCount: number;
+  pasteChars: number;
+  pasteEvents: { len: number; t: number }[];
+  keystrokes: number;
+  typingMs: number;
+  startedAt: number;
+};
+function emptyMeta(): DraftMeta {
+  return {
+    pasteCount: 0,
+    pasteChars: 0,
+    pasteEvents: [],
+    keystrokes: 0,
+    typingMs: 0,
+    startedAt: 0,
+  };
+}
+function readMeta(): DraftMeta | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(META_KEY);
+    return raw ? (JSON.parse(raw) as DraftMeta) : null;
+  } catch {
+    return null;
+  }
+}
+function writeMeta(m: DraftMeta) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(META_KEY, JSON.stringify(m));
+  } catch {
+    // ignore
+  }
+}
+function clearMeta() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(META_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 function ApplicationForm() {
   const navigate = useNavigate();
   const getMyApp = useServerFn(getMyApplication);
@@ -214,6 +263,36 @@ function ApplicationForm() {
   const [formRating, setFormRating] = useState(0);
   const [hydrated, setHydrated] = useState(false);
 
+  const saveDraftFn = useServerFn(saveDraft);
+  const metaRef = useRef<DraftMeta>(emptyMeta());
+  const lastKeyRef = useRef(0);
+
+  // Télémétrie d'authenticité, déléguée au <form> (capture).
+  function noteKeystroke(e: React.KeyboardEvent) {
+    const now = Date.now();
+    if (metaRef.current.startedAt === 0) metaRef.current.startedAt = now;
+    if (e.key && e.key.length === 1) metaRef.current.keystrokes += 1;
+    if (lastKeyRef.current > 0) {
+      const gap = now - lastKeyRef.current;
+      if (gap > 0 && gap < 5000) metaRef.current.typingMs += gap;
+    }
+    lastKeyRef.current = now;
+  }
+  function notePaste(e: React.ClipboardEvent) {
+    const text = e.clipboardData?.getData("text") ?? "";
+    if (!text.length) return;
+    const now = Date.now();
+    if (metaRef.current.startedAt === 0) metaRef.current.startedAt = now;
+    metaRef.current.pasteCount += 1;
+    metaRef.current.pasteChars += text.length;
+    metaRef.current.pasteEvents.push({
+      len: text.length,
+      t: Math.max(0, now - metaRef.current.startedAt),
+    });
+    if (metaRef.current.pasteEvents.length > 200)
+      metaRef.current.pasteEvents = metaRef.current.pasteEvents.slice(-200);
+  }
+
   // Restaure le brouillon au montage, APRÈS l'hydratation SSR (le HTML serveur
   // n'a pas accès à localStorage → sinon mismatch d'hydratation).
   useEffect(() => {
@@ -233,6 +312,8 @@ function ApplicationForm() {
       if (typeof d.additionalInfo === "string") setAdditionalInfo(d.additionalInfo);
       if (typeof d.formRating === "number") setFormRating(d.formRating);
     }
+    const m = readMeta();
+    if (m) metaRef.current = m;
     setHydrated(true);
   }, []);
 
@@ -254,6 +335,7 @@ function ApplicationForm() {
       formRating > 0;
     if (!filled) {
       clearDraft();
+      clearMeta();
       return;
     }
     writeDraft({
@@ -270,6 +352,47 @@ function ApplicationForm() {
       additionalInfo,
       formRating,
     });
+    writeMeta(metaRef.current);
+
+    // Envoi serveur debouncé (2,5 s après la dernière frappe) → accès staff +
+    // signaux d'authenticité, sans spammer la base.
+    const charCount =
+      heardFrom.length +
+      mcName.length +
+      presentationIrl.length +
+      age.length +
+      country.length +
+      presentationGaming.length +
+      schedule.length +
+      objectives.length +
+      motivation.length +
+      additionalInfo.length;
+    const handle = setTimeout(() => {
+      const m = metaRef.current;
+      void saveDraftFn({
+        data: {
+          heardFrom,
+          mcName,
+          presentationIrl,
+          age,
+          country,
+          presentationGaming,
+          schedule,
+          objectives,
+          pvpLevel: pvpLevel[0],
+          motivation,
+          additionalInfo,
+          formRating: formRating > 0 ? formRating : undefined,
+          pasteCount: m.pasteCount,
+          pasteTotalChars: m.pasteChars,
+          pasteEvents: m.pasteEvents,
+          keystrokeCount: m.keystrokes,
+          charCount,
+          typingMs: Math.round(m.typingMs),
+        },
+      }).catch(() => {});
+    }, 2500);
+    return () => clearTimeout(handle);
   }, [
     hydrated,
     heardFrom,
@@ -284,6 +407,7 @@ function ApplicationForm() {
     motivation,
     additionalInfo,
     formRating,
+    saveDraftFn,
   ]);
 
   function resetDraft() {
@@ -299,7 +423,10 @@ function ApplicationForm() {
     setMotivation("");
     setAdditionalInfo("");
     setFormRating(0);
+    metaRef.current = emptyMeta();
+    lastKeyRef.current = 0;
     clearDraft();
+    clearMeta();
   }
 
   const irlLen = presentationIrl.trim().length;
@@ -328,6 +455,7 @@ function ApplicationForm() {
     onSuccess: () => {
       toast.success("Candidature envoyée ! Tu seras notifié·e en DM.");
       clearDraft();
+      clearMeta();
       refetch();
     },
     onError: (e: Error) => toast.error(toUserMessage(e)),
@@ -449,6 +577,8 @@ function ApplicationForm() {
           e.preventDefault();
           mutation.mutate();
         }}
+        onKeyDownCapture={noteKeystroke}
+        onPasteCapture={notePaste}
         className="space-y-6 bg-zinc-900/90 border border-zinc-800 p-6 md:p-8"
       >
         {/* 1 — Découverte */}

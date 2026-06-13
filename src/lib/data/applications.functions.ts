@@ -210,6 +210,11 @@ async function submitApplicationInner(
       .select("id")
       .single();
     if (ins.error) throw new Error(ins.error.message);
+    // Sort le brouillon de la liste "candidatures en cours" (best-effort).
+    await db
+      .from("application_drafts")
+      .update({ submitted: true, updated_at: new Date().toISOString() })
+      .eq("discord_id", user.discordId);
     await logAction("application_submit", user.discordId, {
       application_id: ins.data.id,
       mc_name: mojang.name,
