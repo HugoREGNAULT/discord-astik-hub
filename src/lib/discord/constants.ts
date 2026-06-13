@@ -75,8 +75,8 @@ export const LOG_CHANNELS = {
  * ni la valeur ci-dessous ne sont définies, postNotify() est silencieux.
  */
 export const NOTIFY_CHANNELS = {
-  /** Salon recrutement : nouvelles candidatures */
-  RECRUIT: "",
+  /** Salon recrutement : nouvelles candidatures (mutualisé avec le salon logs site) */
+  RECRUIT: "1509547529384235178",
   /** Salon staff : récap warnings et événements modération */
-  STAFF: "",
+  STAFF: "1506587388594622494",
 } as const;
