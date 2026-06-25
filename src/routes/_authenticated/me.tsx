@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Coins, Gamepad2, Clock, Copy, Check } from "lucide-react";
+import { Coins, Gamepad2, Copy, Check, Users } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, completeOnboarding } from "@/lib/data/me.functions";
+import { getLatestPlayerCount } from "@/lib/paladium/history.functions";
 import { avatarUrl } from "@/lib/paladium/api";
 import { toUserMessage } from "@/lib/errors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +17,9 @@ import { ObjectivesCard } from "@/components/me/ObjectivesCard";
 import { AbsencesCard } from "@/components/me/AbsencesCard";
 import { WarningsCard } from "@/components/me/WarningsCard";
 import { ActivityHeatmapCard } from "@/components/me/ActivityHeatmapCard";
-import { MonthlyRecapCard } from "@/components/me/MonthlyRecapCard";
-import { QuestsCard } from "@/components/me/QuestsCard";
 import { FactionBentoCard } from "@/components/me/FactionBentoCard";
+import { PaladiumProfileCard } from "@/components/me/PaladiumProfileCard";
+import { MemberSalesCard } from "@/components/me/MemberSalesCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { MonoLabel } from "@/components/tools/ToolsUi";
@@ -28,8 +29,22 @@ export const Route = createFileRoute("/_authenticated/me")({
   component: MyProfile,
 });
 
+function formatRelative(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "à l'instant";
+  if (mins < 60) return `il y a ${mins}min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `il y a ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `il y a ${days}j`;
+  const d = new Date(iso);
+  return `le ${d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })} à ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 function MyProfile() {
   const overviewFn = useServerFn(getMyOverview);
+  const playerCountFn = useServerFn(getLatestPlayerCount);
 
   const { data, isLoading } = useQuery({
     queryKey: ["me", "overview"],
@@ -40,13 +55,36 @@ function MyProfile() {
     staleTime: 0,
   });
 
+  const { data: playerCountData } = useQuery({
+    queryKey: ["paladium", "player-count"],
+    queryFn: () => playerCountFn(),
+    refetchInterval: 5_000,
+    staleTime: 4_000,
+  });
+
   if (isLoading || !data) return <DetailPageSkeleton />;
   const m = data.member;
-  // Vrai membre faction (≠ simple visiteur connecté) : conditionne les cartes faction.
   const isMember = Boolean(m.ig_name || m.current_grade || m.arrival_date || m.mc_uuid);
+
+  const lastPointsUpdate = data.recentGains[0]?.created_at ?? null;
 
   return (
     <div className="space-y-6 w-full mx-auto 2xl:max-w-[2000px]">
+      {/* Bandeau joueurs connectés */}
+      {playerCountData?.online != null && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5 text-sm">
+          <Users className="size-4 text-primary" />
+          <span className="text-muted-foreground">Joueurs en ligne sur Paladium :</span>
+          <span className="font-bold text-primary tabular-nums">{playerCountData.online}</span>
+          {playerCountData.capturedAt && (
+            <span className="text-xs text-muted-foreground ml-auto">
+              {formatRelative(playerCountData.capturedAt)}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* En-tête profil */}
       <div className="flex flex-wrap items-center gap-4">
         {m.avatar_url ? (
           <img src={m.avatar_url} className="size-16 rounded-full" alt="" />
@@ -68,59 +106,38 @@ function MyProfile() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3 items-start">
-        {/* Colonne principale : identité, progression */}
+        {/* Colonne principale */}
         <div className="space-y-6 xl:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Stat label="AstikPoints" value={m.astik_points} accent />
-            <Stat label="Arrivée" value={m.arrival_date ?? "—"} />
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground">Points</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{m.astik_points}</div>
+              {lastPointsUpdate && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Dernière actualisation : {formatRelative(lastPointsUpdate)}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {isMember && <FactionBentoCard />}
 
-          {isMember && <MonthlyRecapCard />}
+          {isMember && m.mc_uuid && <PaladiumProfileCard />}
 
-          {isMember && <QuestsCard />}
+          {isMember && m.mc_uuid && <MemberSalesCard />}
 
           {isMember && <ObjectivesCard />}
 
           {isMember && <ActivityHeatmapCard />}
         </div>
 
-        {/* Colonne secondaire : compte MC + activité */}
+        {/* Colonne secondaire */}
         <div className="space-y-6">
           <MinecraftAccountCard mcUuid={m.mc_uuid} igName={m.ig_name} />
 
           {isMember && <AbsencesCard />}
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Clock className="size-4 text-primary" /> Dernière connexion
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm space-y-1">
-              {data.previousLoginAt ? (
-                <div>
-                  <span className="text-muted-foreground">Précédente :</span>{" "}
-                  <span className="font-mono">
-                    {new Date(data.previousLoginAt).toLocaleString("fr-FR")}
-                  </span>
-                </div>
-              ) : (
-                <div className="text-muted-foreground">
-                  Aucune connexion précédente enregistrée.
-                </div>
-              )}
-              {data.currentLoginAt && (
-                <div className="text-xs text-muted-foreground">
-                  Session actuelle ouverte le{" "}
-                  <span className="font-mono">
-                    {new Date(data.currentLoginAt).toLocaleString("fr-FR")}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader>
@@ -179,7 +196,6 @@ function MyProfile() {
   );
 }
 
-/** Statut membre traduit en français + pastille de couleur. */
 const STATUS_META: Record<string, { label: string; dot: string }> = {
   active: { label: "Actif", dot: "bg-emerald-500" },
   trial: { label: "Période d'essai", dot: "bg-amber-500" },
@@ -196,27 +212,6 @@ function StatusBadge({ status }: { status: string }) {
       <span className={`size-2 rounded-full ${meta.dot}`} aria-hidden />
       {meta.label}
     </Badge>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string | number;
-  accent?: boolean;
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm text-muted-foreground">{label}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className={`text-2xl font-bold ${accent ? "text-primary" : ""}`}>{value}</div>
-      </CardContent>
-    </Card>
   );
 }
 

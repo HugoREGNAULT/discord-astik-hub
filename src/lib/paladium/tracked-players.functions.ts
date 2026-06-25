@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { fetchPaladium } from "./paladium.server";
+import { fetchPaladium, PaladiumServerError } from "./paladium.server";
 import { requireSession } from "@/lib/auth/require.server";
 
 type ApiListing = {
@@ -38,15 +38,21 @@ function toIso(v: unknown): string | null {
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }
 
-async function snapshotPlayerListings(uuid: string, username: string) {
+async function snapshotPlayerListings(
+  uuid: string,
+  username: string,
+): Promise<{ remaining: number | null }> {
   let payload: PlayerItemsResponse | null = null;
+  let remaining: number | null = null;
   try {
     const res = await fetchPaladium(
       `/v1/paladium/shop/market/players/${encodeURIComponent(uuid)}/items`,
     );
     payload = res.data as PlayerItemsResponse;
-  } catch {
-    return;
+    remaining = res.rate.remaining;
+  } catch (err) {
+    if (err instanceof PaladiumServerError && err.status === 429) remaining = 0;
+    return { remaining };
   }
   const items = payload?.data ?? [];
   const now = new Date().toISOString();
@@ -173,6 +179,7 @@ async function snapshotPlayerListings(uuid: string, username: string) {
       last_synced_at: now,
     });
   }
+  return { remaining };
 }
 
 export const trackPlayerSearch = createServerFn({ method: "POST" })
@@ -287,22 +294,32 @@ export const syncTrackedPlayersListings = createServerFn({ method: "POST" }).han
   const seen = new Set<string>();
   const players: Array<{ uuid: string; username: string }> = [];
 
-  for (const p of (tracked ?? []) as Array<{ uuid: string; username: string; last_synced_at: string | null }>) {
+  for (const p of (tracked ?? []) as Array<{
+    uuid: string;
+    username: string;
+    last_synced_at: string | null;
+  }>) {
     if (!p.uuid || seen.has(p.uuid)) continue;
     seen.add(p.uuid);
     players.push({ uuid: p.uuid, username: p.username });
   }
-  for (const m of (factionMembers ?? []) as Array<{ mc_uuid: string | null; ig_name: string | null }>) {
+  for (const m of (factionMembers ?? []) as Array<{
+    mc_uuid: string | null;
+    ig_name: string | null;
+  }>) {
     if (!m.mc_uuid || seen.has(m.mc_uuid)) continue;
     seen.add(m.mc_uuid);
     players.push({ uuid: m.mc_uuid, username: m.ig_name ?? "" });
   }
 
   const batch = players.slice(0, 30);
+  let processed = 0;
   for (const p of batch) {
-    await snapshotPlayerListings(p.uuid, p.username);
+    const { remaining } = await snapshotPlayerListings(p.uuid, p.username);
+    processed++;
+    // Stop early if rate limit is exhausted (< 3 remaining requests in the window)
+    if (remaining !== null && remaining < 3) break;
     await new Promise((r) => setTimeout(r, 200));
   }
-  return { processed: batch.length };
+  return { processed };
 });
-

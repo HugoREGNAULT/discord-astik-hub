@@ -38,7 +38,25 @@ type Suggestion = {
 
 const TICK_SECONDS = 1.33;
 
+function DisabledBanner({ label }: { label: string }) {
+  return (
+    <div className="rounded border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-400 flex items-center gap-2">
+      <span className="font-mono text-zinc-600 text-[11px] uppercase tracking-widest">//</span>
+      {label}
+    </div>
+  );
+}
+
 function ClickerOptimizer() {
+  return (
+    <div className="max-w-6xl space-y-5 opacity-60 pointer-events-none select-none">
+      <DisabledBanner label="Outil temporairement désactivé — Bientôt de retour." />
+      <ClickerOptimizerInner />
+    </div>
+  );
+}
+
+function ClickerOptimizerInner() {
   const [input, setInput] = useState("");
   const [username, setUsername] = useState<string | null>(null);
 

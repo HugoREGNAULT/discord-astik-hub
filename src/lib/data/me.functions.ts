@@ -14,6 +14,7 @@ import {
   MojangNotFoundError,
   MojangUnavailableError,
 } from "@/lib/paladium/mojang-resolve.server";
+import { fetchPaladium } from "@/lib/paladium/paladium.server";
 
 function normalizeUuid(id: string): string {
   const stripped = id.replace(/-/g, "");
@@ -633,12 +634,6 @@ export const getMyMonthlyRecap = createServerFn({ method: "GET" })
 
 /* ---------- Bento « La faction en chiffres » (vue membre faction) ---------- */
 
-/**
- * Agrégats faction visibles par tout membre faction : effectif, candidatures,
- * richesse totale (argent en jeu via mc_player_stats + ventes en cours), ventes
- * réalisées sur 30 j (série journalière pour le graphe) et AstikPoints cumulés.
- * Réservé aux vrais membres faction (isFactionMember) — sinon { eligible:false }.
- */
 export const getFactionBento = createServerFn({ method: "GET" }).handler(async () => {
   const user = await requireSession();
 
@@ -651,99 +646,226 @@ export const getFactionBento = createServerFn({ method: "GET" }).handler(async (
     return { eligible: false as const };
   }
 
-  const since30Iso = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  const since30Date = since30Iso.slice(0, 10);
+  // Dernier snapshot richesse faction
+  const { data: latestSnap } = await db
+    .from("paladium_faction_wealth_history")
+    .select("faction_money, members_money, listed_value, total_wealth, captured_at")
+    .eq("faction_name", "PunkAstik")
+    .order("captured_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  const [membersRes, pendingAppsRes, apps30Res] = await Promise.all([
-    db
+  const factionMoney = latestSnap?.faction_money ?? 0;
+  let membersMoney = latestSnap?.members_money ?? 0;
+  let listedValue = latestSnap?.listed_value ?? 0;
+  let totalWealth = latestSnap?.total_wealth ?? 0;
+  const lastSnapshotAt = latestSnap?.captured_at ?? null;
+
+  if (!latestSnap) {
+    // Calcul live de secours si aucun snapshot encore
+    const { data: factionMembers } = await db
       .from("members")
-      .select("ig_name, current_grade, arrival_date, mc_uuid, astik_points")
-      .eq("status", "active"),
-    db.from("applications").select("id", { count: "exact", head: true }).eq("status", "pending"),
-    db
-      .from("applications")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", since30Iso),
-  ]);
-
-  const faction = filterFactionMembers(membersRes.data ?? []);
-  const memberCount = faction.length;
-  const totalAstikPoints = faction.reduce(
-    (acc, m) => acc + ((m as { astik_points?: number }).astik_points ?? 0),
-    0,
-  );
-  const arrivals30d = faction.filter((m) => m.arrival_date && m.arrival_date >= since30Date).length;
-  const uuids = faction.map((m) => m.mc_uuid).filter((u): u is string => Boolean(u));
-
-  // Argent en jeu : dernier snapshot par joueur (mc_player_stats).
-  let totalIngameMoney = 0;
-  let moneyTracked = 0;
-  if (uuids.length) {
-    const { data: stats } = await db
-      .from("mc_player_stats")
-      .select("mc_uuid, money, snapshot_at")
-      .in("mc_uuid", uuids)
-      .order("snapshot_at", { ascending: false })
-      .limit(20000);
-    const seen = new Set<string>();
-    for (const s of (stats ?? []) as Array<{ mc_uuid: string; money: number | null }>) {
-      if (seen.has(s.mc_uuid)) continue; // on garde le snapshot le plus récent
-      seen.add(s.mc_uuid);
-      if (s.money != null) {
-        totalIngameMoney += Number(s.money);
-        moneyTracked += 1;
+      .select("mc_uuid")
+      .eq("status", "active");
+    const uuids = (factionMembers ?? [])
+      .map((m) => m.mc_uuid)
+      .filter((u): u is string => Boolean(u));
+    if (uuids.length) {
+      const { data: stats } = await db
+        .from("mc_player_stats")
+        .select("mc_uuid, money, snapshot_at")
+        .in("mc_uuid", uuids)
+        .order("snapshot_at", { ascending: false })
+        .limit(20000);
+      const seen = new Set<string>();
+      for (const s of (stats ?? []) as Array<{ mc_uuid: string; money: number | null }>) {
+        if (seen.has(s.mc_uuid)) continue;
+        seen.add(s.mc_uuid);
+        if (s.money != null) membersMoney += Number(s.money);
       }
-    }
-  }
+      membersMoney = Math.round(membersMoney);
 
-  // Ventes : listings HDV des membres sur 30 j (réalisées + en cours).
-  let soldValue = 0;
-  let listedValue = 0;
-  const dayTotals = new Map<string, number>();
-  if (uuids.length) {
-    const { data: listings } = await db
-      .from("paladium_player_listings_history")
-      .select("quantity, price, sold_at, first_seen_at")
-      .in("player_uuid", uuids)
-      .gte("first_seen_at", since30Iso)
-      .limit(50000);
-    for (const l of (listings ?? []) as Array<{
-      quantity: number | null;
-      price: number | null;
-      sold_at: string | null;
-    }>) {
-      const value = Number(l.price ?? 0) * Number(l.quantity ?? 0);
-      if (l.sold_at) {
-        soldValue += value;
-        const day = String(l.sold_at).slice(0, 10);
-        dayTotals.set(day, (dayTotals.get(day) ?? 0) + value);
-      } else {
-        listedValue += value;
+      const since30 = new Date(Date.now() - 30 * 86_400_000).toISOString();
+      const { data: listings } = await db
+        .from("paladium_player_listings_history")
+        .select("quantity, price, sold_at, first_seen_at")
+        .in("player_uuid", uuids)
+        .gte("first_seen_at", since30)
+        .is("sold_at", null)
+        .limit(50000);
+      for (const l of (listings ?? []) as Array<{
+        quantity: number | null;
+        price: number | null;
+      }>) {
+        listedValue += Number(l.price ?? 0) * Number(l.quantity ?? 0);
       }
+      listedValue = Math.round(listedValue);
+      totalWealth = factionMoney + membersMoney + listedValue;
     }
-  }
-
-  const salesSeries: Array<{ day: string; value: number }> = [];
-  for (let i = 29; i >= 0; i--) {
-    const day = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
-    salesSeries.push({ day, value: Math.round(dayTotals.get(day) ?? 0) });
   }
 
   return {
     eligible: true as const,
-    memberCount,
-    arrivals30d,
-    pendingApplications: pendingAppsRes.count ?? 0,
-    applications30d: apps30Res.count ?? 0,
-    totalAstikPoints,
-    totalIngameMoney: Math.round(totalIngameMoney),
-    moneyTracked,
-    // Richesse totale = argent en jeu + valeur des ventes encore en ligne.
-    totalWealth: Math.round(totalIngameMoney + listedValue),
-    sales: {
-      soldValue: Math.round(soldValue),
-      listedValue: Math.round(listedValue),
-      series: salesSeries,
-    },
+    factionMoney,
+    membersMoney,
+    listedValue,
+    totalWealth,
+    lastSnapshotAt,
+  };
+});
+
+/* ---------- Profil Paladium du membre (vue membre) ---------- */
+
+const PLAYER_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min (rate limit 50/5min)
+
+type PaladiumProfileData = {
+  level: number | null;
+  money: number | null;
+  factionName: string | null;
+  faction: string | null;
+};
+
+type JobEntry = { name: string; level: number; experience: number | null; xp: number | null };
+
+type PaladiumProfileResult = { profile: PaladiumProfileData | null; jobs: JobEntry[] };
+
+function extractProfile(raw: unknown): PaladiumProfileData {
+  const r = raw as Record<string, unknown>;
+  return {
+    level: typeof r?.level === "number" ? r.level : null,
+    money: typeof r?.money === "number" ? r.money : null,
+    factionName: typeof r?.factionName === "string" ? r.factionName : null,
+    faction: typeof r?.faction === "string" ? r.faction : null,
+  };
+}
+
+function extractJobs(raw: unknown): JobEntry[] {
+  const arr = Array.isArray(raw)
+    ? (raw as unknown[])
+    : Array.isArray((raw as Record<string, unknown>)?.jobs)
+      ? ((raw as Record<string, unknown>).jobs as unknown[])
+      : [];
+  return arr.map((j) => {
+    const e = j as Record<string, unknown>;
+    return {
+      name: typeof e.name === "string" ? e.name : "",
+      level: typeof e.level === "number" ? e.level : 0,
+      experience: typeof e.experience === "number" ? e.experience : null,
+      xp: typeof e.xp === "number" ? e.xp : null,
+    };
+  });
+}
+
+export const getMyPaladiumProfile = createServerFn({ method: "GET" }).handler(
+  async (): Promise<PaladiumProfileResult> => {
+    const user = await requireSession();
+
+    const { data: member } = await db
+      .from("members")
+      .select("mc_uuid")
+      .eq("discord_id", user.discordId)
+      .maybeSingle();
+
+    const mcUuid = member?.mc_uuid;
+    if (!mcUuid) return { profile: null, jobs: [] };
+
+    const { data: cached } = await db
+      .from("paladium_player_cache")
+      .select("profile_json, jobs_json, fetched_at")
+      .eq("mc_uuid", mcUuid)
+      .maybeSingle();
+
+    const isFresh =
+      cached && Date.now() - new Date(cached.fetched_at).getTime() < PLAYER_CACHE_TTL_MS;
+
+    if (isFresh && cached) {
+      return {
+        profile: extractProfile(cached.profile_json),
+        jobs: extractJobs(cached.jobs_json),
+      };
+    }
+
+    let rawProfile: unknown = {};
+    let rawJobs: unknown = [];
+
+    try {
+      const [profileRes, jobsRes] = await Promise.all([
+        fetchPaladium(`/v1/paladium/player/profile/${encodeURIComponent(mcUuid)}`),
+        fetchPaladium(`/v1/paladium/player/profile/${encodeURIComponent(mcUuid)}/jobs`),
+      ]);
+      rawProfile = profileRes.data ?? {};
+      rawJobs = jobsRes.data ?? [];
+    } catch {
+      if (cached) {
+        return {
+          profile: extractProfile(cached.profile_json),
+          jobs: extractJobs(cached.jobs_json),
+        };
+      }
+      return { profile: null, jobs: [] };
+    }
+
+    await db.from("paladium_player_cache").upsert({
+      mc_uuid: mcUuid,
+      profile_json: rawProfile as never,
+      jobs_json: rawJobs as never,
+      fetched_at: new Date().toISOString(),
+    } as never);
+
+    return {
+      profile: extractProfile(rawProfile),
+      jobs: extractJobs(rawJobs),
+    };
+  },
+);
+
+type MyListing = {
+  id: string;
+  item_name: string;
+  quantity: number;
+  price: number;
+  price_pb: number | null;
+  listed_at: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  sold_at: string | null;
+};
+
+/** Ventes HDV de l'utilisateur connecté, lues depuis la BDD (jamais l'API Paladium). */
+export const getMyListings = createServerFn({ method: "GET" }).handler(async () => {
+  const user = await requireSession();
+
+  const { data: member } = await db
+    .from("members")
+    .select("mc_uuid")
+    .eq("discord_id", user.discordId)
+    .maybeSingle();
+
+  const uuid = member?.mc_uuid ?? null;
+  if (!uuid)
+    return {
+      open: [] as MyListing[],
+      recentSold: [] as MyListing[],
+      lastSyncedAt: null as string | null,
+    };
+
+  const [listingsRes, trackedRes] = await Promise.all([
+    db
+      .from("paladium_player_listings_history")
+      .select(
+        "id, item_name, quantity, price, price_pb, listed_at, first_seen_at, last_seen_at, sold_at",
+      )
+      .eq("player_uuid", uuid)
+      .order("first_seen_at", { ascending: false })
+      .limit(200),
+    db.from("paladium_tracked_players").select("last_synced_at").eq("uuid", uuid).maybeSingle(),
+  ]);
+
+  const all = (listingsRes.data ?? []) as MyListing[];
+  return {
+    open: all.filter((r) => !r.sold_at),
+    recentSold: all.filter((r) => r.sold_at !== null).slice(0, 50),
+    lastSyncedAt:
+      (trackedRes.data as { last_synced_at: string | null } | null)?.last_synced_at ?? null,
   };
 });

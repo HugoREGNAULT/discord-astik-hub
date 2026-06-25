@@ -16,8 +16,8 @@ import { Progress } from "@/components/ui/progress";
 const UNIT: Record<string, string> = {
   messages: "messages",
   voice_hours: "h vocal",
-  donation_points: "AP donnés",
-  points_earned: "AP gagnés",
+  donation_points: "Points donnés",
+  points_earned: "Points gagnés",
 };
 
 export function QuestsCard() {
@@ -33,7 +33,7 @@ export function QuestsCard() {
   const claimMut = useMutation({
     mutationFn: (templateId: string) => claimFn({ data: { templateId } }),
     onSuccess: (r) => {
-      toast.success(`Récompense réclamée : +${r.reward} AstikPoints 🎉`);
+      toast.success(`Récompense réclamée : +${r.reward} Points`);
       queryClient.invalidateQueries({ queryKey: ["me", "quests"] });
       queryClient.invalidateQueries({ queryKey: ["me", "overview"] });
     },
@@ -57,7 +57,7 @@ export function QuestsCard() {
             <div key={q.id}>
               <div className="flex items-center justify-between gap-2 mb-1">
                 <span className="text-sm font-medium">{q.title}</span>
-                <span className="text-xs text-primary font-mono shrink-0">+{q.reward} AP</span>
+                <span className="text-xs text-primary font-mono shrink-0">+{q.reward}</span>
               </div>
               {q.description && (
                 <p className="text-xs text-muted-foreground mb-1.5">{q.description}</p>
@@ -78,7 +78,7 @@ export function QuestsCard() {
                     onClick={() => claimMut.mutate(q.id)}
                     disabled={claimMut.isPending}
                   >
-                    Réclamer +{q.reward}
+                    Réclamer +{q.reward} Points
                   </Button>
                 ) : null}
               </div>

@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   User as UserIcon,
   Users,
-  Activity,
   ShoppingBag,
   Trophy,
   MousePointerClick,
@@ -60,14 +59,6 @@ function ToolsIndex() {
           accent="blurple"
         />
         <ToolCard
-          to="/tools/status"
-          code="[03]"
-          icon={Activity}
-          title="Statut Serveurs"
-          description="État live des serveurs Paladium (dont anarchie). Auto-refresh 60s."
-          accent="pink"
-        />
-        <ToolCard
           to="/tools/market"
           code="[04]"
           icon={ShoppingBag}
@@ -90,6 +81,8 @@ function ToolsIndex() {
           title="PalaClicker Optimizer"
           description="Recommande le prochain achat le plus rentable en RPS pour maximiser tes ClicCoins."
           accent="blurple"
+          disabled
+          disabledLabel="Bientôt"
         />
         <ToolCard
           to="/tools/xp-calculator"
@@ -98,6 +91,8 @@ function ToolsIndex() {
           title="Calculateur XP Métiers"
           description="Calcule l'XP et les ressources à farmer pour passer d'un niveau à un autre."
           accent="pink"
+          disabled
+          disabledLabel="Bientôt"
         />
         <ToolCard
           to="/tools/events"
@@ -106,6 +101,8 @@ function ToolsIndex() {
           title="Agenda événements"
           description="KOTH, À vos marques et autres événements Paladium à venir, avec countdown."
           accent="blurple"
+          disabled
+          disabledLabel="Plus maintenu par l'API"
         />
         <ToolCard
           to="/tools/uptime"

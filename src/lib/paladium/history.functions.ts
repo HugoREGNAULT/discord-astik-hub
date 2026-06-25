@@ -98,6 +98,31 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
   return { inserted: rows.length };
 });
 
+type StatusRow = {
+  server_key: string;
+  server_label: string | null;
+  online_players: number | null;
+  is_online: boolean;
+  captured_at: string;
+};
+
+function downsampleStatusRows(rows: StatusRow[], bucketMs: number): StatusRow[] {
+  // Garde 1 row par bucket de temps × server_key (le premier rencontré dans l'ordre chrono)
+  const seen = new Map<string, Set<number>>();
+  const result: StatusRow[] = [];
+  for (const r of rows) {
+    const t = new Date(r.captured_at).getTime();
+    const bucket = Math.floor(t / bucketMs);
+    if (!seen.has(r.server_key)) seen.set(r.server_key, new Set());
+    const buckets = seen.get(r.server_key)!;
+    if (!buckets.has(bucket)) {
+      buckets.add(bucket);
+      result.push(r);
+    }
+  }
+  return result;
+}
+
 export const getStatusHistory = createServerFn({ method: "POST" })
   .inputValidator((d: { days?: number } | undefined) => ({
     days: Math.min(Math.max(Number(d?.days ?? 7), 1), 30),
@@ -105,22 +130,26 @@ export const getStatusHistory = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireSession();
     const since = new Date(Date.now() - data.days * 86400000).toISOString();
+    // Limite haute pour récupérer suffisamment de données avant downsampling
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_server_status_history")
       .select("server_key, server_label, online_players, is_online, captured_at")
       .gte("captured_at", since)
       .order("captured_at", { ascending: true })
-      .limit(10000);
+      .limit(50000);
     if (error) throw new Error(error.message);
-    return {
-      rows: (rows ?? []) as Array<{
-        server_key: string;
-        server_label: string | null;
-        online_players: number | null;
-        is_online: boolean;
-        captured_at: string;
-      }>,
-    };
+
+    const allRows = (rows ?? []) as StatusRow[];
+
+    // Downsampling selon le range pour limiter les points envoyés au client
+    // 1j  → 1 pt / 5min  (données brutes, ~288 pts/serveur)
+    // 7j  → 1 pt / 30min (~336 pts/serveur)
+    // 30j → 1 pt / 2h    (~360 pts/serveur)
+    const bucketMs = data.days <= 1 ? 0 : data.days <= 7 ? 30 * 60_000 : 2 * 60 * 60_000;
+
+    const sampled = bucketMs > 0 ? downsampleStatusRows(allRows, bucketMs) : allRows;
+
+    return { rows: sampled };
   });
 
 /* ============= Admin shop snapshot (every 5 min) ============= */
@@ -359,6 +388,131 @@ export const getMarketPriceHistory = createServerFn({ method: "POST" })
         price_average: number | null;
         count_listings: number | null;
         quantity_available: number | null;
+      }>,
+    };
+  });
+
+/* ============= Latest player count (for /me banner) ============= */
+
+export const getLatestPlayerCount = createServerFn({ method: "GET" }).handler(async () => {
+  const { data } = await supabaseAdmin
+    .from("paladium_server_status_history")
+    .select("online_players, captured_at")
+    .eq("server_key", "java.global")
+    .order("captured_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return {
+    online: data?.online_players ?? null,
+    capturedAt: data?.captured_at ?? null,
+  };
+});
+
+/* ============= Faction wealth snapshot ============= */
+
+const FACTION_NAME = "PunkAstik";
+
+export const snapshotFactionWealth = createServerFn({ method: "POST" }).handler(async () => {
+  // 1. Argent vault faction via API Paladium
+  let factionMoney = 0;
+  try {
+    const { data: factionData } = await fetchPaladium(
+      `/v1/paladium/faction/profile/${encodeURIComponent(FACTION_NAME)}`,
+    );
+    const d = factionData as Record<string, unknown> | null;
+    const raw =
+      typeof d?.money === "number"
+        ? d.money
+        : typeof d?.vault === "number"
+          ? d.vault
+          : typeof d?.gold === "number"
+            ? d.gold
+            : 0;
+    factionMoney = Math.round(Number(raw) || 0);
+  } catch {
+    factionMoney = 0;
+  }
+
+  // 2. Argent membres en jeu (dernier snapshot par joueur dans mc_player_stats)
+  let membersMoney = 0;
+  {
+    const { data: stats } = await supabaseAdmin
+      .from("mc_player_stats")
+      .select("mc_uuid, money, snapshot_at")
+      .order("snapshot_at", { ascending: false })
+      .limit(20000);
+    const seen = new Set<string>();
+    for (const s of (stats ?? []) as Array<{
+      mc_uuid: string;
+      money: number | null;
+      snapshot_at: string;
+    }>) {
+      if (seen.has(s.mc_uuid)) continue;
+      seen.add(s.mc_uuid);
+      if (s.money != null) membersMoney += Number(s.money);
+    }
+    membersMoney = Math.round(membersMoney);
+  }
+
+  // 3. Ventes HDV en cours (non vendues, sur 30j)
+  let listedValue = 0;
+  {
+    const since30 = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    const { data: listings } = await supabaseAdmin
+      .from("paladium_player_listings_history")
+      .select("quantity, price, sold_at, first_seen_at")
+      .gte("first_seen_at", since30)
+      .is("sold_at", null)
+      .limit(50000);
+    for (const l of (listings ?? []) as Array<{ quantity: number | null; price: number | null }>) {
+      listedValue += Number(l.price ?? 0) * Number(l.quantity ?? 0);
+    }
+    listedValue = Math.round(listedValue);
+  }
+
+  const totalWealth = factionMoney + membersMoney + listedValue;
+
+  const { error } = await supabaseAdmin.from("paladium_faction_wealth_history").insert({
+    faction_name: FACTION_NAME,
+    faction_money: factionMoney,
+    members_money: membersMoney,
+    listed_value: listedValue,
+    total_wealth: totalWealth,
+  } as never);
+
+  if (error) throw new Error(error.message);
+
+  // Rétention : garder 90 jours
+  await supabaseAdmin
+    .from("paladium_faction_wealth_history")
+    .delete()
+    .lt("captured_at", new Date(Date.now() - 90 * 86_400_000).toISOString());
+
+  return { factionMoney, membersMoney, listedValue, totalWealth };
+});
+
+export const getFactionWealthHistory = createServerFn({ method: "GET" })
+  .inputValidator((d: { days?: number } | undefined) => ({
+    days: Math.min(Math.max(Number(d?.days ?? 30), 1), 90),
+  }))
+  .handler(async ({ data }) => {
+    await requireSession();
+    const since = new Date(Date.now() - data.days * 86_400_000).toISOString();
+    const { data: rows, error } = await supabaseAdmin
+      .from("paladium_faction_wealth_history")
+      .select("captured_at, faction_money, members_money, listed_value, total_wealth")
+      .eq("faction_name", FACTION_NAME)
+      .gte("captured_at", since)
+      .order("captured_at", { ascending: true })
+      .limit(5000);
+    if (error) throw new Error(error.message);
+    return {
+      rows: (rows ?? []) as Array<{
+        captured_at: string;
+        faction_money: number;
+        members_money: number;
+        listed_value: number;
+        total_wealth: number;
       }>,
     };
   });

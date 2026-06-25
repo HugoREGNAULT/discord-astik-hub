@@ -59,33 +59,47 @@ function UptimePage() {
 
   const rows: Row[] = q.data?.rows ?? [];
 
+  // Serveurs retirés : plus maintenus par l'API
+  const EXCLUDED_KEYS = new Set(["anarchy", "launcher"]);
+  const isExcluded = (key: string) => EXCLUDED_KEYS.has(key) || key.toLowerCase().includes("event");
+
   const grouped = useMemo(() => {
     const map = new Map<string, Row[]>();
     for (const r of rows) {
+      if (isExcluded(r.server_key)) continue;
       const arr = map.get(r.server_key) ?? [];
       arr.push(r);
       map.set(r.server_key, arr);
     }
+    const nowMs = Date.now();
     return Array.from(map.entries())
       .map(([key, list]) => {
         const total = list.length;
         const onlineCount = list.filter((r) => r.is_online).length;
         const uptimePct = total > 0 ? Math.round((onlineCount / total) * 1000) / 10 : 0;
         const last = list[list.length - 1];
+        const rawSeries = list.map((r) => ({
+          t: new Date(r.captured_at).getTime(),
+          players: r.online_players ?? 0,
+          up: r.is_online ? 1 : 0,
+        }));
+        // Étendre jusqu'à "maintenant" pour éviter que le graphe s'arrête à l'ancien snapshot
+        const lastPt = rawSeries[rawSeries.length - 1];
+        const series =
+          lastPt && nowMs - lastPt.t > 60_000
+            ? [...rawSeries, { t: nowMs, players: lastPt.players, up: lastPt.up }]
+            : rawSeries;
         return {
           key,
           label: list[0]?.server_label ?? key,
           uptimePct,
           lastOnline: last?.online_players ?? null,
           isOnline: last?.is_online ?? false,
-          series: list.map((r) => ({
-            t: new Date(r.captured_at).getTime(),
-            players: r.online_players ?? 0,
-            up: r.is_online ? 1 : 0,
-          })),
+          series,
         };
       })
       .sort((a, b) => a.label.localeCompare(b.label));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
   // Aggregate "Total joueurs Paladium" = java.global series
@@ -216,7 +230,9 @@ function UptimePage() {
                     // joueurs en ligne
                   </div>
                   <div className="h-48">
-                    <Suspense fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}>
+                    <Suspense
+                      fallback={<div className="h-full animate-pulse rounded-md bg-muted" />}
+                    >
                       <UptimePlayersChart data={current.series} days={days} />
                     </Suspense>
                   </div>

@@ -59,7 +59,9 @@ export function MonthlyRecapCard() {
           label="Dons (30j)"
           value={`${data.donationCount}`}
           hint={
-            data.donationPoints ? `${data.donationPoints.toLocaleString("fr-FR")} AP` : undefined
+            data.donationPoints
+              ? `${data.donationPoints.toLocaleString("fr-FR")} Points`
+              : undefined
           }
         />
         <Tile

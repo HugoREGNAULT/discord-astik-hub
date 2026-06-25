@@ -73,6 +73,7 @@ import { Route as ApiPublicHooksProcessApplicationReviewsRouteImport } from './r
 import { Route as ApiPublicHooksPaladiumSyncRouteImport } from './routes/api/public/hooks/paladium-sync'
 import { Route as ApiPublicHooksPaladiumStatusSyncRouteImport } from './routes/api/public/hooks/paladium-status-sync'
 import { Route as ApiPublicHooksPaladiumMarketSyncRouteImport } from './routes/api/public/hooks/paladium-market-sync'
+import { Route as ApiPublicHooksPaladiumFactionSyncRouteImport } from './routes/api/public/hooks/paladium-faction-sync'
 import { Route as ApiPublicHooksPaladiumAdminShopSyncRouteImport } from './routes/api/public/hooks/paladium-admin-shop-sync'
 import { Route as ApiPublicHooksImportMcStatsRouteImport } from './routes/api/public/hooks/import-mc-stats'
 import { Route as ApiPublicHooksGenerateSalaryPreviewRouteImport } from './routes/api/public/hooks/generate-salary-preview'
@@ -436,6 +437,12 @@ const ApiPublicHooksPaladiumMarketSyncRoute =
     path: '/api/public/hooks/paladium-market-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksPaladiumFactionSyncRoute =
+  ApiPublicHooksPaladiumFactionSyncRouteImport.update({
+    id: '/api/public/hooks/paladium-faction-sync',
+    path: '/api/public/hooks/paladium-faction-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksPaladiumAdminShopSyncRoute =
   ApiPublicHooksPaladiumAdminShopSyncRouteImport.update({
     id: '/api/public/hooks/paladium-admin-shop-sync',
@@ -591,6 +598,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
   '/api/public/hooks/import-mc-stats': typeof ApiPublicHooksImportMcStatsRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-faction-sync': typeof ApiPublicHooksPaladiumFactionSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
@@ -671,6 +679,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
   '/api/public/hooks/import-mc-stats': typeof ApiPublicHooksImportMcStatsRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-faction-sync': typeof ApiPublicHooksPaladiumFactionSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
@@ -754,6 +763,7 @@ export interface FileRoutesById {
   '/api/public/hooks/generate-salary-preview': typeof ApiPublicHooksGenerateSalaryPreviewRoute
   '/api/public/hooks/import-mc-stats': typeof ApiPublicHooksImportMcStatsRoute
   '/api/public/hooks/paladium-admin-shop-sync': typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  '/api/public/hooks/paladium-faction-sync': typeof ApiPublicHooksPaladiumFactionSyncRoute
   '/api/public/hooks/paladium-market-sync': typeof ApiPublicHooksPaladiumMarketSyncRoute
   '/api/public/hooks/paladium-status-sync': typeof ApiPublicHooksPaladiumStatusSyncRoute
   '/api/public/hooks/paladium-sync': typeof ApiPublicHooksPaladiumSyncRoute
@@ -837,6 +847,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/generate-salary-preview'
     | '/api/public/hooks/import-mc-stats'
     | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-faction-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
@@ -917,6 +928,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/generate-salary-preview'
     | '/api/public/hooks/import-mc-stats'
     | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-faction-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
@@ -999,6 +1011,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/generate-salary-preview'
     | '/api/public/hooks/import-mc-stats'
     | '/api/public/hooks/paladium-admin-shop-sync'
+    | '/api/public/hooks/paladium-faction-sync'
     | '/api/public/hooks/paladium-market-sync'
     | '/api/public/hooks/paladium-status-sync'
     | '/api/public/hooks/paladium-sync'
@@ -1041,6 +1054,7 @@ export interface RootRouteChildren {
   ApiPublicHooksGenerateSalaryPreviewRoute: typeof ApiPublicHooksGenerateSalaryPreviewRoute
   ApiPublicHooksImportMcStatsRoute: typeof ApiPublicHooksImportMcStatsRoute
   ApiPublicHooksPaladiumAdminShopSyncRoute: typeof ApiPublicHooksPaladiumAdminShopSyncRoute
+  ApiPublicHooksPaladiumFactionSyncRoute: typeof ApiPublicHooksPaladiumFactionSyncRoute
   ApiPublicHooksPaladiumMarketSyncRoute: typeof ApiPublicHooksPaladiumMarketSyncRoute
   ApiPublicHooksPaladiumStatusSyncRoute: typeof ApiPublicHooksPaladiumStatusSyncRoute
   ApiPublicHooksPaladiumSyncRoute: typeof ApiPublicHooksPaladiumSyncRoute
@@ -1500,6 +1514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPaladiumStatusSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/paladium-faction-sync': {
+      id: '/api/public/hooks/paladium-faction-sync'
+      path: '/api/public/hooks/paladium-faction-sync'
+      fullPath: '/api/public/hooks/paladium-faction-sync'
+      preLoaderRoute: typeof ApiPublicHooksPaladiumFactionSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/paladium-market-sync': {
       id: '/api/public/hooks/paladium-market-sync'
       path: '/api/public/hooks/paladium-market-sync'
@@ -1778,6 +1799,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksImportMcStatsRoute: ApiPublicHooksImportMcStatsRoute,
   ApiPublicHooksPaladiumAdminShopSyncRoute:
     ApiPublicHooksPaladiumAdminShopSyncRoute,
+  ApiPublicHooksPaladiumFactionSyncRoute: ApiPublicHooksPaladiumFactionSyncRoute,
   ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
   ApiPublicHooksPaladiumStatusSyncRoute: ApiPublicHooksPaladiumStatusSyncRoute,
   ApiPublicHooksPaladiumSyncRoute: ApiPublicHooksPaladiumSyncRoute,
