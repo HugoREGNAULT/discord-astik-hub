@@ -52,9 +52,32 @@ export async function getSessionManager() {
 export async function getSessionData(): Promise<DiscordSessionData | null> {
   const s = await getSessionManager();
   const d = s.data as Partial<DiscordSessionData> | undefined;
-  return d && d.discordId ? (d as DiscordSessionData) : null;
+  const result = d && d.discordId ? (d as DiscordSessionData) : null;
+  console.log(
+    "[AUTH-DEBUG] getSessionData →",
+    result
+      ? `session trouvée (discordId=${result.discordId})`
+      : "aucune session (cookie absent ou invalide)",
+  );
+  return result;
 }
 export async function setSessionData(data: DiscordSessionData) {
+  const cfg = getSessionConfig();
+  console.log(
+    "[AUTH-DEBUG] setSessionData → pose cookie",
+    `"${cfg.name}"`,
+    "| Secure:",
+    cfg.cookie.secure,
+    "| SameSite:",
+    cfg.cookie.sameSite,
+    "| httpOnly:",
+    cfg.cookie.httpOnly,
+    "| path:",
+    cfg.cookie.path,
+    "| maxAge:",
+    cfg.maxAge,
+    "s",
+  );
   const s = await getSessionManager();
   await s.update(data);
 }

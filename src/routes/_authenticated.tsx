@@ -1,4 +1,11 @@
-import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useNavigate,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -22,6 +29,12 @@ import { recordView } from "@/lib/data/usage.functions";
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { authenticated } = await getSessionStatus();
+    console.log(
+      "[AUTH-DEBUG] guard beforeLoad → session=",
+      authenticated ? "présente" : "absente",
+      "→",
+      authenticated ? "laisse passer" : "redirige vers /login",
+    );
     if (!authenticated) throw redirect({ to: "/login" });
   },
   head: () => ({}),
@@ -88,7 +101,12 @@ function AuthLayout() {
   }, [pathname, user, isLoading, trackView]);
 
   useEffect(() => {
-    if (!isLoading && !user) navigate({ to: "/login" });
+    if (!isLoading && !user) {
+      console.log(
+        "[AUTH-DEBUG] guard AuthLayout (client) → session=absente → redirige vers /login",
+      );
+      navigate({ to: "/login" });
+    }
   }, [isLoading, user, navigate]);
 
   if (isLoading || !user) {
@@ -122,10 +140,7 @@ function AuthLayout() {
         <div className="flex-1 flex flex-col min-w-0 relative">
           <header className="h-14 flex items-center gap-3 border-b border-zinc-800/80 px-4 sticky top-0 bg-[#0a0a0c]/90 backdrop-blur z-10">
             <SidebarTrigger className="text-zinc-400 hover:text-pink-500" />
-            <Breadcrumb
-              className="hidden sm:flex"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
+            <Breadcrumb className="hidden sm:flex" style={{ fontFamily: "'Space Mono'" }}>
               <BreadcrumbList className="text-[10px] uppercase tracking-[0.3em] gap-1.5 sm:gap-2">
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild className="text-zinc-500 hover:text-pink-500">

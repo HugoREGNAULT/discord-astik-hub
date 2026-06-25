@@ -28,15 +28,49 @@ export const Route = createFileRoute("/api/auth/callback")({
         const nextPath =
           nextDecoded.startsWith("/") && !nextDecoded.startsWith("//") ? nextDecoded : "/me";
 
+        console.log(
+          "[AUTH-DEBUG] /api/auth/callback → code présent:",
+          !!code,
+          "| state présent:",
+          !!state,
+          "| stateCookie présent:",
+          !!stateCookie,
+          "| state===stateCookie:",
+          state === stateCookie,
+        );
+
         if (!code || !state || !stateCookie || state !== stateCookie) {
+          const reason = !code
+            ? "code manquant"
+            : !state
+              ? "state manquant"
+              : !stateCookie
+                ? "stateCookie absent — cookie oauth_state non reçu (Secure/SameSite? cross-origin?)"
+                : `state !== stateCookie (mismatch: state="${state}" stateCookie="${stateCookie}")`;
+          console.error("[AUTH-DEBUG] Invalid OAuth state — raison:", reason);
           return new Response("Invalid OAuth state", { status: 400 });
         }
 
         const redirectUri = `${url.origin}/api/auth/callback`;
         try {
           const token = await exchangeCode(code, redirectUri);
+          console.log("[AUTH-DEBUG] exchangeCode → token OK");
+
           const user = await getCurrentDiscordUser(token.access_token);
+          console.log(
+            "[AUTH-DEBUG] getCurrentDiscordUser → id:",
+            user.id,
+            "| username:",
+            user.username,
+          );
+
           const roleIds = await fetchAggregatedRoles(user.id);
+          console.log(
+            "[AUTH-DEBUG] fetchAggregatedRoles → roleIds.length:",
+            roleIds.length,
+            "| contient MEMBER_FACTION:",
+            roleIds.includes(ROLES.MEMBER_FACTION),
+          );
 
           await setSessionData({
             discordId: user.id,
@@ -49,6 +83,8 @@ export const Route = createFileRoute("/api/auth/callback")({
             roleIds,
             rolesRefreshedAt: Date.now(),
           });
+
+          console.log("[AUTH-DEBUG] setSessionData → session set | nextPath:", nextPath);
 
           // Upsert minimal member profile si membre faction (sinon juste log)
           const isMember = roleIds.includes(ROLES.MEMBER_FACTION);
