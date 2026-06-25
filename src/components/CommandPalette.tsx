@@ -18,11 +18,9 @@ import {
   Coins,
   ShoppingCart,
   Settings2,
-  ListTree,
   Target,
   ShieldAlert,
   UserPlus,
-  CalendarCheck,
   FileText,
   Search,
   X,
@@ -36,8 +34,6 @@ type Nav = { label: string; to: string; icon: any; perm: Permission };
 
 const NAVS: Nav[] = [
   { label: "Classement", to: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
-  { label: "Sondages", to: "/polls", icon: CalendarCheck, perm: "profile.self" },
-  { label: "Effectif", to: "/effectif", icon: ListTree, perm: "profile.self" },
   { label: "Membres", to: "/members", icon: Users, perm: "members.view" },
   { label: "Candidatures", to: "/recruitment", icon: UserPlus, perm: "recruit.access" },
   { label: "Gestion Points", to: "/points", icon: Coins, perm: "points.manage" },
