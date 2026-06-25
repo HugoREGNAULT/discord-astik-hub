@@ -39,13 +39,6 @@ export const Route = createFileRoute("/api/auth/login")({
           `oauth_next=${encodeURIComponent(next)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`,
         ];
 
-        console.log(
-          "[AUTH-DEBUG] /api/auth/login → redirectUri:",
-          redirectUri,
-          "| state posé dans oauth_state cookie:",
-          state,
-        );
-
         const headers = new Headers({ Location: authorizeUrl });
         for (const c of cookies) headers.append("Set-Cookie", c);
         return new Response(null, { status: 302, headers });

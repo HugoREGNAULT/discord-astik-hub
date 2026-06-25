@@ -1,11 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  Outlet,
-  redirect,
-  useNavigate,
-  useRouterState,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -23,19 +16,20 @@ import {
 } from "@/components/ui/breadcrumb";
 
 import { useCurrentUser } from "@/lib/auth/use-current-user";
-import { getSessionStatus } from "@/lib/auth/session.functions";
+import { getSessionStatus, getCurrentUser } from "@/lib/auth/session.functions";
 import { recordView } from "@/lib/data/usage.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { authenticated } = await getSessionStatus();
-    console.log(
-      "[AUTH-DEBUG] guard beforeLoad → session=",
-      authenticated ? "présente" : "absente",
-      "→",
-      authenticated ? "laisse passer" : "redirige vers /login",
-    );
     if (!authenticated) throw redirect({ to: "/login" });
+  },
+  loader: async () => {
+    try {
+      return await getCurrentUser();
+    } catch {
+      return null;
+    }
   },
   head: () => ({}),
   component: AuthLayout,
@@ -85,8 +79,12 @@ function buildCrumbs(pathname: string): Array<{ label: string; href: string; isL
 }
 
 function AuthLayout() {
-  const { data: user, isLoading } = useCurrentUser();
-  const navigate = useNavigate();
+  const loaderUser = Route.useLoaderData();
+  const { data: freshUser } = useCurrentUser();
+  // loaderUser provient du loader SSR (contexte de requête fiable) ;
+  // freshUser est la version rafraîchie côté client. On préfère le frais,
+  // mais on retombe sur le loader si le fetch client échoue.
+  const user = freshUser ?? loaderUser;
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const crumbs = buildCrumbs(pathname);
 
@@ -94,22 +92,13 @@ function AuthLayout() {
   const trackView = useServerFn(recordView);
   const lastTrackedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (isLoading || !user) return;
+    if (!user) return;
     if (lastTrackedRef.current === pathname) return;
     lastTrackedRef.current = pathname;
     void trackView({ data: { path: pathname } }).catch(() => {});
-  }, [pathname, user, isLoading, trackView]);
+  }, [pathname, user, trackView]);
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      console.log(
-        "[AUTH-DEBUG] guard AuthLayout (client) → session=absente → redirige vers /login",
-      );
-      navigate({ to: "/login" });
-    }
-  }, [isLoading, user, navigate]);
-
-  if (isLoading || !user) {
+  if (!user) {
     return (
       <div
         className="min-h-screen grid place-items-center bg-[#0a0a0c] text-zinc-500 uppercase tracking-[0.3em] text-xs"
