@@ -45,7 +45,7 @@ export function ToolCard({
             className={`w-5 h-5 mt-0.5 ${disabled ? "text-muted-foreground" : accentText} shrink-0`}
           />
           <h3
-            className="text-base font-bold uppercase tracking-tight text-white"
+            className="text-base font-bold uppercase tracking-tight text-foreground"
             style={{ fontFamily: "'Space Grotesk'" }}
           >
             {title}
@@ -82,7 +82,7 @@ export function ToolCard({
         <div className="flex items-start gap-3 mb-2">
           <Icon className={`w-5 h-5 mt-0.5 ${accentText} shrink-0`} />
           <h3
-            className="text-base font-bold uppercase tracking-tight text-white"
+            className="text-base font-bold uppercase tracking-tight text-foreground"
             style={{ fontFamily: "'Space Grotesk'" }}
           >
             {title}
