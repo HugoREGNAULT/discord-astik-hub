@@ -1514,18 +1514,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPaladiumStatusSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/paladium-faction-sync': {
-      id: '/api/public/hooks/paladium-faction-sync'
-      path: '/api/public/hooks/paladium-faction-sync'
-      fullPath: '/api/public/hooks/paladium-faction-sync'
-      preLoaderRoute: typeof ApiPublicHooksPaladiumFactionSyncRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/paladium-market-sync': {
       id: '/api/public/hooks/paladium-market-sync'
       path: '/api/public/hooks/paladium-market-sync'
       fullPath: '/api/public/hooks/paladium-market-sync'
       preLoaderRoute: typeof ApiPublicHooksPaladiumMarketSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/paladium-faction-sync': {
+      id: '/api/public/hooks/paladium-faction-sync'
+      path: '/api/public/hooks/paladium-faction-sync'
+      fullPath: '/api/public/hooks/paladium-faction-sync'
+      preLoaderRoute: typeof ApiPublicHooksPaladiumFactionSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/paladium-admin-shop-sync': {
@@ -1799,7 +1799,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksImportMcStatsRoute: ApiPublicHooksImportMcStatsRoute,
   ApiPublicHooksPaladiumAdminShopSyncRoute:
     ApiPublicHooksPaladiumAdminShopSyncRoute,
-  ApiPublicHooksPaladiumFactionSyncRoute: ApiPublicHooksPaladiumFactionSyncRoute,
+  ApiPublicHooksPaladiumFactionSyncRoute:
+    ApiPublicHooksPaladiumFactionSyncRoute,
   ApiPublicHooksPaladiumMarketSyncRoute: ApiPublicHooksPaladiumMarketSyncRoute,
   ApiPublicHooksPaladiumStatusSyncRoute: ApiPublicHooksPaladiumStatusSyncRoute,
   ApiPublicHooksPaladiumSyncRoute: ApiPublicHooksPaladiumSyncRoute,
@@ -1820,3 +1821,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
