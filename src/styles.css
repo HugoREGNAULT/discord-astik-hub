@@ -5,6 +5,8 @@
 @import "@fontsource/space-grotesk/500.css";
 @import "@fontsource/space-grotesk/700.css";
 @import "@fontsource/space-mono/400.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -46,70 +48,70 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Dark gaming theme by default — PunkAstik DA Tools (cyberpunk/terminal) */
+/* Brutalist Sombre × Univers Paladium — dark forever */
 :root {
   --radius: 0rem;
-  --background: oklch(0.14 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.22 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.7 0.21 4);
-  --primary-foreground: oklch(0.14 0 0);
-  --secondary: oklch(0.27 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.24 0 0);
-  --muted-foreground: oklch(0.68 0 0);
-  --accent: oklch(0.7 0.21 4);
-  --accent-foreground: oklch(0.14 0 0);
+  --background: #0d0a13;
+  --foreground: #f3ecff;
+  --card: #161020;
+  --card-foreground: #f3ecff;
+  --popover: #161020;
+  --popover-foreground: #f3ecff;
+  --primary: #8b5cf6;
+  --primary-foreground: #0d0a13;
+  --secondary: #1d1530;
+  --secondary-foreground: #f3ecff;
+  --muted: #1d1530;
+  --muted-foreground: #9a8fb5;
+  --accent: #8b5cf6;
+  --accent-foreground: #0d0a13;
   --destructive: oklch(0.62 0.23 25);
   --destructive-foreground: oklch(0.98 0 0);
   --success: oklch(0.7 0.18 150);
   --success-foreground: oklch(0.14 0 0);
   --warning: oklch(0.78 0.16 80);
   --warning-foreground: oklch(0.14 0 0);
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.25 0 0);
-  --ring: oklch(0.7 0.21 4);
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.7 0.21 4);
-  --sidebar-primary-foreground: oklch(0.14 0 0);
-  --sidebar-accent: oklch(0.22 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.3 0 0);
-  --sidebar-ring: oklch(0.7 0.21 4);
+  --border: #2c2140;
+  --input: #1d1530;
+  --ring: #8b5cf6;
+  --sidebar: #0a0813;
+  --sidebar-foreground: #f3ecff;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #0d0a13;
+  --sidebar-accent: #1d1530;
+  --sidebar-accent-foreground: #f3ecff;
+  --sidebar-border: #2c2140;
+  --sidebar-ring: #8b5cf6;
 }
 
 .dark {
-  --background: oklch(0.14 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.22 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.18 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.7 0.21 4);
-  --primary-foreground: oklch(0.14 0 0);
-  --secondary: oklch(0.27 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.24 0 0);
-  --muted-foreground: oklch(0.68 0 0);
-  --accent: oklch(0.7 0.21 4);
-  --accent-foreground: oklch(0.14 0 0);
+  --background: #0d0a13;
+  --foreground: #f3ecff;
+  --card: #161020;
+  --card-foreground: #f3ecff;
+  --popover: #161020;
+  --popover-foreground: #f3ecff;
+  --primary: #8b5cf6;
+  --primary-foreground: #0d0a13;
+  --secondary: #1d1530;
+  --secondary-foreground: #f3ecff;
+  --muted: #1d1530;
+  --muted-foreground: #9a8fb5;
+  --accent: #8b5cf6;
+  --accent-foreground: #0d0a13;
   --destructive: oklch(0.62 0.23 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.25 0 0);
-  --ring: oklch(0.7 0.21 4);
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.92 0 0);
-  --sidebar-primary: oklch(0.7 0.21 4);
-  --sidebar-primary-foreground: oklch(0.14 0 0);
-  --sidebar-accent: oklch(0.22 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.3 0 0);
-  --sidebar-ring: oklch(0.7 0.21 4);
+  --border: #2c2140;
+  --input: #1d1530;
+  --ring: #8b5cf6;
+  --sidebar: #0a0813;
+  --sidebar-foreground: #f3ecff;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #0d0a13;
+  --sidebar-accent: #1d1530;
+  --sidebar-accent-foreground: #f3ecff;
+  --sidebar-border: #2c2140;
+  --sidebar-ring: #8b5cf6;
 }
 
 @layer base {
@@ -119,98 +121,37 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: "Inter", sans-serif;
     font-feature-settings: "ss01", "cv11";
+    background-image:
+      radial-gradient(ellipse 60% 40% at 20% 0%, rgba(139, 92, 246, 0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
   }
 }
 
-/* ============================================================ */
-/* LIGHT MODE OVERRIDES                                          */
-/* The app is dark-first (cyberpunk). Light mode remaps the most */
-/* common hardcoded zinc/black classes to a soft light palette,  */
-/* keeping the pink/indigo accents.                              */
-/* ============================================================ */
-html.light {
-  --background: oklch(0.985 0.003 270);
-  --foreground: oklch(0.2 0.02 270);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 270);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 270);
-  --primary: oklch(0.55 0.22 295);
-  --primary-foreground: oklch(0.98 0.01 270);
-  --secondary: oklch(0.95 0.01 270);
-  --secondary-foreground: oklch(0.2 0.02 270);
-  --muted: oklch(0.95 0.01 270);
-  --muted-foreground: oklch(0.45 0.02 270);
-  --accent: oklch(0.55 0.2 25);
-  --accent-foreground: oklch(0.98 0.01 270);
-  --border: oklch(0.2 0.02 270 / 12%);
-  --input: oklch(0.2 0.02 270 / 12%);
-  --ring: oklch(0.55 0.22 295);
-  --sidebar: oklch(0.97 0.005 270);
-  --sidebar-foreground: oklch(0.25 0.02 270);
-  --sidebar-primary: oklch(0.55 0.22 295);
-  --sidebar-primary-foreground: oklch(0.98 0.01 270);
-  --sidebar-accent: oklch(0.93 0.01 270);
-  --sidebar-accent-foreground: oklch(0.2 0.02 270);
-  --sidebar-border: oklch(0.2 0.02 270 / 10%);
-  --sidebar-ring: oklch(0.55 0.22 295);
-}
+@layer components {
+  /* Coin équerre brutal en haut à droite — à placer sur tout élément `relative` */
+  .brutal-corner::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-top: 3px solid var(--primary);
+    border-right: 3px solid var(--primary);
+    pointer-events: none;
+    z-index: 1;
+  }
 
-html.light body {
-  background-color: #f4f4f7;
-  color: #18181b;
-}
-
-/* Remap hardcoded utility classes used across the app */
-html.light .bg-\[\#0a0a0c\] {
-  background-color: #f4f4f7 !important;
-}
-html.light .bg-\[\#0a0a0c\]\/90 {
-  background-color: rgb(244 244 247 / 0.9) !important;
-}
-html.light .bg-black\/80 {
-  background-color: rgb(0 0 0 / 0.35) !important;
-}
-html.light .bg-zinc-950 {
-  background-color: #ffffff !important;
-}
-html.light .bg-zinc-950\/50 {
-  background-color: rgb(255 255 255 / 0.6) !important;
-}
-html.light .bg-zinc-900,
-html.light .bg-zinc-900\/90,
-html.light .bg-zinc-900\/80,
-html.light .bg-zinc-900\/50,
-html.light .bg-zinc-900\/40 {
-  background-color: #ffffff !important;
-}
-html.light .bg-zinc-800 {
-  background-color: #e4e4e7 !important;
-}
-html.light .bg-zinc-700 {
-  background-color: #d4d4d8 !important;
-}
-
-html.light .text-white {
-  color: #18181b !important;
-}
-html.light .text-zinc-300 {
-  color: #3f3f46 !important;
-}
-html.light .text-zinc-400 {
-  color: #52525b !important;
-}
-html.light .text-zinc-500 {
-  color: #71717a !important;
-}
-html.light .text-zinc-600 {
-  color: #71717a !important;
-}
-
-html.light .border-zinc-800,
-html.light .border-zinc-800\/80,
-html.light .border-zinc-800\/50,
-html.light .border-zinc-700 {
-  border-color: #e4e4e7 !important;
+  /* Barre XP rayée style Paladium — à appliquer sur l'indicateur de Progress */
+  .xp-bar-indicator {
+    background-image: repeating-linear-gradient(
+      45deg,
+      #8b5cf6 0px,
+      #8b5cf6 6px,
+      #6d3df0 6px,
+      #6d3df0 12px
+    );
+  }
 }
