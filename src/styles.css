@@ -101,6 +101,10 @@
   --accent-foreground: #0d0a13;
   --destructive: oklch(0.62 0.23 25);
   --destructive-foreground: oklch(0.98 0 0);
+  --success: oklch(0.7 0.18 150);
+  --success-foreground: oklch(0.14 0 0);
+  --warning: oklch(0.78 0.16 80);
+  --warning-foreground: oklch(0.14 0 0);
   --border: #2c2140;
   --input: #1d1530;
   --ring: #8b5cf6;
