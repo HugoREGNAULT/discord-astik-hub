@@ -45,7 +45,6 @@ type Item = {
   url: string;
   icon: any;
   perm: Permission;
-  accent?: "pink" | "blurple";
 };
 
 type Section = {
@@ -57,149 +56,47 @@ const SECTIONS: Section[] = [
   {
     label: "// punkastik",
     items: [
-      {
-        title: "Mon profil",
-        url: "/me",
-        icon: UserCircle2,
-        perm: "profile.self",
-        accent: "pink",
-      },
-      {
-        title: "Classement",
-        url: "/dashboard",
-        icon: Trophy,
-        perm: "profile.self",
-        accent: "blurple",
-      },
-      {
-        title: "Absences",
-        url: "/absences",
-        icon: CalendarCheck,
-        perm: "profile.self",
-        accent: "pink",
-      },
-      {
-        title: "Outils Paladium",
-        url: "/tools",
-        icon: Wrench,
-        perm: "profile.self",
-        accent: "blurple",
-      },
-      {
-        title: "Projets",
-        url: "/projects",
-        icon: Target,
-        perm: "profile.self",
-        accent: "pink",
-      },
-      {
-        title: "Valeurs & ressources",
-        url: "/values",
-        icon: Coins,
-        perm: "profile.self",
-        accent: "blurple",
-      },
-      {
-        title: "Check BC",
-        url: "/check-bc",
-        icon: ShieldAlert,
-        perm: "profile.self",
-        accent: "pink",
-      },
-      {
-        title: "Mes alertes",
-        url: "/tools/alerts",
-        icon: Bell,
-        perm: "profile.self",
-        accent: "pink",
-      },
+      { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self" },
+      { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self" },
+      { title: "Absences", url: "/absences", icon: CalendarCheck, perm: "profile.self" },
+      { title: "Outils Paladium", url: "/tools", icon: Wrench, perm: "profile.self" },
+      { title: "Projets", url: "/projects", icon: Target, perm: "profile.self" },
+      { title: "Valeurs & ressources", url: "/values", icon: Coins, perm: "profile.self" },
+      { title: "Check BC", url: "/check-bc", icon: ShieldAlert, perm: "profile.self" },
+      { title: "Mes alertes", url: "/tools/alerts", icon: Bell, perm: "profile.self" },
     ],
   },
   {
     label: "// staff",
     items: [
-      {
-        title: "Dashboard staff",
-        url: "/staff",
-        icon: LayoutDashboard,
-        perm: "members.view",
-        accent: "blurple",
-      },
-      {
-        title: "Récap",
-        url: "/staff-recap",
-        icon: Eye,
-        perm: "members.view",
-        accent: "pink",
-      },
-      { title: "Membres", url: "/members", icon: Users, perm: "members.view", accent: "blurple" },
-      {
-        title: "Économie faction",
-        url: "/faction-economy",
-        icon: Coins,
-        perm: "members.view",
-        accent: "blurple",
-      },
+      { title: "Dashboard staff", url: "/staff", icon: LayoutDashboard, perm: "members.view" },
+      { title: "Récap", url: "/staff-recap", icon: Eye, perm: "members.view" },
+      { title: "Membres", url: "/members", icon: Users, perm: "members.view" },
+      { title: "Économie faction", url: "/faction-economy", icon: Coins, perm: "members.view" },
     ],
   },
   {
     label: "// recrutement",
     items: [
-      {
-        title: "Candidatures",
-        url: "/recruitment",
-        icon: UserPlus,
-        perm: "recruit.access",
-        accent: "pink",
-      },
-      { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access", accent: "pink" },
-      {
-        title: "Périodes d'essai",
-        url: "/trials",
-        icon: CalendarCheck,
-        perm: "recruit.access",
-        accent: "pink",
-      },
-      {
-        title: "Backlog candidatures",
-        url: "/backlog",
-        icon: FileText,
-        perm: "admin.access",
-        accent: "pink",
-      },
+      { title: "Candidatures", url: "/recruitment", icon: UserPlus, perm: "recruit.access" },
+      { title: "Blacklist", url: "/blacklist", icon: Ban, perm: "recruit.access" },
+      { title: "Périodes d'essai", url: "/trials", icon: CalendarCheck, perm: "recruit.access" },
+      { title: "Backlog candidatures", url: "/backlog", icon: FileText, perm: "admin.access" },
     ],
   },
   {
     label: "// économie",
     items: [
-      {
-        title: "Gestion Points",
-        url: "/points",
-        icon: Coins,
-        perm: "points.manage",
-        accent: "pink",
-      },
-      {
-        title: "Quêtes hebdo",
-        url: "/quests-admin",
-        icon: Swords,
-        perm: "quests.manage",
-        accent: "pink",
-      },
-      {
-        title: "Config valeurs",
-        url: "/config",
-        icon: Settings2,
-        perm: "config.manage",
-        accent: "blurple",
-      },
+      { title: "Gestion Points", url: "/points", icon: Coins, perm: "points.manage" },
+      { title: "Quêtes hebdo", url: "/quests-admin", icon: Swords, perm: "quests.manage" },
+      { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage" },
     ],
   },
   {
     label: "// administration",
     items: [
-      { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access", accent: "blurple" },
-      { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access", accent: "pink" },
+      { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access" },
+      { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access" },
     ],
   },
 ];
@@ -220,27 +117,27 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
   return (
     <Sidebar
       collapsible="icon"
-      className="[&_[data-sidebar=sidebar]]:bg-[#0a0a0c] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-zinc-800/80 text-white"
+      className="[&_[data-sidebar=sidebar]]:bg-sidebar [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-sidebar-border text-sidebar-foreground"
     >
-      <SidebarHeader className="border-b border-zinc-800/80">
+      <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 px-2 py-2">
           <div className="relative shrink-0">
-            <div className="absolute inset-0 bg-pink-500/30 blur-md" />
+            <div className="absolute inset-0 bg-primary/30 blur-md" />
             <img
               src={logo}
               alt="PunkAstik"
-              className="relative w-8 h-8 object-cover rounded-sm border border-pink-500/40"
+              className="relative w-8 h-8 object-cover rounded-none border border-primary/40"
             />
           </div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <span
-              className="text-sm font-bold uppercase tracking-tight text-white"
+              className="text-sm font-bold uppercase tracking-tight text-sidebar-foreground"
               style={{ fontFamily: "'Space Grotesk'" }}
             >
-              PunkAstik <span className="text-pink-500">//</span>
+              PunkAstik <span className="text-primary">//</span>
             </span>
             <span
-              className="text-[9px] text-zinc-500 uppercase tracking-[0.2em]"
+              className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]"
               style={{ fontFamily: "'Space Mono'" }}
             >
               Faction Paladium
@@ -249,11 +146,11 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="bg-[#0a0a0c]">
+      <SidebarContent className="bg-sidebar">
         {visibleSections.map((section) => (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel
-              className="text-[9px] text-zinc-600 uppercase tracking-[0.3em]"
+              className="text-[9px] text-muted-foreground uppercase tracking-[0.3em]"
               style={{ fontFamily: "'Space Mono'" }}
             >
               {section.label}
@@ -262,14 +159,13 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
               <SidebarMenu>
                 {section.items.map((item) => {
                   const active = path === item.url || path.startsWith(item.url + "/");
-                  const accentBar = item.accent === "blurple" ? "bg-[#5865F2]" : "bg-pink-500";
                   return (
                     <SidebarMenuItem key={item.url}>
                       <SidebarMenuButton
                         asChild
                         isActive={active}
                         tooltip={item.title}
-                        className={`relative rounded-none border border-transparent text-zinc-400 hover:text-white hover:bg-zinc-900/80 hover:border-zinc-800 data-[active=true]:bg-zinc-900 data-[active=true]:text-white data-[active=true]:border-zinc-800 transition-colors`}
+                        className="relative rounded-none border border-transparent text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent hover:border-sidebar-border data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground data-[active=true]:border-sidebar-border motion-safe:transition-colors"
                       >
                         <Link
                           to={item.url}
@@ -277,9 +173,9 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
                           onClick={handleNavClick}
                         >
                           <span
-                            className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2px] ${accentBar} ${
+                            className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] bg-primary ${
                               active ? "opacity-100" : "opacity-0 group-hover/menu-item:opacity-60"
-                            } transition-opacity`}
+                            } motion-safe:transition-opacity`}
                           />
                           <item.icon className="size-4 shrink-0" />
                           <span
@@ -299,27 +195,27 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="bg-[#0a0a0c] border-t border-zinc-800/80">
+      <SidebarFooter className="bg-sidebar border-t border-sidebar-border">
         {user && (
           <div className="flex items-center gap-2 px-2 py-2">
             {user.avatarUrl ? (
               <img
                 src={user.avatarUrl}
                 alt=""
-                className="size-8 rounded-sm border border-zinc-700"
+                className="size-8 rounded-none border border-sidebar-border"
               />
             ) : (
-              <div className="size-8 rounded-sm bg-zinc-800 border border-zinc-700" />
+              <div className="size-8 rounded-none bg-sidebar-accent border border-sidebar-border" />
             )}
             <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
               <div
-                className="text-xs font-bold truncate uppercase tracking-tight text-white"
+                className="text-xs font-bold truncate uppercase tracking-tight text-sidebar-foreground"
                 style={{ fontFamily: "'Space Grotesk'" }}
               >
                 {user.globalName ?? user.username}
               </div>
               <div
-                className="text-[11px] text-zinc-400 truncate uppercase tracking-wide"
+                className="text-[11px] text-muted-foreground truncate uppercase tracking-wide"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 @{user.username}
@@ -327,7 +223,7 @@ export function AppSidebar({ user }: { user: CurrentUser | null | undefined }) {
             </div>
             <a
               href="/api/auth/logout"
-              className="text-zinc-500 hover:text-pink-500 group-data-[collapsible=icon]:hidden transition-colors"
+              className="text-muted-foreground hover:text-primary group-data-[collapsible=icon]:hidden motion-safe:transition-colors"
               title="Déconnexion"
             >
               <LogOut className="size-4" />
