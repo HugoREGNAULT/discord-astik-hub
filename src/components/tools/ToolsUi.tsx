@@ -102,7 +102,7 @@ export function DaButton({
     primary:
       "bg-primary text-primary-foreground border-[3px] border-primary shadow-[3px_3px_0px_#000000] disabled:opacity-50",
     ghost:
-      "bg-transparent hover:bg-secondary text-zinc-300 hover:text-white border border-border hover:border-border",
+      "bg-transparent hover:bg-secondary text-muted-foreground hover:text-white border border-border hover:border-border",
     danger:
       "bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 border border-red-500/40",
     success:
@@ -153,7 +153,7 @@ export function DaChip({
   const map: Record<string, string> = {
     pink: "bg-primary/15 text-primary border-primary/30",
     blurple: "bg-primary/15 text-primary border-primary/30",
-    zinc: "bg-zinc-800 text-zinc-300 border-zinc-700",
+    zinc: "bg-secondary text-muted-foreground border-border",
     green: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     red: "bg-red-500/15 text-red-300 border-red-500/30",
   };
@@ -197,7 +197,7 @@ export function ErrorBlock({ message, hint }: { message: string; hint?: string }
 export function EmptyBlock({ label }: { label: string }) {
   return (
     <div
-      className="text-zinc-600 text-xs uppercase tracking-[0.3em] py-6 text-center"
+      className="text-muted-foreground text-xs uppercase tracking-[0.3em] py-6 text-center"
       style={{ fontFamily: "'Space Mono'" }}
     >
       {label}
