@@ -148,7 +148,7 @@ export function LeaderboardChart({ snapshots, topEntries, metric, period, baseli
 
   if (data.length < 2) {
     return (
-      <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground border border-dashed border-border rounded-md">
+      <div className="h-[260px] flex items-center justify-center text-sm text-muted-foreground border border-dashed border-border rounded-none">
         Pas encore assez d'historique — un snapshot est capturé toutes les 5 minutes.
       </div>
     );
