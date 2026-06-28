@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Coins, Gamepad2, Copy, Check, Users } from "lucide-react";
+import { Coins, Gamepad2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, completeOnboarding } from "@/lib/data/me.functions";
 import { getLatestPlayerCount } from "@/lib/paladium/history.functions";
@@ -72,8 +72,8 @@ function MyProfile() {
     <div className="space-y-6 w-full mx-auto 2xl:max-w-[2000px]">
       {/* Bandeau joueurs connectés */}
       {playerCountData?.online != null && (
-        <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5 text-sm">
-          <Users className="size-4 text-primary" />
+        <div className="flex items-center gap-2 border-[3px] border-primary/30 bg-primary/5 px-4 py-2.5 text-sm">
+          <span className="w-2 h-2 bg-primary motion-safe:animate-pulse shrink-0" aria-hidden />
           <span className="text-muted-foreground">Joueurs en ligne sur Paladium :</span>
           <span className="font-bold text-primary tabular-nums">{playerCountData.online}</span>
           {playerCountData.capturedAt && (
