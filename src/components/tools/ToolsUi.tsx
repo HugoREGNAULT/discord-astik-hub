@@ -15,8 +15,6 @@ import type { ReactNode } from "react";
  * Éviter de mélanger les deux kits dans une même page.
  */
 
-
-
 export function ToolHeader({
   code,
   title,
@@ -29,7 +27,7 @@ export function ToolHeader({
   return (
     <div className="mb-6">
       <p
-        className="text-pink-500 text-[10px] uppercase tracking-[0.4em] mb-2"
+        className="text-primary text-[10px] uppercase tracking-[0.4em] mb-2"
         style={{ fontFamily: "'Space Mono'" }}
       >
         {code}
@@ -40,7 +38,7 @@ export function ToolHeader({
       >
         {title}
       </h1>
-      {description && <p className="text-zinc-400 text-sm mt-2 max-w-3xl">{description}</p>}
+      {description && <p className="text-muted-foreground text-sm mt-2 max-w-3xl">{description}</p>}
     </div>
   );
 }
@@ -55,9 +53,7 @@ export function ToolCard({
   className?: string;
 }) {
   return (
-    <div
-      className={`relative bg-zinc-900/70 border border-zinc-800 backdrop-blur p-4 md:p-5 ${className}`}
-    >
+    <div className={`relative bg-card border border-border backdrop-blur p-4 md:p-5 ${className}`}>
       {children}
     </div>
   );
@@ -68,7 +64,7 @@ export const PageCard = ToolCard;
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div
-      className="text-[10px] uppercase tracking-[0.3em] text-pink-500 mb-3"
+      className="text-[10px] uppercase tracking-[0.3em] text-primary mb-3"
       style={{ fontFamily: "'Space Mono'" }}
     >
       // {children}
@@ -79,7 +75,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 export function MonoLabel({ children }: { children: ReactNode }) {
   return (
     <span
-      className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+      className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
       style={{ fontFamily: "'Space Mono'" }}
     >
       {children}
@@ -104,9 +100,9 @@ export function DaButton({
 }) {
   const styles: Record<string, string> = {
     primary:
-      "bg-pink-500 hover:bg-pink-600 text-white border-b-4 border-black/20 disabled:opacity-50",
+      "bg-primary text-primary-foreground border-[3px] border-primary shadow-[3px_3px_0px_#000000] disabled:opacity-50",
     ghost:
-      "bg-transparent hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700",
+      "bg-transparent hover:bg-secondary text-zinc-300 hover:text-white border border-border hover:border-border",
     danger:
       "bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 border border-red-500/40",
     success:
@@ -117,7 +113,7 @@ export function DaButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 ${styles[variant]} ${className}`}
+      className={`text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${styles[variant]} ${className}`}
       style={{ fontFamily: "'Space Mono'" }}
     >
       {children}
@@ -129,7 +125,7 @@ export function DaInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/40 font-mono ${
+      className={`bg-input border-[3px] border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 font-mono ${
         props.className ?? ""
       }`}
     />
@@ -140,7 +136,7 @@ export function DaSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/40 font-mono ${
+      className={`bg-input border-[3px] border-border px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 font-mono ${
         props.className ?? ""
       }`}
     />
@@ -155,8 +151,8 @@ export function DaChip({
   accent?: "pink" | "blurple" | "zinc" | "green" | "red";
 }) {
   const map: Record<string, string> = {
-    pink: "bg-pink-500/15 text-pink-300 border-pink-500/30",
-    blurple: "bg-[#5865F2]/15 text-[#a3aafb] border-[#5865F2]/30",
+    pink: "bg-primary/15 text-primary border-primary/30",
+    blurple: "bg-primary/15 text-primary border-primary/30",
     zinc: "bg-zinc-800 text-zinc-300 border-zinc-700",
     green: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     red: "bg-red-500/15 text-red-300 border-red-500/30",
@@ -174,7 +170,7 @@ export function DaChip({
 export function LoadingBlock({ label = "Chargement…" }: { label?: string }) {
   return (
     <div
-      className="flex items-center gap-3 text-zinc-500 text-xs uppercase tracking-[0.3em] py-8 justify-center"
+      className="flex items-center gap-3 text-muted-foreground text-xs uppercase tracking-[0.3em] py-8 justify-center"
       style={{ fontFamily: "'Space Mono'" }}
     >
       <Loader2 className="w-4 h-4 animate-spin" />
@@ -185,15 +181,15 @@ export function LoadingBlock({ label = "Chargement…" }: { label?: string }) {
 
 export function ErrorBlock({ message, hint }: { message: string; hint?: string }) {
   return (
-    <div className="relative border border-pink-500/40 bg-pink-500/5 p-4 text-sm">
+    <div className="relative border-l-[3px] border-primary/40 bg-primary/5 p-4 text-sm">
       <div
-        className="text-[10px] uppercase tracking-[0.3em] text-pink-500 mb-1"
+        className="text-[10px] uppercase tracking-[0.3em] text-primary mb-1"
         style={{ fontFamily: "'Space Mono'" }}
       >
         // erreur
       </div>
-      <p className="text-pink-200">{message}</p>
-      {hint && <p className="text-zinc-500 text-xs mt-2">{hint}</p>}
+      <p className="text-primary">{message}</p>
+      {hint && <p className="text-muted-foreground text-xs mt-2">{hint}</p>}
     </div>
   );
 }
@@ -220,18 +216,18 @@ export function StatTile({
 }) {
   const color =
     accent === "pink"
-      ? "text-pink-500"
+      ? "text-primary"
       : accent === "blurple"
-        ? "text-[#5865F2]"
+        ? "text-primary"
         : accent === "green"
           ? "text-emerald-400"
           : accent === "red"
             ? "text-red-400"
             : "text-white";
   return (
-    <div className="border border-zinc-800 bg-zinc-900/60 p-3">
+    <div className="border border-border bg-card p-3">
       <div
-        className="text-[9px] uppercase tracking-[0.3em] text-zinc-500 mb-1"
+        className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1"
         style={{ fontFamily: "'Space Mono'" }}
       >
         {label}
@@ -268,11 +264,11 @@ export function SearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
+        className="flex-1 bg-input border-[3px] border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 font-mono"
       />
       <button
         type="submit"
-        className="bg-pink-500 hover:bg-pink-600 text-white text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors border-b-4 border-black/20"
+        className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 transition-colors border-[3px] border-primary shadow-[3px_3px_0px_#000000]"
         style={{ fontFamily: "'Space Mono'" }}
       >
         {buttonLabel}
