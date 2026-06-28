@@ -5,7 +5,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationBell } from "@/components/NotificationBell";
 import { CommandPalette } from "@/components/CommandPalette";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -35,7 +34,6 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
-// Libellés lisibles par segment d'URL (alignés sur AppSidebar ITEMS + TABS de tools.tsx).
 const PATH_LABELS: Record<string, string> = {
   "/dashboard": "Classement",
   "/polls": "Sondages",
@@ -81,14 +79,10 @@ function buildCrumbs(pathname: string): Array<{ label: string; href: string; isL
 function AuthLayout() {
   const loaderUser = Route.useLoaderData();
   const { data: freshUser } = useCurrentUser();
-  // loaderUser provient du loader SSR (contexte de requête fiable) ;
-  // freshUser est la version rafraîchie côté client. On préfère le frais,
-  // mais on retombe sur le loader si le fetch client échoue.
   const user = freshUser ?? loaderUser;
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const crumbs = buildCrumbs(pathname);
 
-  // Tracking discret des vues authentifiées (analytics staff).
   const trackView = useServerFn(recordView);
   const lastTrackedRef = useRef<string | null>(null);
   useEffect(() => {
@@ -101,7 +95,7 @@ function AuthLayout() {
   if (!user) {
     return (
       <div
-        className="min-h-screen grid place-items-center bg-[#0a0a0c] text-zinc-500 uppercase tracking-[0.3em] text-xs"
+        className="min-h-screen grid place-items-center bg-background text-muted-foreground uppercase tracking-[0.3em] text-xs"
         style={{ fontFamily: "'Space Mono'" }}
       >
         // loading…
@@ -111,41 +105,44 @@ function AuthLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-[#0a0a0c] text-white relative">
-        {/* Background grid */}
+      <div className="min-h-screen flex w-full bg-background text-foreground relative">
+        {/* Background grid violet */}
         <div className="fixed inset-0 opacity-20 pointer-events-none">
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: "radial-gradient(#5865F2 0.5px, transparent 0.5px)",
+              backgroundImage: "radial-gradient(rgba(139,92,246,0.4) 0.5px, transparent 0.5px)",
               backgroundSize: "24px 24px",
             }}
           />
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-pink-500 to-transparent blur-sm" />
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#5865F2] to-transparent blur-sm" />
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
         </div>
 
         <AppSidebar user={user} />
         <div className="flex-1 flex flex-col min-w-0 relative">
-          <header className="h-14 flex items-center gap-3 border-b border-zinc-800/80 px-4 sticky top-0 bg-[#0a0a0c]/90 backdrop-blur z-10">
-            <SidebarTrigger className="text-zinc-400 hover:text-pink-500" />
+          <header className="h-14 flex items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/90 backdrop-blur z-10">
+            <SidebarTrigger className="text-muted-foreground hover:text-primary" />
             <Breadcrumb className="hidden sm:flex" style={{ fontFamily: "'Space Mono'" }}>
               <BreadcrumbList className="text-[10px] uppercase tracking-[0.3em] gap-1.5 sm:gap-2">
                 <BreadcrumbItem>
-                  <BreadcrumbLink asChild className="text-zinc-500 hover:text-pink-500">
+                  <BreadcrumbLink asChild className="text-muted-foreground hover:text-primary">
                     <Link to="/dashboard">PunkAstik //</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 {crumbs.map((c) => (
                   <span key={c.href} className="inline-flex items-center gap-1.5 sm:gap-2">
-                    <BreadcrumbSeparator className="text-zinc-600 [&>svg]:size-3" />
+                    <BreadcrumbSeparator className="text-muted-foreground [&>svg]:size-3" />
                     <BreadcrumbItem>
                       {c.isLast ? (
-                        <BreadcrumbPage className="text-zinc-300 font-normal">
+                        <BreadcrumbPage className="text-foreground font-normal">
                           {c.label}
                         </BreadcrumbPage>
                       ) : (
-                        <BreadcrumbLink href={c.href} className="text-zinc-500 hover:text-pink-500">
+                        <BreadcrumbLink
+                          href={c.href}
+                          className="text-muted-foreground hover:text-primary"
+                        >
                           {c.label}
                         </BreadcrumbLink>
                       )}
@@ -157,15 +154,14 @@ function AuthLayout() {
             <div className="ml-auto flex items-center gap-1">
               <CommandPalette />
               <NotificationBell />
-              <ThemeToggle />
               <span
-                className="text-[10px] text-zinc-600 uppercase tracking-[0.2em] hidden md:inline ml-1"
+                className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] hidden md:inline ml-1"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 SYS_HUB_V2
               </span>
               <span
-                className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)] ml-1"
+                className="w-2 h-2 bg-success shadow-[0_0_8px_rgba(52,211,153,0.7)] ml-1"
                 aria-hidden
               />
             </div>
