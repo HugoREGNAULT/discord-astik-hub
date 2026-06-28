@@ -711,7 +711,7 @@ function ApplicationForm() {
             step={1}
             className="mt-3"
           />
-          <p className="text-pink-400 text-sm italic mt-2" style={{ fontFamily: "'Space Mono'" }}>
+          <p className="text-primary text-sm italic mt-2" style={{ fontFamily: "'Space Mono'" }}>
             « {pvpPhrase(pvpLevel[0])} »
           </p>
         </Field>
