@@ -56,7 +56,7 @@ function CandidaturePage() {
   if (isLoading) {
     return (
       <Shell>
-        <div className="text-center text-zinc-500 py-20">Chargement…</div>
+        <div className="text-center text-muted-foreground py-20">Chargement…</div>
       </Shell>
     );
   }
@@ -68,12 +68,12 @@ function CandidaturePage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-background text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(#5865F2 0.5px, transparent 0.5px)",
+            backgroundImage: "radial-gradient(rgba(139,92,246,0.4) 0.5px, transparent 0.5px)",
             backgroundSize: "24px 24px",
           }}
         />
@@ -81,19 +81,19 @@ function Shell({ children }: { children: React.ReactNode }) {
       <header className="relative max-w-4xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm uppercase tracking-wider"
+          className="flex items-center gap-2 text-muted-foreground hover:text-white text-sm uppercase tracking-wider"
           style={{ fontFamily: "'Space Mono'" }}
         >
           <ArrowLeft className="w-4 h-4" />
           Retour
         </Link>
         <div className="flex items-center gap-2">
-          <img src={logo} alt="" className="w-8 h-8 rounded-sm border border-pink-500/40" />
+          <img src={logo} alt="" className="w-8 h-8 rounded-none border border-primary/40" />
           <span
             className="font-bold uppercase tracking-tight"
             style={{ fontFamily: "'Space Grotesk'" }}
           >
-            PunkAstik <span className="text-pink-500">//</span>
+            PunkAstik <span className="text-primary">//</span>
           </span>
         </div>
       </header>
@@ -107,11 +107,11 @@ function LoginGate() {
     <Shell>
       <div className="max-w-md mx-auto mt-12">
         <div className="relative">
-          <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-pink-500" />
-          <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-[#5865F2]" />
-          <div className="relative bg-zinc-900/90 border border-zinc-800 backdrop-blur-md p-8">
+          <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-primary" />
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-primary" />
+          <div className="relative bg-card/90 border border-border backdrop-blur-md p-8">
             <p
-              className="text-pink-500 text-[10px] uppercase tracking-[0.3em] mb-4"
+              className="text-primary text-[10px] uppercase tracking-[0.3em] mb-4"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // step.01 — identify
@@ -122,13 +122,13 @@ function LoginGate() {
             >
               Lie ton compte Discord
             </h2>
-            <p className="text-zinc-400 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               Avant de remplir ta candidature, connecte-toi avec Discord pour qu'on puisse
               t'identifier et te recontacter.
             </p>
             <a
               href="/api/auth/login?next=/candidature"
-              className="w-full flex items-center justify-center gap-3 bg-[#5865F2] hover:bg-[#4752c4] text-white font-bold py-4 px-6 transition-all active:scale-[0.98] border-b-4 border-black/20 uppercase tracking-wider text-sm"
+              className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 transition-all active:scale-[0.98] border-b-4 border-black/20 uppercase tracking-wider text-sm"
             >
               <LogIn className="w-5 h-5" />
               Se connecter avec Discord
@@ -524,7 +524,7 @@ function ApplicationForm() {
     <Shell>
       <div className="mb-8 mt-4">
         <p
-          className="text-pink-500 text-[10px] uppercase tracking-[0.3em] mb-2"
+          className="text-primary text-[10px] uppercase tracking-[0.3em] mb-2"
           style={{ fontFamily: "'Space Mono'" }}
         >
           // step.02 — application
@@ -535,18 +535,18 @@ function ApplicationForm() {
         >
           Candidature PunkAstik
         </h2>
-        <p className="text-zinc-400 text-sm mt-2">
+        <p className="text-muted-foreground text-sm mt-2">
           Prends ton temps et sois honnête — c'est plus simple pour tout le monde. Les champs
-          marqués <span className="text-pink-500">*</span> sont obligatoires.
+          marqués <span className="text-primary">*</span> sont obligatoires.
         </p>
         {hasDraft && (
           <p
-            className="mt-3 text-[11px] text-zinc-500 flex flex-wrap items-center gap-2"
+            className="mt-3 text-[11px] text-muted-foreground flex flex-wrap items-center gap-2"
             style={{ fontFamily: "'Space Mono'" }}
           >
             <span className="text-emerald-400">●</span>
             Brouillon enregistré sur cet appareil — tu peux recharger ou revenir plus tard.
-            <button type="button" onClick={resetDraft} className="underline hover:text-zinc-300">
+            <button type="button" onClick={resetDraft} className="underline hover:text-foreground">
               effacer
             </button>
           </p>
@@ -572,7 +572,7 @@ function ApplicationForm() {
         }}
         onKeyDownCapture={noteKeystroke}
         onPasteCapture={notePaste}
-        className="space-y-6 bg-zinc-900/90 border border-zinc-800 p-6 md:p-8"
+        className="space-y-6 bg-card/90 border border-border p-6 md:p-8"
       >
         {/* 1 — Découverte */}
         <Field
@@ -639,7 +639,7 @@ function ApplicationForm() {
               onChange={(e) => setCountry(e.target.value)}
               translate="no"
               required
-              className="notranslate flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&>option]:bg-zinc-900 [&>option]:text-white"
+              className="notranslate flex h-9 w-full rounded-none border border-input bg-transparent px-3 py-1 text-base text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&>option]:bg-card [&>option]:text-white"
             >
               <option value="" disabled>
                 Sélectionne…
@@ -754,7 +754,7 @@ function ApplicationForm() {
           <Button
             type="submit"
             disabled={!canSubmit}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-6 uppercase tracking-wider"
+            className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 uppercase tracking-wider"
           >
             {mutation.isPending ? (
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -764,7 +764,7 @@ function ApplicationForm() {
             Envoyer ma candidature
           </Button>
           {!canSubmit && !mutation.isPending && (
-            <p className="text-zinc-500 text-xs mt-2 text-center">
+            <p className="text-muted-foreground text-xs mt-2 text-center">
               Complète tous les champs obligatoires (présentations comprises) pour pouvoir envoyer.
             </p>
           )}
@@ -787,12 +787,12 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-zinc-300 text-xs uppercase tracking-wider block">
+      <Label className="text-foreground text-xs uppercase tracking-wider block">
         {label}
-        {required && <span className="text-pink-500 ml-1">*</span>}
+        {required && <span className="text-primary ml-1">*</span>}
       </Label>
       {hint && (
-        <p className="text-[11px] leading-snug text-zinc-500 italic normal-case tracking-normal -mt-1">
+        <p className="text-[11px] leading-snug text-muted-foreground italic normal-case tracking-normal -mt-1">
           {hint}
         </p>
       )}
@@ -828,7 +828,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
           const fill = Math.max(0, Math.min(1, display - i));
           return (
             <div key={i} className="relative w-9 h-9">
-              <Star className="w-9 h-9 text-zinc-600" strokeWidth={1.5} />
+              <Star className="w-9 h-9 text-muted-foreground" strokeWidth={1.5} />
               <div
                 className="absolute inset-0 overflow-hidden pointer-events-none"
                 style={{ width: `${fill * 100}%` }}
@@ -853,14 +853,14 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
           );
         })}
       </div>
-      <span className="text-sm text-zinc-400 tabular-nums">
+      <span className="text-sm text-muted-foreground tabular-nums">
         {display > 0 ? `${display}/5` : "—"}
       </span>
       {value > 0 && (
         <button
           type="button"
           onClick={() => onChange(0)}
-          className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+          className="text-xs text-muted-foreground hover:text-foreground underline"
         >
           effacer
         </button>
@@ -888,7 +888,7 @@ function StatusCard({
         : "border-red-500";
   return (
     <div className="max-w-lg mx-auto mt-12">
-      <div className={`relative bg-zinc-900/90 border-2 ${borderColor} p-8`}>
+      <div className={`relative bg-card/90 border-2 ${borderColor} p-8`}>
         <div className="flex items-center gap-3 mb-3">
           {icon}
           <h2
@@ -898,7 +898,7 @@ function StatusCard({
             {title}
           </h2>
         </div>
-        <div className="text-zinc-300 text-sm leading-relaxed">{body}</div>
+        <div className="text-foreground text-sm leading-relaxed">{body}</div>
       </div>
     </div>
   );

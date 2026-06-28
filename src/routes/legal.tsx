@@ -98,25 +98,25 @@ function LegalPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-background text-white relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: "radial-gradient(#5865F2 0.5px, transparent 0.5px)",
+            backgroundImage: "radial-gradient(rgba(139,92,246,0.4) 0.5px, transparent 0.5px)",
             backgroundSize: "24px 24px",
           }}
         />
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-pink-500 to-transparent blur-sm" />
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#5865F2] to-transparent blur-sm" />
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent blur-sm" />
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent blur-sm" />
       </div>
 
       {/* Header */}
       <header className="relative max-w-4xl mx-auto px-6 pt-8 pb-4 flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-zinc-500 hover:text-pink-500 transition-colors text-xs uppercase tracking-[0.2em]"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-xs uppercase tracking-[0.2em]"
           style={{ fontFamily: "'Space Mono'" }}
         >
           <ArrowLeft className="w-3.5 h-3.5" />
@@ -124,18 +124,18 @@ function LegalPage() {
         </Link>
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="absolute inset-0 bg-pink-500/30 blur-md" />
+            <div className="absolute inset-0 bg-primary/30 blur-md" />
             <img
               src={logo}
               alt="PunkAstik"
-              className="relative w-9 h-9 object-cover rounded-sm border border-pink-500/40"
+              className="relative w-9 h-9 object-cover rounded-none border border-primary/40"
             />
           </div>
           <h1
             className="font-bold tracking-tight uppercase text-lg"
             style={{ fontFamily: "'Space Grotesk'" }}
           >
-            PunkAstik <span className="text-pink-500">//</span>
+            PunkAstik <span className="text-primary">//</span>
           </h1>
         </div>
       </header>
@@ -143,7 +143,7 @@ function LegalPage() {
       {/* Title block */}
       <section className="relative max-w-4xl mx-auto px-6 pt-12 pb-10">
         <div
-          className="text-pink-500 text-[11px] uppercase tracking-[0.3em] mb-3"
+          className="text-primary text-[11px] uppercase tracking-[0.3em] mb-3"
           style={{ fontFamily: "'Space Mono'" }}
         >
           // LEGAL.EXE
@@ -153,11 +153,11 @@ function LegalPage() {
           style={{ fontFamily: "'Space Grotesk'" }}
         >
           Mentions{" "}
-          <span className="bg-gradient-to-r from-pink-500 to-[#5865F2] bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             légales
           </span>
         </h2>
-        <p className="text-zinc-400 text-sm mt-4 max-w-2xl">
+        <p className="text-muted-foreground text-sm mt-4 max-w-2xl">
           Transparence sur ce que le hub collecte, comment c'est stocké, et tes droits.
         </p>
       </section>
@@ -166,16 +166,16 @@ function LegalPage() {
       <section className="relative max-w-4xl mx-auto px-6 pb-16 space-y-6">
         {sections.map(({ id, icon: Icon, title, tag, children }) => (
           <div key={id} className="relative group">
-            <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-pink-500/60" />
-            <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-[#5865F2]/60" />
-            <div className="relative bg-zinc-900/90 border border-zinc-800 backdrop-blur-md p-6 md:p-8">
+            <div className="absolute -top-2 -left-2 w-8 h-8 border-t-2 border-l-2 border-primary/60" />
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 border-b-2 border-r-2 border-primary/60" />
+            <div className="relative bg-card/90 border border-border backdrop-blur-md p-6 md:p-8">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 flex items-center justify-center bg-zinc-950 border border-zinc-800">
-                  <Icon className="w-4 h-4 text-pink-500" />
+                <div className="w-9 h-9 flex items-center justify-center bg-card border border-border">
+                  <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <div
-                    className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest"
+                    className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {tag}
@@ -188,14 +188,14 @@ function LegalPage() {
                   </h3>
                 </div>
               </div>
-              <div className="text-sm text-zinc-400 leading-relaxed">{children}</div>
+              <div className="text-sm text-muted-foreground leading-relaxed">{children}</div>
             </div>
           </div>
         ))}
       </section>
 
       <footer
-        className="relative max-w-4xl mx-auto px-6 pb-8 text-center text-[10px] text-zinc-600 uppercase tracking-widest"
+        className="relative max-w-4xl mx-auto px-6 pb-8 text-center text-[10px] text-muted-foreground uppercase tracking-widest"
         style={{ fontFamily: "'Space Mono'" }}
       >
         ENCRYPTED_HUB · PUNKASTIK © {new Date().getFullYear()}
