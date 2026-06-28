@@ -106,8 +106,8 @@ function FactionEconomyPage() {
                     >
                       <defs>
                         <linearGradient id="ecoGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
-                          <stop offset="100%" stopColor="#ec4899" stopOpacity={0} />
+                          <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.5} />
+                          <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -141,7 +141,7 @@ function FactionEconomyPage() {
                       <Area
                         type="monotone"
                         dataKey="value"
-                        stroke="#ec4899"
+                        stroke="#8b5cf6"
                         fill="url(#ecoGrad)"
                         strokeWidth={2}
                       />
@@ -206,13 +206,13 @@ function FactionEconomyPage() {
                         <TableCell className="text-right tabular-nums">
                           {fmt(r.listedValue)}
                         </TableCell>
-                        <TableCell className="text-right font-semibold tabular-nums text-pink-400">
+                        <TableCell className="text-right font-semibold tabular-nums text-primary">
                           {fmt(r.soldValue)}
                         </TableCell>
                         <TableCell>
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                             <div
-                              className="h-full bg-pink-500"
+                              className="h-full bg-primary"
                               style={{ width: `${(r.soldValue / maxSold) * 100}%` }}
                             />
                           </div>
@@ -252,7 +252,7 @@ function FactionEconomyPage() {
                         <TableCell className="text-right text-muted-foreground tabular-nums">
                           {fmt(it.qty)}
                         </TableCell>
-                        <TableCell className="text-right font-semibold tabular-nums text-pink-400">
+                        <TableCell className="text-right font-semibold tabular-nums text-primary">
                           {fmt(it.value)}
                         </TableCell>
                       </TableRow>

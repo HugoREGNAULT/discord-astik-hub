@@ -1052,7 +1052,7 @@ function ApplicationStats() {
           icon={Ban}
           label="Blacklistées"
           value={data.blacklisted}
-          tone="bg-pink-500/15 text-pink-300"
+          tone="bg-primary/15 text-primary/70"
         />
       </div>
       {data.timeline.length > 1 && (

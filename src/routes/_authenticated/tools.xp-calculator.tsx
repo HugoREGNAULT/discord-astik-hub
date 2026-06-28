@@ -69,8 +69,10 @@ function XpCalculator() {
 
   return (
     <div className="max-w-5xl space-y-5">
-      <div className="rounded border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-400 flex items-center gap-2">
-        <span className="font-mono text-zinc-600 text-[11px] uppercase tracking-widest">//</span>
+      <div className="rounded border border-border bg-secondary/60 px-4 py-3 text-sm text-muted-foreground flex items-center gap-2">
+        <span className="font-mono text-muted-foreground/70 text-[11px] uppercase tracking-widest">
+          //
+        </span>
         Outil temporairement désactivé — Bientôt de retour.
       </div>
       <div className="opacity-60 pointer-events-none select-none space-y-5">
@@ -87,7 +89,7 @@ function XpCalculator() {
               <select
                 value={job}
                 onChange={(e) => setJob(e.target.value as JobId)}
-                className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
+                className="w-full bg-background border border-border px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary"
               >
                 {JOBS.map((j) => (
                   <option key={j.id} value={j.id}>
@@ -105,8 +107,8 @@ function XpCalculator() {
                     onClick={() => setEdition(e)}
                     className={`flex-1 px-2 py-2 text-xs uppercase tracking-[0.2em] border ${
                       edition === e
-                        ? "border-pink-500 text-white bg-pink-500/10"
-                        : "border-zinc-800 text-zinc-400"
+                        ? "border-primary text-white bg-primary/10"
+                        : "border-border text-muted-foreground"
                     }`}
                     style={{ fontFamily: "'Space Mono'" }}
                   >
@@ -121,7 +123,7 @@ function XpCalculator() {
                 value={bonus}
                 onChange={(e) => setBonus(Number(e.target.value) || 0)}
                 min={0}
-                className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
+                className="w-full bg-background border border-border px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary"
               />
             </Field>
             <Field label="Niveau actuel">
@@ -130,7 +132,7 @@ function XpCalculator() {
                 value={from}
                 min={0}
                 onChange={(e) => setFrom(Number(e.target.value) || 0)}
-                className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
+                className="w-full bg-background border border-border px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary"
               />
             </Field>
             <Field label="Niveau cible">
@@ -139,7 +141,7 @@ function XpCalculator() {
                 value={to}
                 min={0}
                 onChange={(e) => setTo(Number(e.target.value) || 0)}
-                className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
+                className="w-full bg-background border border-border px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary"
               />
             </Field>
             <Field label="XP déjà acquise (option.)">
@@ -148,7 +150,7 @@ function XpCalculator() {
                 value={currentXp}
                 min={0}
                 onChange={(e) => setCurrentXp(Number(e.target.value) || 0)}
-                className="w-full bg-zinc-950 border border-zinc-800 px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500"
+                className="w-full bg-background border border-border px-2 py-2 text-sm text-white font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary"
               />
             </Field>
           </div>
@@ -158,12 +160,12 @@ function XpCalculator() {
               value={pseudo}
               onChange={(e) => setPseudo(e.target.value)}
               placeholder="Pseudo (option.) — pré-remplit ton niveau"
-              className="flex-1 bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
+              className="flex-1 bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 font-mono"
             />
             <button
               type="button"
               onClick={() => setResolved(pseudo.trim() || null)}
-              className="bg-[#5865F2] hover:bg-[#4752c4] text-white text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 border-b-4 border-black/20"
+              className="bg-primary hover:bg-primary/90 text-white text-xs font-bold uppercase tracking-[0.2em] px-5 py-2 border-b-4 border-black/20"
               style={{ fontFamily: "'Space Mono'" }}
             >
               Pré-remplir
@@ -171,7 +173,7 @@ function XpCalculator() {
           </div>
 
           {uuidQ.error && (
-            <p className="text-xs text-pink-400 mt-2">{(uuidQ.error as Error).message}</p>
+            <p className="text-xs text-primary mt-2">{(uuidQ.error as Error).message}</p>
           )}
           {matched && (
             <button
@@ -180,7 +182,7 @@ function XpCalculator() {
                 setFrom(matched.level ?? 1);
                 setCurrentXp(Number(matched.experience ?? matched.xp ?? 0));
               }}
-              className="mt-3 text-[10px] uppercase tracking-[0.3em] text-pink-500 hover:text-pink-400"
+              className="mt-3 text-[10px] uppercase tracking-[0.3em] text-primary hover:text-primary"
               style={{ fontFamily: "'Space Mono'" }}
             >
               → utiliser niveau {matched.level} ({Number(matched.experience ?? matched.xp ?? 0)} xp)
@@ -199,7 +201,7 @@ function XpCalculator() {
 
         <ToolCard>
           <h2
-            className="text-[10px] uppercase tracking-[0.3em] text-pink-500 mb-3"
+            className="text-[10px] uppercase tracking-[0.3em] text-primary mb-3"
             style={{ fontFamily: "'Space Mono'" }}
           >
             // ressources à farmer
@@ -207,7 +209,7 @@ function XpCalculator() {
           <div className="overflow-x-auto -mx-2 px-2">
             <table className="w-full text-sm min-w-[420px]">
               <thead>
-                <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+                <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
                   <th className="py-2">Action</th>
                   <th className="py-2 text-right">XP / unité</th>
                   <th className="py-2 text-right">Quantité requise</th>
@@ -215,9 +217,9 @@ function XpCalculator() {
               </thead>
               <tbody>
                 {RATES[job].map((a) => (
-                  <tr key={a.label} className="border-b border-zinc-900 last:border-0">
-                    <td className="py-2 text-zinc-300">{a.label}</td>
-                    <td className="py-2 text-right text-zinc-400">{a.xp}</td>
+                  <tr key={a.label} className="border-b border-border last:border-0">
+                    <td className="py-2 text-foreground/80">{a.label}</td>
+                    <td className="py-2 text-right text-muted-foreground">{a.xp}</td>
                     <td className="py-2 text-right text-white font-bold">
                       {Math.ceil(xpWithBonus / a.xp).toLocaleString("fr-FR")}
                     </td>
@@ -226,7 +228,10 @@ function XpCalculator() {
               </tbody>
             </table>
           </div>
-          <p className="text-[10px] text-zinc-600 mt-3" style={{ fontFamily: "'Space Mono'" }}>
+          <p
+            className="text-[10px] text-muted-foreground/70 mt-3"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
             // les courbes d'XP et rendements sont des approximations — ajuste les fichiers
             xp-curves / xp-rates si besoin. Édition: {edition}.
           </p>
@@ -240,7 +245,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <label className="block">
       <span
-        className="block text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-1"
+        className="block text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1"
         style={{ fontFamily: "'Space Mono'" }}
       >
         {label}

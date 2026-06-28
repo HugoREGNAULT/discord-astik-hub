@@ -129,7 +129,7 @@ function ManualPanel() {
           <div>
             <label
               htmlFor={`${fid}-member`}
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
               style={{ fontFamily: "'Space Mono'" }}
             >
               Membre
@@ -152,7 +152,7 @@ function ManualPanel() {
             <div>
               <label
                 htmlFor={`${fid}-amount`}
-                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+                className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 Montant
@@ -168,7 +168,7 @@ function ManualPanel() {
             <div>
               <label
                 htmlFor={`${fid}-reason`}
-                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+                className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 Raison
@@ -204,18 +204,18 @@ function ManualPanel() {
           <EmptyBlock label="Aucun mouvement" />
         )}
         {history.data?.history && history.data.history.length > 0 && (
-          <ul className="divide-y divide-zinc-800">
+          <ul className="divide-y divide-border">
             {history.data.history.map((e: any) => (
               <li key={e.id} className="py-2 flex justify-between text-sm gap-3">
                 <div className="min-w-0">
                   <div
-                    className="text-[11px] uppercase tracking-[0.2em] text-zinc-400"
+                    className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {new Date(e.created_at).toLocaleString("fr-FR")} · {e.staff_username ?? "—"}
                   </div>
-                  <div className="text-zinc-200 truncate">
-                    <span className="font-mono text-pink-400 mr-2">{e.action_type}</span>
+                  <div className="text-foreground truncate">
+                    <span className="font-mono text-primary mr-2">{e.action_type}</span>
                     {e.reason ?? ""}
                   </div>
                 </div>

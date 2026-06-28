@@ -128,8 +128,8 @@ function LeaderboardPage() {
               onClick={() => setCat(c.id)}
               className={`px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] border ${
                 cat === c.id
-                  ? "border-pink-500 text-white bg-pink-500/10"
-                  : "border-zinc-800 text-zinc-400 hover:border-zinc-700"
+                  ? "border-primary text-white bg-primary/10"
+                  : "border-border text-muted-foreground hover:border-border"
               }`}
               style={{ fontFamily: "'Space Mono'" }}
             >
@@ -145,14 +145,14 @@ function LeaderboardPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un pseudo, UUID ou faction…"
-            className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500/60"
+            className="flex-1 px-3 py-2 bg-background border border-border text-sm text-white placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary/60"
             style={{ fontFamily: "'Space Mono'" }}
           />
           {trimmedSearch && (
             <button
               type="button"
               onClick={() => setSearch("")}
-              className="px-3 py-2 text-[11px] uppercase tracking-[0.2em] border border-zinc-800 text-zinc-400 hover:text-pink-400"
+              className="px-3 py-2 text-[11px] uppercase tracking-[0.2em] border border-border text-muted-foreground hover:text-primary"
               style={{ fontFamily: "'Space Mono'" }}
             >
               Effacer
@@ -160,12 +160,15 @@ function LeaderboardPage() {
           )}
         </div>
         {trimmedSearch && (
-          <div className="mt-2 text-[11px] text-zinc-500" style={{ fontFamily: "'Space Mono'" }}>
+          <div
+            className="mt-2 text-[11px] text-muted-foreground"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
             {searchQ.isFetching && "Résolution Mojang…"}
             {!searchQ.isFetching && searchUuid && (
               <>
-                Pseudo résolu : <span className="text-pink-400">{searchName ?? trimmedSearch}</span>{" "}
-                <span className="text-zinc-600">· {searchUuid}</span>
+                Pseudo résolu : <span className="text-primary">{searchName ?? trimmedSearch}</span>{" "}
+                <span className="text-muted-foreground/70">· {searchUuid}</span>
               </>
             )}
             {!searchQ.isFetching && !searchUuid && !searchIsUuid && searchQ.error && (
@@ -173,7 +176,7 @@ function LeaderboardPage() {
                 Pseudo introuvable côté Mojang — recherche en texte brut.
               </span>
             )}
-            <span className="ml-2 text-zinc-600">· {filtered.length} résultat(s)</span>
+            <span className="ml-2 text-muted-foreground/70">· {filtered.length} résultat(s)</span>
           </div>
         )}
       </ToolCard>
@@ -190,7 +193,7 @@ function LeaderboardPage() {
         <ToolCard className="!p-0 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+              <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
                 <th className="py-2 px-4">#</th>
                 <th className="py-2 px-4">Pseudo</th>
                 <th className="py-2 px-4">Faction</th>
@@ -207,15 +210,15 @@ function LeaderboardPage() {
                 return (
                   <tr
                     key={i}
-                    className={`border-b border-zinc-900 last:border-0 ${
-                      highlight ? "bg-pink-500/10" : "hover:bg-zinc-900/50"
+                    className={`border-b border-border last:border-0 ${
+                      highlight ? "bg-primary/10" : "hover:bg-secondary/50"
                     }`}
                   >
-                    <td className="py-2 px-4 text-pink-400 font-bold">
+                    <td className="py-2 px-4 text-primary font-bold">
                       {(r as { position?: number }).position ?? r.rank ?? i + 1}
                     </td>
-                    <td className="py-2 px-4 text-zinc-200">{display}</td>
-                    <td className="py-2 px-4 text-zinc-400">
+                    <td className="py-2 px-4 text-foreground">{display}</td>
+                    <td className="py-2 px-4 text-muted-foreground">
                       {(r as { factionName?: string }).factionName ?? r.faction ?? "—"}
                     </td>
                     <td className="py-2 px-4 text-right text-white font-bold">{fmtNum(r.value)}</td>
@@ -224,7 +227,7 @@ function LeaderboardPage() {
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-6 px-4 text-center text-zinc-500 text-xs">
+                  <td colSpan={4} className="py-6 px-4 text-center text-muted-foreground text-xs">
                     Aucun joueur ne correspond à « {trimmedSearch} » dans cette catégorie.
                   </td>
                 </tr>

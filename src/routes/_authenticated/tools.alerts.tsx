@@ -108,13 +108,13 @@ function SectionHeader({
 }) {
   return (
     <div
-      className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3 flex items-center gap-2"
+      className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3 flex items-center gap-2"
       style={{ fontFamily: "'Space Mono'" }}
     >
       {icon}
       <span>{label}</span>
-      <span className="text-zinc-700">·</span>
-      <span className="text-zinc-400">{count}</span>
+      <span className="text-muted-foreground/40">·</span>
+      <span className="text-muted-foreground">{count}</span>
     </div>
   );
 }
@@ -158,17 +158,17 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
 
   if (editing) {
     return (
-      <li className="flex flex-wrap items-center gap-2 rounded border border-pink-500/40 bg-zinc-900/40 px-3 py-2 text-sm">
+      <li className="flex flex-wrap items-center gap-2 rounded border border-primary/40 bg-secondary/40 px-3 py-2 text-sm">
         <div className="min-w-0 flex-1">
-          <div className="font-mono text-xs text-zinc-200 truncate">{alert.item_name}</div>
-          <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+          <div className="font-mono text-xs text-foreground truncate">{alert.item_name}</div>
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
             {kindLabel}
           </div>
         </div>
         <select
           value={direction}
           onChange={(e) => setDirection(e.target.value as "above" | "below")}
-          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-200"
+          className="bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground"
         >
           <option value="below">≤ seuil</option>
           <option value="above">≥ seuil</option>
@@ -179,7 +179,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
           min="0"
           value={threshold}
           onChange={(e) => setThreshold(e.target.value)}
-          className="w-28 bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-zinc-200"
+          className="w-28 bg-secondary border border-border rounded px-2 py-1 text-xs text-foreground"
         />
         <button
           onClick={() => {
@@ -202,7 +202,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
             setThreshold(String(alert.threshold));
             setEditing(false);
           }}
-          className="text-zinc-500 hover:text-white"
+          className="text-muted-foreground hover:text-white"
           title="Annuler"
         >
           <X className="size-4" />
@@ -212,10 +212,10 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
   }
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm">
+    <li className="flex items-center justify-between gap-3 rounded border border-border bg-secondary/40 px-3 py-2 text-sm">
       <div className="min-w-0 flex-1">
-        <div className="font-mono text-xs text-zinc-200 truncate">{alert.item_name}</div>
-        <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+        <div className="font-mono text-xs text-foreground truncate">{alert.item_name}</div>
+        <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
           {kindLabel} · {alert.direction === "below" ? "≤" : "≥"}{" "}
           {Number(alert.threshold).toLocaleString("fr-FR")}
           {alert.is_triggered && <span className="ml-2 text-amber-400">· déclenchée</span>}
@@ -224,7 +224,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
       <div className="flex items-center gap-1">
         <button
           onClick={() => setEditing(true)}
-          className="text-zinc-500 hover:text-pink-400 p-1"
+          className="text-muted-foreground hover:text-primary p-1"
           title="Modifier"
         >
           <Pencil className="size-4" />
@@ -239,7 +239,7 @@ function AlertItem({ alert, onChange }: { alert: ShopAlertRow; onChange: () => v
           trigger={
             <button
               disabled={del.isPending}
-              className="text-zinc-500 hover:text-red-400 p-1 disabled:opacity-50"
+              className="text-muted-foreground hover:text-red-400 p-1 disabled:opacity-50"
               title="Supprimer"
             >
               <Trash2 className="size-4" />

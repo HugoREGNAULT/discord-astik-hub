@@ -41,7 +41,7 @@ export function MinecraftSkin({
       <div
         className={
           className ??
-          "h-48 w-24 bg-zinc-900 border border-zinc-800 rounded grid place-items-center text-zinc-500 text-[10px] uppercase tracking-widest"
+          "h-48 w-24 bg-secondary border border-border rounded grid place-items-center text-muted-foreground text-[10px] uppercase tracking-widest"
         }
         style={{ fontFamily: "'Space Mono'" }}
       >

@@ -35,7 +35,7 @@ export function ThemeToggle() {
           : "Activer le mode sombre — mode clair actif (bêta)"
       }
       title={theme === "dark" ? "Mode clair (bêta)" : "Mode sombre (mode clair bêta actif)"}
-      className="h-8 w-8 grid place-items-center rounded-md border border-zinc-800/80 text-zinc-400 hover:text-pink-500 hover:border-pink-500/50 transition-colors"
+      className="h-8 w-8 grid place-items-center rounded-md border border-border/80 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
     >
       {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
     </button>

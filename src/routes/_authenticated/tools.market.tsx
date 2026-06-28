@@ -80,17 +80,17 @@ function MarketPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher un item (paladium-ore, endium…)"
-            className="flex-1 bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
+            className="flex-1 bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 font-mono"
           />
           <label
-            className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-zinc-400 px-3"
+            className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground px-3"
             style={{ fontFamily: "'Space Mono'" }}
           >
             <input
               type="checkbox"
               checked={onlyWithListings}
               onChange={(e) => setOnlyWithListings(e.target.checked)}
-              className="accent-pink-500"
+              className="accent-primary"
             />
             En vente uniquement
           </label>
@@ -109,7 +109,7 @@ function MarketPage() {
         <ToolCard className="!p-0 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+              <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
                 <th className="py-2 px-4">Item</th>
                 <th className="py-2 px-4 text-right">Listings</th>
                 <th className="py-2 px-4 text-right">Dispo</th>
@@ -131,7 +131,7 @@ function MarketPage() {
         </ToolCard>
       )}
       {q.data && items.length === 0 && (
-        <p className="text-zinc-600 text-xs uppercase tracking-[0.3em] text-center py-6">
+        <p className="text-muted-foreground/70 text-xs uppercase tracking-[0.3em] text-center py-6">
           aucun résultat
         </p>
       )}
@@ -250,28 +250,30 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
     <>
       <tr
         onClick={onToggle}
-        className="border-b border-zinc-900 last:border-0 hover:bg-zinc-900/50 cursor-pointer"
+        className="border-b border-border last:border-0 hover:bg-secondary/50 cursor-pointer"
       >
-        <td className="py-2 px-4 text-zinc-200 font-mono">{it.name}</td>
-        <td className="py-2 px-4 text-right text-zinc-300">{it.countListings ?? 0}</td>
-        <td className="py-2 px-4 text-right text-zinc-300">{fmtNum(it.quantityAvailable)}</td>
-        <td className="py-2 px-4 text-right text-pink-400 font-bold">{fmtNum(it.priceAverage)}</td>
-        <td className="py-2 px-4 text-right text-zinc-500">{fmtNum(it.quantitySoldTotal)}</td>
+        <td className="py-2 px-4 text-foreground font-mono">{it.name}</td>
+        <td className="py-2 px-4 text-right text-foreground/80">{it.countListings ?? 0}</td>
+        <td className="py-2 px-4 text-right text-foreground/80">{fmtNum(it.quantityAvailable)}</td>
+        <td className="py-2 px-4 text-right text-primary font-bold">{fmtNum(it.priceAverage)}</td>
+        <td className="py-2 px-4 text-right text-muted-foreground">
+          {fmtNum(it.quantitySoldTotal)}
+        </td>
       </tr>
       {expanded && (
-        <tr className="border-b border-zinc-900 bg-zinc-950/60">
+        <tr className="border-b border-border bg-background/60">
           <td colSpan={5} className="p-4">
             {detail.isLoading && <LoadingBlock label="Listings…" />}
             {detail.error && <ErrorBlock message={(detail.error as Error).message} />}
 
             <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
               <div
-                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+                className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // évolution achat / vente —{" "}
                 {range === "1h" ? "1 heure" : range === "24h" ? "24 heures" : "7 jours"}
-                <span className="text-zinc-700 normal-case tracking-normal ml-2">
+                <span className="text-muted-foreground/40 normal-case tracking-normal ml-2">
                   (auto 10 min)
                 </span>
               </div>
@@ -283,8 +285,8 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                     onClick={() => setRange(r)}
                     className={`px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] border ${
                       range === r
-                        ? "border-pink-500 text-pink-400"
-                        : "border-zinc-800 text-zinc-500 hover:text-zinc-300"
+                        ? "border-primary text-primary"
+                        : "border-border text-muted-foreground hover:text-foreground/80"
                     }`}
                     style={{ fontFamily: "'Space Mono'" }}
                   >
@@ -295,21 +297,13 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
             </div>
 
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <PriceTile label="HDV prix moyen u." value={latest.marketAvg} color="text-pink-400" />
-              <PriceTile
-                label="Shop achat u."
-                value={latest.adminBuy}
-                color="text-emerald-400"
-              />
-              <PriceTile
-                label="Shop vente u. (PB)"
-                value={latest.adminSell}
-                color="text-sky-400"
-              />
+              <PriceTile label="HDV prix moyen u." value={latest.marketAvg} color="text-primary" />
+              <PriceTile label="Shop achat u." value={latest.adminBuy} color="text-emerald-400" />
+              <PriceTile label="Shop vente u. (PB)" value={latest.adminSell} color="text-sky-400" />
             </div>
 
             {historySeries.length < 2 ? (
-              <p className="text-zinc-600 text-xs mb-3">
+              <p className="text-muted-foreground/70 text-xs mb-3">
                 Pas encore assez d&apos;historique sur cette plage — la sync tourne toutes les
                 heures.
               </p>
@@ -324,7 +318,7 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
             {detail.data && (
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                  <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                     <th className="py-1">Vendeur</th>
                     <th className="py-1 text-right">Qté</th>
                     <th className="py-1 text-right">Prix u.</th>
@@ -335,10 +329,10 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                   {(detail.data.listing ?? [])
                     .sort((a, b) => (a.price ?? 0) - (b.price ?? 0))
                     .map((l, i) => (
-                      <tr key={i} className="border-t border-zinc-900">
-                        <td className="py-1 text-zinc-400">{sellerLabel(l)}</td>
-                        <td className="py-1 text-right text-zinc-300">{fmtNum(l.quantity)}</td>
-                        <td className="py-1 text-right text-pink-400 font-bold">
+                      <tr key={i} className="border-t border-border">
+                        <td className="py-1 text-muted-foreground">{sellerLabel(l)}</td>
+                        <td className="py-1 text-right text-foreground/80">{fmtNum(l.quantity)}</td>
+                        <td className="py-1 text-right text-primary font-bold">
                           {fmtNum(l.price)}
                         </td>
                         <td className="py-1 text-right text-white">
@@ -348,7 +342,7 @@ function ItemRow({ it, expanded, onToggle }: { it: Row; expanded: boolean; onTog
                     ))}
                   {(detail.data.listing ?? []).length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-2 text-center text-zinc-600">
+                      <td colSpan={4} className="py-2 text-center text-muted-foreground/70">
                         aucun listing actif
                       </td>
                     </tr>
@@ -378,9 +372,9 @@ function PriceTile({
   color: string;
 }) {
   return (
-    <div className="border border-zinc-800 bg-zinc-900/60 p-2">
+    <div className="border border-border bg-secondary/60 p-2">
       <div
-        className="text-[9px] uppercase tracking-[0.25em] text-zinc-500 mb-0.5"
+        className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-0.5"
         style={{ fontFamily: "'Space Mono'" }}
       >
         {label}
@@ -435,7 +429,7 @@ function MarketAlertForm({ itemName }: { itemName: string }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-400 border border-zinc-800 hover:text-pink-400 hover:border-pink-500/40"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground border border-border hover:text-primary hover:border-primary/40"
           style={{ fontFamily: "'Space Mono'" }}
         >
           <Bell className="size-3" /> créer une alerte HDV
@@ -447,10 +441,10 @@ function MarketAlertForm({ itemName }: { itemName: string }) {
   return (
     <form
       onSubmit={onSubmit}
-      className="mb-3 border border-zinc-800 rounded p-3 space-y-2 bg-zinc-950/60"
+      className="mb-3 border border-border rounded p-3 space-y-2 bg-background/60"
     >
       <div
-        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-2"
+        className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2"
         style={{ fontFamily: "'Space Mono'" }}
       >
         <Bell className="size-3" /> // alerte sur prix moyen HDV
@@ -459,7 +453,7 @@ function MarketAlertForm({ itemName }: { itemName: string }) {
         <select
           value={direction}
           onChange={(e) => setDirection(e.target.value as "above" | "below")}
-          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+          className="bg-secondary border border-border rounded px-2 py-1.5 text-foreground"
         >
           <option value="below">passe en dessous de</option>
           <option value="above">passe au-dessus de</option>
@@ -471,12 +465,12 @@ function MarketAlertForm({ itemName }: { itemName: string }) {
           value={threshold}
           onChange={(e) => setThreshold(e.target.value)}
           placeholder="Seuil ($)"
-          className="flex-1 min-w-[120px] bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+          className="flex-1 min-w-[120px] bg-secondary border border-border rounded px-2 py-1.5 text-foreground"
         />
         <button
           type="submit"
           disabled={mut.isPending}
-          className="px-3 py-1.5 bg-pink-500 text-white text-xs uppercase tracking-wider rounded hover:bg-pink-600 disabled:opacity-50"
+          className="px-3 py-1.5 bg-primary text-white text-xs uppercase tracking-wider rounded hover:bg-primary/90 disabled:opacity-50"
           style={{ fontFamily: "'Space Grotesk'" }}
         >
           {mut.isPending ? "…" : "Créer"}
@@ -484,7 +478,7 @@ function MarketAlertForm({ itemName }: { itemName: string }) {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="px-2 py-1.5 text-xs text-zinc-500 hover:text-white"
+          className="px-2 py-1.5 text-xs text-muted-foreground hover:text-white"
         >
           ✕
         </button>

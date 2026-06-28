@@ -29,8 +29,8 @@ export default function StaffHealthChart({ evolution }: { evolution: Point[] }) 
         <AreaChart data={evolution} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
           <defs>
             <linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ec4899" stopOpacity={0.5} />
-              <stop offset="100%" stopColor="#ec4899" stopOpacity={0} />
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.5} />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="inactiveGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4} />
@@ -80,7 +80,7 @@ export default function StaffHealthChart({ evolution }: { evolution: Point[] }) 
           <Area
             type="monotone"
             dataKey="count"
-            stroke="#ec4899"
+            stroke="#8b5cf6"
             strokeWidth={2}
             fill="url(#healthGrad)"
           />

@@ -206,7 +206,7 @@ function PlayerSales() {
                     setInput(p.username);
                     setTarget({ mode: "uuid", uuid: p.uuid });
                   }}
-                  className="px-2 py-1 rounded border border-zinc-800 text-[11px] uppercase tracking-[0.18em] text-zinc-400 hover:text-pink-400 hover:border-pink-500/40"
+                  className="px-2 py-1 rounded border border-border text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary hover:border-primary/40"
                   style={{ fontFamily: "'Space Mono'" }}
                   title={`${p.search_count} recherches`}
                 >
@@ -227,15 +227,11 @@ function PlayerSales() {
       {uuid && !historyQ.isLoading && (
         <>
           <div className="flex items-center gap-3">
-            <img
-              src={avatarUrl(uuid)}
-              alt=""
-              className="w-12 h-12 rounded border border-zinc-800"
-            />
+            <img src={avatarUrl(uuid)} alt="" className="w-12 h-12 rounded border border-border" />
             <div className="flex-1 min-w-0">
               <div className="text-white text-lg">{resolvedName ?? "Joueur"}</div>
               <div
-                className="text-[10px] text-zinc-500 uppercase tracking-[0.25em]"
+                className="text-[10px] text-muted-foreground uppercase tracking-[0.25em]"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 {uuid}
@@ -253,11 +249,11 @@ function PlayerSales() {
               if (!ts) return null;
               return (
                 <div
-                  className="text-[10px] text-zinc-500 uppercase tracking-[0.2em] text-right"
+                  className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] text-right"
                   style={{ fontFamily: "'Space Mono'" }}
                 >
                   Dernière actualisation
-                  <div className="text-zinc-300 text-xs normal-case tracking-normal mt-0.5">
+                  <div className="text-foreground/80 text-xs normal-case tracking-normal mt-0.5">
                     {fmtDate(ts)}
                   </div>
                 </div>
@@ -286,8 +282,8 @@ function PlayerSales() {
                   onClick={() => setTab(k)}
                   className={`px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] border ${
                     tab === k
-                      ? "border-pink-500 text-pink-400"
-                      : "border-zinc-800 text-zinc-500 hover:text-white"
+                      ? "border-primary text-primary"
+                      : "border-border text-muted-foreground hover:text-white"
                   }`}
                   style={{ fontFamily: "'Space Mono'" }}
                 >
@@ -300,13 +296,13 @@ function PlayerSales() {
                 value={itemFilter}
                 onChange={(e) => setItemFilter(e.target.value)}
                 placeholder="Filtrer par item…"
-                className="px-3 py-1.5 bg-zinc-950 border border-zinc-800 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500/60"
+                className="px-3 py-1.5 bg-background border border-border text-xs text-white placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary/60"
                 style={{ fontFamily: "'Space Mono'" }}
               />
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as Sort)}
-                className="px-2 py-1.5 bg-zinc-950 border border-zinc-800 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 focus:border-pink-500/60"
+                className="px-2 py-1.5 bg-background border border-border text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus:border-primary/60"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 <option value="recent">Récent</option>
@@ -322,103 +318,113 @@ function PlayerSales() {
             <p className="sr-only" aria-live="polite">
               {isLoading ? "Chargement des ventes…" : `${filtered.length} vente(s)`}
             </p>
-          {filtered.length === 0 ? (
-            <EmptyBlock label="Aucune vente à afficher." />
-          ) : (
-            <>
-              {/* Mobile : cartes empilées */}
-              <div className="sm:hidden space-y-2">
-                {filtered.map((r) => {
-                  const unit = r.quantity ? r.price / r.quantity : r.price;
-                  const labelCls =
-                    "text-[11px] uppercase tracking-[0.18em] text-zinc-500 font-mono";
-                  return (
-                    <div
-                      key={r.id}
-                      className="border border-zinc-800 bg-zinc-900/70 p-3 space-y-1"
-                    >
-                      <div className="text-white text-sm font-medium break-words">
-                        {r.item_name}
-                      </div>
-                      <div className="flex justify-between items-baseline gap-3">
-                        <span className={labelCls}>Qté</span>
-                        <span className="text-zinc-300 text-xs">{fmtInt(r.quantity)}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline gap-3">
-                        <span className={labelCls}>Prix</span>
-                        <span className="text-zinc-200 text-xs">{fmtInt(r.price)}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline gap-3">
-                        <span className={labelCls}>Unitaire</span>
-                        <span className="text-zinc-400 text-xs">{fmtInt(unit)}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline gap-3">
-                        <span className={labelCls}>Listé</span>
-                        <span className="text-zinc-500 text-xs">
-                          {fmtDate(r.listed_at ?? r.first_seen_at)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-baseline gap-3">
-                        <span className={labelCls}>Statut</span>
-                        <span className="text-xs">
-                          {r.sold_at ? (
-                            <span className="text-emerald-400">
-                              vendu · {fmtDate(r.sold_at)}
-                            </span>
-                          ) : (
-                            <span className="text-pink-400">en cours</span>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Desktop : tableau */}
-              <div className="hidden sm:block border border-zinc-800 sm:overflow-x-auto">
-                <table className="hidden sm:table w-full text-xs min-w-[640px]">
-                  <thead className="bg-zinc-950/60 text-zinc-500">
-                    <tr style={{ fontFamily: "'Space Mono'" }}>
-                      <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Item</th>
-                      <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Qté</th>
-                      <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Prix</th>
-                      <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Unitaire</th>
-                      <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Listé</th>
-                      <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((r) => {
-                      const unit = r.quantity ? r.price / r.quantity : r.price;
-                      return (
-                        <tr key={r.id} className="border-t border-zinc-900 hover:bg-zinc-950/60">
-                          <td className="px-3 py-2 text-white">{r.item_name}</td>
-                          <td className="px-3 py-2 text-right text-zinc-300">{fmtInt(r.quantity)}</td>
-                          <td className="px-3 py-2 text-right text-zinc-200">{fmtInt(r.price)}</td>
-                          <td className="px-3 py-2 text-right text-zinc-400">{fmtInt(unit)}</td>
-                          <td className="px-3 py-2 text-zinc-500">
+            {filtered.length === 0 ? (
+              <EmptyBlock label="Aucune vente à afficher." />
+            ) : (
+              <>
+                {/* Mobile : cartes empilées */}
+                <div className="sm:hidden space-y-2">
+                  {filtered.map((r) => {
+                    const unit = r.quantity ? r.price / r.quantity : r.price;
+                    const labelCls =
+                      "text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-mono";
+                    return (
+                      <div
+                        key={r.id}
+                        className="border border-border bg-secondary/70 p-3 space-y-1"
+                      >
+                        <div className="text-white text-sm font-medium break-words">
+                          {r.item_name}
+                        </div>
+                        <div className="flex justify-between items-baseline gap-3">
+                          <span className={labelCls}>Qté</span>
+                          <span className="text-foreground/80 text-xs">{fmtInt(r.quantity)}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline gap-3">
+                          <span className={labelCls}>Prix</span>
+                          <span className="text-foreground text-xs">{fmtInt(r.price)}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline gap-3">
+                          <span className={labelCls}>Unitaire</span>
+                          <span className="text-muted-foreground text-xs">{fmtInt(unit)}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline gap-3">
+                          <span className={labelCls}>Listé</span>
+                          <span className="text-muted-foreground text-xs">
                             {fmtDate(r.listed_at ?? r.first_seen_at)}
-                          </td>
-                          <td className="px-3 py-2">
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-baseline gap-3">
+                          <span className={labelCls}>Statut</span>
+                          <span className="text-xs">
                             {r.sold_at ? (
                               <span className="text-emerald-400">vendu · {fmtDate(r.sold_at)}</span>
                             ) : (
-                              <span className="text-pink-400">en cours</span>
+                              <span className="text-primary">en cours</span>
                             )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop : tableau */}
+                <div className="hidden sm:block border border-border sm:overflow-x-auto">
+                  <table className="hidden sm:table w-full text-xs min-w-[640px]">
+                    <thead className="bg-background/60 text-muted-foreground">
+                      <tr style={{ fontFamily: "'Space Mono'" }}>
+                        <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Item</th>
+                        <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Qté</th>
+                        <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">Prix</th>
+                        <th className="text-right px-3 py-2 uppercase tracking-[0.18em]">
+                          Unitaire
+                        </th>
+                        <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Listé</th>
+                        <th className="text-left px-3 py-2 uppercase tracking-[0.18em]">Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((r) => {
+                        const unit = r.quantity ? r.price / r.quantity : r.price;
+                        return (
+                          <tr key={r.id} className="border-t border-border hover:bg-background/60">
+                            <td className="px-3 py-2 text-white">{r.item_name}</td>
+                            <td className="px-3 py-2 text-right text-foreground/80">
+                              {fmtInt(r.quantity)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-foreground">
+                              {fmtInt(r.price)}
+                            </td>
+                            <td className="px-3 py-2 text-right text-muted-foreground">
+                              {fmtInt(unit)}
+                            </td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {fmtDate(r.listed_at ?? r.first_seen_at)}
+                            </td>
+                            <td className="px-3 py-2">
+                              {r.sold_at ? (
+                                <span className="text-emerald-400">
+                                  vendu · {fmtDate(r.sold_at)}
+                                </span>
+                              ) : (
+                                <span className="text-primary">en cours</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
 
-
-          <p className="text-[10px] text-zinc-600" style={{ fontFamily: "'Space Mono'" }}>
+          <p
+            className="text-[10px] text-muted-foreground/70"
+            style={{ fontFamily: "'Space Mono'" }}
+          >
             Snapshot auto toutes les 10 min ; les ventes disparues sont marquées comme passées.
           </p>
         </>

@@ -61,9 +61,33 @@ export default function MarketHistoryChart({
             formatter={(v: unknown) => fmtNum(v)}
           />
           <Legend wrapperStyle={{ fontSize: 11, color: "#a1a1aa" }} />
-          <Line type="monotone" dataKey="marketAvg" name="HDV moyen" stroke="#ec4899" strokeWidth={2} dot={false} connectNulls />
-          <Line type="monotone" dataKey="adminBuy" name="Shop achat" stroke="#22c55e" strokeWidth={2} dot={false} connectNulls />
-          <Line type="monotone" dataKey="adminSell" name="Shop vente" stroke="#38bdf8" strokeWidth={2} dot={false} connectNulls />
+          <Line
+            type="monotone"
+            dataKey="marketAvg"
+            name="HDV moyen"
+            stroke="#8b5cf6"
+            strokeWidth={2}
+            dot={false}
+            connectNulls
+          />
+          <Line
+            type="monotone"
+            dataKey="adminBuy"
+            name="Shop achat"
+            stroke="#22c55e"
+            strokeWidth={2}
+            dot={false}
+            connectNulls
+          />
+          <Line
+            type="monotone"
+            dataKey="adminSell"
+            name="Shop vente"
+            stroke="#38bdf8"
+            strokeWidth={2}
+            dot={false}
+            connectNulls
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

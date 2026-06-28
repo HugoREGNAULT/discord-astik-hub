@@ -96,14 +96,14 @@ function MembersPage() {
               placeholder="Rechercher (pseudo, IG, ID)…"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              className="w-full bg-zinc-950 border border-zinc-800 px-3 py-2 pr-9 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
+              className="w-full bg-background border border-border px-3 py-2 pr-9 text-sm text-white placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 font-mono"
             />
             {q && (
               <button
                 type="button"
                 onClick={() => setQ("")}
                 aria-label="Effacer la recherche"
-                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-5 text-zinc-500 hover:text-pink-400 transition-colors"
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center size-5 text-muted-foreground hover:text-primary transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -127,8 +127,8 @@ function MembersPage() {
                     onClick={() => setStatus(s)}
                     className={`px-4 py-2 text-[10px] uppercase tracking-[0.2em] border transition-colors ${
                       active
-                        ? "bg-pink-500 text-white border-pink-500"
-                        : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-background text-muted-foreground border-border hover:border-border hover:text-white"
                     }`}
                     style={{ fontFamily: "'Space Mono'" }}
                   >
@@ -139,7 +139,7 @@ function MembersPage() {
             </div>
             <div className="flex items-center gap-1">
               <span
-                className="text-[9px] uppercase tracking-[0.3em] text-zinc-600 mr-1"
+                className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground/70 mr-1"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 Tri
@@ -153,8 +153,8 @@ function MembersPage() {
                     aria-pressed={active}
                     className={`px-3 py-2 text-[10px] uppercase tracking-[0.2em] border transition-colors ${
                       active
-                        ? "bg-pink-500 text-white border-pink-500"
-                        : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:border-zinc-700 hover:text-white"
+                        ? "bg-primary text-white border-primary"
+                        : "bg-background text-muted-foreground border-border hover:border-border hover:text-white"
                     }`}
                     style={{ fontFamily: "'Space Mono'" }}
                   >
@@ -182,11 +182,11 @@ function MembersPage() {
               ? rank === 1
                 ? "text-yellow-400"
                 : rank === 2
-                  ? "text-zinc-300"
+                  ? "text-foreground/80"
                   : rank === 3
                     ? "text-amber-600"
-                    : "text-zinc-600"
-              : "text-zinc-600";
+                    : "text-muted-foreground/70"
+              : "text-muted-foreground/70";
           return (
             <Link
               key={m.discord_id}
@@ -194,7 +194,7 @@ function MembersPage() {
               params={{ id: m.discord_id }}
               preload="intent"
               aria-label={`Ouvrir le profil de ${m.ig_name ?? m.discord_username ?? m.discord_id}`}
-              className="relative flex items-center gap-3 border border-zinc-800 bg-zinc-900/70 p-3 backdrop-blur transition hover:border-pink-500/60 active:border-pink-500/80 active:bg-zinc-900 touch-manipulation"
+              className="relative flex items-center gap-3 border border-border bg-secondary/70 p-3 backdrop-blur transition hover:border-primary/60 active:border-primary/80 active:bg-secondary touch-manipulation"
               onClick={(event) => {
                 if (
                   event.defaultPrevented ||
@@ -218,9 +218,9 @@ function MembersPage() {
                 [{String(rank).padStart(2, "0")}]
               </span>
               {m.avatar_url ? (
-                <img src={m.avatar_url} className="size-10 border border-zinc-700" alt="" />
+                <img src={m.avatar_url} className="size-10 border border-border" alt="" />
               ) : (
-                <div className="size-10 bg-zinc-800 border border-zinc-700" />
+                <div className="size-10 bg-secondary border border-border" />
               )}
               <div className="flex-1 min-w-0">
                 <div
@@ -229,7 +229,7 @@ function MembersPage() {
                 >
                   {m.ig_name ?? m.discord_username ?? m.discord_id}
                 </div>
-                <div className="text-[11px] text-zinc-400 truncate flex items-center gap-2 mt-0.5">
+                <div className="text-[11px] text-muted-foreground truncate flex items-center gap-2 mt-0.5">
                   <span className="font-mono">@{m.discord_username}</span>
                   {m.current_grade && <DaChip accent="blurple">{m.current_grade}</DaChip>}
                   {status === "all" && <StatusBadge status={m.status} />}
@@ -237,13 +237,13 @@ function MembersPage() {
               </div>
               <div className="text-right">
                 <div
-                  className="text-pink-400 font-bold text-lg"
+                  className="text-primary font-bold text-lg"
                   style={{ fontFamily: "'Space Grotesk'" }}
                 >
                   {m.astik_points}
                 </div>
                 <div
-                  className="text-[11px] text-zinc-400 uppercase tracking-[0.2em]"
+                  className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
                   style={{ fontFamily: "'Space Mono'" }}
                 >
                   AstikPoints

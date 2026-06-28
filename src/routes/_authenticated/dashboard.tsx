@@ -140,7 +140,7 @@ function formatValue(value: number, metric: LeaderboardMetric) {
 
 function rankIcon(rank: number) {
   if (rank === 1) return <Crown className="size-4 text-yellow-400" />;
-  if (rank === 2) return <Medal className="size-4 text-zinc-300" />;
+  if (rank === 2) return <Medal className="size-4 text-foreground/80" />;
   if (rank === 3) return <Award className="size-4 text-amber-600" />;
   return null;
 }
@@ -309,7 +309,7 @@ function LeaderboardPage() {
         </div>
         {lastUpdate && (
           <div
-            className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-3"
+            className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-3"
             style={{ fontFamily: "'Space Mono'" }}
             title={new Date(lastUpdate).toLocaleString("fr-FR")}
           >
@@ -325,11 +325,11 @@ function LeaderboardPage() {
               return (
                 <div
                   key={e.discord_id}
-                  className="flex items-center gap-3 border border-pink-500/30 bg-pink-500/5 px-3 py-2"
+                  className="flex items-center gap-3 border border-primary/30 bg-primary/5 px-3 py-2"
                 >
                   <div className="flex items-center gap-1">
                     <span
-                      className="font-mono text-xs text-zinc-500"
+                      className="font-mono text-xs text-muted-foreground"
                       style={{ fontFamily: "'Space Mono'" }}
                     >
                       #{rank}
@@ -349,7 +349,7 @@ function LeaderboardPage() {
                     >
                       {e.ig_name ?? e.discord_username ?? e.discord_id}
                     </div>
-                    <div className="font-mono text-xs text-pink-400">
+                    <div className="font-mono text-xs text-primary">
                       {formatValue(value, metric)}
                     </div>
                   </div>
@@ -365,10 +365,10 @@ function LeaderboardPage() {
             baseline={baseline}
           />
 
-          <div className="border-t border-zinc-800 pt-4 space-y-3">
+          <div className="border-t border-border pt-4 space-y-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2
-                className="text-[10px] uppercase tracking-[0.3em] text-pink-500"
+                className="text-[10px] uppercase tracking-[0.3em] text-primary"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // à partir du rang 4
@@ -377,7 +377,7 @@ function LeaderboardPage() {
                 placeholder="Rechercher un membre…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="max-w-xs bg-zinc-950 border border-zinc-800 px-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500/60 font-mono"
+                className="max-w-xs bg-background border border-border px-3 py-2 text-sm text-white placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 font-mono"
               />
             </div>
             {error ? (
@@ -413,7 +413,7 @@ function MetricTabs<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex border border-zinc-800 bg-zinc-950">
+    <div className="inline-flex border border-border bg-background">
       {options.map((opt) => {
         const Icon = opt.icon;
         const active = value === opt.value;
@@ -422,7 +422,9 @@ function MetricTabs<T extends string>({
             key={opt.value}
             onClick={() => onChange(opt.value)}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] transition-colors ${
-              active ? "bg-pink-500 text-white" : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+              active
+                ? "bg-primary text-white"
+                : "text-muted-foreground hover:text-white hover:bg-secondary"
             }`}
             style={{ fontFamily: "'Space Mono'" }}
           >

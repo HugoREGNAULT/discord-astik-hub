@@ -56,7 +56,7 @@ function FactionLookup() {
               setInput("PunkAstik");
               setName("PunkAstik");
             }}
-            className="text-[10px] uppercase tracking-[0.3em] text-pink-500 hover:text-pink-400"
+            className="text-[10px] uppercase tracking-[0.3em] text-primary hover:text-primary"
             style={{ fontFamily: "'Space Mono'" }}
           >
             → voir PunkAstik
@@ -79,7 +79,7 @@ function FactionLookup() {
               </h2>
               {q.data.level && (
                 <span
-                  className="text-[10px] uppercase tracking-[0.3em] text-pink-500"
+                  className="text-[10px] uppercase tracking-[0.3em] text-primary"
                   style={{ fontFamily: "'Space Mono'" }}
                 >
                   // niveau {q.data.level.level}
@@ -87,7 +87,7 @@ function FactionLookup() {
               )}
             </div>
             {q.data.description && (
-              <p className="text-zinc-400 text-sm mt-2">{q.data.description}</p>
+              <p className="text-muted-foreground text-sm mt-2">{q.data.description}</p>
             )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
               <StatTile label="Membres" value={q.data.players?.length ?? "—"} accent="pink" />
@@ -100,7 +100,7 @@ function FactionLookup() {
           {q.data.players && q.data.players.length > 0 && (
             <ToolCard>
               <h3
-                className="text-[10px] uppercase tracking-[0.3em] text-pink-500 mb-3"
+                className="text-[10px] uppercase tracking-[0.3em] text-primary mb-3"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // membres ({q.data.players.length})
@@ -109,11 +109,11 @@ function FactionLookup() {
                 {q.data.players.map((m) => (
                   <div
                     key={m.uuid}
-                    className="flex items-center justify-between border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm"
+                    className="flex items-center justify-between border border-border bg-background px-3 py-2 text-sm"
                   >
-                    <span className="text-zinc-200 truncate">{m.username}</span>
+                    <span className="text-foreground truncate">{m.username}</span>
                     {m.group && (
-                      <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                         {m.group}
                       </span>
                     )}

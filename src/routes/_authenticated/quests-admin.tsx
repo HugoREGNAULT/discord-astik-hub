@@ -132,7 +132,7 @@ function QuestsAdminPage() {
         <SectionLabel>{form.id ? "Modifier la quête" : "Nouvelle quête"}</SectionLabel>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-400">Titre</span>
+            <span className="text-xs text-muted-foreground">Titre</span>
             <DaInput
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
@@ -141,7 +141,7 @@ function QuestsAdminPage() {
             />
           </label>
           <label className="flex flex-col gap-1 sm:col-span-2">
-            <span className="text-xs text-zinc-400">Description (optionnel)</span>
+            <span className="text-xs text-muted-foreground">Description (optionnel)</span>
             <DaInput
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
@@ -150,7 +150,7 @@ function QuestsAdminPage() {
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-400">Type</span>
+            <span className="text-xs text-muted-foreground">Type</span>
             <DaSelect
               value={form.quest_type}
               onChange={(e) => setForm((f) => ({ ...f, quest_type: e.target.value }))}
@@ -163,7 +163,7 @@ function QuestsAdminPage() {
             </DaSelect>
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-400">Objectif (valeur à atteindre)</span>
+            <span className="text-xs text-muted-foreground">Objectif (valeur à atteindre)</span>
             <DaInput
               type="number"
               min={1}
@@ -172,7 +172,7 @@ function QuestsAdminPage() {
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-400">Récompense (AstikPoints)</span>
+            <span className="text-xs text-muted-foreground">Récompense (AstikPoints)</span>
             <DaInput
               type="number"
               min={0}
@@ -181,7 +181,7 @@ function QuestsAdminPage() {
             />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-xs text-zinc-400">Ordre d'affichage</span>
+            <span className="text-xs text-muted-foreground">Ordre d'affichage</span>
             <DaInput
               type="number"
               min={0}
@@ -195,7 +195,7 @@ function QuestsAdminPage() {
               checked={form.active}
               onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
             />
-            <span className="text-sm text-zinc-300">Active</span>
+            <span className="text-sm text-foreground/80">Active</span>
           </label>
         </div>
         <div className="flex gap-2 mt-4">
@@ -215,19 +215,19 @@ function QuestsAdminPage() {
         {templates.length === 0 ? (
           <EmptyBlock label="Aucune quête définie" />
         ) : (
-          <ul className="divide-y divide-zinc-800">
+          <ul className="divide-y divide-border">
             {templates.map((t) => (
               <li key={t.id} className="py-3 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-white">{t.title}</span>
                     {!t.active && (
-                      <span className="text-[10px] uppercase tracking-wide text-zinc-500">
+                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
                         inactive
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-zinc-400 font-mono">
+                  <div className="text-xs text-muted-foreground font-mono">
                     {QUEST_TYPE_LABELS[t.quest_type] ?? t.quest_type} · objectif {t.target_value} ·
                     +{t.reward_points} AP
                   </div>

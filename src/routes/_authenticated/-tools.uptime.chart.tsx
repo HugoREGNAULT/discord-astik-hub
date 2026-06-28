@@ -59,7 +59,7 @@ export function UptimePlayersChart({ data, days }: { data: Point[]; days: number
             type="monotone"
             dataKey="players"
             name="Joueurs"
-            stroke="#ec4899"
+            stroke="#8b5cf6"
             strokeWidth={2}
             dot={false}
             isAnimationActive={false}

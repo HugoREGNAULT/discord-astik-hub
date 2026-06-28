@@ -63,11 +63,11 @@ function statusColor(status: string) {
     case "amber":
       return "border-amber-500/50 bg-amber-500/10 text-amber-300";
     case "pink":
-      return "border-pink-500/60 bg-pink-500/10 text-pink-300";
+      return "border-primary/60 bg-primary/10 text-primary/70";
     case "blurple":
-      return "border-[#5865F2]/60 bg-[#5865F2]/10 text-indigo-300";
+      return "border-primary/60 bg-primary/10 text-indigo-300";
     default:
-      return "border-zinc-700 bg-zinc-800/40 text-zinc-300";
+      return "border-border bg-secondary/40 text-foreground/80";
   }
 }
 
@@ -95,8 +95,8 @@ function CheckBcPage() {
 
       <ToolCard>
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 text-zinc-400 text-sm">
-            <Shield className="w-4 h-4 text-pink-500" />
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <Shield className="w-4 h-4 text-primary" />
             <span>{q.data?.checks.length ?? 0} BC en suivi</span>
           </div>
           <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
@@ -111,7 +111,7 @@ function CheckBcPage() {
 
       {q.data && q.data.checks.length === 0 && (
         <ToolCard>
-          <p className="text-sm text-zinc-400 text-center py-6">
+          <p className="text-sm text-muted-foreground text-center py-6">
             Aucune BC en suivi. Clique sur « Ajouter une BC » pour commencer.
           </p>
         </ToolCard>
@@ -153,12 +153,12 @@ function BcRow({ bc }: { bc: BcCheck }) {
   });
 
   return (
-    <div className="border border-zinc-800 bg-zinc-900/60 p-4 space-y-3">
+    <div className="border border-border bg-secondary/60 p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-white font-semibold truncate">{bc.name}</div>
           {bc.location && (
-            <div className="flex items-center gap-1 text-[11px] text-zinc-400 mt-0.5">
+            <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
               <MapPin className="w-3 h-3" />
               <span className="truncate">{bc.location}</span>
             </div>
@@ -173,7 +173,7 @@ function BcRow({ bc }: { bc: BcCheck }) {
       </div>
 
       {bc.notes && (
-        <p className="text-xs text-zinc-400 whitespace-pre-wrap line-clamp-3">{bc.notes}</p>
+        <p className="text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">{bc.notes}</p>
       )}
 
       <div className="flex items-center gap-2">
@@ -212,7 +212,7 @@ function BcRow({ bc }: { bc: BcCheck }) {
         />
       </div>
 
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500 pt-1 border-t border-zinc-800/60">
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-1 border-t border-border/60">
         <Clock className="w-3 h-3" />
         <span>
           MAJ{" "}
@@ -296,7 +296,7 @@ function BcEditorDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-zinc-400 mb-1 block">Nom de la BC *</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Nom de la BC *</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -305,7 +305,9 @@ function BcEditorDialog({
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-400 mb-1 block">Localisation (coords / zone)</label>
+            <label className="text-xs text-muted-foreground mb-1 block">
+              Localisation (coords / zone)
+            </label>
             <Input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -314,7 +316,7 @@ function BcEditorDialog({
             />
           </div>
           <div>
-            <label className="text-xs text-zinc-400 mb-1 block">Statut</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Statut</label>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger>
                 <SelectValue />
@@ -329,7 +331,7 @@ function BcEditorDialog({
             </Select>
           </div>
           <div>
-            <label className="text-xs text-zinc-400 mb-1 block">Notes</label>
+            <label className="text-xs text-muted-foreground mb-1 block">Notes</label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

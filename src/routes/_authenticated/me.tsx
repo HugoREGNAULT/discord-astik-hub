@@ -92,7 +92,7 @@ function MyProfile() {
           <div className="size-16 rounded-full bg-muted" />
         )}
         <div className="min-w-0">
-          <div className="text-pink-500 mb-1">
+          <div className="text-primary mb-1">
             <MonoLabel>// mon profil</MonoLabel>
           </div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>
@@ -199,14 +199,14 @@ function MyProfile() {
 const STATUS_META: Record<string, { label: string; dot: string }> = {
   active: { label: "Actif", dot: "bg-emerald-500" },
   trial: { label: "Période d'essai", dot: "bg-amber-500" },
-  away: { label: "En pause", dot: "bg-sky-500" },
-  former: { label: "Ancien", dot: "bg-zinc-500" },
-  left: { label: "Parti", dot: "bg-zinc-500" },
-  visitor: { label: "Visiteur", dot: "bg-zinc-500" },
+  away: { label: "En pause", dot: "bg-primary/60" },
+  former: { label: "Ancien", dot: "bg-muted-foreground/60" },
+  left: { label: "Parti", dot: "bg-muted-foreground/60" },
+  visitor: { label: "Visiteur", dot: "bg-muted-foreground/60" },
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const meta = STATUS_META[status] ?? { label: status, dot: "bg-zinc-500" };
+  const meta = STATUS_META[status] ?? { label: status, dot: "bg-muted-foreground/60" };
   return (
     <Badge variant="secondary" className="gap-1.5">
       <span className={`size-2 rounded-full ${meta.dot}`} aria-hidden />

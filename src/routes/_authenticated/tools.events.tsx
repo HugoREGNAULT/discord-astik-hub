@@ -137,8 +137,10 @@ function EventsPage() {
 
   return (
     <div className="max-w-7xl space-y-5">
-      <div className="rounded border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-400 flex items-center gap-2">
-        <span className="font-mono text-zinc-600 text-[11px] uppercase tracking-widest">//</span>
+      <div className="rounded border border-border bg-secondary/60 px-4 py-3 text-sm text-muted-foreground flex items-center gap-2">
+        <span className="font-mono text-muted-foreground/70 text-[11px] uppercase tracking-widest">
+          //
+        </span>
         Plus maintenu par l'API Paladium — données non fiables.
       </div>
       <div className="opacity-60 pointer-events-none select-none space-y-5">
@@ -149,9 +151,9 @@ function EventsPage() {
         />
 
         {next && (
-          <ToolCard className="border-pink-500/40">
+          <ToolCard className="border-primary/40">
             <div
-              className="text-[10px] uppercase tracking-[0.3em] text-pink-400 mb-2"
+              className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // prochain
@@ -164,18 +166,18 @@ function EventsPage() {
                 >
                   {next.name}
                 </div>
-                <div className="text-xs text-zinc-400 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {next.startMs ? fmtDate(next.startMs) : "—"}
                 </div>
               </div>
               <div className="text-right">
                 <div
-                  className="text-3xl font-bold text-pink-400"
+                  className="text-3xl font-bold text-primary"
                   style={{ fontFamily: "'Space Mono'" }}
                 >
                   {next.startMs ? fmtCountdown(next.startMs - now) : "—"}
                 </div>
-                <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-600">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
                   avant lancement
                 </div>
               </div>
@@ -187,7 +189,7 @@ function EventsPage() {
           {/* LEFT — Calendar (Boss / Egghunt / KOTH …) */}
           <ToolCard>
             <div
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // calendrier (boss · egghunt · koth …)
@@ -198,14 +200,14 @@ function EventsPage() {
               <EmptyBlock label="Aucun événement à venir" />
             )}
             {sorted.length > 0 && (
-              <ul className="divide-y divide-zinc-800 max-h-[640px] overflow-y-auto">
+              <ul className="divide-y divide-border max-h-[640px] overflow-y-auto">
                 {sorted.map((e, i) => (
                   <li key={i} className="py-3 flex flex-wrap items-baseline justify-between gap-2">
                     <div>
                       <div className="text-sm text-white font-medium">{e.name}</div>
                       {e.type && (
                         <div
-                          className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mt-0.5"
+                          className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-0.5"
                           style={{ fontFamily: "'Space Mono'" }}
                         >
                           {e.type}
@@ -213,10 +215,10 @@ function EventsPage() {
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-zinc-200">
+                      <div className="text-sm text-foreground">
                         {e.startMs ? fmtDate(e.startMs) : "—"}
                       </div>
-                      <div className="text-[11px] text-pink-400 font-mono">
+                      <div className="text-[11px] text-primary font-mono">
                         {e.startMs ? fmtCountdown(e.startMs - now) : "—"}
                       </div>
                     </div>
@@ -231,7 +233,7 @@ function EventsPage() {
             {/* À vos marques */}
             <ToolCard>
               <div
-                className="text-[10px] uppercase tracking-[0.3em] text-pink-400 mb-3"
+                className="text-[10px] uppercase tracking-[0.3em] text-primary mb-3"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // à vos marques
@@ -249,7 +251,7 @@ function EventsPage() {
                         {onYourMark.data.goalType ?? "—"}
                       </div>
                       {onYourMark.data.extra && (
-                        <div className="text-xs text-zinc-500 font-mono mt-0.5">
+                        <div className="text-xs text-muted-foreground font-mono mt-0.5">
                           {onYourMark.data.extra}
                         </div>
                       )}
@@ -257,8 +259,8 @@ function EventsPage() {
                     <span
                       className={`text-[10px] uppercase tracking-[0.2em] px-2 py-1 rounded ${
                         onYourMark.data.state === "STARTED"
-                          ? "bg-pink-500/20 text-pink-300"
-                          : "bg-zinc-800 text-zinc-400"
+                          ? "bg-primary/20 text-primary/70"
+                          : "bg-secondary text-muted-foreground"
                       }`}
                     >
                       {onYourMark.data.state ?? "—"}
@@ -271,14 +273,14 @@ function EventsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <div className="text-zinc-500">Début</div>
-                      <div className="text-zinc-200">{oymStart ? fmtDate(oymStart) : "—"}</div>
+                      <div className="text-muted-foreground">Début</div>
+                      <div className="text-foreground">{oymStart ? fmtDate(oymStart) : "—"}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-zinc-500">
+                      <div className="text-muted-foreground">
                         {oymStart && oymStart > now ? "commence dans" : "se termine dans"}
                       </div>
-                      <div className="text-pink-400 font-mono">
+                      <div className="text-primary font-mono">
                         {oymStart && oymStart > now
                           ? fmtCountdown(oymStart - now)
                           : oymEnd
@@ -294,7 +296,7 @@ function EventsPage() {
             {/* Quête de faction */}
             <ToolCard>
               <div
-                className="text-[10px] uppercase tracking-[0.3em] text-pink-400 mb-3"
+                className="text-[10px] uppercase tracking-[0.3em] text-primary mb-3"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // quête de faction
@@ -318,7 +320,7 @@ function EventsPage() {
                     >
                       {quest.data.item ?? "—"}
                     </div>
-                    <div className="text-2xl font-bold text-pink-400 font-mono">
+                    <div className="text-2xl font-bold text-primary font-mono">
                       ×{quest.data.quantity?.toLocaleString("fr-FR") ?? "—"}
                     </div>
                   </div>
@@ -335,14 +337,16 @@ function EventsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <div className="text-zinc-500">Début</div>
-                      <div className="text-zinc-200">{questStart ? fmtDate(questStart) : "—"}</div>
+                      <div className="text-muted-foreground">Début</div>
+                      <div className="text-foreground">
+                        {questStart ? fmtDate(questStart) : "—"}
+                      </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-zinc-500">Fin</div>
-                      <div className="text-zinc-200">{questEnd ? fmtDate(questEnd) : "—"}</div>
+                      <div className="text-muted-foreground">Fin</div>
+                      <div className="text-foreground">{questEnd ? fmtDate(questEnd) : "—"}</div>
                       {questEnd && questEnd > now && (
-                        <div className="text-pink-400 font-mono mt-0.5">
+                        <div className="text-primary font-mono mt-0.5">
                           {fmtCountdown(questEnd - now)}
                         </div>
                       )}
@@ -360,9 +364,9 @@ function EventsPage() {
 
 function Stat({ label, value }: { label: string; value: string | number | null | undefined }) {
   return (
-    <div className="bg-zinc-900/60 border border-zinc-800 rounded px-2 py-2">
+    <div className="bg-secondary/60 border border-border rounded px-2 py-2">
       <div
-        className="text-[9px] uppercase tracking-[0.2em] text-zinc-500"
+        className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground"
         style={{ fontFamily: "'Space Mono'" }}
       >
         {label}

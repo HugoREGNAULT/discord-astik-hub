@@ -232,7 +232,7 @@ function StaffPage() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <UserPlus className="size-4 text-pink-500" />
+                <UserPlus className="size-4 text-primary" />
                 Candidatures à traiter
               </span>
               <Button asChild size="sm" variant="outline">
@@ -435,9 +435,9 @@ function KpiCard({
 }) {
   const accentClass =
     accent === "pink"
-      ? "border-pink-500/50 bg-pink-500/5"
+      ? "border-primary/50 bg-primary/5"
       : accent === "blurple"
-        ? "border-[#5865F2]/50 bg-[#5865F2]/5"
+        ? "border-primary/50 bg-primary/5"
         : "";
 
   const body = (
@@ -655,7 +655,7 @@ function FactionHealthSection() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HeartPulse className="size-4 text-pink-500" /> Santé faction
+            <HeartPulse className="size-4 text-primary" /> Santé faction
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -672,7 +672,7 @@ function FactionHealthSection() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <HeartPulse className="size-4 text-pink-500" />
+          <HeartPulse className="size-4 text-primary" />
           Santé faction
           <span className="text-[11px] text-muted-foreground font-normal ml-auto">
             30/90 derniers jours
@@ -816,10 +816,10 @@ function WeeklyDigestSection() {
   const digest = data?.digest;
 
   return (
-    <Card className="border-pink-500/30 bg-gradient-to-br from-pink-500/5 to-transparent">
+    <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="size-4 text-pink-500" />
+          <Sparkles className="size-4 text-primary" />
           Digest IA hebdomadaire
           <span className="text-[11px] text-muted-foreground font-normal ml-2">
             Généré chaque lundi 10h
@@ -914,7 +914,7 @@ function DigestMarkdown({ content }: { content: string }) {
       out.push(
         <h4
           key={out.length}
-          className="text-sm font-semibold uppercase tracking-wider text-pink-400 mt-3"
+          className="text-sm font-semibold uppercase tracking-wider text-primary mt-3"
         >
           {line.slice(3)}
         </h4>,
@@ -1075,10 +1075,10 @@ function BulkDmCard() {
   const targetCount = preview.data?.count ?? 0;
 
   return (
-    <Card className="border-[#5865F2]/30">
+    <Card className="border-primary/30">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Megaphone className="size-4 text-[#5865F2]" />
+          <Megaphone className="size-4 text-primary" />
           Communication staff — DM Discord
           <span className="text-[11px] text-muted-foreground font-normal ml-2">
             Envoi en DM via le bot · ~4/sec · max 500
@@ -1513,7 +1513,7 @@ function InactivityCard() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between flex-wrap gap-2">
           <span className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-pink-500" />
+            <AlertTriangle className="size-4 text-primary" />
             Membres inactifs
           </span>
           <Tabs value={tab} onValueChange={(v) => setTab(v as "d7" | "d14" | "d30")}>
@@ -1740,7 +1740,7 @@ function InactivityQueueCard() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between flex-wrap gap-2">
           <span className="flex items-center gap-2">
-            <Send className="size-4 text-pink-500" />
+            <Send className="size-4 text-primary" />
             File de relance
           </span>
           <Badge variant="outline">{rows.length}</Badge>
@@ -2187,7 +2187,7 @@ function MissingMcCard() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <UserPlus className="size-4 text-pink-500" />
+            <UserPlus className="size-4 text-primary" />
             Sans pseudo Minecraft
           </span>
           <Badge variant="outline">{data?.total ?? 0}</Badge>

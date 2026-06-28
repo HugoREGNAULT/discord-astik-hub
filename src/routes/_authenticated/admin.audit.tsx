@@ -46,8 +46,7 @@ function AuditPage() {
           {isLoading && <p className="text-muted-foreground">Chargement…</p>}
           {!isLoading && !lastCheck && (
             <p className="text-muted-foreground">
-              Aucune vérification effectuée pour l'instant — le job planifié
-              n'a pas encore tourné.
+              Aucune vérification effectuée pour l'instant — le job planifié n'a pas encore tourné.
             </p>
           )}
           {lastCheck && (
@@ -71,12 +70,12 @@ function AuditPage() {
               )}
             </>
           )}
-          <p className="text-xs text-muted-foreground border-t border-zinc-800 pt-2 mt-2">
-            <strong>Limite honnête :</strong> ce mécanisme détecte les altérations non
-            coordonnées de l'historique (édition accidentelle, outil tiers, fuite).
-            Il ne protège <em>pas</em> contre un acteur disposant de la clé
-            <code className="font-mono"> service_role</code>, qui pourrait recalculer
-            la chaîne d'un seul coup.
+          <p className="text-xs text-muted-foreground border-t border-border pt-2 mt-2">
+            <strong>Limite honnête :</strong> ce mécanisme détecte les altérations non coordonnées
+            de l'historique (édition accidentelle, outil tiers, fuite). Il ne protège <em>pas</em>{" "}
+            contre un acteur disposant de la clé
+            <code className="font-mono"> service_role</code>, qui pourrait recalculer la chaîne d'un
+            seul coup.
           </p>
         </CardContent>
       </Card>
@@ -92,7 +91,7 @@ function AuditPage() {
           {sensitive.map((l) => (
             <div
               key={l.id}
-              className="flex flex-wrap items-center gap-2 text-xs border-b border-zinc-900 py-1.5"
+              className="flex flex-wrap items-center gap-2 text-xs border-b border-border py-1.5"
             >
               <span className="font-mono text-muted-foreground">#{l.seq}</span>
               <Badge variant="outline">{l.action}</Badge>

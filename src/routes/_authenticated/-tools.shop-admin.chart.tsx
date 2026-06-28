@@ -40,7 +40,14 @@ export default function ShopAdminHistoryChart({ rows }: { rows: Row[] }) {
               color: "#e4e4e7",
             }}
           />
-          <Line type="monotone" dataKey="sell" stroke="#ec4899" strokeWidth={2} dot={false} name="Vente" />
+          <Line
+            type="monotone"
+            dataKey="sell"
+            stroke="#8b5cf6"
+            strokeWidth={2}
+            dot={false}
+            name="Vente"
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

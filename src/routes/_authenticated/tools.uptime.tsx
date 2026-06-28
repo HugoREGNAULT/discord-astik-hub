@@ -127,8 +127,8 @@ function UptimePage() {
             onClick={() => setRange(r.key)}
             className={`px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] border transition-colors ${
               range === r.key
-                ? "border-pink-500 bg-pink-500/10 text-pink-300"
-                : "border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700"
+                ? "border-primary bg-primary/10 text-primary/70"
+                : "border-border bg-background text-muted-foreground hover:border-border"
             }`}
             style={{ fontFamily: "'Space Mono'" }}
           >
@@ -146,7 +146,7 @@ function UptimePage() {
       {globalSeries.length > 0 && (
         <ToolCard>
           <div
-            className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
+            className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3"
             style={{ fontFamily: "'Space Mono'" }}
           >
             // joueurs connectés Paladium (global) — {RANGES.find((r) => r.key === range)?.label}
@@ -169,8 +169,8 @@ function UptimePage() {
                 onClick={() => setSelected(g.key)}
                 className={`text-left border p-3 transition-colors ${
                   current?.key === g.key
-                    ? "border-pink-500 bg-pink-500/5"
-                    : "border-zinc-800 bg-zinc-900/60 hover:border-zinc-700"
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-secondary/60 hover:border-border"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -180,7 +180,7 @@ function UptimePage() {
                     }`}
                   />
                   <span
-                    className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 truncate"
+                    className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground truncate"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {g.key}
@@ -188,8 +188,8 @@ function UptimePage() {
                 </div>
                 <div className="text-sm text-white font-bold truncate">{g.label}</div>
                 <div className="flex justify-between text-xs mt-2">
-                  <span className="text-zinc-400">
-                    {g.lastOnline ?? "—"} <span className="text-zinc-600">joueurs</span>
+                  <span className="text-muted-foreground">
+                    {g.lastOnline ?? "—"} <span className="text-muted-foreground/70">joueurs</span>
                   </span>
                   <span
                     className={
@@ -210,7 +210,7 @@ function UptimePage() {
           {current && (
             <ToolCard>
               <div
-                className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
+                className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // {current.label} — up/down (ultime) sur{" "}
@@ -224,7 +224,7 @@ function UptimePage() {
               {current.series.some((p) => p.players > 0) && (
                 <>
                   <div
-                    className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mt-4 mb-2"
+                    className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mt-4 mb-2"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     // joueurs en ligne

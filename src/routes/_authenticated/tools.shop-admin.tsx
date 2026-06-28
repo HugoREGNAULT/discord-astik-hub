@@ -107,8 +107,8 @@ function ShopAdminPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <ToolCard className="!p-0 overflow-x-auto max-h-[600px] overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-zinc-900">
-                <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+              <thead className="sticky top-0 bg-secondary">
+                <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
                   <th className="py-2 px-4">Item</th>
                   <th className="py-2 px-4">Catégorie</th>
                   <th className="py-2 px-4 text-right">Achat</th>
@@ -120,16 +120,18 @@ function ShopAdminPage() {
                   <tr
                     key={it.item_name}
                     onClick={() => setSelected(it.item_name)}
-                    className={`border-b border-zinc-900 cursor-pointer hover:bg-zinc-900/50 ${
-                      selected === it.item_name ? "bg-pink-500/10" : ""
+                    className={`border-b border-border cursor-pointer hover:bg-secondary/50 ${
+                      selected === it.item_name ? "bg-primary/10" : ""
                     }`}
                   >
-                    <td className="py-2 px-4 text-zinc-200 font-mono text-xs">{it.item_name}</td>
-                    <td className="py-2 px-4 text-zinc-500 text-xs">{it.category ?? "—"}</td>
+                    <td className="py-2 px-4 text-foreground font-mono text-xs">{it.item_name}</td>
+                    <td className="py-2 px-4 text-muted-foreground text-xs">
+                      {it.category ?? "—"}
+                    </td>
                     <td className="py-2 px-4 text-right text-white font-bold">
                       {it.price?.toLocaleString("fr-FR") ?? "—"}
                     </td>
-                    <td className="py-2 px-4 text-right text-pink-400 font-bold">
+                    <td className="py-2 px-4 text-right text-primary font-bold">
                       {it.price_pb?.toLocaleString("fr-FR") ?? "—"}
                     </td>
                   </tr>
@@ -140,7 +142,7 @@ function ShopAdminPage() {
 
           <ToolCard>
             <div
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // historique {selected ?? "(clique un item)"}
@@ -164,7 +166,7 @@ function ShopAdminPage() {
 
           <ToolCard className="lg:col-span-2">
             <div
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // top mouvements vente (7j)
@@ -208,24 +210,24 @@ function MoversList({
   const sign = positive ? "+" : "";
   return (
     <div>
-      <div className="text-xs uppercase tracking-[0.2em] text-zinc-400 mb-2">{title}</div>
+      <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{title}</div>
       {rows.length === 0 ? (
-        <div className="text-xs text-zinc-600">—</div>
+        <div className="text-xs text-muted-foreground/70">—</div>
       ) : (
         <ul className="space-y-2">
           {rows.map((r) => (
             <li
               key={r.item_name}
               onClick={() => onPick(r.item_name)}
-              className="cursor-pointer rounded border border-zinc-800 bg-zinc-900/40 p-3 hover:bg-zinc-900"
+              className="cursor-pointer rounded border border-border bg-secondary/40 p-3 hover:bg-secondary"
             >
-              <div className="font-mono text-xs text-zinc-200 truncate">{r.item_name}</div>
+              <div className="font-mono text-xs text-foreground truncate">{r.item_name}</div>
               <div className="mt-1 flex items-baseline justify-between gap-3">
                 <span className={`text-2xl font-bold ${color}`}>
                   {sign}
                   {r.pct.toFixed(1)}%
                 </span>
-                <span className="text-sm text-pink-400 font-bold">
+                <span className="text-sm text-primary font-bold">
                   {r.current.toLocaleString("fr-FR")}
                 </span>
               </div>
@@ -270,9 +272,9 @@ function AlertForm({ itemName }: { itemName: string }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="mt-4 border-t border-zinc-800 pt-4 space-y-3">
+    <form onSubmit={onSubmit} className="mt-4 border-t border-border pt-4 space-y-3">
       <div
-        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-2"
+        className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2"
         style={{ fontFamily: "'Space Mono'" }}
       >
         <Bell className="size-3" /> // créer une alerte
@@ -281,7 +283,7 @@ function AlertForm({ itemName }: { itemName: string }) {
         <select
           value={priceType}
           onChange={(e) => setPriceType(e.target.value as "buy" | "sell")}
-          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+          className="bg-secondary border border-border rounded px-2 py-1.5 text-foreground"
         >
           <option value="sell">Prix vente</option>
           <option value="buy">Prix achat</option>
@@ -289,7 +291,7 @@ function AlertForm({ itemName }: { itemName: string }) {
         <select
           value={direction}
           onChange={(e) => setDirection(e.target.value as "above" | "below")}
-          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-zinc-200"
+          className="bg-secondary border border-border rounded px-2 py-1.5 text-foreground"
         >
           <option value="below">passe en dessous de</option>
           <option value="above">passe au-dessus de</option>
@@ -303,12 +305,12 @@ function AlertForm({ itemName }: { itemName: string }) {
           value={threshold}
           onChange={(e) => setThreshold(e.target.value)}
           placeholder="Seuil ($)"
-          className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-2 py-1.5 text-sm text-zinc-200"
+          className="flex-1 bg-secondary border border-border rounded px-2 py-1.5 text-sm text-foreground"
         />
         <button
           type="submit"
           disabled={mut.isPending}
-          className="px-3 py-1.5 bg-pink-500 text-white text-xs uppercase tracking-wider rounded hover:bg-pink-600 disabled:opacity-50"
+          className="px-3 py-1.5 bg-primary text-white text-xs uppercase tracking-wider rounded hover:bg-primary/90 disabled:opacity-50"
           style={{ fontFamily: "'Space Grotesk'" }}
         >
           {mut.isPending ? "…" : "Créer"}
@@ -340,7 +342,7 @@ function MyAlertsPanel() {
   return (
     <div>
       <div
-        className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 mb-3 flex items-center gap-2"
+        className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3 flex items-center gap-2"
         style={{ fontFamily: "'Space Mono'" }}
       >
         <Bell className="size-3" /> // mes alertes prix
@@ -354,11 +356,11 @@ function MyAlertsPanel() {
           {q.data.alerts.map((a) => (
             <li
               key={a.id}
-              className="flex items-center justify-between gap-3 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-3 rounded border border-border bg-secondary/40 px-3 py-2 text-sm"
             >
               <div className="min-w-0 flex-1">
-                <div className="font-mono text-xs text-zinc-200 truncate">{a.item_name}</div>
-                <div className="text-[10px] text-zinc-500 uppercase tracking-wider mt-0.5">
+                <div className="font-mono text-xs text-foreground truncate">{a.item_name}</div>
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
                   {a.price_type === "sell" ? "vente" : "achat"} ·{" "}
                   {a.direction === "below" ? "≤" : "≥"} {a.threshold.toLocaleString("fr-FR")}
                   {a.is_triggered && <span className="ml-2 text-amber-400">· déclenchée</span>}
@@ -367,7 +369,7 @@ function MyAlertsPanel() {
               <button
                 onClick={() => del.mutate(a.id)}
                 disabled={del.isPending}
-                className="text-zinc-500 hover:text-red-400 disabled:opacity-50"
+                className="text-muted-foreground hover:text-red-400 disabled:opacity-50"
                 title="Supprimer"
               >
                 <Trash2 className="size-4" />

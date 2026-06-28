@@ -40,7 +40,7 @@ function ToolsLayout() {
         <div className="flex items-center gap-3">
           <Link
             to="/tools"
-            className="flex items-center gap-2 text-zinc-400 hover:text-pink-500 text-xs uppercase tracking-[0.3em]"
+            className="flex items-center gap-2 text-muted-foreground hover:text-primary text-xs uppercase tracking-[0.3em]"
             style={{ fontFamily: "'Space Mono'" }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -50,7 +50,7 @@ function ToolsLayout() {
       </div>
 
       <div className="relative">
-        <nav className="flex gap-1 overflow-x-auto scroll-smooth border-b border-zinc-800/80 pb-0 -mx-1 px-1 pr-8">
+        <nav className="flex gap-1 overflow-x-auto scroll-smooth border-b border-border/80 pb-0 -mx-1 px-1 pr-8">
           {TABS.map((t) => {
             const active = path === t.to || path.startsWith(t.to + "/");
             return (
@@ -60,8 +60,8 @@ function ToolsLayout() {
                 aria-current={active ? "page" : undefined}
                 className={`relative flex items-center gap-2 px-3 py-2 text-[11px] uppercase tracking-[0.2em] whitespace-nowrap border-b-2 transition-colors ${
                   active
-                    ? "border-pink-500 text-white"
-                    : "border-transparent text-zinc-500 hover:text-white"
+                    ? "border-primary text-white"
+                    : "border-transparent text-muted-foreground hover:text-white"
                 }`}
                 style={{ fontFamily: "'Space Mono'" }}
               >
@@ -73,7 +73,7 @@ function ToolsLayout() {
         </nav>
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0a0c] to-transparent sm:hidden"
+          className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent sm:hidden"
         />
       </div>
 

@@ -125,16 +125,16 @@ function PlayerLookup() {
                   setInput(p.username);
                   setUsername(p.username);
                 }}
-                className="flex items-center gap-2 border border-zinc-800 hover:border-pink-500 bg-zinc-950 px-2 py-1.5 text-xs text-zinc-300 transition-colors"
+                className="flex items-center gap-2 border border-border hover:border-primary bg-background px-2 py-1.5 text-xs text-foreground/80 transition-colors"
                 title={`${p.search_count} recherche(s)`}
               >
                 <img
                   src={avatarUrl(p.uuid, 24)}
                   alt={p.username}
-                  className="w-5 h-5 border border-zinc-800"
+                  className="w-5 h-5 border border-border"
                 />
                 <span className="font-mono">{p.username}</span>
-                <span className="text-pink-400 font-bold">×{p.search_count}</span>
+                <span className="text-primary font-bold">×{p.search_count}</span>
               </button>
             ))}
           </div>
@@ -150,7 +150,7 @@ function PlayerLookup() {
             <img
               src={avatarUrl(uuid, 128)}
               alt={uuidQ.data?.name}
-              className="w-32 h-32 border border-zinc-800 bg-zinc-950"
+              className="w-32 h-32 border border-border bg-background"
             />
             <div
               className="mt-3 text-sm font-bold uppercase tracking-tight text-white"
@@ -159,7 +159,7 @@ function PlayerLookup() {
               {uuidQ.data?.name}
             </div>
             <div
-              className="text-[10px] uppercase tracking-[0.2em] text-zinc-600 break-all"
+              className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/70 break-all"
               style={{ fontFamily: "'Space Mono'" }}
             >
               {uuid}
@@ -212,34 +212,36 @@ function PlayerLookup() {
               <SectionTitle>Ventes en cours</SectionTitle>
               {salesQ.isLoading && <LoadingBlock />}
               {salesQ.data && salesQ.data.open.length === 0 && (
-                <p className="text-zinc-600 text-xs mt-2">Aucune vente active enregistrée.</p>
+                <p className="text-muted-foreground/70 text-xs mt-2">
+                  Aucune vente active enregistrée.
+                </p>
               )}
               {salesQ.data && salesQ.data.open.length > 0 && (
                 <div className="overflow-x-auto -mx-2 px-2">
-                <table className="w-full text-sm mt-2 min-w-[480px]">
-                  <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
-                      <th className="py-2">Item</th>
-                      <th className="py-2 text-right">Qté</th>
-                      <th className="py-2 text-right">Prix u.</th>
-                      <th className="py-2 text-right">Listé</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {salesQ.data.open.map((r) => (
-                      <tr key={r.id} className="border-b border-zinc-900 last:border-0">
-                        <td className="py-2 text-zinc-300 font-mono">{r.item_name}</td>
-                        <td className="py-2 text-right text-white">{r.quantity}</td>
-                        <td className="py-2 text-right text-pink-400 font-bold">
-                          {fmtNum(Number(r.price))}
-                        </td>
-                        <td className="py-2 text-right text-zinc-500 text-xs">
-                          {fmtDate(r.listed_at ?? r.first_seen_at)}
-                        </td>
+                  <table className="w-full text-sm mt-2 min-w-[480px]">
+                    <thead>
+                      <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
+                        <th className="py-2">Item</th>
+                        <th className="py-2 text-right">Qté</th>
+                        <th className="py-2 text-right">Prix u.</th>
+                        <th className="py-2 text-right">Listé</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {salesQ.data.open.map((r) => (
+                        <tr key={r.id} className="border-b border-border last:border-0">
+                          <td className="py-2 text-foreground/80 font-mono">{r.item_name}</td>
+                          <td className="py-2 text-right text-white">{r.quantity}</td>
+                          <td className="py-2 text-right text-primary font-bold">
+                            {fmtNum(Number(r.price))}
+                          </td>
+                          <td className="py-2 text-right text-muted-foreground text-xs">
+                            {fmtDate(r.listed_at ?? r.first_seen_at)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </ToolCard>
@@ -247,36 +249,36 @@ function PlayerLookup() {
             <ToolCard>
               <SectionTitle>Ventes passées (snapshots BDD)</SectionTitle>
               {salesQ.data && salesQ.data.sold.length === 0 && (
-                <p className="text-zinc-600 text-xs mt-2">
+                <p className="text-muted-foreground/70 text-xs mt-2">
                   Aucun historique pour l'instant — la sync auto tourne toutes les 10 min.
                 </p>
               )}
               {salesQ.data && salesQ.data.sold.length > 0 && (
                 <div className="overflow-x-auto -mx-2 px-2">
-                <table className="w-full text-sm mt-2 min-w-[480px]">
-                  <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
-                      <th className="py-2">Item</th>
-                      <th className="py-2 text-right">Qté</th>
-                      <th className="py-2 text-right">Prix u.</th>
-                      <th className="py-2 text-right">Vendu</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {salesQ.data.sold.slice(0, 50).map((r) => (
-                      <tr key={r.id} className="border-b border-zinc-900 last:border-0">
-                        <td className="py-2 text-zinc-300 font-mono">{r.item_name}</td>
-                        <td className="py-2 text-right text-white">{r.quantity}</td>
-                        <td className="py-2 text-right text-pink-400 font-bold">
-                          {fmtNum(Number(r.price))}
-                        </td>
-                        <td className="py-2 text-right text-zinc-500 text-xs">
-                          {fmtDate(r.sold_at)}
-                        </td>
+                  <table className="w-full text-sm mt-2 min-w-[480px]">
+                    <thead>
+                      <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
+                        <th className="py-2">Item</th>
+                        <th className="py-2 text-right">Qté</th>
+                        <th className="py-2 text-right">Prix u.</th>
+                        <th className="py-2 text-right">Vendu</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {salesQ.data.sold.slice(0, 50).map((r) => (
+                        <tr key={r.id} className="border-b border-border last:border-0">
+                          <td className="py-2 text-foreground/80 font-mono">{r.item_name}</td>
+                          <td className="py-2 text-right text-white">{r.quantity}</td>
+                          <td className="py-2 text-right text-primary font-bold">
+                            {fmtNum(Number(r.price))}
+                          </td>
+                          <td className="py-2 text-right text-muted-foreground text-xs">
+                            {fmtDate(r.sold_at)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </ToolCard>
@@ -310,28 +312,30 @@ function PlayerLookup() {
               {jobsQ.isLoading && <LoadingBlock />}
               {jobs.length > 0 && (
                 <div className="overflow-x-auto -mx-2 px-2">
-                <table className="w-full text-sm mt-2 min-w-[360px]">
-                  <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
-                      <th className="py-2">Métier</th>
-                      <th className="py-2">Niveau</th>
-                      <th className="py-2">XP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {jobs.map((j, i) => (
-                      <tr key={i} className="border-b border-zinc-900 last:border-0">
-                        <td className="py-2 text-zinc-300 capitalize">{j.name}</td>
-                        <td className="py-2 text-white font-bold">{j.level}</td>
-                        <td className="py-2 text-zinc-400">{fmtNum(j.experience ?? j.xp)}</td>
+                  <table className="w-full text-sm mt-2 min-w-[360px]">
+                    <thead>
+                      <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
+                        <th className="py-2">Métier</th>
+                        <th className="py-2">Niveau</th>
+                        <th className="py-2">XP</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {jobs.map((j, i) => (
+                        <tr key={i} className="border-b border-border last:border-0">
+                          <td className="py-2 text-foreground/80 capitalize">{j.name}</td>
+                          <td className="py-2 text-white font-bold">{j.level}</td>
+                          <td className="py-2 text-muted-foreground">
+                            {fmtNum(j.experience ?? j.xp)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
               {jobs.length === 0 && !jobsQ.isLoading && (
-                <p className="text-zinc-600 text-xs mt-2">Aucun métier.</p>
+                <p className="text-muted-foreground/70 text-xs mt-2">Aucun métier.</p>
               )}
             </ToolCard>
           </div>
@@ -344,7 +348,7 @@ function PlayerLookup() {
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2
-      className="text-[10px] uppercase tracking-[0.3em] text-pink-500 mb-1"
+      className="text-[10px] uppercase tracking-[0.3em] text-primary mb-1"
       style={{ fontFamily: "'Space Mono'" }}
     >
       // {children}

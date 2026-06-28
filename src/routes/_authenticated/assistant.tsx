@@ -46,10 +46,7 @@ function AssistantPage() {
   const mutation = useMutation({
     mutationFn: (q: string) => ask({ data: { question: q } }),
     onSuccess: (res, q) => {
-      setHistory((prev) => [
-        { id: `${Date.now()}`, question: q, answer: res },
-        ...prev,
-      ]);
+      setHistory((prev) => [{ id: `${Date.now()}`, question: q, answer: res }, ...prev]);
       setQuestion("");
     },
   });
@@ -87,7 +84,7 @@ function AssistantPage() {
 
       <PageCard>
         <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-pink-400">Question</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Question</p>
           <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
@@ -145,9 +142,7 @@ function AnswerCard({ entry }: { entry: HistoryEntry }) {
         </div>
 
         <div className="border-t pt-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-pink-400">
-            Réponse
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">Réponse</p>
           {answer.ok ? (
             <AssistantMarkdown content={answer.answer} />
           ) : (
@@ -252,7 +247,7 @@ function AssistantMarkdown({ content }: { content: string }) {
       out.push(
         <h4
           key={out.length}
-          className="text-sm font-semibold uppercase tracking-wider text-pink-400 mt-3"
+          className="text-sm font-semibold uppercase tracking-wider text-primary mt-3"
         >
           {line.slice(3)}
         </h4>,
@@ -277,5 +272,8 @@ function renderInline(text: string): string {
   const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return escaped
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-    .replace(/`([^`]+)`/g, '<code class="font-mono text-xs bg-muted px-1 py-0.5 rounded">$1</code>');
+    .replace(
+      /`([^`]+)`/g,
+      '<code class="font-mono text-xs bg-muted px-1 py-0.5 rounded">$1</code>',
+    );
 }

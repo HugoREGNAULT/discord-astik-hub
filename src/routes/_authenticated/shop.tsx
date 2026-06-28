@@ -11,7 +11,11 @@ import {
   ErrorBlock,
   EmptyBlock,
 } from "@/components/tools/ToolsUi";
-import { listShopRewards, createSpendRequest, listMySpendRequests } from "@/lib/data/shop.functions";
+import {
+  listShopRewards,
+  createSpendRequest,
+  listMySpendRequests,
+} from "@/lib/data/shop.functions";
 import { getMyOverview } from "@/lib/data/me.functions";
 import { toUserMessage } from "@/lib/errors";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -54,15 +58,15 @@ function ShopPage() {
 
       <ToolCard>
         <div className="flex items-center justify-between">
-          <span className="text-xs uppercase tracking-[0.3em] text-zinc-400">// solde</span>
-          <span className="text-2xl font-bold text-pink-500">
+          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">// solde</span>
+          <span className="text-2xl font-bold text-primary">
             {balance.toLocaleString("fr-FR")} pts
           </span>
         </div>
       </ToolCard>
 
       <section>
-        <h2 className="text-sm uppercase tracking-[0.3em] text-pink-500 mb-3">// catalogue</h2>
+        <h2 className="text-sm uppercase tracking-[0.3em] text-primary mb-3">// catalogue</h2>
         {rewardsQ.isLoading ? (
           <LoadingBlock />
         ) : rewardsQ.error ? (
@@ -79,16 +83,18 @@ function ShopPage() {
                   <div className="flex flex-col gap-2">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-bold text-white">{r.name}</h3>
-                      <span className="text-pink-500 font-bold whitespace-nowrap">
+                      <span className="text-primary font-bold whitespace-nowrap">
                         {r.cost_points} pts
                       </span>
                     </div>
                     {r.description && (
-                      <p className="text-sm text-zinc-400">{r.description}</p>
+                      <p className="text-sm text-muted-foreground">{r.description}</p>
                     )}
-                    <div className="flex gap-2 text-[10px] uppercase tracking-wider text-zinc-500">
-                      {r.category && <span className="border border-zinc-700 px-2 py-0.5">{r.category}</span>}
-                      <span className="border border-zinc-700 px-2 py-0.5">
+                    <div className="flex gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {r.category && (
+                        <span className="border border-border px-2 py-0.5">{r.category}</span>
+                      )}
+                      <span className="border border-border px-2 py-0.5">
                         stock: {r.stock === null || r.stock === undefined ? "illimité" : r.stock}
                       </span>
                     </div>
@@ -96,7 +102,9 @@ function ShopPage() {
                       title="Confirmer l'échange"
                       description="Ta demande sera mise en attente de validation par le staff. Les points ne sont débités qu'après approbation."
                       destructive={false}
-                      onConfirm={async () => { await mut.mutateAsync(r.id); }}
+                      onConfirm={async () => {
+                        await mut.mutateAsync(r.id);
+                      }}
                       trigger={
                         <DaButton
                           className="mt-2"
@@ -106,7 +114,6 @@ function ShopPage() {
                         </DaButton>
                       }
                     />
-
                   </div>
                 </ToolCard>
               );
@@ -116,22 +123,26 @@ function ShopPage() {
       </section>
 
       <section>
-        <h2 className="text-sm uppercase tracking-[0.3em] text-pink-500 mb-3">// mes demandes</h2>
+        <h2 className="text-sm uppercase tracking-[0.3em] text-primary mb-3">// mes demandes</h2>
         {mineQ.isLoading ? (
           <LoadingBlock />
         ) : (mineQ.data?.requests ?? []).length === 0 ? (
           <EmptyBlock label="Aucune demande pour le moment." />
         ) : (
           <ToolCard>
-            <div className="divide-y divide-zinc-800">
+            <div className="divide-y divide-border">
               {mineQ.data!.requests.map((r: any) => (
                 <div key={r.id} className="py-2 flex items-center justify-between gap-3 text-sm">
                   <div>
-                    <div className="text-white">{r.reward_name} <span className="text-zinc-500">x{r.quantity}</span></div>
-                    <div className="text-xs text-zinc-500">{new Date(r.requested_at).toLocaleString("fr-FR")}</div>
+                    <div className="text-white">
+                      {r.reward_name} <span className="text-muted-foreground">x{r.quantity}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(r.requested_at).toLocaleString("fr-FR")}
+                    </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-pink-500">{r.total_cost} pts</span>
+                    <span className="text-primary">{r.total_cost} pts</span>
                     <StatusBadge status={r.status} />
                   </div>
                 </div>
@@ -140,7 +151,6 @@ function ShopPage() {
           </ToolCard>
         )}
       </section>
-
     </div>
   );
 }
@@ -150,10 +160,10 @@ function StatusBadge({ status }: { status: string }) {
     pending: "text-amber-400 border-amber-400/40",
     approved: "text-emerald-400 border-emerald-400/40",
     rejected: "text-red-400 border-red-400/40",
-    expired: "text-zinc-500 border-zinc-700",
+    expired: "text-muted-foreground border-border",
     fulfilled: "text-emerald-500 border-emerald-500/60",
   };
-  const cls = map[status] ?? "text-zinc-400 border-zinc-700";
+  const cls = map[status] ?? "text-muted-foreground border-border";
   return (
     <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 border ${cls}`}>
       {status}

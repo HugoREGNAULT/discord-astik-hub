@@ -43,10 +43,10 @@ function fmtDate(iso: string): string {
 function ListingRow({ r, showSold }: { r: Listing; showSold?: boolean }) {
   const total = r.price * r.quantity;
   return (
-    <div className="flex items-baseline justify-between gap-3 py-2 border-b border-zinc-800 last:border-0">
+    <div className="flex items-baseline justify-between gap-3 py-2 border-b border-border last:border-0">
       <div className="min-w-0">
-        <span className="text-sm text-zinc-100 font-medium truncate block">{r.item_name}</span>
-        <span className="text-[11px] text-zinc-500 font-mono">
+        <span className="text-sm text-foreground font-medium truncate block">{r.item_name}</span>
+        <span className="text-[11px] text-muted-foreground font-mono">
           ×{r.quantity} · {fmtMoney(r.price)}/u
           {showSold && r.sold_at ? (
             <>
@@ -56,7 +56,7 @@ function ListingRow({ r, showSold }: { r: Listing; showSold?: boolean }) {
           ) : null}
         </span>
       </div>
-      <span className="text-sm font-bold text-pink-300 whitespace-nowrap font-mono shrink-0">
+      <span className="text-sm font-bold text-primary/70 whitespace-nowrap font-mono shrink-0">
         {fmtMoney(total)}
       </span>
     </div>
@@ -83,21 +83,23 @@ export function MemberSalesCard() {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-base">
-          <ShoppingBag className="w-4 h-4 text-pink-400" />
+          <ShoppingBag className="w-4 h-4 text-primary" />
           Ventes HDV
         </CardTitle>
-        <div className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <Clock className="w-3 h-3" />
           Actualisé {fmtRelative(lastSync)}
-          {lastSync && <span className="text-zinc-600">· données BDD, jamais l'API directe</span>}
+          {lastSync && (
+            <span className="text-muted-foreground/70">· données BDD, jamais l'API directe</span>
+          )}
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {q.isLoading && <div className="h-16 animate-pulse rounded bg-zinc-800/50" />}
+        {q.isLoading && <div className="h-16 animate-pulse rounded bg-secondary/50" />}
 
         {!q.isLoading && open.length === 0 && sold.length === 0 && (
-          <p className="text-xs text-zinc-500 italic">
+          <p className="text-xs text-muted-foreground italic">
             Aucune vente trouvée — le premier sync arrive dans les 5 minutes.
           </p>
         )}
@@ -106,12 +108,12 @@ export function MemberSalesCard() {
           <div>
             <div className="flex items-baseline justify-between mb-1.5">
               <span
-                className="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+                className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // en cours ({open.length})
               </span>
-              <span className="text-xs text-pink-300 font-mono">{fmtMoney(openValue)}</span>
+              <span className="text-xs text-primary/70 font-mono">{fmtMoney(openValue)}</span>
             </div>
             <div className="max-h-48 overflow-y-auto pr-1">
               {open.map((r) => (
@@ -125,7 +127,7 @@ export function MemberSalesCard() {
           <div>
             <div className="mb-1.5">
               <span
-                className="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+                className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
                 style={{ fontFamily: "'Space Mono'" }}
               >
                 // vendues récemment ({sold.length})

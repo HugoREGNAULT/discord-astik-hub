@@ -40,8 +40,10 @@ const TICK_SECONDS = 1.33;
 
 function DisabledBanner({ label }: { label: string }) {
   return (
-    <div className="rounded border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-400 flex items-center gap-2">
-      <span className="font-mono text-zinc-600 text-[11px] uppercase tracking-widest">//</span>
+    <div className="rounded border border-border bg-secondary/60 px-4 py-3 text-sm text-muted-foreground flex items-center gap-2">
+      <span className="font-mono text-muted-foreground/70 text-[11px] uppercase tracking-widest">
+        //
+      </span>
       {label}
     </div>
   );
@@ -168,9 +170,9 @@ function ClickerOptimizerInner() {
             <>
               <ToolCard>
                 <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-4 h-4 text-pink-500" />
+                  <Sparkles className="w-4 h-4 text-primary" />
                   <h2
-                    className="text-[10px] uppercase tracking-[0.3em] text-pink-500"
+                    className="text-[10px] uppercase tracking-[0.3em] text-primary"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     // meilleur achat
@@ -183,13 +185,11 @@ function ClickerOptimizerInner() {
                   >
                     {suggestions[0].name}
                   </div>
-                  <div className="text-zinc-400 text-sm">
-                    coût <span className="text-pink-400">{fmtNum(suggestions[0].cost)}</span> · gain{" "}
+                  <div className="text-muted-foreground text-sm">
+                    coût <span className="text-primary">{fmtNum(suggestions[0].cost)}</span> · gain{" "}
                     <span className="text-emerald-400">+{fmtNum(suggestions[0].gainRps)} rps</span>{" "}
                     · attente{" "}
-                    <span className="text-[#5865F2]">
-                      {fmtDuration(suggestions[0].waitSeconds)}
-                    </span>
+                    <span className="text-primary">{fmtDuration(suggestions[0].waitSeconds)}</span>
                   </div>
                 </div>
               </ToolCard>
@@ -197,7 +197,7 @@ function ClickerOptimizerInner() {
               <ToolCard className="!p-0 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800">
+                    <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border">
                       <th className="py-2 px-4">#</th>
                       <th className="py-2 px-4">Achat</th>
                       <th className="py-2 px-4 text-right">Coût</th>
@@ -210,20 +210,22 @@ function ClickerOptimizerInner() {
                     {suggestions.map((s, i) => (
                       <tr
                         key={i}
-                        className={`border-b border-zinc-900 last:border-0 ${
-                          i === 0 ? "bg-pink-500/5" : "hover:bg-zinc-900/50"
+                        className={`border-b border-border last:border-0 ${
+                          i === 0 ? "bg-primary/5" : "hover:bg-secondary/50"
                         }`}
                       >
-                        <td className="py-2 px-4 text-pink-400 font-bold">{i + 1}</td>
-                        <td className="py-2 px-4 text-zinc-200">{s.name}</td>
-                        <td className="py-2 px-4 text-right text-zinc-300">{fmtNum(s.cost)}</td>
+                        <td className="py-2 px-4 text-primary font-bold">{i + 1}</td>
+                        <td className="py-2 px-4 text-foreground">{s.name}</td>
+                        <td className="py-2 px-4 text-right text-foreground/80">
+                          {fmtNum(s.cost)}
+                        </td>
                         <td className="py-2 px-4 text-right text-emerald-400">
                           +{fmtNum(s.gainRps)}
                         </td>
                         <td className="py-2 px-4 text-right text-white">
                           {s.ratio.toExponential(2)}
                         </td>
-                        <td className="py-2 px-4 text-right text-[#5865F2]">
+                        <td className="py-2 px-4 text-right text-primary">
                           {fmtDuration(s.waitSeconds)}
                         </td>
                       </tr>
