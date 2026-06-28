@@ -34,6 +34,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthLayout,
 });
 
+// Libellés lisibles par segment d'URL (alignés sur AppSidebar ITEMS + TABS de tools.tsx).
 const PATH_LABELS: Record<string, string> = {
   "/dashboard": "Classement",
   "/polls": "Sondages",
@@ -79,12 +80,16 @@ function buildCrumbs(pathname: string): Array<{ label: string; href: string; isL
 function AuthLayout() {
   const loaderUser = Route.useLoaderData();
   const { data: freshUser } = useCurrentUser();
+  // loaderUser provient du loader SSR (contexte de requête fiable) ;
+  // freshUser est la version rafraîchie côté client. On préfère le frais,
+  // mais on retombe sur le loader si le fetch client échoue.
   const user = freshUser ?? loaderUser;
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const crumbs = buildCrumbs(pathname);
 
   const trackView = useServerFn(recordView);
   const lastTrackedRef = useRef<string | null>(null);
+  // Tracking discret des vues authentifiées (analytics staff).
   useEffect(() => {
     if (!user) return;
     if (lastTrackedRef.current === pathname) return;
@@ -161,7 +166,7 @@ function AuthLayout() {
                 SYS_HUB_V2
               </span>
               <span
-                className="w-2 h-2 bg-success shadow-[0_0_8px_rgba(52,211,153,0.7)] ml-1"
+                className="w-2 h-2 rounded-full bg-success shadow-[0_0_8px_rgba(52,211,153,0.7)] ml-1"
                 aria-hidden
               />
             </div>
