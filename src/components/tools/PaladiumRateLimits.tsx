@@ -20,19 +20,19 @@ export function PaladiumRateLimits() {
   }, []);
 
   return (
-    <div className="border border-zinc-800 bg-zinc-950">
+    <div className="border border-border bg-background">
       <div
-        className="flex items-center justify-between border-b border-zinc-800 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-pink-500"
+        className="flex items-center justify-between border-b border-border px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-primary"
         style={{ fontFamily: "'Space Mono'" }}
       >
         <span>// rate limits API Paladium</span>
-        <span className="text-zinc-500">par app · fenêtre glissante</span>
+        <span className="text-muted-foreground">par app · fenêtre glissante</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr
-              className="text-left text-[10px] uppercase tracking-[0.2em] text-zinc-500 border-b border-zinc-800"
+              className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border"
               style={{ fontFamily: "'Space Mono'" }}
             >
               <th className="px-4 py-2 font-normal">Route</th>
@@ -50,11 +50,11 @@ export function PaladiumRateLimits() {
               const used = remaining != null;
               const low = used && remaining <= Math.max(1, Math.floor(limit * 0.1));
               return (
-                <tr key={r.template} className="border-b border-zinc-900 last:border-0">
+                <tr key={r.template} className="border-b border-border last:border-0">
                   <td className="px-4 py-2">
-                    <div className="text-zinc-200">{r.label}</div>
+                    <div className="text-foreground">{r.label}</div>
                     <div
-                      className="text-[10px] text-zinc-600 truncate"
+                      className="text-[10px] text-muted-foreground truncate"
                       style={{ fontFamily: "'Space Mono'" }}
                     >
                       {r.template}
@@ -62,20 +62,20 @@ export function PaladiumRateLimits() {
                   </td>
                   <td
                     className={`px-4 py-2 text-right tabular-nums ${
-                      !used ? "text-zinc-600" : low ? "text-pink-500" : "text-zinc-200"
+                      !used ? "text-muted-foreground" : low ? "text-primary" : "text-foreground"
                     }`}
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {used ? remaining : "—"}
                   </td>
                   <td
-                    className="px-4 py-2 text-right tabular-nums text-zinc-500"
+                    className="px-4 py-2 text-right tabular-nums text-muted-foreground"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {limit}/{r.windowMin}min
                   </td>
                   <td
-                    className="px-4 py-2 text-right tabular-nums text-zinc-400"
+                    className="px-4 py-2 text-right tabular-nums text-muted-foreground"
                     style={{ fontFamily: "'Space Mono'" }}
                   >
                     {resetMs != null ? fmtCountdown(resetMs) : "—"}
@@ -87,7 +87,7 @@ export function PaladiumRateLimits() {
         </table>
       </div>
       <div
-        className="border-t border-zinc-800 px-4 py-2 text-[10px] text-zinc-600"
+        className="border-t border-border px-4 py-2 text-[10px] text-muted-foreground"
         style={{ fontFamily: "'Space Mono'" }}
       >
         // mis à jour après chaque appel · « — » = pas encore appelé cette session

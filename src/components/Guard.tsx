@@ -25,7 +25,7 @@ export function Forbidden({ perm }: { perm?: Permission }) {
           </div>
           <div>
             <div
-              className="text-pink-500 text-[10px] uppercase tracking-[0.3em] mb-1"
+              className="text-primary text-[10px] uppercase tracking-[0.3em] mb-1"
               style={{ fontFamily: "'Space Mono'" }}
             >
               // access_denied

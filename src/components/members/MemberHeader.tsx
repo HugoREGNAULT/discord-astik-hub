@@ -19,7 +19,7 @@ export function MemberHeader({ member, isSelf, canShowDiscordId }: Props) {
           <div className="size-16 rounded-full bg-muted" />
         )}
         <div>
-          <div className="text-pink-500 mb-1">
+          <div className="text-primary mb-1">
             <MonoLabel>// member</MonoLabel>
           </div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "'Space Grotesk'" }}>

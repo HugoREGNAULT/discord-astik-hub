@@ -64,7 +64,7 @@ export function DonationsPanel() {
           <div className="flex-1 min-w-[200px]">
             <label
               htmlFor={`${newCartId}-member`}
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
               style={{ fontFamily: "'Space Mono'" }}
             >
               Membre (optionnel)
@@ -86,7 +86,7 @@ export function DonationsPanel() {
           <div className="w-32">
             <label
               htmlFor={`${newCartId}-bonus`}
-              className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
               style={{ fontFamily: "'Space Mono'" }}
             >
               Bonus %
@@ -99,7 +99,9 @@ export function DonationsPanel() {
               className="w-full mt-1"
             />
           </div>
-          <DaButton onClick={() => mkCart.mutate()} disabled={mkCart.isPending}>Créer</DaButton>
+          <DaButton onClick={() => mkCart.mutate()} disabled={mkCart.isPending}>
+            Créer
+          </DaButton>
         </div>
       </PageCard>
 
@@ -171,19 +173,19 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
     <PageCard>
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
         <div
-          className="text-[10px] uppercase tracking-[0.3em] text-pink-500"
+          className="text-[10px] uppercase tracking-[0.3em] text-primary"
           style={{ fontFamily: "'Space Mono'" }}
         >
           // panier #{cart.id.slice(0, 6)}
           {cart.member_discord_id && (
-            <span className="ml-2 text-zinc-500">→ {cart.member_discord_id}</span>
+            <span className="ml-2 text-muted-foreground">→ {cart.member_discord_id}</span>
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <DaChip accent="blurple">+{cart.bonus_pct}%</DaChip>
           <DaChip accent="pink">{cart.total_final} pts</DaChip>
           <span
-            className="text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+            className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground"
             style={{ fontFamily: "'Space Mono'" }}
           >
             expire {new Date(cart.expires_at).toLocaleTimeString("fr-FR")}
@@ -191,19 +193,19 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
         </div>
       </div>
 
-      <ul className="divide-y divide-zinc-800">
+      <ul className="divide-y divide-border">
         {cart.donation_lines?.map((l: any) => (
           <li key={l.id} className="py-2 flex items-center gap-2 text-sm">
             <span
-              className="text-[9px] uppercase tracking-[0.2em] text-zinc-500"
+              className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground"
               style={{ fontFamily: "'Space Mono'" }}
             >
               {l.line_type}
             </span>
-            <span className="flex-1 text-zinc-200">
+            <span className="flex-1 text-foreground">
               {l.label} × {l.quantity}
             </span>
-            <span className="font-mono text-pink-400 font-bold">{l.subtotal} pts</span>
+            <span className="font-mono text-primary font-bold">{l.subtotal} pts</span>
             <ConfirmDialog
               title="Retirer cette ligne ?"
               description={`"${l.label}" sera retiré du panier.`}
@@ -230,11 +232,11 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
         )}
       </ul>
 
-      <div className="flex flex-wrap gap-2 items-end border-t border-zinc-800 pt-3 mt-3">
+      <div className="flex flex-wrap gap-2 items-end border-t border-border pt-3 mt-3">
         <div className="flex-1 min-w-[200px]">
           <label
             htmlFor={`${cartId}-item`}
-            className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+            className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
             style={{ fontFamily: "'Space Mono'" }}
           >
             Item / action
@@ -258,7 +260,7 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
         <div className="w-20">
           <label
             htmlFor={`${cartId}-qty`}
-            className="text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+            className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
             style={{ fontFamily: "'Space Mono'" }}
           >
             Qté
@@ -293,7 +295,7 @@ function Cart({ cart, values, onAdd, onRemove, onValidate, onCancel }: any) {
         </DaButton>
       </div>
 
-      <div className="flex gap-2 justify-end mt-3 pt-3 border-t border-zinc-800">
+      <div className="flex gap-2 justify-end mt-3 pt-3 border-t border-border">
         <DaButton variant="ghost" disabled={busy} onClick={() => wrap(() => onCancel())}>
           Annuler
         </DaButton>

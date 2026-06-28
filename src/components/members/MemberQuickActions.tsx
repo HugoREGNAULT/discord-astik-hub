@@ -54,8 +54,7 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
   };
 
   const mNote = useMutation({
-    mutationFn: () =>
-      noteFn({ data: { memberDiscordId, body: noteBody.trim() } }),
+    mutationFn: () => noteFn({ data: { memberDiscordId, body: noteBody.trim() } }),
     onSuccess: () => {
       toast.success("Note ajoutée");
       setNoteBody("");
@@ -67,9 +66,7 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
 
   const mWarn = useMutation({
     mutationFn: () => {
-      const days = expiresInDays.trim()
-        ? Number.parseInt(expiresInDays, 10)
-        : undefined;
+      const days = expiresInDays.trim() ? Number.parseInt(expiresInDays, 10) : undefined;
       return warnFn({
         data: {
           memberDiscordId,
@@ -109,7 +106,7 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
             e.stopPropagation();
             setNoteOpen(true);
           }}
-          className="size-8 inline-flex items-center justify-center border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-pink-400 hover:border-pink-500/60 transition"
+          className="size-8 inline-flex items-center justify-center border border-border bg-background text-muted-foreground hover:text-primary hover:border-primary/60 transition"
           title="Note interne"
         >
           <StickyNote className="size-4" />
@@ -124,7 +121,7 @@ export function MemberQuickActions({ memberDiscordId, memberLabel }: Props) {
             e.stopPropagation();
             setWarnOpen(true);
           }}
-          className="size-8 inline-flex items-center justify-center border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-amber-400 hover:border-amber-500/60 transition"
+          className="size-8 inline-flex items-center justify-center border border-border bg-background text-muted-foreground hover:text-amber-400 hover:border-amber-500/60 transition"
           title="Avertir"
         >
           <ShieldAlert className="size-4" />

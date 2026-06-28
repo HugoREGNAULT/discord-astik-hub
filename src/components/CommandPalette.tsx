@@ -169,13 +169,13 @@ export function CommandPalette() {
         variant="ghost"
         size="sm"
         onClick={() => setOpen(true)}
-        className="text-zinc-400 hover:text-pink-500 hover:bg-zinc-900 hidden md:inline-flex gap-2 h-8 px-2 text-[10px] uppercase tracking-[0.2em]"
+        className="text-muted-foreground hover:text-primary hover:bg-secondary hidden md:inline-flex gap-2 h-8 px-2 text-[10px] uppercase tracking-[0.2em]"
         style={{ fontFamily: "'Space Mono'" }}
         aria-label="Recherche globale"
       >
         <Search className="size-3.5" />
         <span>chercher</span>
-        <kbd className="ml-1 hidden lg:inline px-1.5 py-0.5 rounded border border-zinc-700 bg-zinc-900 text-zinc-500 text-[9px]">
+        <kbd className="ml-1 hidden lg:inline px-1.5 py-0.5 rounded border border-border bg-secondary text-muted-foreground text-[9px]">
           ⌘K
         </kbd>
       </Button>
@@ -183,7 +183,7 @@ export function CommandPalette() {
         variant="ghost"
         size="icon"
         onClick={() => setOpen(true)}
-        className="md:hidden text-zinc-400 hover:text-pink-500 hover:bg-zinc-900"
+        className="md:hidden text-muted-foreground hover:text-primary hover:bg-secondary"
         aria-label="Recherche"
       >
         <Search className="size-4" />

@@ -34,7 +34,7 @@ interface Props {
 
 // hsl(var(--primary)) ne fonctionne pas dans un SVG Recharts (hors DOM) -> hex explicite
 const COLORS = [
-  "#ec4899", // pink-500 = primary
+  "#8b5cf6", // violet-500 = primary
   "#facc15", // yellow
   "#f97316", // orange
   "#4ade80", // green

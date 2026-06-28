@@ -36,11 +36,11 @@ const colorFor = (k: NotificationItem["kind"]) => {
     case "warning":
       return "text-destructive";
     case "application":
-      return "text-pink-500";
+      return "text-primary";
     case "donation":
-      return "text-[#5865F2]";
+      return "text-primary";
     default:
-      return "text-zinc-300";
+      return "text-foreground";
   }
 };
 
@@ -77,21 +77,21 @@ export function NotificationBell() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative text-zinc-400 hover:text-pink-500 hover:bg-zinc-900"
+          className="relative text-muted-foreground hover:text-primary hover:bg-secondary"
           aria-label="Notifications"
         >
           <Bell className="size-4" />
           {unread > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 size-4 rounded-full bg-pink-500 text-[10px] font-bold text-white grid place-items-center shadow-[0_0_8px_rgba(236,72,153,0.7)]">
+            <span className="absolute -top-0.5 -right-0.5 size-4 rounded-full bg-primary text-[10px] font-bold text-primary-foreground grid place-items-center shadow-[0_0_8px_rgba(139,92,246,0.7)]">
               {unread > 9 ? "9+" : unread}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0 bg-[#0a0a0c] border-zinc-800 text-white">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-3 py-2">
+      <PopoverContent align="end" className="w-80 p-0 bg-card border-border text-foreground">
+        <div className="flex items-center justify-between border-b border-border px-3 py-2">
           <span
-            className="text-[10px] text-zinc-500 uppercase tracking-[0.3em]"
+            className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]"
             style={{ fontFamily: "'Space Mono'" }}
           >
             // notifications
@@ -102,9 +102,9 @@ export function NotificationBell() {
         </div>
         <div className="max-h-[400px] overflow-y-auto">
           {items.length === 0 && (
-            <p className="p-4 text-xs text-zinc-500 text-center">Rien à signaler.</p>
+            <p className="p-4 text-xs text-muted-foreground text-center">Rien à signaler.</p>
           )}
-          <ul className="divide-y divide-zinc-800/80">
+          <ul className="divide-y divide-border/80">
             {items.map((n) => {
               const Icon = iconFor(n.kind);
               const isUnread = !n.readAt;
@@ -120,22 +120,22 @@ export function NotificationBell() {
                         );
                       }
                     }}
-                    className={`flex gap-2.5 px-3 py-2.5 hover:bg-zinc-900/80 transition ${
-                      isUnread ? "bg-zinc-900/40" : ""
+                    className={`flex gap-2.5 px-3 py-2.5 hover:bg-secondary/80 transition ${
+                      isUnread ? "bg-secondary/40" : ""
                     }`}
                   >
                     <Icon className={`size-4 shrink-0 mt-0.5 ${colorFor(n.kind)}`} />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-medium truncate">{n.title}</div>
                       {n.detail && (
-                        <div className="text-[11px] text-zinc-500 truncate">{n.detail}</div>
+                        <div className="text-[11px] text-muted-foreground truncate">{n.detail}</div>
                       )}
-                      <div className="text-[11px] text-zinc-400 mt-0.5">
+                      <div className="text-[11px] text-muted-foreground mt-0.5">
                         {new Date(n.createdAt).toLocaleString("fr-FR")}
                       </div>
                     </div>
                     {isUnread && (
-                      <span className="size-1.5 rounded-full bg-pink-500 mt-1.5 shrink-0" />
+                      <span className="size-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                     )}
                   </Link>
                 </li>
