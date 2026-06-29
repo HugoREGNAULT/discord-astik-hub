@@ -2118,6 +2118,7 @@ export type Database = {
           created_at: string;
           id: string;
           member_discord_id: string;
+          pillar: string | null;
           reason: string | null;
           staff_discord_id: string;
           staff_username: string | null;
@@ -2130,6 +2131,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           member_discord_id: string;
+          pillar?: string | null;
           reason?: string | null;
           staff_discord_id: string;
           staff_username?: string | null;
@@ -2142,6 +2144,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           member_discord_id?: string;
+          pillar?: string | null;
           reason?: string | null;
           staff_discord_id?: string;
           staff_username?: string | null;
