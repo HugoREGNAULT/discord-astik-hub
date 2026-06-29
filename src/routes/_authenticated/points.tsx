@@ -28,6 +28,11 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DonationsPanel } from "@/components/DonationsPanel";
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
+import {
+  getPointReasons,
+  createPointReason,
+  togglePointReason,
+} from "@/lib/data/point-reasons.functions";
 
 export const Route = createFileRoute("/_authenticated/points")({
   head: () => ({ meta: [{ title: "Gestion Points · PunkAstik" }] }),
@@ -62,6 +67,7 @@ function PointsPage() {
         <TabsList>
           <TabsTrigger value="manual">Actions manuelles</TabsTrigger>
           <TabsTrigger value="pillars">Par pilier</TabsTrigger>
+          <TabsTrigger value="reasons">Motifs</TabsTrigger>
           {canDonations && <TabsTrigger value="donations">Dons</TabsTrigger>}
         </TabsList>
         <TabsContent value="manual" className="mt-4">
@@ -69,6 +75,9 @@ function PointsPage() {
         </TabsContent>
         <TabsContent value="pillars" className="mt-4">
           <PillarsPanel target={target} setTarget={setTarget} />
+        </TabsContent>
+        <TabsContent value="reasons" className="mt-4">
+          <ReasonsPanel />
         </TabsContent>
         {canDonations && (
           <TabsContent value="donations" className="mt-4">
@@ -94,6 +103,7 @@ function ManualPanel({ target, setTarget }: PanelProps) {
   const rmFn = useServerFn(removePoints);
   const setFn = useServerFn(setPoints);
   const histFn = useServerFn(getPointsHistory);
+  const reasonsFn = useServerFn(getPointReasons);
   const fid = useId();
 
   const members = useQuery({
@@ -105,6 +115,30 @@ function ManualPanel({ target, setTarget }: PanelProps) {
   const [reason, setReason] = useState("");
   const [pillar, setPillar] = useState<PointPillar | "">("");
   const [busy, setBusy] = useState(false);
+  const [reasonId, setReasonId] = useState<string>("");
+
+  const pointReasons = useQuery({
+    queryKey: ["point-reasons"],
+    queryFn: () => reasonsFn({ data: undefined }),
+  });
+
+  const activeReasons = pointReasons.data?.reasons.filter((r) => r.active) ?? [];
+
+  const handleReasonChange = (val: string) => {
+    setReasonId(val);
+    if (val === "" || val === "__libre") {
+      if (val === "__libre") {
+        setPillar("");
+        setReason("");
+      }
+      return;
+    }
+    const found = activeReasons.find((r) => r.id === val);
+    if (found) {
+      setPillar(found.pillar as PointPillar);
+      setReason(found.label);
+    }
+  };
 
   const history = useQuery({
     queryKey: ["history", target],
@@ -150,6 +184,7 @@ function ManualPanel({ target, setTarget }: PanelProps) {
       toast.success(`OK — nouveau solde : ${res.total} pts`);
       setAmount(0);
       setReason("");
+      setReasonId("");
       refresh();
     } catch (e: unknown) {
       toast.error(toUserMessage(e as Error));
@@ -188,6 +223,30 @@ function ManualPanel({ target, setTarget }: PanelProps) {
 
           <div>
             <label
+              htmlFor={`${fid}-reason-id`}
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              Motif
+            </label>
+            <DaSelect
+              id={`${fid}-reason-id`}
+              value={reasonId}
+              onChange={(e) => handleReasonChange(e.target.value)}
+              className="w-full mt-1"
+            >
+              <option value="">— Choisir un motif —</option>
+              {activeReasons.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
+              <option value="__libre">Saisie libre (sans motif)</option>
+            </DaSelect>
+          </div>
+
+          <div>
+            <label
               htmlFor={`${fid}-pillar`}
               className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
               style={{ fontFamily: "'Space Mono'" }}
@@ -198,6 +257,7 @@ function ManualPanel({ target, setTarget }: PanelProps) {
               id={`${fid}-pillar`}
               value={pillar}
               onChange={(e) => setPillar(e.target.value as PointPillar | "")}
+              disabled={!!reasonId && reasonId !== "__libre"}
               className="w-full mt-1"
             >
               <option value="">— Choisir un pilier —</option>
@@ -386,6 +446,143 @@ function PillarsPanel({ target, setTarget }: PanelProps) {
             ))}
           </ul>
         )}
+      </PageCard>
+    </div>
+  );
+}
+
+// ─── ReasonsPanel ────────────────────────────────────────────────────────────
+
+function ReasonsPanel() {
+  const qc = useQueryClient();
+  const reasonsFn = useServerFn(getPointReasons);
+  const createFn = useServerFn(createPointReason);
+  const toggleFn = useServerFn(togglePointReason);
+  const fid = useId();
+
+  const [newLabel, setNewLabel] = useState("");
+  const [newPillar, setNewPillar] = useState<PointPillar | "">("");
+
+  const reasons = useQuery({
+    queryKey: ["point-reasons"],
+    queryFn: () => reasonsFn({ data: undefined }),
+  });
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ["point-reasons"] });
+
+  const createMutation = useMutation({
+    mutationFn: () =>
+      createFn({ data: { label: newLabel.trim(), pillar: newPillar as PointPillar } }),
+    onSuccess: () => {
+      toast.success("Motif créé");
+      setNewLabel("");
+      setNewPillar("");
+      refresh();
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: (id: string) => toggleFn({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Motif mis à jour");
+      refresh();
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  return (
+    <div className="space-y-5">
+      <PageCard>
+        <SectionLabel>motifs existants</SectionLabel>
+        {reasons.data?.reasons.length === 0 && <EmptyBlock label="Aucun motif" />}
+        <ul className="divide-y divide-border">
+          {reasons.data?.reasons.map((r) => (
+            <li key={r.id} className="py-2 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className={`font-medium text-sm ${r.active ? "text-foreground" : "text-muted-foreground line-through"}`}
+                  style={{ fontFamily: "'Space Grotesk'" }}
+                >
+                  {r.label}
+                </span>
+                <span
+                  className="text-[9px] border border-primary/40 text-primary px-1 py-0.5 uppercase tracking-widest"
+                  style={{ fontFamily: "'Space Mono'" }}
+                >
+                  {PILLAR_LABEL[r.pillar] ?? r.pillar}
+                </span>
+                {!r.active && (
+                  <span
+                    className="text-[9px] border border-muted-foreground/30 text-muted-foreground px-1 py-0.5 uppercase tracking-widest"
+                    style={{ fontFamily: "'Space Mono'" }}
+                  >
+                    inactif
+                  </span>
+                )}
+              </div>
+              <DaButton
+                variant="ghost"
+                onClick={() => toggleMutation.mutate(r.id)}
+                disabled={toggleMutation.isPending}
+                className="text-[10px] px-2 py-0.5 whitespace-nowrap"
+              >
+                {r.active ? "Désactiver" : "Réactiver"}
+              </DaButton>
+            </li>
+          ))}
+        </ul>
+      </PageCard>
+
+      <PageCard>
+        <SectionLabel>nouveau motif</SectionLabel>
+        <div className="space-y-3">
+          <div>
+            <label
+              htmlFor={`${fid}-new-label`}
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              Label
+            </label>
+            <DaInput
+              id={`${fid}-new-label`}
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              placeholder="ex: Don Raid"
+              className="w-full mt-1"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor={`${fid}-new-pillar`}
+              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
+              style={{ fontFamily: "'Space Mono'" }}
+            >
+              Pilier
+            </label>
+            <DaSelect
+              id={`${fid}-new-pillar`}
+              value={newPillar}
+              onChange={(e) => setNewPillar(e.target.value as PointPillar | "")}
+              className="w-full mt-1"
+            >
+              <option value="">— Choisir —</option>
+              {PILLAR_OPTIONS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </DaSelect>
+          </div>
+          <DaButton
+            variant="success"
+            disabled={createMutation.isPending || !newLabel.trim() || !newPillar}
+            onClick={() => createMutation.mutate()}
+          >
+            {createMutation.isPending ? "..." : "+ Créer le motif"}
+          </DaButton>
+        </div>
       </PageCard>
     </div>
   );
