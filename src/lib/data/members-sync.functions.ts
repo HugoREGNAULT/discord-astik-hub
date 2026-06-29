@@ -24,6 +24,7 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
   let updated = 0;
   let reactivated = 0;
   let archived = 0;
+  let failed = 0;
 
   // 3. Traite les membres Discord ayant le rôle
   for (const [discordId, gm] of factionMap) {
@@ -34,17 +35,21 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
 
     if (!dbRow) {
       // Nouveau membre : INSERT
-      await db.from("members").insert({
+      const { error: insErr } = await db.from("members").insert({
         discord_id: discordId,
         discord_username: gm.user?.username ?? null,
         roles: gm.roles,
         avatar_url: avatarUrl,
         status: "active",
       });
+      if (insErr) {
+        failed++;
+        continue;
+      }
       added++;
     } else if (dbRow.status === "former") {
       // Réactivation
-      await db
+      const { error: reactErr } = await db
         .from("members")
         .update({
           status: "active",
@@ -55,10 +60,14 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
           updated_at: new Date().toISOString(),
         })
         .eq("discord_id", discordId);
+      if (reactErr) {
+        failed++;
+        continue;
+      }
       reactivated++;
     } else {
       // Mise à jour infos Discord
-      await db
+      const { error: upErr } = await db
         .from("members")
         .update({
           discord_username: gm.user?.username ?? null,
@@ -67,6 +76,10 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
           updated_at: new Date().toISOString(),
         })
         .eq("discord_id", discordId);
+      if (upErr) {
+        failed++;
+        continue;
+      }
       updated++;
     }
   }
@@ -75,7 +88,7 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
   for (const dbRow of dbMembers ?? []) {
     if (dbRow.status !== "active") continue;
     if (!factionMap.has(dbRow.discord_id)) {
-      await db
+      const { error: archErr } = await db
         .from("members")
         .update({
           status: "former",
@@ -83,6 +96,10 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
           updated_at: new Date().toISOString(),
         })
         .eq("discord_id", dbRow.discord_id);
+      if (archErr) {
+        failed++;
+        continue;
+      }
       archived++;
     }
   }
@@ -92,7 +109,8 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
     archived,
     updated,
     reactivated,
+    failed,
   });
 
-  return { added, archived, updated, reactivated };
+  return { added, archived, updated, reactivated, failed };
 });

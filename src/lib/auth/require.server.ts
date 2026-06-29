@@ -75,6 +75,7 @@ export async function requireSelfOrPermission(
  */
 const SENSITIVE_ACTIONS = new Set<string>([
   "member_delete",
+  "members_sync_discord",
   "permission_change",
   "points_remove",
   "application_reject",

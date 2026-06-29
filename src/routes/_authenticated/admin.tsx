@@ -145,6 +145,7 @@ function SyncPanel() {
     archived: number;
     updated: number;
     reactivated: number;
+    failed: number;
   } | null>(null);
 
   const mutation = useMutation({
@@ -176,6 +177,7 @@ function SyncPanel() {
             <span className="text-amber-400">⤴ {result.reactivated} réactivés</span>
             <span className="text-sky-400">~ {result.updated} mis à jour</span>
             <span className="text-red-400">✕ {result.archived} archivés</span>
+            {result.failed > 0 && <span className="text-red-400">⚠ {result.failed} échecs</span>}
           </div>
         )}
       </div>
