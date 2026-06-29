@@ -12,7 +12,6 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import {
-  LayoutDashboard,
   UserCircle2,
   Users,
   Coins,
@@ -33,7 +32,6 @@ import { Button } from "@/components/ui/button";
 type Nav = { label: string; to: string; icon: any; perm: Permission };
 
 const NAVS: Nav[] = [
-  { label: "Classement", to: "/dashboard", icon: LayoutDashboard, perm: "profile.self" },
   { label: "Membres", to: "/members", icon: Users, perm: "members.view" },
   { label: "Candidatures", to: "/recruitment", icon: UserPlus, perm: "recruit.access" },
   { label: "Gestion Points", to: "/points", icon: Coins, perm: "points.manage" },

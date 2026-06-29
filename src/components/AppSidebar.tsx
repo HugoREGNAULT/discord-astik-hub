@@ -1,13 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Trophy,
   UserCircle2,
   Users,
   Coins,
-  ShoppingCart,
   Settings2,
-  Swords,
-  Target,
   ShieldAlert,
   LogOut,
   UserPlus,
@@ -17,9 +13,6 @@ import {
   LayoutDashboard,
   Wrench,
   Bell,
-  Megaphone,
-  Eye,
-  Award,
 } from "lucide-react";
 
 import {
@@ -57,12 +50,8 @@ const SECTIONS: Section[] = [
     label: "// punkastik",
     items: [
       { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self" },
-      { title: "Classement", url: "/dashboard", icon: Trophy, perm: "profile.self" },
       { title: "Absences", url: "/absences", icon: CalendarCheck, perm: "profile.self" },
       { title: "Outils Paladium", url: "/tools", icon: Wrench, perm: "profile.self" },
-      { title: "Projets", url: "/projects", icon: Target, perm: "profile.self" },
-      { title: "Valeurs & ressources", url: "/values", icon: Coins, perm: "profile.self" },
-      { title: "Check BC", url: "/check-bc", icon: ShieldAlert, perm: "profile.self" },
       { title: "Mes alertes", url: "/tools/alerts", icon: Bell, perm: "profile.self" },
     ],
   },
@@ -70,9 +59,7 @@ const SECTIONS: Section[] = [
     label: "// staff",
     items: [
       { title: "Dashboard staff", url: "/staff", icon: LayoutDashboard, perm: "members.view" },
-      { title: "Récap", url: "/staff-recap", icon: Eye, perm: "members.view" },
       { title: "Membres", url: "/members", icon: Users, perm: "members.view" },
-      { title: "Économie faction", url: "/faction-economy", icon: Coins, perm: "members.view" },
     ],
   },
   {
@@ -88,7 +75,6 @@ const SECTIONS: Section[] = [
     label: "// économie",
     items: [
       { title: "Gestion Points", url: "/points", icon: Coins, perm: "points.manage" },
-      { title: "Quêtes hebdo", url: "/quests-admin", icon: Swords, perm: "quests.manage" },
       { title: "Config valeurs", url: "/config", icon: Settings2, perm: "config.manage" },
     ],
   },

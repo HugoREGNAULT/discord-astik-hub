@@ -62,7 +62,7 @@ export function Forbidden({ perm }: { perm?: Permission }) {
           )}
           <div className="flex gap-2 pt-2">
             <Button asChild variant="default">
-              <Link to="/dashboard">Mon espace</Link>
+              <Link to="/me">Mon espace</Link>
             </Button>
             <Button asChild variant="outline">
               <Link to="/">Accueil</Link>

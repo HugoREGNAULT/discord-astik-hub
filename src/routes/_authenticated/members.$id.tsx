@@ -58,10 +58,7 @@ import { DisciplinarySummaryCard } from "@/components/members/DisciplinarySummar
 import { McStatsCard } from "@/components/members/McStatsCard";
 import { MemberPointsHistory } from "@/components/members/MemberPointsHistory";
 import { MemberDonationsPanel } from "@/components/members/MemberDonationsPanel";
-import type {
-  MemberPointsEntry,
-  MemberDonationEntry,
-} from "@/components/members/types";
+import type { MemberPointsEntry, MemberDonationEntry } from "@/components/members/types";
 
 export const Route = createFileRoute("/_authenticated/members/$id")({
   errorComponent: RouteError,
@@ -172,7 +169,7 @@ function MemberDetail() {
             Tu n'as pas les permissions pour consulter ce profil membre.
           </p>
           <Button asChild variant="outline" size="sm">
-            <Link to="/dashboard">Retour au classement</Link>
+            <Link to="/members">Retour aux membres</Link>
           </Button>
         </CardContent>
       </Card>
@@ -356,8 +353,6 @@ function MemberDetail() {
     </div>
   );
 }
-
-
 
 function EditForm({ member, onSave }: { member: any; onSave: (p: any) => void }) {
   const reactId = useId();

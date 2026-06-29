@@ -36,7 +36,6 @@ export const Route = createFileRoute("/_authenticated")({
 
 // Libellés lisibles par segment d'URL (alignés sur AppSidebar ITEMS + TABS de tools.tsx).
 const PATH_LABELS: Record<string, string> = {
-  "/dashboard": "Classement",
   "/polls": "Sondages",
   "/absences": "Absences",
   "/tools": "Outils Paladium",
@@ -44,7 +43,6 @@ const PATH_LABELS: Record<string, string> = {
   "/tools/player": "Player",
   "/tools/sales": "Ventes",
   "/tools/faction": "Faction",
-  "/tools/check-bc": "Check BC",
   "/tools/status": "Status",
   "/tools/market": "Market",
   "/tools/leaderboard": "Leaderboard",
@@ -132,7 +130,7 @@ function AuthLayout() {
               <BreadcrumbList className="text-[10px] uppercase tracking-[0.3em] gap-1.5 sm:gap-2">
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild className="text-muted-foreground hover:text-primary">
-                    <Link to="/dashboard">PunkAstik //</Link>
+                    <Link to="/me">PunkAstik //</Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 {crumbs.map((c) => (

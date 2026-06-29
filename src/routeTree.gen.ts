@@ -17,23 +17,16 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthenticatedWelcomeRouteImport } from './routes/_authenticated/welcome'
-import { Route as AuthenticatedValuesRouteImport } from './routes/_authenticated/values'
 import { Route as AuthenticatedTrialsRouteImport } from './routes/_authenticated/trials'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
-import { Route as AuthenticatedStaffRecapRouteImport } from './routes/_authenticated/staff-recap'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
-import { Route as AuthenticatedQuestsAdminRouteImport } from './routes/_authenticated/quests-admin'
-import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
-import { Route as AuthenticatedFactionEconomyRouteImport } from './routes/_authenticated/faction-economy'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
-import { Route as AuthenticatedCheckBcRouteImport } from './routes/_authenticated/check-bc'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
@@ -59,7 +52,6 @@ import { Route as AuthenticatedToolsLeaderboardRouteImport } from './routes/_aut
 import { Route as AuthenticatedToolsFactionRouteImport } from './routes/_authenticated/tools.faction'
 import { Route as AuthenticatedToolsEventsRouteImport } from './routes/_authenticated/tools.events'
 import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authenticated/tools.clicker'
-import { Route as AuthenticatedToolsCheckBcRouteImport } from './routes/_authenticated/tools.check-bc'
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
@@ -130,11 +122,6 @@ const AuthenticatedWelcomeRoute = AuthenticatedWelcomeRouteImport.update({
   path: '/welcome',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedValuesRoute = AuthenticatedValuesRouteImport.update({
-  id: '/values',
-  path: '/values',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedTrialsRoute = AuthenticatedTrialsRouteImport.update({
   id: '/trials',
   path: '/trials',
@@ -143,11 +130,6 @@ const AuthenticatedTrialsRoute = AuthenticatedTrialsRouteImport.update({
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedStaffRecapRoute = AuthenticatedStaffRecapRouteImport.update({
-  id: '/staff-recap',
-  path: '/staff-recap',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
@@ -168,17 +150,6 @@ const AuthenticatedRecruitmentRoute =
     path: '/recruitment',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedQuestsAdminRoute =
-  AuthenticatedQuestsAdminRouteImport.update({
-    id: '/quests-admin',
-    path: '/quests-admin',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedPointsRoute = AuthenticatedPointsRouteImport.update({
   id: '/points',
   path: '/points',
@@ -199,25 +170,9 @@ const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedFactionEconomyRoute =
-  AuthenticatedFactionEconomyRouteImport.update({
-    id: '/faction-economy',
-    path: '/faction-economy',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   id: '/config',
   path: '/config',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCheckBcRoute = AuthenticatedCheckBcRouteImport.update({
-  id: '/check-bc',
-  path: '/check-bc',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
@@ -353,12 +308,6 @@ const AuthenticatedToolsClickerRoute =
   AuthenticatedToolsClickerRouteImport.update({
     id: '/clicker',
     path: '/clicker',
-    getParentRoute: () => AuthenticatedToolsRoute,
-  } as any)
-const AuthenticatedToolsCheckBcRoute =
-  AuthenticatedToolsCheckBcRouteImport.update({
-    id: '/check-bc',
-    path: '/check-bc',
     getParentRoute: () => AuthenticatedToolsRoute,
   } as any)
 const AuthenticatedToolsAlertsRoute =
@@ -543,23 +492,16 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
-  '/check-bc': typeof AuthenticatedCheckBcRoute
   '/config': typeof AuthenticatedConfigRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
-  '/projects': typeof AuthenticatedProjectsRoute
-  '/quests-admin': typeof AuthenticatedQuestsAdminRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/tools': typeof AuthenticatedToolsRouteWithChildren
   '/trials': typeof AuthenticatedTrialsRoute
-  '/values': typeof AuthenticatedValuesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -567,7 +509,6 @@ export interface FileRoutesByFullPath {
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
-  '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -625,22 +566,15 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
-  '/check-bc': typeof AuthenticatedCheckBcRoute
   '/config': typeof AuthenticatedConfigRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
-  '/projects': typeof AuthenticatedProjectsRoute
-  '/quests-admin': typeof AuthenticatedQuestsAdminRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/trials': typeof AuthenticatedTrialsRoute
-  '/values': typeof AuthenticatedValuesRoute
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -648,7 +582,6 @@ export interface FileRoutesByTo {
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
-  '/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/tools/events': typeof AuthenticatedToolsEventsRoute
   '/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -708,23 +641,16 @@ export interface FileRoutesById {
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/backlog': typeof AuthenticatedBacklogRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
-  '/_authenticated/check-bc': typeof AuthenticatedCheckBcRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/faction-economy': typeof AuthenticatedFactionEconomyRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/points': typeof AuthenticatedPointsRoute
-  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
-  '/_authenticated/quests-admin': typeof AuthenticatedQuestsAdminRoute
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
-  '/_authenticated/staff-recap': typeof AuthenticatedStaffRecapRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRouteWithChildren
   '/_authenticated/trials': typeof AuthenticatedTrialsRoute
-  '/_authenticated/values': typeof AuthenticatedValuesRoute
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -732,7 +658,6 @@ export interface FileRoutesById {
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
-  '/_authenticated/tools/check-bc': typeof AuthenticatedToolsCheckBcRoute
   '/_authenticated/tools/clicker': typeof AuthenticatedToolsClickerRoute
   '/_authenticated/tools/events': typeof AuthenticatedToolsEventsRoute
   '/_authenticated/tools/faction': typeof AuthenticatedToolsFactionRoute
@@ -792,23 +717,16 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/backlog'
     | '/blacklist'
-    | '/check-bc'
     | '/config'
-    | '/dashboard'
-    | '/faction-economy'
     | '/logs'
     | '/me'
     | '/members'
     | '/points'
-    | '/projects'
-    | '/quests-admin'
     | '/recruitment'
     | '/shop'
     | '/staff'
-    | '/staff-recap'
     | '/tools'
     | '/trials'
-    | '/values'
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
@@ -816,7 +734,6 @@ export interface FileRouteTypes {
     | '/staff/announce'
     | '/staff/appeals'
     | '/tools/alerts'
-    | '/tools/check-bc'
     | '/tools/clicker'
     | '/tools/events'
     | '/tools/faction'
@@ -874,22 +791,15 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/backlog'
     | '/blacklist'
-    | '/check-bc'
     | '/config'
-    | '/dashboard'
-    | '/faction-economy'
     | '/logs'
     | '/me'
     | '/members'
     | '/points'
-    | '/projects'
-    | '/quests-admin'
     | '/recruitment'
     | '/shop'
     | '/staff'
-    | '/staff-recap'
     | '/trials'
-    | '/values'
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
@@ -897,7 +807,6 @@ export interface FileRouteTypes {
     | '/staff/announce'
     | '/staff/appeals'
     | '/tools/alerts'
-    | '/tools/check-bc'
     | '/tools/clicker'
     | '/tools/events'
     | '/tools/faction'
@@ -956,23 +865,16 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant'
     | '/_authenticated/backlog'
     | '/_authenticated/blacklist'
-    | '/_authenticated/check-bc'
     | '/_authenticated/config'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/faction-economy'
     | '/_authenticated/logs'
     | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/points'
-    | '/_authenticated/projects'
-    | '/_authenticated/quests-admin'
     | '/_authenticated/recruitment'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
-    | '/_authenticated/staff-recap'
     | '/_authenticated/tools'
     | '/_authenticated/trials'
-    | '/_authenticated/values'
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/admin/audit'
@@ -980,7 +882,6 @@ export interface FileRouteTypes {
     | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
     | '/_authenticated/tools/alerts'
-    | '/_authenticated/tools/check-bc'
     | '/_authenticated/tools/clicker'
     | '/_authenticated/tools/events'
     | '/_authenticated/tools/faction'
@@ -1129,13 +1030,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWelcomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/values': {
-      id: '/_authenticated/values'
-      path: '/values'
-      fullPath: '/values'
-      preLoaderRoute: typeof AuthenticatedValuesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/trials': {
       id: '/_authenticated/trials'
       path: '/trials'
@@ -1148,13 +1042,6 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof AuthenticatedToolsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/staff-recap': {
-      id: '/_authenticated/staff-recap'
-      path: '/staff-recap'
-      fullPath: '/staff-recap'
-      preLoaderRoute: typeof AuthenticatedStaffRecapRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/staff': {
@@ -1176,20 +1063,6 @@ declare module '@tanstack/react-router' {
       path: '/recruitment'
       fullPath: '/recruitment'
       preLoaderRoute: typeof AuthenticatedRecruitmentRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/quests-admin': {
-      id: '/_authenticated/quests-admin'
-      path: '/quests-admin'
-      fullPath: '/quests-admin'
-      preLoaderRoute: typeof AuthenticatedQuestsAdminRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/projects': {
-      id: '/_authenticated/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/points': {
@@ -1220,32 +1093,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/faction-economy': {
-      id: '/_authenticated/faction-economy'
-      path: '/faction-economy'
-      fullPath: '/faction-economy'
-      preLoaderRoute: typeof AuthenticatedFactionEconomyRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/config': {
       id: '/_authenticated/config'
       path: '/config'
       fullPath: '/config'
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/check-bc': {
-      id: '/_authenticated/check-bc'
-      path: '/check-bc'
-      fullPath: '/check-bc'
-      preLoaderRoute: typeof AuthenticatedCheckBcRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/blacklist': {
@@ -1421,13 +1273,6 @@ declare module '@tanstack/react-router' {
       path: '/clicker'
       fullPath: '/tools/clicker'
       preLoaderRoute: typeof AuthenticatedToolsClickerRouteImport
-      parentRoute: typeof AuthenticatedToolsRoute
-    }
-    '/_authenticated/tools/check-bc': {
-      id: '/_authenticated/tools/check-bc'
-      path: '/check-bc'
-      fullPath: '/tools/check-bc'
-      preLoaderRoute: typeof AuthenticatedToolsCheckBcRouteImport
       parentRoute: typeof AuthenticatedToolsRoute
     }
     '/_authenticated/tools/alerts': {
@@ -1680,7 +1525,6 @@ const AuthenticatedStaffRouteWithChildren =
 
 interface AuthenticatedToolsRouteChildren {
   AuthenticatedToolsAlertsRoute: typeof AuthenticatedToolsAlertsRoute
-  AuthenticatedToolsCheckBcRoute: typeof AuthenticatedToolsCheckBcRoute
   AuthenticatedToolsClickerRoute: typeof AuthenticatedToolsClickerRoute
   AuthenticatedToolsEventsRoute: typeof AuthenticatedToolsEventsRoute
   AuthenticatedToolsFactionRoute: typeof AuthenticatedToolsFactionRoute
@@ -1697,7 +1541,6 @@ interface AuthenticatedToolsRouteChildren {
 
 const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
   AuthenticatedToolsAlertsRoute: AuthenticatedToolsAlertsRoute,
-  AuthenticatedToolsCheckBcRoute: AuthenticatedToolsCheckBcRoute,
   AuthenticatedToolsClickerRoute: AuthenticatedToolsClickerRoute,
   AuthenticatedToolsEventsRoute: AuthenticatedToolsEventsRoute,
   AuthenticatedToolsFactionRoute: AuthenticatedToolsFactionRoute,
@@ -1721,23 +1564,16 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
-  AuthenticatedCheckBcRoute: typeof AuthenticatedCheckBcRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedFactionEconomyRoute: typeof AuthenticatedFactionEconomyRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
-  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
-  AuthenticatedQuestsAdminRoute: typeof AuthenticatedQuestsAdminRoute
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
-  AuthenticatedStaffRecapRoute: typeof AuthenticatedStaffRecapRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
-  AuthenticatedValuesRoute: typeof AuthenticatedValuesRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
 }
 
@@ -1747,23 +1583,16 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
-  AuthenticatedCheckBcRoute: AuthenticatedCheckBcRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedFactionEconomyRoute: AuthenticatedFactionEconomyRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
-  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
-  AuthenticatedQuestsAdminRoute: AuthenticatedQuestsAdminRoute,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
-  AuthenticatedStaffRecapRoute: AuthenticatedStaffRecapRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
-  AuthenticatedValuesRoute: AuthenticatedValuesRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
 }
 
