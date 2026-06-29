@@ -2167,6 +2167,30 @@ export type Database = {
           },
         ];
       };
+      point_reasons: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          id: string;
+          label: string;
+          pillar: string;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          id?: string;
+          label: string;
+          pillar: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          id?: string;
+          label?: string;
+          pillar?: string;
+        };
+        Relationships: [];
+      };
       poll_options: {
         Row: {
           created_at: string;
