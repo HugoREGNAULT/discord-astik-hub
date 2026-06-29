@@ -127,10 +127,8 @@ function ManualPanel({ target, setTarget }: PanelProps) {
   const handleReasonChange = (val: string) => {
     setReasonId(val);
     if (val === "" || val === "__libre") {
-      if (val === "__libre") {
-        setPillar("");
-        setReason("");
-      }
+      setPillar("");
+      setReason("");
       return;
     }
     const found = activeReasons.find((r) => r.id === val);
