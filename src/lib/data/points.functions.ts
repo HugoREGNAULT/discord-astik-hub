@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, logAction } from "@/lib/auth/require.server";
+import { PILLAR_ZSCHEMA, type PointPillar } from "@/lib/data/points-pillars";
 
 async function applyDelta(memberId: string, delta: number, bonusPct: number) {
   // UPDATE atomique via RPC : évite la race condition lecture-puis-écriture.
@@ -33,6 +34,7 @@ export const addPoints = createServerFn({ method: "POST" })
         amount: z.number().int().min(-MAX_POINTS_PER_OP).max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
         bonusPct: z.number().min(0).max(500).default(0),
+        pillar: PILLAR_ZSCHEMA,
       })
       .parse(input),
   )
@@ -50,6 +52,7 @@ export const addPoints = createServerFn({ method: "POST" })
       bonus_pct: data.bonusPct,
       total_after: total,
       action_type: "add",
+      pillar: data.pillar,
     });
     await logAction("points_add", user.discordId, { ...data, total });
     return { ok: true, total };
@@ -62,6 +65,7 @@ export const removePoints = createServerFn({ method: "POST" })
         memberDiscordId: z.string().min(1),
         amount: z.number().int().positive().max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
+        pillar: PILLAR_ZSCHEMA,
       })
       .parse(input),
   )
@@ -77,6 +81,7 @@ export const removePoints = createServerFn({ method: "POST" })
       bonus_pct: 0,
       total_after: total,
       action_type: "remove",
+      pillar: data.pillar,
     });
     await logAction("points_remove", user.discordId, { ...data, total });
     return { ok: true, total };
@@ -136,4 +141,64 @@ export const getPointsHistory = createServerFn({ method: "GET" })
       .limit(data.limit ?? 50);
     if (error) throw new Error(error.message);
     return { history: rows ?? [] };
+  });
+
+export const getPointsPillarSummary = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ memberDiscordId: z.string().min(1).max(64) }).parse(input))
+  .handler(async ({ data }) => {
+    await requirePermission("points.manage");
+    const { data: rows, error } = await db
+      .from("points_ledger")
+      .select("pillar, amount")
+      .eq("member_discord_id", data.memberDiscordId);
+    if (error) throw new Error(error.message);
+    const summary = {
+      discord_activity: 0,
+      ig_investment: 0,
+      global_investment: 0,
+      uncategorized: 0,
+    };
+    for (const row of rows ?? []) {
+      const key = (row.pillar ?? "uncategorized") as keyof typeof summary;
+      summary[key] = (summary[key] ?? 0) + row.amount;
+    }
+    return { summary };
+  });
+
+export const reversePointsTransaction = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        ledgerId: z.string().uuid(),
+        reason: z.string().min(1).max(500),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requirePermission("points.manage");
+    const { data: original, error: fetchErr } = await db
+      .from("points_ledger")
+      .select("*")
+      .eq("id", data.ledgerId)
+      .single();
+    if (fetchErr || !original) throw new Error("Transaction introuvable");
+    if (original.action_type === "reversal") throw new Error("Impossible d'annuler une annulation");
+    const reverseAmount = -original.amount;
+    const { realDelta, total } = await applyDelta(original.member_discord_id, reverseAmount, 0);
+    await db.from("points_ledger").insert({
+      member_discord_id: original.member_discord_id,
+      staff_discord_id: user.discordId,
+      staff_username: user.username,
+      amount: realDelta,
+      reason: data.reason,
+      bonus_pct: 0,
+      total_after: total,
+      action_type: "reversal",
+      pillar: original.pillar,
+    });
+    await logAction("points_reversal", user.discordId, {
+      ledgerId: data.ledgerId,
+      reason: data.reason,
+    });
+    return { ok: true, total };
   });
