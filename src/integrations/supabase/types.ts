@@ -1498,6 +1498,7 @@ export type Database = {
       };
       members: {
         Row: {
+          archived_at: string | null;
           arrival_date: string | null;
           astik_points: number;
           avatar_url: string | null;
@@ -1521,6 +1522,7 @@ export type Database = {
           voice_total_seconds: number;
         };
         Insert: {
+          archived_at?: string | null;
           arrival_date?: string | null;
           astik_points?: number;
           avatar_url?: string | null;
@@ -1544,6 +1546,7 @@ export type Database = {
           voice_total_seconds?: number;
         };
         Update: {
+          archived_at?: string | null;
           arrival_date?: string | null;
           astik_points?: number;
           avatar_url?: string | null;
