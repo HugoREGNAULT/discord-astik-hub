@@ -48,8 +48,7 @@ export const getFactionIngameLeaderboard = createServerFn({ method: "GET" }).han
       .from("mc_player_stats")
       .select("mc_uuid, money, jobs, snapshot_at")
       .in("mc_uuid", uuids)
-      .order("snapshot_at", { ascending: false })
-      .limit(uuids.length * 5);
+      .order("snapshot_at", { ascending: false });
 
     if (snapshotsError) throw new Error(`mc_player_stats fetch failed: ${snapshotsError.message}`);
 

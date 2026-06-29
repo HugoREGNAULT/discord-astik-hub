@@ -17,7 +17,6 @@ import {
   Coins,
   ShoppingCart,
   Settings2,
-  Target,
   ShieldAlert,
   UserPlus,
   FileText,
