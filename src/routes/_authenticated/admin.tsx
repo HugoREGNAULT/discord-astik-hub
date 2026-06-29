@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PageHeader } from "@/components/tools/ToolsUi";
+import { PageHeader, PageCard, SectionLabel, DaButton } from "@/components/tools/ToolsUi";
 import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -9,6 +9,7 @@ import { toUserMessage } from "@/lib/errors";
 import { Pencil, ExternalLink } from "lucide-react";
 
 import { getAdminOverview, backfillArrivalDates } from "@/lib/data/admin.functions";
+import { syncMembersFromDiscord } from "@/lib/data/members-sync.functions";
 import { listMembers, updateMember } from "@/lib/data/members.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +89,8 @@ function AdminPage() {
           <LogList items={data?.recentLogs ?? []} />
         </CardContent>
       </Card>
+
+      <SyncPanel />
     </div>
   );
 }
@@ -129,6 +132,54 @@ function MaintenanceCard() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/* ---------- Sync membres Discord ---------- */
+
+function SyncPanel() {
+  const syncFn = useServerFn(syncMembersFromDiscord);
+  const qc = useQueryClient();
+  const [result, setResult] = useState<{
+    added: number;
+    archived: number;
+    updated: number;
+    reactivated: number;
+  } | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: () => syncFn({ data: undefined }),
+    onSuccess: (data) => {
+      setResult(data);
+      toast.success("Synchronisation terminée");
+      qc.invalidateQueries({ queryKey: ["members"] });
+      qc.invalidateQueries({ queryKey: ["admin"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  return (
+    <PageCard>
+      <SectionLabel>synchronisation membres</SectionLabel>
+      <p className="text-sm text-muted-foreground mb-4" style={{ fontFamily: "'Space Mono'" }}>
+        Compare la table membres avec le rôle Discord{" "}
+        <span className="text-primary font-mono">MEMBER_FACTION</span> sur le serveur faction.
+        Ajoute les absents, archive ceux qui n'ont plus le rôle, met à jour les pseudos.
+      </p>
+      <div className="flex items-center gap-4 flex-wrap">
+        <DaButton variant="primary" disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+          {mutation.isPending ? "Synchronisation…" : "↻ Resynchroniser les membres"}
+        </DaButton>
+        {result && !mutation.isPending && (
+          <div className="flex gap-4 text-sm flex-wrap" style={{ fontFamily: "'Space Mono'" }}>
+            <span className="text-emerald-400">+{result.added} ajoutés</span>
+            <span className="text-amber-400">⤴ {result.reactivated} réactivés</span>
+            <span className="text-sky-400">~ {result.updated} mis à jour</span>
+            <span className="text-red-400">✕ {result.archived} archivés</span>
+          </div>
+        )}
+      </div>
+    </PageCard>
   );
 }
 
