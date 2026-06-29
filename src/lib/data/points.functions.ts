@@ -34,7 +34,7 @@ export const addPoints = createServerFn({ method: "POST" })
         amount: z.number().int().min(-MAX_POINTS_PER_OP).max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
         bonusPct: z.number().min(0).max(500).default(0),
-        pillar: PILLAR_ZSCHEMA,
+        pillar: PILLAR_ZSCHEMA.optional(),
       })
       .parse(input),
   )
@@ -52,7 +52,7 @@ export const addPoints = createServerFn({ method: "POST" })
       bonus_pct: data.bonusPct,
       total_after: total,
       action_type: "add",
-      pillar: data.pillar,
+      pillar: data.pillar ?? null,
     });
     await logAction("points_add", user.discordId, { ...data, total });
     return { ok: true, total };
@@ -65,7 +65,7 @@ export const removePoints = createServerFn({ method: "POST" })
         memberDiscordId: z.string().min(1),
         amount: z.number().int().positive().max(MAX_POINTS_PER_OP),
         reason: z.string().max(500).optional(),
-        pillar: PILLAR_ZSCHEMA,
+        pillar: PILLAR_ZSCHEMA.optional(),
       })
       .parse(input),
   )
@@ -81,7 +81,7 @@ export const removePoints = createServerFn({ method: "POST" })
       bonus_pct: 0,
       total_after: total,
       action_type: "remove",
-      pillar: data.pillar,
+      pillar: data.pillar ?? null,
     });
     await logAction("points_remove", user.discordId, { ...data, total });
     return { ok: true, total };
@@ -183,6 +183,13 @@ export const reversePointsTransaction = createServerFn({ method: "POST" })
       .single();
     if (fetchErr || !original) throw new Error("Transaction introuvable");
     if (original.action_type === "reversal") throw new Error("Impossible d'annuler une annulation");
+    const { count } = await db
+      .from("points_ledger")
+      .select("id", { count: "exact", head: true })
+      .eq("member_discord_id", original.member_discord_id)
+      .eq("action_type", "reversal")
+      .like("reason", `[rev:${data.ledgerId}]%`);
+    if (count && count > 0) throw new Error("Cette transaction a déjà été annulée");
     const reverseAmount = -original.amount;
     const { realDelta, total } = await applyDelta(original.member_discord_id, reverseAmount, 0);
     await db.from("points_ledger").insert({
@@ -190,7 +197,7 @@ export const reversePointsTransaction = createServerFn({ method: "POST" })
       staff_discord_id: user.discordId,
       staff_username: user.username,
       amount: realDelta,
-      reason: data.reason,
+      reason: `[rev:${data.ledgerId}] ${data.reason}`,
       bonus_pct: 0,
       total_after: total,
       action_type: "reversal",

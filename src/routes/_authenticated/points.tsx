@@ -412,6 +412,7 @@ function LedgerRow({ entry: e, onReversed, showPillar = false }: LedgerRowProps)
   const [open, setOpen] = useState(false);
   const [reverseReason, setReverseReason] = useState("");
   const isReversal = e.action_type === "reversal";
+  const canReverse = !isReversal && e.action_type !== "set";
 
   const mutation = useMutation({
     mutationFn: () => reverseFn({ data: { ledgerId: e.id, reason: reverseReason } }),
@@ -463,7 +464,7 @@ function LedgerRow({ entry: e, onReversed, showPillar = false }: LedgerRowProps)
             {e.amount >= 0 ? "+" : ""}
             {e.amount}
           </span>
-          {!isReversal && (
+          {canReverse && (
             <DaButton
               variant="ghost"
               onClick={() => setOpen((v) => !v)}
