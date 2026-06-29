@@ -36,6 +36,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 // Libellés lisibles par segment d'URL (alignés sur AppSidebar ITEMS + TABS de tools.tsx).
 const PATH_LABELS: Record<string, string> = {
+  "/classement": "Classement faction",
   "/polls": "Sondages",
   "/absences": "Absences",
   "/tools": "Outils Paladium",

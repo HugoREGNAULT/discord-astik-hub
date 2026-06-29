@@ -27,6 +27,7 @@ import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
+import { Route as AuthenticatedClassementRouteImport } from './routes/_authenticated/classement'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
@@ -173,6 +174,11 @@ const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
 const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   id: '/config',
   path: '/config',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedClassementRoute = AuthenticatedClassementRouteImport.update({
+  id: '/classement',
+  path: '/classement',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
@@ -492,6 +498,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
+  '/classement': typeof AuthenticatedClassementRoute
   '/config': typeof AuthenticatedConfigRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -566,6 +573,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
+  '/classement': typeof AuthenticatedClassementRoute
   '/config': typeof AuthenticatedConfigRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -641,6 +649,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/backlog': typeof AuthenticatedBacklogRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
+  '/_authenticated/classement': typeof AuthenticatedClassementRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -717,6 +726,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/backlog'
     | '/blacklist'
+    | '/classement'
     | '/config'
     | '/logs'
     | '/me'
@@ -791,6 +801,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/backlog'
     | '/blacklist'
+    | '/classement'
     | '/config'
     | '/logs'
     | '/me'
@@ -865,6 +876,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant'
     | '/_authenticated/backlog'
     | '/_authenticated/blacklist'
+    | '/_authenticated/classement'
     | '/_authenticated/config'
     | '/_authenticated/logs'
     | '/_authenticated/me'
@@ -1098,6 +1110,13 @@ declare module '@tanstack/react-router' {
       path: '/config'
       fullPath: '/config'
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/classement': {
+      id: '/_authenticated/classement'
+      path: '/classement'
+      fullPath: '/classement'
+      preLoaderRoute: typeof AuthenticatedClassementRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/blacklist': {
@@ -1564,6 +1583,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
+  AuthenticatedClassementRoute: typeof AuthenticatedClassementRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1583,6 +1603,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
+  AuthenticatedClassementRoute: AuthenticatedClassementRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
