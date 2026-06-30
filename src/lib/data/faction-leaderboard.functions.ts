@@ -128,13 +128,14 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
 
     if (withUuid.length === 0) return { entries: [], withoutUuid };
 
-    const uuids = withUuid.map((m) => m.mc_uuid as string);
+    // Normaliser les UUIDs avant la recherche en cache
+    const normalizedUuids = withUuid.map((m) => dashUuid(m.mc_uuid as string));
 
     // 3. Fetch cache pour ceux avec uuid
     const { data: cacheRows, error: cacheError } = await db
       .from("paladium_player_cache")
       .select("mc_uuid, profile_json, jobs_json, fetched_at")
-      .in("mc_uuid", uuids);
+      .in("mc_uuid", normalizedUuids);
 
     if (cacheError) throw new Error(`paladium_player_cache fetch failed: ${cacheError.message}`);
 
@@ -152,7 +153,7 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
 
     // 4. Parser chaque membre avec uuid
     const entries: FactionLeaderboardEntry[] = withUuid.map((m) => {
-      const uuid = m.mc_uuid as string;
+      const uuid = dashUuid(m.mc_uuid as string);
       const cacheRow = cacheMap.get(uuid) ?? null;
 
       // profile_json : { money?: number, level?: number, ... }
