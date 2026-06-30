@@ -161,24 +161,15 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
       const money = typeof profile?.money === "number" ? profile.money : null;
       const level = typeof profile?.level === "number" ? profile.level : null;
 
-      // jobs_json : { jobs: Array<{name: string, level: number}>, clicker: { cliccoins?: number, ... } }
+      // jobs_json : { jobs: { miner: {level, xp}, farmer: {level, xp}, ... }, clicker: { rps, ... } }
       const jobsWrapper = (cacheRow?.jobs_json as Record<string, unknown> | null) ?? null;
-      const jobsArr = Array.isArray(jobsWrapper?.jobs)
-        ? (jobsWrapper.jobs as Array<{ name?: unknown; level?: unknown }>)
-        : [];
-      const jobMap: Record<string, number> = {};
-      for (const j of jobsArr) {
-        if (typeof j.name === "string" && typeof j.level === "number") {
-          jobMap[j.name.toLowerCase()] = j.level;
-        }
-      }
+      const jobsObj = (jobsWrapper?.jobs as Record<string, Record<string, unknown>> | null) ?? null;
+      const getJobLevel = (name: string): number | null => {
+        const lvl = jobsObj?.[name]?.level;
+        return typeof lvl === "number" ? lvl : null;
+      };
       const clickerData = (jobsWrapper?.clicker as Record<string, unknown> | null) ?? null;
-      const clicker =
-        typeof clickerData?.cliccoins === "number"
-          ? clickerData.cliccoins
-          : typeof clickerData?.coins === "number"
-            ? clickerData.coins
-            : null;
+      const clicker = typeof clickerData?.rps === "number" ? clickerData.rps : null;
 
       return {
         discord_id: m.discord_id,
@@ -189,10 +180,10 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
         mc_uuid: uuid,
         money,
         level,
-        miner: jobMap["miner"] ?? null,
-        farmer: jobMap["farmer"] ?? null,
-        hunter: jobMap["hunter"] ?? null,
-        alchemist: jobMap["alchemist"] ?? null,
+        miner: getJobLevel("miner"),
+        farmer: getJobLevel("farmer"),
+        hunter: getJobLevel("hunter"),
+        alchemist: getJobLevel("alchemist"),
         clicker,
         cached_at: cacheRow?.fetched_at ?? null,
       };
