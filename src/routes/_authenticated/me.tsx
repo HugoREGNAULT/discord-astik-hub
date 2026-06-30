@@ -16,10 +16,7 @@ import { Label } from "@/components/ui/label";
 import { ObjectivesCard } from "@/components/me/ObjectivesCard";
 import { AbsencesCard } from "@/components/me/AbsencesCard";
 import { WarningsCard } from "@/components/me/WarningsCard";
-import { ActivityHeatmapCard } from "@/components/me/ActivityHeatmapCard";
-import { FactionBentoCard } from "@/components/me/FactionBentoCard";
 import { PaladiumProfileCard } from "@/components/me/PaladiumProfileCard";
-import { MemberSalesCard } from "@/components/me/MemberSalesCard";
 import { EmptyState } from "@/components/EmptyState";
 import { DetailPageSkeleton } from "@/components/Skeletons";
 import { MonoLabel } from "@/components/tools/ToolsUi";
@@ -122,15 +119,9 @@ function MyProfile() {
             </CardContent>
           </Card>
 
-          {isMember && <FactionBentoCard />}
-
           {isMember && m.mc_uuid && <PaladiumProfileCard />}
 
-          {isMember && m.mc_uuid && <MemberSalesCard />}
-
           {isMember && <ObjectivesCard />}
-
-          {isMember && <ActivityHeatmapCard />}
         </div>
 
         {/* Colonne secondaire */}
