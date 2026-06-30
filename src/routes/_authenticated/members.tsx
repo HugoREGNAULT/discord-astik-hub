@@ -251,8 +251,8 @@ function MembersPage() {
           {hasPerm(user, "admin.access") && (
             <SyncButton onDone={() => qc.invalidateQueries({ queryKey: ["members"] })} />
           )}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 justify-between">
-            <div className="flex gap-1">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-x-4 sm:justify-between">
+            <div className="flex gap-1 flex-wrap">
               {(["active", "away", "former", "all"] as const).map((s) => {
                 const active = status === s;
                 const label =
@@ -384,15 +384,15 @@ function MembersPage() {
                   {status === "all" && <StatusBadge status={m.status} />}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <div
-                  className="text-primary font-bold text-lg"
+                  className="text-primary font-bold text-base sm:text-lg"
                   style={{ fontFamily: "'Space Grotesk'" }}
                 >
                   {m.astik_points}
                 </div>
                 <div
-                  className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
+                  className="hidden sm:block text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
                   style={{ fontFamily: "'Space Mono'" }}
                 >
                   AstikPoints

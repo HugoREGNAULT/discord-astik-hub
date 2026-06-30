@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 
 import { RouteError } from "@/components/RouteError";
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -31,7 +32,6 @@ function NotFoundComponent() {
     </div>
   );
 }
-
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -108,6 +108,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster position="bottom-center" richColors />
     </QueryClientProvider>
   );
 }
