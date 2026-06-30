@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { X, Pencil, Check, RefreshCw } from "lucide-react";
 import { listMembers, resolveAndUpdateIgName } from "@/lib/data/members.functions";
+import { isMemberStaff } from "@/lib/auth/permissions";
 import { syncMembersFromDiscord } from "@/lib/data/members-sync.functions";
 import { Paginator, getPagedSlice } from "@/components/Paginator";
 import { MemberRowsSkeleton } from "@/components/Skeletons";
@@ -203,7 +204,8 @@ function MembersPage() {
 
   const members = useMemo(() => data?.members ?? [], [data]);
   const sorted = useMemo(() => {
-    const arr = [...members];
+    const arr =
+      sort === "points" ? members.filter((m) => !isMemberStaff(m.roles ?? [])) : [...members];
     if (sort === "points") {
       arr.sort((a, b) => (b.astik_points ?? 0) - (a.astik_points ?? 0));
     } else {

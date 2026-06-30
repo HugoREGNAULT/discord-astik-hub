@@ -3,6 +3,8 @@ import { Guard } from "@/components/Guard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useId } from "react";
+import { getPointsTimeline, getComparisonTimelines } from "@/lib/data/points-timeline.functions";
+import { SinglePointsChart, ComparisonPointsChart } from "@/components/points/PointsChart";
 
 import { listMembers } from "@/lib/data/members.functions";
 import {
@@ -67,6 +69,7 @@ function PointsPage() {
         <TabsList>
           <TabsTrigger value="manual">Actions manuelles</TabsTrigger>
           <TabsTrigger value="pillars">Par pilier</TabsTrigger>
+          <TabsTrigger value="evolution">Évolution</TabsTrigger>
           <TabsTrigger value="reasons">Motifs</TabsTrigger>
           {canDonations && <TabsTrigger value="donations">Dons</TabsTrigger>}
         </TabsList>
@@ -75,6 +78,9 @@ function PointsPage() {
         </TabsContent>
         <TabsContent value="pillars" className="mt-4">
           <PillarsPanel target={target} setTarget={setTarget} />
+        </TabsContent>
+        <TabsContent value="evolution" className="mt-4">
+          <EvolutionPanel target={target} setTarget={setTarget} />
         </TabsContent>
         <TabsContent value="reasons" className="mt-4">
           <ReasonsPanel />
@@ -107,9 +113,13 @@ function ManualPanel({ target, setTarget }: PanelProps) {
   const fid = useId();
 
   const members = useQuery({
-    queryKey: ["members", "", "active"],
-    queryFn: () => listFn({ data: {} }),
+    queryKey: ["members", "", "active", "no-staff"],
+    queryFn: () => listFn({ data: { excludeStaff: true } }),
   });
+
+  const [multiMode, setMultiMode] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [memberSearch, setMemberSearch] = useState("");
 
   const [amount, setAmount] = useState<number>(0);
   const [reason, setReason] = useState("");
@@ -141,7 +151,7 @@ function ManualPanel({ target, setTarget }: PanelProps) {
   const history = useQuery({
     queryKey: ["history", target],
     queryFn: () => histFn({ data: { memberDiscordId: target, limit: 25 } }),
-    enabled: !!target,
+    enabled: !multiMode && !!target,
   });
 
   const refresh = () => {
@@ -150,7 +160,8 @@ function ManualPanel({ target, setTarget }: PanelProps) {
     qc.invalidateQueries({ queryKey: ["pillar-summary", target] });
   };
 
-  const run = async (action: "add" | "remove" | "set") => {
+  // ── Mode mono ──
+  const runSingle = async (action: "add" | "remove" | "set") => {
     if (!target) {
       toast.error("Sélectionne un membre.");
       return;
@@ -191,34 +202,198 @@ function ManualPanel({ target, setTarget }: PanelProps) {
     }
   };
 
+  // ── Mode multi ──
+  const runMulti = async (action: "add" | "remove") => {
+    if (selectedMembers.length === 0) {
+      toast.error("Sélectionne au moins un membre.");
+      return;
+    }
+    if (amount <= 0) {
+      toast.error("Montant > 0 requis.");
+      return;
+    }
+    if (!pillar) {
+      toast.error("Sélectionne un pilier.");
+      return;
+    }
+    setBusy(true);
+    let ok = 0;
+    let fail = 0;
+    for (const memberId of selectedMembers) {
+      try {
+        if (action === "add")
+          await addFn({
+            data: { memberDiscordId: memberId, amount, reason, pillar: pillar as PointPillar },
+          });
+        else
+          await rmFn({
+            data: { memberDiscordId: memberId, amount, reason, pillar: pillar as PointPillar },
+          });
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    const sign = action === "add" ? "+" : "−";
+    const recap = reason ? ` (${reason})` : "";
+    if (fail === 0) {
+      toast.success(`${ok} membre${ok > 1 ? "s" : ""} — ${sign}${amount} pts${recap}`);
+    } else {
+      toast.warning(`${ok}/${ok + fail} réussis, ${fail} échoué(s)`);
+    }
+    setSelectedMembers([]);
+    setAmount(0);
+    setReason("");
+    setReasonId("");
+    refresh();
+    setBusy(false);
+  };
+
+  const allMembersList = members.data?.members ?? [];
+  const filteredForMulti = memberSearch.trim()
+    ? allMembersList.filter((m) =>
+        (m.ig_name ?? m.discord_username ?? "").toLowerCase().includes(memberSearch.toLowerCase()),
+      )
+    : allMembersList;
+
+  const toggleMember = (id: string) =>
+    setSelectedMembers((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
   return (
     <div className="space-y-5">
       <PageCard>
-        <SectionLabel>action manuelle</SectionLabel>
-        <div className="space-y-3">
-          <div>
-            <label
-              htmlFor={`${fid}-member`}
-              className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
-              Membre
-            </label>
-            <DaSelect
-              id={`${fid}-member`}
-              value={target}
-              onChange={(e) => setTarget(e.target.value)}
-              className="w-full mt-1"
-            >
-              <option value="">— Choisir —</option>
-              {members.data?.members.map((m) => (
-                <option key={m.discord_id} value={m.discord_id}>
-                  {m.ig_name ?? m.discord_username} ({m.astik_points} pts)
-                </option>
-              ))}
-            </DaSelect>
-          </div>
+        {/* Toggle mono / multi */}
+        <div className="flex items-center gap-2 mb-4">
+          <DaButton
+            variant={!multiMode ? "primary" : "ghost"}
+            onClick={() => {
+              setMultiMode(false);
+              setSelectedMembers([]);
+            }}
+            className="text-[11px]"
+          >
+            Mono
+          </DaButton>
+          <DaButton
+            variant={multiMode ? "primary" : "ghost"}
+            onClick={() => {
+              setMultiMode(true);
+              setTarget("");
+            }}
+            className="text-[11px]"
+          >
+            Multi-membres
+          </DaButton>
+        </div>
 
+        <SectionLabel>{multiMode ? "attribution multi-membres" : "action manuelle"}</SectionLabel>
+        <div className="space-y-3">
+          {/* ── Sélection membres ── */}
+          {!multiMode ? (
+            <div>
+              <label
+                htmlFor={`${fid}-member`}
+                className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
+                style={{ fontFamily: "'Space Mono'" }}
+              >
+                Membre
+              </label>
+              <DaSelect
+                id={`${fid}-member`}
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+                className="w-full mt-1"
+              >
+                <option value="">— Choisir —</option>
+                {allMembersList.map((m) => (
+                  <option key={m.discord_id} value={m.discord_id}>
+                    {m.ig_name ?? m.discord_username} ({m.astik_points} pts)
+                  </option>
+                ))}
+              </DaSelect>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span
+                  className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground"
+                  style={{ fontFamily: "'Space Mono'" }}
+                >
+                  Membres
+                  {selectedMembers.length > 0 && (
+                    <span className="ml-2 text-primary">
+                      [{selectedMembers.length} sélectionné{selectedMembers.length > 1 ? "s" : ""}]
+                    </span>
+                  )}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="text-[10px] text-primary underline"
+                    style={{ fontFamily: "'Space Mono'" }}
+                    onClick={() => setSelectedMembers(filteredForMulti.map((m) => m.discord_id))}
+                  >
+                    Tout sélectionner
+                  </button>
+                  <button
+                    type="button"
+                    className="text-[10px] text-muted-foreground underline"
+                    style={{ fontFamily: "'Space Mono'" }}
+                    onClick={() => setSelectedMembers([])}
+                  >
+                    Effacer
+                  </button>
+                </div>
+              </div>
+              <DaInput
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+                placeholder="Rechercher un membre…"
+                className="w-full mb-2"
+              />
+              <div className="border-[3px] border-border max-h-48 overflow-y-auto divide-y divide-border">
+                {filteredForMulti.length === 0 && (
+                  <div
+                    className="px-3 py-2 text-xs text-muted-foreground"
+                    style={{ fontFamily: "'Space Mono'" }}
+                  >
+                    Aucun résultat
+                  </div>
+                )}
+                {filteredForMulti.map((m) => {
+                  const checked = selectedMembers.includes(m.discord_id);
+                  return (
+                    <label
+                      key={m.discord_id}
+                      className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${
+                        checked ? "bg-primary/10" : "hover:bg-secondary"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleMember(m.discord_id)}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm flex-1" style={{ fontFamily: "'Space Grotesk'" }}>
+                        {m.ig_name ?? m.discord_username}
+                      </span>
+                      <span
+                        className="text-[10px] text-muted-foreground tabular-nums"
+                        style={{ fontFamily: "'Space Mono'" }}
+                      >
+                        {m.astik_points} pts
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Motif ── */}
           <div>
             <label
               htmlFor={`${fid}-reason-id`}
@@ -243,6 +418,7 @@ function ManualPanel({ target, setTarget }: PanelProps) {
             </DaSelect>
           </div>
 
+          {/* ── Pilier ── */}
           <div>
             <label
               htmlFor={`${fid}-pillar`}
@@ -269,10 +445,11 @@ function ManualPanel({ target, setTarget }: PanelProps) {
               className="text-[10px] text-muted-foreground mt-1"
               style={{ fontFamily: "'Space Mono'" }}
             >
-              Requis pour Ajouter / Retirer. Ignoré pour Définir.
+              Requis pour Ajouter / Retirer.{!multiMode && " Ignoré pour Définir."}
             </p>
           </div>
 
+          {/* ── Montant + Raison ── */}
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label
@@ -308,34 +485,70 @@ function ManualPanel({ target, setTarget }: PanelProps) {
             </div>
           </div>
 
+          {/* ── Actions ── */}
           <div className="flex gap-2 flex-wrap pt-2">
-            <DaButton variant="success" disabled={busy || !pillar} onClick={() => run("add")}>
-              {busy ? "..." : "+ Ajouter"}
-            </DaButton>
-            <DaButton variant="danger" disabled={busy || !pillar} onClick={() => run("remove")}>
-              {busy ? "..." : "− Retirer"}
-            </DaButton>
-            <DaButton variant="ghost" disabled={busy} onClick={() => run("set")}>
-              {busy ? "..." : "= Définir"}
-            </DaButton>
+            {!multiMode ? (
+              <>
+                <DaButton
+                  variant="success"
+                  disabled={busy || !pillar}
+                  onClick={() => runSingle("add")}
+                >
+                  {busy ? "..." : "+ Ajouter"}
+                </DaButton>
+                <DaButton
+                  variant="danger"
+                  disabled={busy || !pillar}
+                  onClick={() => runSingle("remove")}
+                >
+                  {busy ? "..." : "− Retirer"}
+                </DaButton>
+                <DaButton variant="ghost" disabled={busy} onClick={() => runSingle("set")}>
+                  {busy ? "..." : "= Définir"}
+                </DaButton>
+              </>
+            ) : (
+              <>
+                <DaButton
+                  variant="success"
+                  disabled={busy || !pillar || selectedMembers.length === 0}
+                  onClick={() => runMulti("add")}
+                >
+                  {busy
+                    ? "..."
+                    : `+ Ajouter à ${selectedMembers.length || "?"} membre${selectedMembers.length > 1 ? "s" : ""}`}
+                </DaButton>
+                <DaButton
+                  variant="danger"
+                  disabled={busy || !pillar || selectedMembers.length === 0}
+                  onClick={() => runMulti("remove")}
+                >
+                  {busy
+                    ? "..."
+                    : `− Retirer à ${selectedMembers.length || "?"} membre${selectedMembers.length > 1 ? "s" : ""}`}
+                </DaButton>
+              </>
+            )}
           </div>
         </div>
       </PageCard>
 
-      <PageCard>
-        <SectionLabel>historique du membre</SectionLabel>
-        {!target && <EmptyBlock label="Sélectionne un membre" />}
-        {target && history.data?.history && history.data.history.length === 0 && (
-          <EmptyBlock label="Aucun mouvement" />
-        )}
-        {history.data?.history && history.data.history.length > 0 && (
-          <ul className="divide-y divide-border">
-            {history.data.history.map((e: any) => (
-              <LedgerRow key={e.id} entry={e} onReversed={refresh} />
-            ))}
-          </ul>
-        )}
-      </PageCard>
+      {!multiMode && (
+        <PageCard>
+          <SectionLabel>historique du membre</SectionLabel>
+          {!target && <EmptyBlock label="Sélectionne un membre" />}
+          {target && history.data?.history && history.data.history.length === 0 && (
+            <EmptyBlock label="Aucun mouvement" />
+          )}
+          {history.data?.history && history.data.history.length > 0 && (
+            <ul className="divide-y divide-border">
+              {history.data.history.map((e: any) => (
+                <LedgerRow key={e.id} entry={e} onReversed={refresh} />
+              ))}
+            </ul>
+          )}
+        </PageCard>
+      )}
     </div>
   );
 }
@@ -350,8 +563,8 @@ function PillarsPanel({ target, setTarget }: PanelProps) {
   const fid = useId();
 
   const members = useQuery({
-    queryKey: ["members", "", "active"],
-    queryFn: () => listFn({ data: {} }),
+    queryKey: ["members", "", "active", "no-staff"],
+    queryFn: () => listFn({ data: { excludeStaff: true } }),
   });
 
   const summary = useQuery({
@@ -697,5 +910,172 @@ function LedgerRow({ entry: e, onReversed, showPillar = false }: LedgerRowProps)
         </div>
       )}
     </li>
+  );
+}
+
+// ─── EvolutionPanel ──────────────────────────────────────────────────────────
+
+function EvolutionPanel({ target, setTarget }: PanelProps) {
+  const listFn = useServerFn(listMembers);
+  const timelineFn = useServerFn(getPointsTimeline);
+  const comparisonFn = useServerFn(getComparisonTimelines);
+  const fid = useId();
+
+  const [mode, setMode] = useState<"single" | "comparison">("single");
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const members = useQuery({
+    queryKey: ["members", "", "active", "no-staff"],
+    queryFn: () => listFn({ data: { excludeStaff: true } }),
+  });
+
+  const timeline = useQuery({
+    queryKey: ["points-timeline", target],
+    queryFn: () => timelineFn({ data: { memberDiscordId: target } }),
+    enabled: mode === "single" && !!target,
+    staleTime: 60_000,
+  });
+
+  const comparison = useQuery({
+    queryKey: ["points-comparison"],
+    queryFn: () => comparisonFn({ data: undefined }),
+    enabled: mode === "comparison",
+    staleTime: 60_000,
+  });
+
+  const toggleMember = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const selectAll = () => setSelected((comparison.data?.timelines ?? []).map((t) => t.discord_id));
+
+  const PALETTE = [
+    "#8b5cf6",
+    "#a78bfa",
+    "#c4b5fd",
+    "#7c3aed",
+    "#6d28d9",
+    "#5b21b6",
+    "#ddd6fe",
+    "#ede9fe",
+  ];
+
+  return (
+    <div className="space-y-5">
+      <PageCard>
+        <SectionLabel>mode</SectionLabel>
+        <div className="flex gap-2 mt-2">
+          <DaButton
+            variant={mode === "single" ? "primary" : "ghost"}
+            onClick={() => setMode("single")}
+          >
+            Ma courbe
+          </DaButton>
+          <DaButton
+            variant={mode === "comparison" ? "primary" : "ghost"}
+            onClick={() => setMode("comparison")}
+          >
+            Comparaison
+          </DaButton>
+        </div>
+      </PageCard>
+
+      {mode === "single" && (
+        <>
+          <PageCard>
+            <SectionLabel>membre</SectionLabel>
+            <DaSelect
+              id={`${fid}-evo-member`}
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              className="w-full mt-1"
+            >
+              <option value="">— Choisir —</option>
+              {members.data?.members.map((m) => (
+                <option key={m.discord_id} value={m.discord_id}>
+                  {m.ig_name ?? m.discord_username} ({m.astik_points} pts)
+                </option>
+              ))}
+            </DaSelect>
+          </PageCard>
+
+          <PageCard>
+            <SectionLabel>évolution cumulative</SectionLabel>
+            {!target ? (
+              <EmptyBlock label="Sélectionne un membre" />
+            ) : timeline.isLoading ? (
+              <div className="h-40 animate-pulse bg-muted" />
+            ) : (
+              <SinglePointsChart
+                timeline={timeline.data?.timeline ?? []}
+                label={
+                  members.data?.members.find((m) => m.discord_id === target)?.ig_name ?? "Points"
+                }
+              />
+            )}
+          </PageCard>
+        </>
+      )}
+
+      {mode === "comparison" && (
+        <>
+          <PageCard>
+            <SectionLabel>membres à comparer</SectionLabel>
+            {comparison.isLoading ? (
+              <div className="h-10 animate-pulse bg-muted" />
+            ) : (
+              <>
+                <div className="flex gap-2 mb-3 mt-1">
+                  <DaButton variant="ghost" onClick={selectAll} className="text-[10px] px-2 py-0.5">
+                    Tout sélectionner
+                  </DaButton>
+                  <DaButton
+                    variant="ghost"
+                    onClick={() => setSelected([])}
+                    className="text-[10px] px-2 py-0.5"
+                  >
+                    Tout désélectionner
+                  </DaButton>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {comparison.data?.timelines.map((t, i) => {
+                    const isOn = selected.includes(t.discord_id);
+                    return (
+                      <button
+                        key={t.discord_id}
+                        onClick={() => toggleMember(t.discord_id)}
+                        className={`px-2 py-1 text-[11px] border-[2px] transition-colors ${
+                          isOn
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground"
+                        }`}
+                        style={{
+                          fontFamily: "'Space Mono'",
+                          borderColor: isOn ? PALETTE[i % PALETTE.length] : undefined,
+                          color: isOn ? PALETTE[i % PALETTE.length] : undefined,
+                        }}
+                      >
+                        {t.ig_name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </PageCard>
+
+          <PageCard>
+            <SectionLabel>comparaison cumulative</SectionLabel>
+            {comparison.isLoading ? (
+              <div className="h-60 animate-pulse bg-muted" />
+            ) : (
+              <ComparisonPointsChart
+                timelines={comparison.data?.timelines ?? []}
+                selected={selected}
+              />
+            )}
+          </PageCard>
+        </>
+      )}
+    </div>
   );
 }

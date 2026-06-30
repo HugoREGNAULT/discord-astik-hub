@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Coins, Gamepad2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, completeOnboarding } from "@/lib/data/me.functions";
+import { getPointsTimeline } from "@/lib/data/points-timeline.functions";
+import { SinglePointsChart } from "@/components/points/PointsChart";
 import { getLatestPlayerCount } from "@/lib/paladium/history.functions";
 import { avatarUrl } from "@/lib/paladium/api";
 import { toUserMessage } from "@/lib/errors";
@@ -118,6 +120,8 @@ function MyProfile() {
               )}
             </CardContent>
           </Card>
+
+          <PointsEvolutionCard memberDiscordId={m.discord_id} />
 
           {isMember && m.mc_uuid && <PaladiumProfileCard />}
 
@@ -314,6 +318,32 @@ function MinecraftAccountCard({
               )}
             </div>
           </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── PointsEvolutionCard ─────────────────────────────────────────────────────
+
+function PointsEvolutionCard({ memberDiscordId }: { memberDiscordId: string }) {
+  const timelineFn = useServerFn(getPointsTimeline);
+  const { data, isLoading } = useQuery({
+    queryKey: ["points-timeline", memberDiscordId],
+    queryFn: () => timelineFn({ data: { memberDiscordId } }),
+    staleTime: 60_000,
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm text-muted-foreground">Évolution des points</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="h-40 animate-pulse bg-muted" />
+        ) : (
+          <SinglePointsChart timeline={data?.timeline ?? []} label="AstikPoints" />
         )}
       </CardContent>
     </Card>

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, requireSelfOrPermission, logAction } from "@/lib/auth/require.server";
-import { canAccess } from "@/lib/auth/permissions";
+import { canAccess, isMemberStaff } from "@/lib/auth/permissions";
 import { isFactionMember } from "@/lib/data/faction-members";
 import type { Json } from "@/integrations/supabase/types";
 import { fetchPaladium, dashUuid } from "@/lib/paladium/paladium.server";
@@ -11,7 +11,13 @@ import { fetchPaladium, dashUuid } from "@/lib/paladium/paladium.server";
 
 export const listMembers = createServerFn({ method: "GET" })
   .inputValidator(
-    (input: { q?: string; status?: "active" | "former" | "away" | "all" } = {}) => input,
+    (
+      input: {
+        q?: string;
+        status?: "active" | "former" | "away" | "all";
+        excludeStaff?: boolean;
+      } = {},
+    ) => input,
   )
   .handler(async ({ data }) => {
     await requirePermission("members.view");
@@ -23,7 +29,8 @@ export const listMembers = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     const needle = data.q?.trim().toLowerCase();
-    const all = rows ?? [];
+    let all = rows ?? [];
+    if (data.excludeStaff) all = all.filter((m) => !isMemberStaff(m.roles ?? []));
     const filtered = needle
       ? all.filter(
           (m) =>

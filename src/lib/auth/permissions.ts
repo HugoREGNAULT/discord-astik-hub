@@ -92,6 +92,21 @@ export function canAccess(user: SessionUser | null, perm: Permission): boolean {
   }
 }
 
+/** IDs des rôles staff — utilisés pour exclure le staff du système de points. */
+export const STAFF_ROLE_IDS = [
+  ROLES.STAFF_FACTION,
+  ROLES.HIGH_STAFF_PUBLIC,
+  ROLES.STAFF_POINTS,
+] as const;
+
+/**
+ * Vérifie si un membre DB est staff (via ses rôles Discord).
+ * Exclut ces membres du système de points.
+ */
+export function isMemberStaff(roles: string[]): boolean {
+  return (STAFF_ROLE_IDS as readonly string[]).some((id) => roles.includes(id));
+}
+
 /** Renvoie la liste des permissions accordées (utile pour l'UI). */
 export function listPermissions(user: SessionUser | null): Permission[] {
   if (!user) return [];
