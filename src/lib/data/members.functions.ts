@@ -5,6 +5,7 @@ import { requirePermission, requireSelfOrPermission, logAction } from "@/lib/aut
 import { canAccess } from "@/lib/auth/permissions";
 import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
 import type { Json } from "@/integrations/supabase/types";
+import { fetchPaladium, dashUuid } from "@/lib/paladium/paladium.server";
 
 /* ---------- Lecture ---------- */
 
@@ -426,4 +427,72 @@ export const dmMember = createServerFn({ method: "POST" })
     });
     if (!res.ok) throw new Error(res.error ?? "Échec de l'envoi du DM");
     return { ok: true };
+  });
+
+export const resolveAndUpdateIgName = createServerFn({ method: "POST" })
+  .inputValidator((input) =>
+    z
+      .object({
+        discordId: z.string().min(1),
+        igName: z.string().min(1).max(64).trim(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const user = await requirePermission("members.edit");
+
+    // 1. Resolve Minecraft username → UUID via Paladium API
+    let dashedUuid: string;
+    try {
+      const { data: profile } = await fetchPaladium(
+        `/v1/paladium/player/profile/${encodeURIComponent(data.igName)}`,
+      );
+      const p = profile as Record<string, unknown>;
+      const rawUuid =
+        (typeof p.uuid === "string" && p.uuid) ||
+        (typeof p.id === "string" && p.id) ||
+        (typeof p.playerId === "string" && p.playerId) ||
+        "";
+      if (!rawUuid) throw new Error("no uuid");
+      dashedUuid = dashUuid(rawUuid);
+    } catch {
+      throw new Error("Joueur introuvable sur Paladium");
+    }
+
+    // 2. UPDATE members SET ig_name, mc_uuid, updated_at WHERE discord_id
+    const { error } = await db
+      .from("members")
+      .update({
+        ig_name: data.igName,
+        mc_uuid: dashedUuid,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("discord_id", data.discordId);
+    if (error) throw new Error(error.message);
+
+    // 3. Best-effort: update Paladium player cache
+    try {
+      const [profileResult, jobsResult] = await Promise.all([
+        fetchPaladium(`/v1/paladium/player/profile/${dashedUuid}`),
+        fetchPaladium(`/v1/paladium/player/profile/${dashedUuid}/jobs`),
+      ]);
+      await db.from("paladium_player_cache").upsert({
+        mc_uuid: dashedUuid,
+        profile_json: profileResult.data as Json,
+        jobs_json: jobsResult.data as Json,
+        fetched_at: new Date().toISOString(),
+      });
+    } catch {
+      // best-effort — cache failure must not fail the function
+    }
+
+    // 4. Log action
+    await logAction("member_ig_name_update", user.discordId, {
+      target: data.discordId,
+      ig_name: data.igName,
+      mc_uuid: dashedUuid,
+    });
+
+    // 5. Return result
+    return { ok: true, mc_uuid: dashedUuid, ig_name: data.igName };
   });
