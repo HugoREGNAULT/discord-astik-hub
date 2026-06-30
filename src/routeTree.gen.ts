@@ -28,6 +28,7 @@ import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedClassementRouteImport } from './routes/_authenticated/classement'
+import { Route as AuthenticatedAffluenceRouteImport } from './routes/_authenticated/affluence'
 import { Route as AuthenticatedClassementPointsRouteImport } from './routes/_authenticated/classement-points'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
@@ -180,6 +181,11 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
 const AuthenticatedClassementRoute = AuthenticatedClassementRouteImport.update({
   id: '/classement',
   path: '/classement',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAffluenceRoute = AuthenticatedAffluenceRouteImport.update({
+  id: '/_authenticated/affluence',
+  path: '/affluence',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedClassementPointsRoute =
@@ -502,6 +508,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/affluence': typeof AuthenticatedAffluenceRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
@@ -578,6 +585,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/absences': typeof AuthenticatedAbsencesRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/affluence': typeof AuthenticatedAffluenceRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
@@ -732,6 +740,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/absences'
     | '/admin'
+    | '/affluence'
     | '/assistant'
     | '/backlog'
     | '/blacklist'
@@ -808,6 +817,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/absences'
     | '/admin'
+    | '/affluence'
     | '/assistant'
     | '/backlog'
     | '/blacklist'
@@ -884,6 +894,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/absences'
     | '/_authenticated/admin'
+    | '/_authenticated/affluence'
     | '/_authenticated/assistant'
     | '/_authenticated/backlog'
     | '/_authenticated/blacklist'
@@ -1129,6 +1140,13 @@ declare module '@tanstack/react-router' {
       path: '/classement'
       fullPath: '/classement'
       preLoaderRoute: typeof AuthenticatedClassementRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/affluence': {
+      id: '/_authenticated/affluence'
+      path: '/affluence'
+      fullPath: '/affluence'
+      preLoaderRoute: typeof AuthenticatedAffluenceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/classement-points': {
@@ -1602,6 +1620,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
+  AuthenticatedAffluenceRoute: typeof AuthenticatedAffluenceRoute
   AuthenticatedClassementRoute: typeof AuthenticatedClassementRoute
   AuthenticatedClassementPointsRoute: typeof AuthenticatedClassementPointsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
@@ -1623,6 +1642,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
+  AuthenticatedAffluenceRoute: AuthenticatedAffluenceRoute,
   AuthenticatedClassementRoute: AuthenticatedClassementRoute,
   AuthenticatedClassementPointsRoute: AuthenticatedClassementPointsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,

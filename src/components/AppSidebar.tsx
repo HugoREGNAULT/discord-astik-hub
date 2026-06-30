@@ -15,6 +15,7 @@ import {
   Bell,
   Trophy,
   Star,
+  Activity,
 } from "lucide-react";
 
 import {
@@ -53,6 +54,7 @@ const SECTIONS: Section[] = [
     items: [
       { title: "Classement faction", url: "/classement", icon: Trophy, perm: "profile.self" },
       { title: "Classement Points", url: "/classement-points", icon: Star, perm: "profile.self" },
+      { title: "Affluence Paladium", url: "/affluence", icon: Activity, perm: "profile.self" },
       { title: "Mon profil", url: "/me", icon: UserCircle2, perm: "profile.self" },
       { title: "Absences", url: "/absences", icon: CalendarCheck, perm: "profile.self" },
       { title: "Outils Paladium", url: "/tools", icon: Wrench, perm: "profile.self" },

@@ -1963,18 +1963,21 @@ export type Database = {
           jobs_json: Json;
           mc_uuid: string;
           profile_json: Json;
+          ranking_json: Json | null;
         };
         Insert: {
           fetched_at?: string;
           jobs_json?: Json;
           mc_uuid: string;
           profile_json?: Json;
+          ranking_json?: Json | null;
         };
         Update: {
           fetched_at?: string;
           jobs_json?: Json;
           mc_uuid?: string;
           profile_json?: Json;
+          ranking_json?: Json | null;
         };
         Relationships: [];
       };

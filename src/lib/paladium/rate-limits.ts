@@ -84,6 +84,13 @@ export const PALADIUM_ROUTES: RouteSpec[] = [
     windowMin: 5,
   },
   {
+    template: "/v1/paladium/ranking/position/{uuid}",
+    match: /^\/v1\/paladium\/ranking\/position\/[^/]+$/,
+    label: "Position serveur",
+    limit: 600,
+    windowMin: 5,
+  },
+  {
     template: "/v1/paladium/shop/market/items",
     match: /^\/v1\/paladium\/shop\/market\/items(\?.*)?$/,
     label: "Market — items",

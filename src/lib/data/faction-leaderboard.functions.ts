@@ -18,6 +18,10 @@ export type FactionLeaderboardEntry = {
   hunter: number | null;
   alchemist: number | null;
   clicker: number | null;
+  /** Temps de jeu en minutes. -1 = masqué par le joueur. null = non disponible. */
+  time_played: number | null;
+  /** Positions dans les classements globaux du serveur, keyed par catégorie API. */
+  server_ranking: Record<string, number> | null;
   cached_at: string | null;
 };
 
@@ -75,16 +79,18 @@ export const refreshFactionMemberStats = createServerFn({ method: "POST" }).hand
       }
 
       try {
-        const [profileRes, jobsRes, clickerRes] = await Promise.all([
+        const [profileRes, jobsRes, clickerRes, rankingRes] = await Promise.all([
           fetchPaladium(`/v1/paladium/player/profile/${uuid}`),
           fetchPaladium(`/v1/paladium/player/profile/${uuid}/jobs`),
           fetchPaladium(`/v1/paladium/player/profile/${uuid}/clicker`),
+          fetchPaladium(`/v1/paladium/ranking/position/${uuid}`).catch(() => null),
         ]);
 
         await db.from("paladium_player_cache").upsert({
           mc_uuid: uuid,
           profile_json: profileRes.data as Json,
           jobs_json: { jobs: jobsRes.data, clicker: clickerRes.data } as unknown as Json,
+          ranking_json: rankingRes !== null ? (rankingRes.data as Json) : null,
           fetched_at: new Date().toISOString(),
         });
 
@@ -134,19 +140,25 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
     // 3. Fetch cache pour ceux avec uuid
     const { data: cacheRows, error: cacheError } = await db
       .from("paladium_player_cache")
-      .select("mc_uuid, profile_json, jobs_json, fetched_at")
+      .select("mc_uuid, profile_json, jobs_json, ranking_json, fetched_at")
       .in("mc_uuid", normalizedUuids);
 
     if (cacheError) throw new Error(`paladium_player_cache fetch failed: ${cacheError.message}`);
 
     const cacheMap = new Map<
       string,
-      { profile_json: unknown; jobs_json: unknown; fetched_at: string | null }
+      {
+        profile_json: unknown;
+        jobs_json: unknown;
+        ranking_json: unknown;
+        fetched_at: string | null;
+      }
     >();
     for (const row of cacheRows ?? []) {
       cacheMap.set(row.mc_uuid, {
         profile_json: row.profile_json,
         jobs_json: row.jobs_json,
+        ranking_json: row.ranking_json ?? null,
         fetched_at: row.fetched_at ?? null,
       });
     }
@@ -171,6 +183,20 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
       const clickerData = (jobsWrapper?.clicker as Record<string, unknown> | null) ?? null;
       const clicker = typeof clickerData?.rps === "number" ? clickerData.rps : null;
 
+      // timePlayed — -1 signifie masqué par le joueur
+      const rawTimePlayed = profile?.timePlayed;
+      const time_played = typeof rawTimePlayed === "number" ? rawTimePlayed : null;
+
+      // Positions classement global serveur
+      const rankingRaw = (cacheRow?.ranking_json as Record<string, unknown> | null) ?? null;
+      let server_ranking: Record<string, number> | null = null;
+      if (rankingRaw !== null) {
+        const validEntries = Object.entries(rankingRaw).filter(
+          ([, v]) => typeof v === "number",
+        ) as [string, number][];
+        if (validEntries.length > 0) server_ranking = Object.fromEntries(validEntries);
+      }
+
       return {
         discord_id: m.discord_id,
         ig_name: m.ig_name ?? null,
@@ -185,6 +211,8 @@ export const getFactionLeaderboard = createServerFn({ method: "GET" }).handler(
         hunter: getJobLevel("hunter"),
         alchemist: getJobLevel("alchemist"),
         clicker,
+        time_played,
+        server_ranking,
         cached_at: cacheRow?.fetched_at ?? null,
       };
     });

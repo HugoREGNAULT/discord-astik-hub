@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Coins, Gamepad2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getMyOverview, completeOnboarding } from "@/lib/data/me.functions";
+import { getPointsPillarSummary } from "@/lib/data/points.functions";
 import { getPointsTimeline } from "@/lib/data/points-timeline.functions";
 import { SinglePointsChart } from "@/components/points/PointsChart";
 import { getLatestPlayerCount } from "@/lib/paladium/history.functions";
@@ -121,6 +122,8 @@ function MyProfile() {
             </CardContent>
           </Card>
 
+          <PillarBreakdownCard memberDiscordId={m.discord_id} />
+
           <PointsEvolutionCard memberDiscordId={m.discord_id} />
 
           {isMember && m.mc_uuid && <PaladiumProfileCard />}
@@ -156,9 +159,9 @@ function MyProfile() {
               ) : (
                 <ul className="divide-y divide-border max-h-96 overflow-y-auto">
                   {data.recentGains.map((p) => (
-                    <li key={p.id} className="px-4 py-2 text-sm flex items-center gap-3">
+                    <li key={p.id} className="px-4 py-2 text-sm flex items-start gap-3">
                       <span
-                        className={`font-mono font-semibold w-16 text-right ${
+                        className={`font-mono font-bold w-14 text-right shrink-0 mt-0.5 ${
                           p.amount >= 0 ? "text-primary" : "text-destructive"
                         }`}
                       >
@@ -166,15 +169,24 @@ function MyProfile() {
                         {p.amount}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs">
-                          {p.action_type}
-                          {p.reason ? ` · ${p.reason}` : ""}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {p.pillar && (
+                            <span
+                              className="text-[9px] uppercase tracking-[0.2em] text-primary border border-primary/40 px-1.5 py-0.5"
+                              style={{ fontFamily: "'Space Mono'" }}
+                            >
+                              {PILLAR_LABEL[p.pillar] ?? p.pillar}
+                            </span>
+                          )}
+                          <span className="text-xs text-foreground/80 truncate">
+                            {p.reason || ACTION_LABEL[p.action_type as string] || p.action_type}
+                          </span>
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
                           {new Date(p.created_at).toLocaleString("fr-FR")}
                         </div>
                       </div>
-                      <span className="text-xs text-muted-foreground font-mono">
+                      <span className="text-[11px] text-muted-foreground font-mono shrink-0 mt-0.5">
                         → {p.total_after}
                       </span>
                     </li>
@@ -317,6 +329,87 @@ function MinecraftAccountCard({
                 </Button>
               )}
             </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Constantes points ───────────────────────────────────────────────────────
+
+const PILLAR_LABEL: Record<string, string> = {
+  discord_activity: "Activité Discord",
+  ig_investment: "Investissement IG",
+  global_investment: "Investissement Global",
+};
+
+const ACTION_LABEL: Record<string, string> = {
+  add: "Attribution",
+  remove: "Retrait",
+  set: "Définition",
+  reversal: "Annulation",
+  donation: "Don",
+};
+
+// ─── PillarBreakdownCard ──────────────────────────────────────────────────────
+
+function PillarBreakdownCard({ memberDiscordId }: { memberDiscordId: string }) {
+  const summaryFn = useServerFn(getPointsPillarSummary);
+  const { data, isLoading } = useQuery({
+    queryKey: ["pillar-summary-me", memberDiscordId],
+    queryFn: () => summaryFn({ data: { memberDiscordId } }),
+    staleTime: 60_000,
+  });
+
+  const pillars = [
+    { key: "discord_activity", label: "Activité Discord" },
+    { key: "ig_investment", label: "Investissement IG" },
+    { key: "global_investment", label: "Investissement Global" },
+  ] as const;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-sm text-muted-foreground">Répartition par pilier</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="grid grid-cols-3 gap-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-16 animate-pulse bg-muted" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {pillars.map((p) => {
+              const val = data?.summary[p.key] ?? 0;
+              return (
+                <div
+                  key={p.key}
+                  className="border-[3px] border-border bg-secondary/50 p-3 space-y-1"
+                >
+                  <div
+                    className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground leading-tight"
+                    style={{ fontFamily: "'Space Mono'" }}
+                  >
+                    {p.label}
+                  </div>
+                  <div
+                    className="text-xl font-bold text-primary tabular-nums"
+                    style={{ fontFamily: "'Space Grotesk'" }}
+                  >
+                    {val}
+                  </div>
+                  <div
+                    className="text-[9px] text-muted-foreground uppercase tracking-[0.15em]"
+                    style={{ fontFamily: "'Space Mono'" }}
+                  >
+                    pts
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </CardContent>

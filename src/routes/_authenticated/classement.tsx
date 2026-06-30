@@ -24,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/classement")({
 const fmtMoney = (n: number) =>
   new Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 const fmtInt = (n: number) => String(n);
+const fmtTimePlayed = (n: number) => `${Math.floor(n / 60)}h`;
 
 // ─── Tabs definition ─────────────────────────────────────────────────────────
 
@@ -32,15 +33,63 @@ type TabDef = {
   label: string;
   getValue: (e: FactionLeaderboardEntry) => number | null;
   formatValue: (n: number) => string;
+  /** Si vrai, la valeur est masquée (timePlayed = -1) → "Masqué", trié en bas */
+  isHidden?: (n: number) => boolean;
+  /** Clé dans server_ranking pour le badge "#N srv" */
+  rankingKey?: string;
 };
 
 const TABS: TabDef[] = [
-  { id: "argent", label: "ARGENT", getValue: (e) => e.money, formatValue: fmtMoney },
-  { id: "miner", label: "MINEUR", getValue: (e) => e.miner, formatValue: fmtInt },
-  { id: "farmer", label: "FARMER", getValue: (e) => e.farmer, formatValue: fmtInt },
-  { id: "hunter", label: "HUNTER", getValue: (e) => e.hunter, formatValue: fmtInt },
-  { id: "alchemist", label: "ALCHIMISTE", getValue: (e) => e.alchemist, formatValue: fmtInt },
-  { id: "clicker", label: "CLICKER", getValue: (e) => e.clicker, formatValue: fmtMoney },
+  {
+    id: "argent",
+    label: "ARGENT",
+    getValue: (e) => e.money,
+    formatValue: fmtMoney,
+    rankingKey: "money",
+  },
+  {
+    id: "miner",
+    label: "MINEUR",
+    getValue: (e) => e.miner,
+    formatValue: fmtInt,
+    rankingKey: "miner",
+  },
+  {
+    id: "farmer",
+    label: "FARMER",
+    getValue: (e) => e.farmer,
+    formatValue: fmtInt,
+    rankingKey: "farmer",
+  },
+  {
+    id: "hunter",
+    label: "HUNTER",
+    getValue: (e) => e.hunter,
+    formatValue: fmtInt,
+    rankingKey: "hunter",
+  },
+  {
+    id: "alchemist",
+    label: "ALCHIMISTE",
+    getValue: (e) => e.alchemist,
+    formatValue: fmtInt,
+    rankingKey: "alchemist",
+  },
+  {
+    id: "clicker",
+    label: "CLICKER",
+    getValue: (e) => e.clicker,
+    formatValue: fmtMoney,
+    rankingKey: "clicker",
+  },
+  {
+    id: "temps-de-jeu",
+    label: "TEMPS DE JEU",
+    getValue: (e) => e.time_played,
+    formatValue: fmtTimePlayed,
+    isHidden: (n) => n === -1,
+    rankingKey: "timePlayed",
+  },
 ];
 
 // ─── LeaderboardTable ─────────────────────────────────────────────────────────
@@ -49,28 +98,42 @@ function LeaderboardTable({
   entries,
   getValue,
   formatValue,
+  isHidden,
+  rankingKey,
 }: {
   entries: FactionLeaderboardEntry[];
   getValue: (e: FactionLeaderboardEntry) => number | null;
   formatValue: (n: number) => string;
+  isHidden?: (n: number) => boolean;
+  rankingKey?: string;
 }) {
   const sorted = [...entries].sort((a, b) => {
     const av = getValue(a);
     const bv = getValue(b);
-    if (av === null && bv === null) return 0;
-    if (av === null) return 1;
-    if (bv === null) return -1;
-    return bv - av;
+    const aHidden = av === null || (isHidden != null && av !== null && isHidden(av));
+    const bHidden = bv === null || (isHidden != null && bv !== null && isHidden(bv));
+    if (aHidden && bHidden) return 0;
+    if (aHidden) return 1;
+    if (bHidden) return -1;
+    return (bv as number) - (av as number);
   });
 
   return (
     <div className="divide-y divide-border">
       {sorted.map((e, i) => {
         const val = getValue(e);
+        const hidden = val !== null && isHidden != null && isHidden(val);
+        const hasValue = val !== null && !hidden;
+
+        const serverPos =
+          rankingKey != null && e.server_ranking?.[rankingKey] != null
+            ? (e.server_ranking[rankingKey] as number)
+            : null;
+
         return (
           <div key={e.discord_id} className="flex items-center gap-3 py-2 px-1">
             <span className="text-[9px] font-mono text-muted-foreground/70 w-6 shrink-0 text-right">
-              {val !== null ? i + 1 : "—"}
+              {hasValue ? i + 1 : "—"}
             </span>
             <img
               src={`https://mc-heads.net/avatar/${encodeURIComponent(e.mc_uuid)}/32`}
@@ -84,14 +147,28 @@ function LeaderboardTable({
               >
                 {e.ig_name ?? e.discord_username ?? e.discord_id}
               </div>
-              {e.current_grade && <DaChip accent="blurple">{e.current_grade}</DaChip>}
+              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                {e.current_grade && <DaChip accent="blurple">{e.current_grade}</DaChip>}
+                {serverPos !== null && (
+                  <span
+                    className="text-[9px] font-mono text-muted-foreground/60 border border-border px-1 py-px leading-none"
+                    title="Position dans le classement global du serveur"
+                  >
+                    #{serverPos} srv
+                  </span>
+                )}
+              </div>
             </div>
             <span
-              className={`font-mono font-bold text-sm tabular-nums ${
-                val !== null ? "text-primary" : "text-muted-foreground/40"
+              className={`font-mono font-bold text-sm tabular-nums shrink-0 ${
+                hasValue
+                  ? "text-primary"
+                  : hidden
+                    ? "text-muted-foreground/40 italic text-xs"
+                    : "text-muted-foreground/40"
               }`}
             >
-              {val !== null ? formatValue(val) : "—"}
+              {hasValue ? formatValue(val as number) : hidden ? "Masqué" : "—"}
             </span>
           </div>
         );
@@ -177,6 +254,8 @@ function ClassementPage() {
                 entries={entries}
                 getValue={t.getValue}
                 formatValue={t.formatValue}
+                isHidden={t.isHidden}
+                rankingKey={t.rankingKey}
               />
             </TabsContent>
           ))}

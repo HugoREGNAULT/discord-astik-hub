@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { db } from "@/lib/db.server";
-import { requirePermission, logAction } from "@/lib/auth/require.server";
+import { requirePermission, requireSelfOrPermission, logAction } from "@/lib/auth/require.server";
 import { PILLAR_ZSCHEMA, type PointPillar } from "@/lib/data/points-pillars";
 
 async function applyDelta(memberId: string, delta: number, bonusPct: number) {
@@ -131,7 +131,6 @@ export const getPointsHistory = createServerFn({ method: "GET" })
       .parse(input),
   )
   .handler(async ({ data }) => {
-    const { requireSelfOrPermission } = await import("@/lib/auth/require.server");
     await requireSelfOrPermission(data.memberDiscordId, "points.manage");
     const { data: rows, error } = await db
       .from("points_ledger")
@@ -146,7 +145,7 @@ export const getPointsHistory = createServerFn({ method: "GET" })
 export const getPointsPillarSummary = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ memberDiscordId: z.string().min(1).max(64) }).parse(input))
   .handler(async ({ data }) => {
-    await requirePermission("points.manage");
+    await requireSelfOrPermission(data.memberDiscordId, "points.manage");
     const { data: rows, error } = await db
       .from("points_ledger")
       .select("pillar, amount")

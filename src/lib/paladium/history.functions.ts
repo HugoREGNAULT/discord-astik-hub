@@ -392,6 +392,71 @@ export const getMarketPriceHistory = createServerFn({ method: "POST" })
     };
   });
 
+/* ============= Player count history (for affluence page) ============= */
+
+export type PlayerCountPoint = { timestamp: string; count: number };
+export type HeatmapCell = { dow: number; hour: number; avg: number };
+
+export const getPlayerCountHistory = createServerFn({ method: "POST" })
+  .inputValidator((d: { days?: number } | undefined) => ({
+    days: Math.min(Math.max(Number(d?.days ?? 7), 1), 30),
+  }))
+  .handler(async ({ data }) => {
+    await requireSession();
+    const since = new Date(Date.now() - data.days * 86_400_000).toISOString();
+
+    const { data: rows, error } = await supabaseAdmin
+      .from("paladium_server_status_history")
+      .select("online_players, captured_at")
+      .eq("server_key", "java.global")
+      .not("online_players", "is", null)
+      .gte("captured_at", since)
+      .order("captured_at", { ascending: true })
+      .limit(50_000);
+
+    if (error) throw new Error(error.message);
+
+    const allRows = (rows ?? []) as Array<{ online_players: number; captured_at: string }>;
+
+    // Downsampling par bucket pour limiter les points
+    // 1j → 15min (brut), 7j → 30min, 30j → 2h
+    const bucketMs = data.days <= 1 ? 15 * 60_000 : data.days <= 7 ? 30 * 60_000 : 2 * 60 * 60_000;
+    const bucketMap = new Map<number, { sum: number; n: number }>();
+    for (const r of allRows) {
+      const t = new Date(r.captured_at).getTime();
+      const b = Math.floor(t / bucketMs) * bucketMs;
+      const prev = bucketMap.get(b) ?? { sum: 0, n: 0 };
+      bucketMap.set(b, { sum: prev.sum + r.online_players, n: prev.n + 1 });
+    }
+    const points: PlayerCountPoint[] = [...bucketMap.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([ts, { sum, n }]) => ({
+        timestamp: new Date(ts).toISOString(),
+        count: Math.round(sum / n),
+      }));
+
+    // Heatmap : agrégation par (dow, hour) en UTC+2 (approximation Europe/Paris)
+    const UTC_OFFSET_H = 2;
+    const heatMap = new Map<string, { sum: number; n: number }>();
+    for (const r of allRows) {
+      const d = new Date(r.captured_at);
+      const localHour = (d.getUTCHours() + UTC_OFFSET_H) % 24;
+      // Recalcule le jour local si minuit UTC+offset bascule en lendemain
+      const totalMinutes = d.getUTCHours() * 60 + d.getUTCMinutes() + UTC_OFFSET_H * 60;
+      const dayOffset = Math.floor(totalMinutes / (24 * 60));
+      const localDow = (d.getUTCDay() + dayOffset) % 7;
+      const key = `${localDow}_${localHour}`;
+      const prev = heatMap.get(key) ?? { sum: 0, n: 0 };
+      heatMap.set(key, { sum: prev.sum + r.online_players, n: prev.n + 1 });
+    }
+    const heatmap: HeatmapCell[] = [...heatMap.entries()].map(([key, { sum, n }]) => {
+      const [dow, hour] = key.split("_").map(Number);
+      return { dow, hour, avg: Math.round(sum / n) };
+    });
+
+    return { points, heatmap };
+  });
+
 /* ============= Latest player count (for /me banner) ============= */
 
 export const getLatestPlayerCount = createServerFn({ method: "GET" }).handler(async () => {

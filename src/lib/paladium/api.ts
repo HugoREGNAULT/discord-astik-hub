@@ -208,6 +208,10 @@ export type TrixiumEntry = {
   [k: string]: unknown;
 };
 
+export type PlayerRankingPosition = {
+  [category: string]: number | unknown;
+};
+
 export type AdminShopItem = {
   name?: string;
   category?: string;
@@ -237,6 +241,10 @@ export const PaladiumApi = {
   getPlayerMarketItems: (uuid: string) =>
     paladiumFetch<PlayerMarketResponse>(
       `/v1/paladium/shop/market/players/${encodeURIComponent(uuid)}/items`,
+    ),
+  getPlayerRankingPosition: (uuid: string) =>
+    paladiumFetch<PlayerRankingPosition>(
+      `/v1/paladium/ranking/position/${encodeURIComponent(uuid)}`,
     ),
   getLeaderboard: (category = "money", page = 1) =>
     paladiumFetch<LeaderboardEntry[] | { entries: LeaderboardEntry[] }>(
