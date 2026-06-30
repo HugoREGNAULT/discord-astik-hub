@@ -443,32 +443,30 @@ export const resolveAndUpdateIgName = createServerFn({ method: "POST" })
 
     // 1. Resolve Minecraft username → UUID via Paladium API
     let dashedUuid: string;
-    try {
-      const { data: profile } = await fetchPaladium(
-        `/v1/paladium/player/profile/${encodeURIComponent(data.igName)}`,
-      );
-      const p = profile as Record<string, unknown>;
-      const rawUuid =
-        (typeof p.uuid === "string" && p.uuid) ||
-        (typeof p.id === "string" && p.id) ||
-        (typeof p.playerId === "string" && p.playerId) ||
-        "";
-      if (!rawUuid) throw new Error("no uuid");
-      dashedUuid = dashUuid(rawUuid);
-    } catch {
-      throw new Error("Joueur introuvable sur Paladium");
-    }
+    const { data: profile } = await fetchPaladium(
+      `/v1/paladium/player/profile/${encodeURIComponent(data.igName)}`,
+    );
+    const p = profile as Record<string, unknown>;
+    const rawUuid =
+      (typeof p.uuid === "string" && p.uuid) ||
+      (typeof p.id === "string" && p.id) ||
+      (typeof p.playerId === "string" && p.playerId) ||
+      "";
+    if (!rawUuid) throw new Error("Joueur introuvable sur Paladium");
+    dashedUuid = dashUuid(rawUuid);
 
     // 2. UPDATE members SET ig_name, mc_uuid, updated_at WHERE discord_id
-    const { error } = await db
+    const { data: rows, error } = await db
       .from("members")
       .update({
         ig_name: data.igName,
         mc_uuid: dashedUuid,
         updated_at: new Date().toISOString(),
       })
-      .eq("discord_id", data.discordId);
+      .eq("discord_id", data.discordId)
+      .select("discord_id");
     if (error) throw new Error(error.message);
+    if (!rows?.length) throw new Error("Membre introuvable");
 
     // 3. Best-effort: update Paladium player cache
     try {
