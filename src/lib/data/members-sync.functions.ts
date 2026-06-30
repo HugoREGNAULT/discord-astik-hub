@@ -13,9 +13,7 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
   const factionMap = new Map(factionMembers.filter((m) => m.user?.id).map((m) => [m.user!.id, m]));
 
   // 2. Lit tous les membres de la DB (actifs et archivés)
-  const { data: dbMembers, error: dbErr } = await db
-    .from("members")
-    .select("discord_id, status, archived_at");
+  const { data: dbMembers, error: dbErr } = await db.from("members").select("discord_id, status");
   if (dbErr) throw new Error(dbErr.message);
 
   const dbMap = new Map((dbMembers ?? []).map((m) => [m.discord_id, m]));
@@ -53,7 +51,6 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
         .from("members")
         .update({
           status: "active",
-          archived_at: null,
           discord_username: gm.user?.username ?? null,
           roles: gm.roles,
           avatar_url: avatarUrl,
@@ -92,7 +89,6 @@ export const syncMembersFromDiscord = createServerFn({ method: "POST" }).handler
         .from("members")
         .update({
           status: "former",
-          archived_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq("discord_id", dbRow.discord_id);
