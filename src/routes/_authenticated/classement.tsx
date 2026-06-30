@@ -1,38 +1,109 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Trophy } from "lucide-react";
-import { getFactionIngameLeaderboard } from "@/lib/data/faction-leaderboard.functions";
-import { avatarUrl } from "@/lib/paladium/api";
-import { PageCard, SectionLabel, MonoLabel } from "@/components/tools/ToolsUi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import {
+  getFactionLeaderboard,
+  refreshFactionMemberStats,
+} from "@/lib/data/faction-leaderboard.functions";
+import type { FactionLeaderboardEntry } from "@/lib/data/faction-leaderboard.functions";
+import { PageCard, SectionLabel, MonoLabel, DaButton, DaChip } from "@/components/tools/ToolsUi";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { DetailPageSkeleton } from "@/components/Skeletons";
-import { EmptyState } from "@/components/EmptyState";
+import { toUserMessage } from "@/lib/errors";
+import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 
 export const Route = createFileRoute("/_authenticated/classement")({
   head: () => ({ meta: [{ title: "Classement faction · PunkAstik" }] }),
   component: ClassementPage,
 });
 
+// ─── Formatters ─────────────────────────────────────────────────────────────
+
 const fmtMoney = (n: number) =>
   new Intl.NumberFormat("fr-FR", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+const fmtInt = (n: number) => String(n);
 
-// Ordre fixe des métiers connus
-const KNOWN_JOBS = ["miner", "farmer", "hunter", "alchemist", "lumberjack", "fisher", "blacksmith"];
-const JOB_LABELS: Record<string, string> = {
-  miner: "Mineur",
-  farmer: "Farmer",
-  hunter: "Chasseur",
-  alchemist: "Alchimiste",
-  lumberjack: "Bûcheron",
-  fisher: "Pêcheur",
-  blacksmith: "Forgeron",
+// ─── Tabs definition ─────────────────────────────────────────────────────────
+
+type TabDef = {
+  id: string;
+  label: string;
+  getValue: (e: FactionLeaderboardEntry) => number | null;
+  formatValue: (n: number) => string;
 };
 
+const TABS: TabDef[] = [
+  { id: "argent", label: "ARGENT", getValue: (e) => e.money, formatValue: fmtMoney },
+  { id: "miner", label: "MINEUR", getValue: (e) => e.miner, formatValue: fmtInt },
+  { id: "farmer", label: "FARMER", getValue: (e) => e.farmer, formatValue: fmtInt },
+  { id: "hunter", label: "HUNTER", getValue: (e) => e.hunter, formatValue: fmtInt },
+  { id: "alchemist", label: "ALCHIMISTE", getValue: (e) => e.alchemist, formatValue: fmtInt },
+  { id: "clicker", label: "CLICKER", getValue: (e) => e.clicker, formatValue: fmtMoney },
+];
+
+// ─── LeaderboardTable ─────────────────────────────────────────────────────────
+
+function LeaderboardTable({
+  entries,
+  getValue,
+  formatValue,
+}: {
+  entries: FactionLeaderboardEntry[];
+  getValue: (e: FactionLeaderboardEntry) => number | null;
+  formatValue: (n: number) => string;
+}) {
+  const sorted = [...entries].sort((a, b) => {
+    const av = getValue(a);
+    const bv = getValue(b);
+    if (av === null && bv === null) return 0;
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return bv - av;
+  });
+
+  return (
+    <div className="divide-y divide-border">
+      {sorted.map((e, i) => {
+        const val = getValue(e);
+        return (
+          <div key={e.discord_id} className="flex items-center gap-3 py-2 px-1">
+            <span className="text-[9px] font-mono text-muted-foreground/70 w-6 shrink-0 text-right">
+              {val !== null ? i + 1 : "—"}
+            </span>
+            <img
+              src={`https://mc-heads.net/avatar/${encodeURIComponent(e.mc_uuid)}/32`}
+              className="size-8 border border-border shrink-0"
+              alt=""
+            />
+            <div className="flex-1 min-w-0">
+              <div
+                className="text-sm font-bold uppercase truncate"
+                style={{ fontFamily: "'Space Grotesk'" }}
+              >
+                {e.ig_name ?? e.discord_username ?? e.discord_id}
+              </div>
+              {e.current_grade && <DaChip accent="blurple">{e.current_grade}</DaChip>}
+            </div>
+            <span
+              className={`font-mono font-bold text-sm tabular-nums ${
+                val !== null ? "text-primary" : "text-muted-foreground/40"
+              }`}
+            >
+              {val !== null ? formatValue(val) : "—"}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 function ClassementPage() {
-  const fn = useServerFn(getFactionIngameLeaderboard);
+  const fn = useServerFn(getFactionLeaderboard);
   const { data, isLoading } = useQuery({
     queryKey: ["faction-leaderboard"],
     queryFn: () => fn(),
@@ -40,199 +111,109 @@ function ClassementPage() {
     staleTime: 4 * 60_000,
   });
 
+  const refreshFn = useServerFn(refreshFactionMemberStats);
+  const qc = useQueryClient();
+  const refreshMutation = useMutation({
+    mutationFn: () => refreshFn({ data: undefined }),
+    onSuccess: (d) => {
+      toast.success(`${d.refreshed} rafraîchis · ${d.skipped} en cache`);
+      qc.invalidateQueries({ queryKey: ["faction-leaderboard"] });
+    },
+    onError: (e: Error) => toast.error(toUserMessage(e)),
+  });
+
+  const { data: user } = useCurrentUser();
+
   const entries = data?.entries ?? [];
-
-  // Calcul des onglets dynamiques (métiers disponibles dans les données)
-  const availableJobs = (() => {
-    const jobSet = new Set<string>();
-    for (const entry of entries) {
-      for (const key of Object.keys(entry.jobs)) {
-        jobSet.add(key);
-      }
-    }
-    const known = KNOWN_JOBS.filter((j) => jobSet.has(j));
-    const unknown = [...jobSet].filter((j) => !KNOWN_JOBS.includes(j)).sort();
-    return [...known, ...unknown];
-  })();
-
-  type TabDef = { id: string; label: string };
-  const tabs: TabDef[] = [
-    { id: "argent", label: "Argent" },
-    { id: "niveau", label: "Niveau" },
-    ...availableJobs.map((j) => ({ id: `job_${j}`, label: JOB_LABELS[j] ?? j })),
-  ];
-
-  const [tab, setTab] = useState("argent");
+  const withoutUuid = data?.withoutUuid ?? [];
 
   if (isLoading) return <DetailPageSkeleton />;
 
   return (
     <div className="space-y-4">
       {/* En-tête */}
-      <div className="mb-2">
-        <MonoLabel>// classement faction</MonoLabel>
-        <h1 className="text-2xl font-bold mt-1" style={{ fontFamily: "'Space Grotesk'" }}>
-          Classement in-game
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1" style={{ fontFamily: "'Space Mono'" }}>
-          Données mises à jour toutes les ~6h via cron · Lecture en cache BDD
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <MonoLabel>// classement.faction</MonoLabel>
+          <h1 className="text-2xl font-bold mt-1" style={{ fontFamily: "'Space Grotesk'" }}>
+            CLASSEMENT FACTION
+          </h1>
+        </div>
+
+        {hasPerm(user, "admin.access") && (
+          <DaButton
+            variant="ghost"
+            onClick={() => refreshMutation.mutate()}
+            disabled={refreshMutation.isPending}
+            className="text-[10px]"
+          >
+            <RefreshCw
+              className={`size-3 mr-1.5 ${refreshMutation.isPending ? "animate-spin" : ""}`}
+            />
+            {refreshMutation.isPending ? "Rafraîchissement…" : "Rafraîchir les stats"}
+          </DaButton>
+        )}
       </div>
 
+      {/* Tabs + table */}
       <PageCard>
-        {entries.length === 0 ? (
-          <EmptyState
-            icon={Trophy}
-            title="Aucune donnée"
-            description="Les stats in-game apparaîtront ici après la prochaine synchro."
-            variant="compact"
-          />
-        ) : (
-          <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="rounded-none border border-border bg-transparent h-auto flex-wrap gap-0 p-0 mb-4">
-              {tabs.map((t) => (
-                <TabsTrigger
-                  key={t.id}
-                  value={t.id}
-                  className="rounded-none border-r border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground uppercase text-[11px] tracking-wider px-3 py-1.5"
-                  style={{ fontFamily: "'Space Mono'" }}
-                >
-                  {t.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-
-            {/* Onglet Argent */}
-            <TabsContent value="argent">
-              <LeaderboardTable
-                entries={[...entries].sort((a, b) => {
-                  if (a.money === null && b.money === null) return 0;
-                  if (a.money === null) return 1;
-                  if (b.money === null) return -1;
-                  return b.money - a.money;
-                })}
-                columnLabel="Argent"
-                getValue={(e) => (e.money != null ? fmtMoney(e.money) : null)}
-              />
-            </TabsContent>
-
-            {/* Onglet Niveau */}
-            <TabsContent value="niveau">
-              <LeaderboardTable
-                entries={[...entries].sort((a, b) => {
-                  if (a.level === null && b.level === null) return 0;
-                  if (a.level === null) return 1;
-                  if (b.level === null) return -1;
-                  return b.level - a.level;
-                })}
-                columnLabel="Niveau"
-                getValue={(e) => (e.level != null ? String(e.level) : null)}
-              />
-            </TabsContent>
-
-            {/* Onglets métiers */}
-            {availableJobs.map((job) => (
-              <TabsContent key={`job_${job}`} value={`job_${job}`}>
-                <LeaderboardTable
-                  entries={[...entries].sort((a, b) => {
-                    const av = a.jobs[job] ?? -1;
-                    const bv = b.jobs[job] ?? -1;
-                    return bv - av;
-                  })}
-                  columnLabel={JOB_LABELS[job] ?? job}
-                  getValue={(e) => (e.jobs[job] != null ? String(e.jobs[job]) : null)}
-                />
-              </TabsContent>
+        <Tabs defaultValue="argent">
+          <TabsList className="rounded-none border border-border bg-transparent h-auto flex-wrap gap-0 p-0 mb-4">
+            {TABS.map((t) => (
+              <TabsTrigger
+                key={t.id}
+                value={t.id}
+                className="rounded-none border-r border-border last:border-r-0 data-[state=active]:bg-primary data-[state=active]:text-white uppercase text-[11px] tracking-wider px-3 py-2"
+                style={{ fontFamily: "'Space Mono'" }}
+              >
+                {t.label}
+              </TabsTrigger>
             ))}
-          </Tabs>
-        )}
-      </PageCard>
-    </div>
-  );
-}
+          </TabsList>
 
-type LeaderboardTableProps = {
-  entries: import("@/lib/data/faction-leaderboard.functions").FactionLeaderboardEntry[];
-  columnLabel: string;
-  getValue: (
-    entry: import("@/lib/data/faction-leaderboard.functions").FactionLeaderboardEntry,
-  ) => string | null;
-};
-
-function LeaderboardTable({ entries, columnLabel, getValue }: LeaderboardTableProps) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm border-collapse">
-        <thead>
-          <tr className="border-b-2 border-primary/30">
-            <th
-              className="text-left px-3 py-2 text-xs text-muted-foreground uppercase tracking-wider"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
-              #
-            </th>
-            <th
-              className="text-left px-3 py-2 text-xs text-muted-foreground uppercase tracking-wider"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
-              Joueur
-            </th>
-            <th
-              className="text-left px-3 py-2 text-xs text-muted-foreground uppercase tracking-wider"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
-              Grade
-            </th>
-            <th
-              className="text-right px-3 py-2 text-xs text-muted-foreground uppercase tracking-wider"
-              style={{ fontFamily: "'Space Mono'" }}
-            >
-              {columnLabel}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((entry, i) => (
-            <tr
-              key={entry.mc_uuid || entry.ig_name || i}
-              className="border-b border-border/50 hover:bg-muted/20"
-            >
-              <td className="px-3 py-2 font-mono text-muted-foreground tabular-nums w-10">
-                {i + 1}
-              </td>
-              <td className="px-3 py-2">
-                <div className="flex items-center gap-2">
-                  {entry.mc_uuid && (
-                    <img
-                      src={avatarUrl(entry.mc_uuid, 32)}
-                      className="size-8 border border-border shrink-0"
-                      alt=""
-                    />
-                  )}
-                  <span className="font-semibold" style={{ fontFamily: "'Space Grotesk'" }}>
-                    {entry.ig_name ?? entry.discord_username ?? "—"}
-                  </span>
-                </div>
-              </td>
-              <td className="px-3 py-2">
-                {entry.current_grade ? (
-                  <Badge
-                    variant="secondary"
-                    className="rounded-none text-[10px] uppercase tracking-wider"
-                  >
-                    {entry.current_grade}
-                  </Badge>
-                ) : (
-                  "—"
-                )}
-              </td>
-              <td className="px-3 py-2 text-right font-mono font-bold text-primary tabular-nums">
-                {getValue(entry) ?? "—"}
-              </td>
-            </tr>
+          {TABS.map((t) => (
+            <TabsContent key={t.id} value={t.id}>
+              <LeaderboardTable
+                entries={entries}
+                getValue={t.getValue}
+                formatValue={t.formatValue}
+              />
+            </TabsContent>
           ))}
-        </tbody>
-      </table>
+        </Tabs>
+      </PageCard>
+
+      {/* Sans profil MC */}
+      {withoutUuid.length > 0 && (
+        <PageCard>
+          <SectionLabel>sans profil mc</SectionLabel>
+          <div className="divide-y divide-border">
+            {withoutUuid.map((m) => (
+              <div key={m.discord_id} className="flex items-center gap-3 py-2 px-1">
+                {m.avatar_url ? (
+                  <img src={m.avatar_url} className="size-8 border border-border shrink-0" alt="" />
+                ) : (
+                  <div className="size-8 bg-secondary border border-border shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div
+                    className="text-sm font-bold uppercase truncate"
+                    style={{ fontFamily: "'Space Grotesk'" }}
+                  >
+                    {m.ig_name ?? m.discord_username}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-mono">
+                    @{m.discord_username}
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wider">
+                  pseudo IG manquant
+                </span>
+              </div>
+            ))}
+          </div>
+        </PageCard>
+      )}
     </div>
   );
 }
