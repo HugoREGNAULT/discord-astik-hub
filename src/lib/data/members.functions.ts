@@ -3,7 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db.server";
 import { requirePermission, requireSelfOrPermission, logAction } from "@/lib/auth/require.server";
 import { canAccess } from "@/lib/auth/permissions";
-import { filterFactionMembers, isFactionMember } from "@/lib/data/faction-members";
+import { isFactionMember } from "@/lib/data/faction-members";
 import type { Json } from "@/integrations/supabase/types";
 import { fetchPaladium, dashUuid } from "@/lib/paladium/paladium.server";
 
@@ -23,18 +23,15 @@ export const listMembers = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     const needle = data.q?.trim().toLowerCase();
-    // Exclure les rows synchronisés depuis le serveur public sans aucune donnée
-    // faction (ni grade, ni pseudo IG, ni date d'arrivée, ni UUID MC).
-    // Ce sont des membres Discord du serveur public, pas des membres de la faction.
-    const factionOnly = filterFactionMembers(rows ?? []);
+    const all = rows ?? [];
     const filtered = needle
-      ? factionOnly.filter(
+      ? all.filter(
           (m) =>
             m.discord_id.includes(needle) ||
             (m.discord_username ?? "").toLowerCase().includes(needle) ||
             (m.ig_name ?? "").toLowerCase().includes(needle),
         )
-      : factionOnly;
+      : all;
     return { members: filtered };
   });
 
