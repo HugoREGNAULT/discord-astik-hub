@@ -28,6 +28,7 @@ import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedClassementRouteImport } from './routes/_authenticated/classement'
+import { Route as AuthenticatedClassementPointsRouteImport } from './routes/_authenticated/classement-points'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
@@ -181,6 +182,12 @@ const AuthenticatedClassementRoute = AuthenticatedClassementRouteImport.update({
   path: '/classement',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedClassementPointsRoute =
+  AuthenticatedClassementPointsRouteImport.update({
+    id: '/classement-points',
+    path: '/classement-points',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
   id: '/blacklist',
   path: '/blacklist',
@@ -499,6 +506,7 @@ export interface FileRoutesByFullPath {
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/classement': typeof AuthenticatedClassementRoute
+  '/classement-points': typeof AuthenticatedClassementPointsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -574,6 +582,7 @@ export interface FileRoutesByTo {
   '/backlog': typeof AuthenticatedBacklogRoute
   '/blacklist': typeof AuthenticatedBlacklistRoute
   '/classement': typeof AuthenticatedClassementRoute
+  '/classement-points': typeof AuthenticatedClassementPointsRoute
   '/config': typeof AuthenticatedConfigRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/me': typeof AuthenticatedMeRoute
@@ -727,6 +736,7 @@ export interface FileRouteTypes {
     | '/backlog'
     | '/blacklist'
     | '/classement'
+    | '/classement-points'
     | '/config'
     | '/logs'
     | '/me'
@@ -802,6 +812,7 @@ export interface FileRouteTypes {
     | '/backlog'
     | '/blacklist'
     | '/classement'
+    | '/classement-points'
     | '/config'
     | '/logs'
     | '/me'
@@ -877,6 +888,7 @@ export interface FileRouteTypes {
     | '/_authenticated/backlog'
     | '/_authenticated/blacklist'
     | '/_authenticated/classement'
+    | '/_authenticated/classement-points'
     | '/_authenticated/config'
     | '/_authenticated/logs'
     | '/_authenticated/me'
@@ -1117,6 +1129,13 @@ declare module '@tanstack/react-router' {
       path: '/classement'
       fullPath: '/classement'
       preLoaderRoute: typeof AuthenticatedClassementRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/classement-points': {
+      id: '/_authenticated/classement-points'
+      path: '/classement-points'
+      fullPath: '/classement-points'
+      preLoaderRoute: typeof AuthenticatedClassementPointsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/blacklist': {
@@ -1584,6 +1603,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
   AuthenticatedClassementRoute: typeof AuthenticatedClassementRoute
+  AuthenticatedClassementPointsRoute: typeof AuthenticatedClassementPointsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
@@ -1604,6 +1624,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
   AuthenticatedClassementRoute: AuthenticatedClassementRoute,
+  AuthenticatedClassementPointsRoute: AuthenticatedClassementPointsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
