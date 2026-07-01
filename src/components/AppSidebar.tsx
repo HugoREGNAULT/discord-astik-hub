@@ -16,6 +16,7 @@ import {
   Trophy,
   Star,
   Activity,
+  Hammer,
 } from "lucide-react";
 
 import {
@@ -49,6 +50,10 @@ type Section = {
 };
 
 const SECTIONS: Section[] = [
+  {
+    label: "// projets",
+    items: [{ title: "Projets Build", url: "/projets", icon: Hammer, perm: "profile.self" }],
+  },
   {
     label: "// punkastik",
     items: [

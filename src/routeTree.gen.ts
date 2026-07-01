@@ -81,6 +81,8 @@ import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/publ
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
 import { Route as ApiStaffMembersIdWarningsRouteImport } from './routes/api/staff/members.$id.warnings'
 import { Route as ApiStaffMembersIdNotesRouteImport } from './routes/api/staff/members.$id.notes'
+import { Route as AuthenticatedProjetsRouteImport } from './routes/_authenticated/projets'
+import { Route as AuthenticatedProjetsIdRouteImport } from './routes/_authenticated/projets.$id'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
 import { Route as ApiPublicBotQueryDonValiderRouteImport } from './routes/api/public/bot/query/don-valider'
@@ -218,6 +220,16 @@ const AuthenticatedAbsencesRoute = AuthenticatedAbsencesRouteImport.update({
   id: '/absences',
   path: '/absences',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedProjetsRoute = AuthenticatedProjetsRouteImport.update({
+  id: '/projets',
+  path: '/projets',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedProjetsIdRoute = AuthenticatedProjetsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedProjetsRoute,
 } as any)
 const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
   id: '/',
@@ -519,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
+  '/projets': typeof AuthenticatedProjetsRouteWithChildren
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
@@ -528,6 +541,7 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
+  '/projets/$id': typeof AuthenticatedProjetsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -596,6 +610,7 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
+  '/projets': typeof AuthenticatedProjetsRouteWithChildren
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
@@ -604,6 +619,7 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
+  '/projets/$id': typeof AuthenticatedProjetsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -672,6 +688,7 @@ export interface FileRoutesById {
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/points': typeof AuthenticatedPointsRoute
+  '/_authenticated/projets': typeof AuthenticatedProjetsRouteWithChildren
   '/_authenticated/recruitment': typeof AuthenticatedRecruitmentRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRouteWithChildren
@@ -681,6 +698,7 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
+  '/_authenticated/projets/$id': typeof AuthenticatedProjetsIdRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -751,6 +769,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/members'
     | '/points'
+    | '/projets'
     | '/recruitment'
     | '/shop'
     | '/staff'
@@ -760,6 +779,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/admin/audit'
     | '/members/$id'
+    | '/projets/$id'
     | '/staff/announce'
     | '/staff/appeals'
     | '/tools/alerts'
@@ -828,6 +848,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/members'
     | '/points'
+    | '/projets'
     | '/recruitment'
     | '/shop'
     | '/staff'
@@ -836,6 +857,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/admin/audit'
     | '/members/$id'
+    | '/projets/$id'
     | '/staff/announce'
     | '/staff/appeals'
     | '/tools/alerts'
@@ -905,6 +927,7 @@ export interface FileRouteTypes {
     | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/points'
+    | '/_authenticated/projets'
     | '/_authenticated/recruitment'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
@@ -914,6 +937,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/_authenticated/admin/audit'
     | '/_authenticated/members/$id'
+    | '/_authenticated/projets/$id'
     | '/_authenticated/staff/announce'
     | '/_authenticated/staff/appeals'
     | '/_authenticated/tools/alerts'
@@ -1190,6 +1214,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/absences'
       preLoaderRoute: typeof AuthenticatedAbsencesRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/projets': {
+      id: '/_authenticated/projets'
+      path: '/projets'
+      fullPath: '/projets'
+      preLoaderRoute: typeof AuthenticatedProjetsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/projets/$id': {
+      id: '/_authenticated/projets/$id'
+      path: '/$id'
+      fullPath: '/projets/$id'
+      preLoaderRoute: typeof AuthenticatedProjetsIdRouteImport
+      parentRoute: typeof AuthenticatedProjetsRoute
     }
     '/_authenticated/tools/': {
       id: '/_authenticated/tools/'
@@ -1614,6 +1652,17 @@ const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
 const AuthenticatedToolsRouteWithChildren =
   AuthenticatedToolsRoute._addFileChildren(AuthenticatedToolsRouteChildren)
 
+interface AuthenticatedProjetsRouteChildren {
+  AuthenticatedProjetsIdRoute: typeof AuthenticatedProjetsIdRoute
+}
+
+const AuthenticatedProjetsRouteChildren: AuthenticatedProjetsRouteChildren = {
+  AuthenticatedProjetsIdRoute: AuthenticatedProjetsIdRoute,
+}
+
+const AuthenticatedProjetsRouteWithChildren =
+  AuthenticatedProjetsRoute._addFileChildren(AuthenticatedProjetsRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
@@ -1628,6 +1677,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
+  AuthenticatedProjetsRoute: typeof AuthenticatedProjetsRouteWithChildren
   AuthenticatedRecruitmentRoute: typeof AuthenticatedRecruitmentRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRouteWithChildren
@@ -1650,6 +1700,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
+  AuthenticatedProjetsRoute: AuthenticatedProjetsRouteWithChildren,
   AuthenticatedRecruitmentRoute: AuthenticatedRecruitmentRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRouteWithChildren,
