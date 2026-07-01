@@ -3,7 +3,7 @@ import { Guard } from "@/components/Guard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   getProject,
   listProjectMaterials,
@@ -589,71 +589,116 @@ function EditProjectForm({ project, onSaved }: { project: Project; onSaved: () =
 
 // ── Formulaire ajout matériau ─────────────────────────────────────────────────
 
+type ConfigValue = { id: string; name: string; points: number; image_url: string | null };
+
+type UnitType = "item" | "liquide" | "divers";
+
+const BLANK_MANUAL = {
+  item_name: "",
+  item_image_url: "",
+  unit_type: "item" as UnitType,
+  quantity_required: "",
+  points_per_unit: "",
+};
+
+function ModeTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "px-3 py-1 text-[10px] font-mono uppercase tracking-[0.2em] border transition-colors",
+        active
+          ? "border-primary text-primary bg-primary/10"
+          : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/40",
+      ].join(" ")}
+    >
+      {children}
+    </button>
+  );
+}
+
 function AddMaterialForm({ projectId, onSaved }: { projectId: string; onSaved: () => void }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    item_name: "",
-    item_image_url: "",
-    unit_type: "item" as "item" | "liquide" | "divers",
-    quantity_required: "",
-    points_per_unit: "",
-    display_order: "0",
-  });
-  const [suggestion, setSuggestion] = useState<{
-    name: string;
-    points: number;
-    image_url: string | null;
-  } | null>(null);
+  const [mode, setMode] = useState<"config" | "manual">("config");
+
+  // config mode
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<ConfigValue | null>(null);
+  const [configQty, setConfigQty] = useState("");
+  const [configUnitType, setConfigUnitType] = useState<UnitType>("item");
+
+  // manual mode
+  const [manual, setManual] = useState(BLANK_MANUAL);
 
   const upsertFn = useServerFn(upsertMaterial);
   const searchFn = useServerFn(searchConfigValues);
 
   const searchQuery = useQuery({
-    queryKey: ["config-values-search", form.item_name],
-    queryFn: () => searchFn({ data: { q: form.item_name } }),
-    enabled: form.item_name.length >= 2,
+    queryKey: ["config-values-search", search],
+    queryFn: () => searchFn({ data: { q: search } }),
+    enabled: open && mode === "config" && !selected,
+    staleTime: 30_000,
   });
+  const results = searchQuery.data?.values ?? [];
 
-  useEffect(() => {
-    const values = searchQuery.data?.values ?? [];
-    const exact = values.find((v) => v.name.toLowerCase() === form.item_name.toLowerCase());
-    setSuggestion(exact ?? null);
-  }, [searchQuery.data, form.item_name]);
+  function resetConfig() {
+    setSearch("");
+    setSelected(null);
+    setConfigQty("");
+    setConfigUnitType("item");
+  }
 
-  const applySuggestion = () => {
-    if (!suggestion) return;
-    setForm((f) => ({
-      ...f,
-      points_per_unit: String(suggestion.points),
-      item_image_url: suggestion.image_url ?? f.item_image_url,
-    }));
-  };
+  function resetManual() {
+    setManual(BLANK_MANUAL);
+  }
+
+  function switchMode(m: "config" | "manual") {
+    setMode(m);
+    resetConfig();
+    resetManual();
+  }
 
   const mut = useMutation({
-    mutationFn: () =>
-      upsertFn({
+    mutationFn: () => {
+      if (mode === "config" && selected) {
+        return upsertFn({
+          data: {
+            project_id: projectId,
+            item_name: selected.name,
+            item_image_url: selected.image_url,
+            unit_type: configUnitType,
+            quantity_required: parseFloat(configQty),
+            points_per_unit: selected.points,
+            display_order: 0,
+          },
+        } as any);
+      }
+      return upsertFn({
         data: {
           project_id: projectId,
-          item_name: form.item_name,
-          item_image_url: form.item_image_url || null,
-          unit_type: form.unit_type,
-          quantity_required: parseFloat(form.quantity_required),
-          points_per_unit: parseFloat(form.points_per_unit),
-          display_order: parseInt(form.display_order, 10) || 0,
+          item_name: manual.item_name,
+          item_image_url: manual.item_image_url || null,
+          unit_type: manual.unit_type,
+          quantity_required: parseFloat(manual.quantity_required),
+          points_per_unit: parseFloat(manual.points_per_unit),
+          display_order: 0,
         },
-      } as any),
+      } as any);
+    },
     onSuccess: () => {
-      toast.success("Matériau ajouté");
-      setForm({
-        item_name: "",
-        item_image_url: "",
-        unit_type: "item",
-        quantity_required: "",
-        points_per_unit: "",
-        display_order: "0",
-      });
-      setSuggestion(null);
-      setOpen(false);
+      const name = mode === "config" ? selected?.name : manual.item_name;
+      toast.success(`"${name}" ajouté — continuez ou fermez`);
+      resetConfig();
+      resetManual();
       onSaved();
     },
     onError: (e) => toast.error(toUserMessage(e)),
@@ -671,53 +716,196 @@ function AddMaterialForm({ projectId, onSaved }: { projectId: string; onSaved: (
 
   return (
     <PageCard>
-      <SectionLabel>Ajouter un matériau</SectionLabel>
+      <div className="flex items-center justify-between mb-4">
+        <SectionLabel>Ajouter des matériaux</SectionLabel>
+        <div className="flex gap-1">
+          <ModeTab active={mode === "config"} onClick={() => switchMode("config")}>
+            Depuis config
+          </ModeTab>
+          <ModeTab active={mode === "manual"} onClick={() => switchMode("manual")}>
+            Manuel
+          </ModeTab>
+        </div>
+      </div>
+
+      {mode === "config" ? (
+        <ConfigPicker
+          search={search}
+          setSearch={setSearch}
+          results={results}
+          isLoading={searchQuery.isFetching}
+          selected={selected}
+          onSelect={setSelected}
+          onDeselect={resetConfig}
+          qty={configQty}
+          setQty={setConfigQty}
+          unitType={configUnitType}
+          setUnitType={setConfigUnitType}
+          onSubmit={() => mut.mutate()}
+          isPending={mut.isPending}
+          onClose={() => setOpen(false)}
+        />
+      ) : (
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mut.mutate();
+          }}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
+                Nom item
+              </label>
+              <DaInput
+                value={manual.item_name}
+                onChange={(e) => setManual((f) => ({ ...f, item_name: e.target.value }))}
+                placeholder="Stone Bricks"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
+                Type
+              </label>
+              <DaSelect
+                value={manual.unit_type}
+                onChange={(e) =>
+                  setManual((f) => ({ ...f, unit_type: e.target.value as UnitType }))
+                }
+              >
+                <option value="item">Item</option>
+                <option value="liquide">Liquide</option>
+                <option value="divers">Divers</option>
+              </DaSelect>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
+                Quantité requise
+              </label>
+              <DaInput
+                type="number"
+                min="1"
+                value={manual.quantity_required}
+                onChange={(e) => setManual((f) => ({ ...f, quantity_required: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
+                Points / unité
+              </label>
+              <DaInput
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={manual.points_per_unit}
+                onChange={(e) => setManual((f) => ({ ...f, points_per_unit: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
+              Image URL (optionnel)
+            </label>
+            <DaInput
+              value={manual.item_image_url}
+              onChange={(e) => setManual((f) => ({ ...f, item_image_url: e.target.value }))}
+              placeholder="https://…"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <DaButton
+              type="submit"
+              disabled={
+                mut.isPending ||
+                !manual.item_name ||
+                !manual.quantity_required ||
+                !manual.points_per_unit
+              }
+            >
+              {mut.isPending ? "Ajout…" : "Ajouter"}
+            </DaButton>
+            <DaButton variant="ghost" onClick={() => setOpen(false)}>
+              Fermer
+            </DaButton>
+          </div>
+        </form>
+      )}
+    </PageCard>
+  );
+}
+
+function ConfigPicker({
+  search,
+  setSearch,
+  results,
+  isLoading,
+  selected,
+  onSelect,
+  onDeselect,
+  qty,
+  setQty,
+  unitType,
+  setUnitType,
+  onSubmit,
+  isPending,
+  onClose,
+}: {
+  search: string;
+  setSearch: (v: string) => void;
+  results: ConfigValue[];
+  isLoading: boolean;
+  selected: ConfigValue | null;
+  onSelect: (v: ConfigValue) => void;
+  onDeselect: () => void;
+  qty: string;
+  setQty: (v: string) => void;
+  unitType: UnitType;
+  setUnitType: (v: UnitType) => void;
+  onSubmit: () => void;
+  isPending: boolean;
+  onClose: () => void;
+}) {
+  if (selected) {
+    return (
       <form
         className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
-          mut.mutate();
+          onSubmit();
         }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
-              Nom item
-            </label>
-            <DaInput
-              value={form.item_name}
-              onChange={(e) => setForm((f) => ({ ...f, item_name: e.target.value }))}
-              placeholder="Stone Bricks"
-              required
+        {/* Item sélectionné */}
+        <div className="flex items-center gap-3 border border-primary/40 bg-primary/5 px-3 py-2">
+          {selected.image_url ? (
+            <img
+              src={selected.image_url}
+              alt={selected.name}
+              className="size-8 object-contain border border-border bg-secondary shrink-0"
             />
-            {suggestion && (
-              <button
-                type="button"
-                onClick={applySuggestion}
-                className="text-[10px] font-mono text-primary hover:underline text-left"
-              >
-                // Pré-remplir depuis config : {suggestion.points} pts/u
-              </button>
-            )}
+          ) : (
+            <div className="size-8 border border-border bg-secondary shrink-0" />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-sm text-foreground truncate">{selected.name}</div>
+            <div className="text-[10px] font-mono text-primary">
+              {selected.points} pts/u — figé à l'ajout
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
-              Type
-            </label>
-            <DaSelect
-              value={form.unit_type}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  unit_type: e.target.value as "item" | "liquide" | "divers",
-                }))
-              }
-            >
-              <option value="item">Item</option>
-              <option value="liquide">Liquide</option>
-              <option value="divers">Divers</option>
-            </DaSelect>
-          </div>
+          <button
+            type="button"
+            onClick={onDeselect}
+            className="text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors shrink-0 whitespace-nowrap"
+          >
+            ✕ Changer
+          </button>
+        </div>
+
+        {/* Quantité + type */}
+        <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
             <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
               Quantité requise
@@ -725,50 +913,84 @@ function AddMaterialForm({ projectId, onSaved }: { projectId: string; onSaved: (
             <DaInput
               type="number"
               min="1"
-              value={form.quantity_required}
-              onChange={(e) => setForm((f) => ({ ...f, quantity_required: e.target.value }))}
+              value={qty}
+              onChange={(e) => setQty(e.target.value)}
+              autoFocus
               required
             />
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
-              Points / unité
+              Type
             </label>
-            <DaInput
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={form.points_per_unit}
-              onChange={(e) => setForm((f) => ({ ...f, points_per_unit: e.target.value }))}
-              required
-            />
+            <DaSelect value={unitType} onChange={(e) => setUnitType(e.target.value as UnitType)}>
+              <option value="item">Item</option>
+              <option value="liquide">Liquide</option>
+              <option value="divers">Divers</option>
+            </DaSelect>
           </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground font-mono">
-            Image URL (optionnel)
-          </label>
-          <DaInput
-            value={form.item_image_url}
-            onChange={(e) => setForm((f) => ({ ...f, item_image_url: e.target.value }))}
-            placeholder="https://…"
-          />
-        </div>
+
         <div className="flex gap-2 pt-1">
-          <DaButton
-            type="submit"
-            disabled={
-              mut.isPending || !form.item_name || !form.quantity_required || !form.points_per_unit
-            }
-          >
-            {mut.isPending ? "Ajout…" : "Ajouter"}
+          <DaButton type="submit" disabled={isPending || !qty}>
+            {isPending ? "Ajout…" : "Ajouter"}
           </DaButton>
-          <DaButton variant="ghost" onClick={() => setOpen(false)}>
-            Annuler
+          <DaButton variant="ghost" onClick={onClose}>
+            Fermer
           </DaButton>
         </div>
       </form>
-    </PageCard>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <DaInput
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Chercher un item dans le catalogue…"
+        autoFocus
+      />
+      <div className="border border-border divide-y divide-border/40 max-h-64 overflow-y-auto">
+        {results.length === 0 && !isLoading && (
+          <div className="px-3 py-3 text-xs text-muted-foreground font-mono">
+            {search.length === 0
+              ? "// Tapez pour chercher un item"
+              : "// Aucun résultat — essayez le mode Manuel"}
+          </div>
+        )}
+        {isLoading && results.length === 0 && (
+          <div className="px-3 py-3 text-xs text-muted-foreground font-mono">// Chargement…</div>
+        )}
+        {results.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => onSelect(v)}
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs hover:bg-secondary transition-colors text-left group"
+          >
+            {v.image_url ? (
+              <img
+                src={v.image_url}
+                alt={v.name}
+                className="size-6 object-contain border border-border bg-secondary shrink-0"
+              />
+            ) : (
+              <div className="size-6 border border-border bg-secondary shrink-0" />
+            )}
+            <span className="flex-1 font-medium text-foreground group-hover:text-primary transition-colors truncate">
+              {v.name}
+            </span>
+            <span className="font-mono text-primary shrink-0">{v.points} pts/u</span>
+          </button>
+        ))}
+      </div>
+      <div className="flex justify-end pt-1">
+        <DaButton variant="ghost" onClick={onClose}>
+          Fermer
+        </DaButton>
+      </div>
+    </div>
   );
 }
 
