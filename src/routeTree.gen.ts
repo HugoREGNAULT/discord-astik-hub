@@ -83,6 +83,7 @@ import { Route as ApiStaffMembersIdWarningsRouteImport } from './routes/api/staf
 import { Route as ApiStaffMembersIdNotesRouteImport } from './routes/api/staff/members.$id.notes'
 import { Route as AuthenticatedProjetsRouteImport } from './routes/_authenticated/projets'
 import { Route as AuthenticatedProjetsIdRouteImport } from './routes/_authenticated/projets.$id'
+import { Route as AuthenticatedProjetsIndexRouteImport } from './routes/_authenticated/projets.index'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
 import { Route as ApiPublicBotQueryDonValiderRouteImport } from './routes/api/public/bot/query/don-valider'
@@ -229,6 +230,11 @@ const AuthenticatedProjetsRoute = AuthenticatedProjetsRouteImport.update({
 const AuthenticatedProjetsIdRoute = AuthenticatedProjetsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
+  getParentRoute: () => AuthenticatedProjetsRoute,
+} as any)
+const AuthenticatedProjetsIndexRoute = AuthenticatedProjetsIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => AuthenticatedProjetsRoute,
 } as any)
 const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
@@ -565,6 +571,7 @@ export interface FileRoutesByFullPath {
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
+  '/projets/': typeof AuthenticatedProjetsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -610,7 +617,7 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
-  '/projets': typeof AuthenticatedProjetsRouteWithChildren
+  '/projets': typeof AuthenticatedProjetsIndexRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
@@ -699,6 +706,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/projets/$id': typeof AuthenticatedProjetsIdRoute
+  '/_authenticated/projets/': typeof AuthenticatedProjetsIndexRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -803,6 +811,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/tools/'
+    | '/projets/'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -961,6 +970,7 @@ export interface FileRouteTypes {
     | '/api/test/login'
     | '/api/test/seed-poll'
     | '/_authenticated/tools/'
+    | '/_authenticated/projets/'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -1227,6 +1237,13 @@ declare module '@tanstack/react-router' {
       path: '/$id'
       fullPath: '/projets/$id'
       preLoaderRoute: typeof AuthenticatedProjetsIdRouteImport
+      parentRoute: typeof AuthenticatedProjetsRoute
+    }
+    '/_authenticated/projets/': {
+      id: '/_authenticated/projets/'
+      path: '/'
+      fullPath: '/projets/'
+      preLoaderRoute: typeof AuthenticatedProjetsIndexRouteImport
       parentRoute: typeof AuthenticatedProjetsRoute
     }
     '/_authenticated/tools/': {
@@ -1654,10 +1671,12 @@ const AuthenticatedToolsRouteWithChildren =
 
 interface AuthenticatedProjetsRouteChildren {
   AuthenticatedProjetsIdRoute: typeof AuthenticatedProjetsIdRoute
+  AuthenticatedProjetsIndexRoute: typeof AuthenticatedProjetsIndexRoute
 }
 
 const AuthenticatedProjetsRouteChildren: AuthenticatedProjetsRouteChildren = {
   AuthenticatedProjetsIdRoute: AuthenticatedProjetsIdRoute,
+  AuthenticatedProjetsIndexRoute: AuthenticatedProjetsIndexRoute,
 }
 
 const AuthenticatedProjetsRouteWithChildren =
