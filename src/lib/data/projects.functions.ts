@@ -283,3 +283,147 @@ export const recordContribution = createServerFn({ method: "POST" })
 
     return { ok: true, points: amount, newBalance: total };
   });
+
+// ── Annulation de contribution ────────────────────────────────────────────────
+
+export const reverseContribution = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ contributionId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const user = await requirePermission("points.manage");
+
+    const { data: row, error: fetchErr } = await db
+      .from("project_contributions" as any)
+      .select("*")
+      .eq("id", data.contributionId)
+      .single();
+    if (fetchErr || !row) throw new Error("Contribution introuvable");
+    const contribution = row as unknown as ProjectContribution;
+
+    // Idempotence : vérifier qu'il n'y a pas déjà un reversal pour cette contribution
+    const { count } = await db
+      .from("points_ledger")
+      .select("id", { count: "exact", head: true })
+      .eq("member_discord_id", contribution.member_discord_id)
+      .eq("action_type", "reversal")
+      .like("reason", `[rev-proj:${data.contributionId}]%`);
+    if (count && count > 0) throw new Error("Cette contribution a déjà été annulée");
+
+    // Noms pour la raison ledger
+    const { data: matRow } = await db
+      .from("project_materials" as any)
+      .select("item_name, quantity_gathered")
+      .eq("id", contribution.material_id)
+      .single();
+    const material = matRow as unknown as Pick<
+      ProjectMaterial,
+      "item_name" | "quantity_gathered"
+    > | null;
+
+    const { data: projRow } = await db
+      .from("projects" as any)
+      .select("name")
+      .eq("id", contribution.project_id)
+      .single();
+    const projectName = (projRow as unknown as { name: string } | null)?.name ?? "Projet";
+
+    // RPC inverse (même pattern que reversePointsTransaction dans points.functions.ts)
+    const { data: newBalance, error: rpcErr } = await db.rpc("apply_points_delta", {
+      p_discord_id: contribution.member_discord_id,
+      p_delta: -contribution.points_awarded,
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (newBalance === null || newBalance === undefined) throw new Error("Membre introuvable");
+    const total = newBalance as number;
+
+    await db.from("points_ledger").insert({
+      member_discord_id: contribution.member_discord_id,
+      staff_discord_id: user.discordId,
+      staff_username: user.username,
+      amount: -contribution.points_awarded,
+      reason: `[rev-proj:${data.contributionId}] Annulation don ${projectName} — ${material?.item_name ?? ""}`,
+      bonus_pct: 0,
+      total_after: total,
+      action_type: "reversal",
+      pillar: "ig_investment",
+    });
+
+    // Décrémente quantity_gathered (clamp à 0)
+    if (material !== null) {
+      await db
+        .from("project_materials" as any)
+        .update({
+          quantity_gathered: Math.max(0, material.quantity_gathered - contribution.quantity),
+        })
+        .eq("id", contribution.material_id);
+    }
+
+    // Suppression de la ligne (trace conservée dans le ledger)
+    await db
+      .from("project_contributions" as any)
+      .delete()
+      .eq("id", data.contributionId);
+
+    await logAction("project_contribution_reverse", user.discordId, {
+      contributionId: data.contributionId,
+      member: contribution.member_discord_id,
+      points: -contribution.points_awarded,
+    });
+
+    return { ok: true, newBalance: total };
+  });
+
+// ── Suppression matériau ──────────────────────────────────────────────────────
+
+export const deleteMaterial = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ materialId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const user = await requirePermission("points.manage");
+    const { count, error: countErr } = await db
+      .from("project_contributions" as any)
+      .select("id", { count: "exact", head: true })
+      .eq("material_id", data.materialId);
+    if (countErr) throw new Error(countErr.message);
+    if (count && count > 0)
+      throw new Error(
+        `Ce matériau a ${count} don(s) enregistré(s). Annulez d'abord toutes les contributions.`,
+      );
+    const { error } = await db
+      .from("project_materials" as any)
+      .delete()
+      .eq("id", data.materialId);
+    if (error) throw new Error(error.message);
+    await logAction("project_material_delete", user.discordId, { materialId: data.materialId });
+    return { ok: true };
+  });
+
+// ── Archivage / Suppression projet ───────────────────────────────────────────
+
+export const deleteOrArchiveProject = createServerFn({ method: "POST" })
+  .inputValidator((input) => z.object({ projectId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const user = await requirePermission("points.manage");
+    const { count } = await db
+      .from("project_contributions" as any)
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", data.projectId);
+
+    if (count && count > 0) {
+      // Contributions existantes → archiver pour préserver l'historique de points
+      const { error } = await db
+        .from("projects" as any)
+        .update({ status: "archivé" })
+        .eq("id", data.projectId);
+      if (error) throw new Error(error.message);
+      await logAction("project_archive", user.discordId, { projectId: data.projectId });
+      return { ok: true, action: "archived" as const };
+    }
+
+    // Aucune contribution → suppression complète
+    const { error } = await db
+      .from("projects" as any)
+      .delete()
+      .eq("id", data.projectId);
+    if (error) throw new Error(error.message);
+    await logAction("project_delete", user.discordId, { projectId: data.projectId });
+    return { ok: true, action: "deleted" as const };
+  });

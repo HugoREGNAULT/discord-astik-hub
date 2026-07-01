@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Guard } from "@/components/Guard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
@@ -11,8 +12,12 @@ import {
   recordContribution,
   listProjectContributions,
   searchConfigValues,
+  reverseContribution,
+  deleteMaterial,
+  deleteOrArchiveProject,
   type Project,
   type ProjectMaterial,
+  type ProjectContribution,
 } from "@/lib/data/projects.functions";
 import { listMembers } from "@/lib/data/members.functions";
 import {
@@ -30,7 +35,7 @@ import {
 import { hasPerm, useCurrentUser } from "@/lib/auth/use-current-user";
 import { toast } from "sonner";
 import { toUserMessage } from "@/lib/errors";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/projets/$id")({
   head: () => ({ meta: [{ title: "Projet · PunkAstik" }] }),
@@ -41,7 +46,7 @@ export const Route = createFileRoute("/_authenticated/projets/$id")({
   ),
 });
 
-// ── Barre de progression style XP violet ──────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function ProgressBar({ pct: p, className = "" }: { pct: number; className?: string }) {
   const clamped = Math.min(100, Math.max(0, p));
@@ -66,6 +71,14 @@ function globalPct(materials: ProjectMaterial[]) {
   return calcPct(totalGathered, totalRequired);
 }
 
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+  });
+}
+
 // ── Page principale ───────────────────────────────────────────────────────────
 
 function ProjetDetailPage() {
@@ -73,10 +86,12 @@ function ProjetDetailPage() {
   const { data: me } = useCurrentUser();
   const isStaff = hasPerm(me, "points.manage");
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const getProjectFn = useServerFn(getProject);
   const listMaterialsFn = useServerFn(listProjectMaterials);
   const listContribFn = useServerFn(listProjectContributions);
+  const listMembersFn = useServerFn(listMembers);
 
   const {
     data: projData,
@@ -97,14 +112,30 @@ function ProjetDetailPage() {
     queryFn: () => listContribFn({ data: { projectId: id } }),
   });
 
+  const { data: membersData } = useQuery({
+    queryKey: ["members-all-active"],
+    queryFn: () => listMembersFn({ data: { status: "active" } }),
+    enabled: isStaff,
+  });
+
   if (projLoading || matsLoading) return <LoadingBlock label="Chargement projet…" />;
   if (projErr) return <ErrorBlock message={toUserMessage(projErr)} />;
 
   const project = projData?.project;
   if (!project) return <ErrorBlock message="Projet introuvable" />;
   const materials = matsData?.materials ?? [];
+  const contributions = contribData?.contributions ?? [];
   const top = contribData?.top ?? [];
   const gPct = globalPct(materials);
+
+  const membersMap: Record<string, string> = {};
+  for (const m of membersData?.members ?? []) {
+    membersMap[m.discord_id] = m.ig_name ?? m.discord_username ?? m.discord_id;
+  }
+
+  const invalidateMaterials = () => qc.invalidateQueries({ queryKey: ["project-materials", id] });
+  const invalidateContribs = () =>
+    qc.invalidateQueries({ queryKey: ["project-contributions", id] });
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -157,19 +188,19 @@ function ProjetDetailPage() {
         ) : (
           <div className="space-y-4">
             {materials.map((mat) => (
-              <MaterialRow key={mat.id} material={mat} />
+              <MaterialCard
+                key={mat.id}
+                material={mat}
+                isStaff={isStaff}
+                onDeleted={invalidateMaterials}
+              />
             ))}
           </div>
         )}
       </PageCard>
 
       {/* Ajouter matériau (staff) */}
-      {isStaff && (
-        <AddMaterialForm
-          projectId={id}
-          onSaved={() => qc.invalidateQueries({ queryKey: ["project-materials", id] })}
-        />
-      )}
+      {isStaff && <AddMaterialForm projectId={id} onSaved={invalidateMaterials} />}
 
       {/* Enregistrer un don (staff) */}
       {isStaff && materials.length > 0 && (
@@ -177,8 +208,21 @@ function ProjetDetailPage() {
           projectId={id}
           materials={materials}
           onSaved={() => {
-            qc.invalidateQueries({ queryKey: ["project-materials", id] });
-            qc.invalidateQueries({ queryKey: ["project-contributions", id] });
+            invalidateMaterials();
+            invalidateContribs();
+          }}
+        />
+      )}
+
+      {/* Journal des dons (staff) */}
+      {isStaff && contributions.length > 0 && (
+        <ContributionsLog
+          contributions={contributions}
+          materials={materials}
+          membersMap={membersMap}
+          onReversed={() => {
+            invalidateMaterials();
+            invalidateContribs();
           }}
         />
       )}
@@ -191,7 +235,8 @@ function ProjetDetailPage() {
             {top.map((c, i) => (
               <div key={c.discordId} className="flex items-center justify-between text-sm">
                 <span className="font-mono text-muted-foreground text-xs">
-                  #{i + 1} <span className="text-foreground">{c.discordId}</span>
+                  #{i + 1}{" "}
+                  <span className="text-foreground">{membersMap[c.discordId] ?? c.discordId}</span>
                 </span>
                 <span className="font-bold text-primary font-mono text-xs">{c.pts} pts</span>
               </div>
@@ -199,15 +244,50 @@ function ProjetDetailPage() {
           </div>
         </PageCard>
       )}
+
+      {/* Zone dangereuse (staff) */}
+      {isStaff && (
+        <DangerZone
+          projectId={id}
+          projectName={project.name}
+          onDone={(action) => {
+            if (action === "deleted") {
+              navigate({ to: "/projets" });
+            } else {
+              qc.invalidateQueries({ queryKey: ["project", id] });
+              qc.invalidateQueries({ queryKey: ["projects"] });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
 
-// ── Ligne matériau ────────────────────────────────────────────────────────────
+// ── Carte matériau avec suppression ──────────────────────────────────────────
 
-function MaterialRow({ material }: { material: ProjectMaterial }) {
+function MaterialCard({
+  material,
+  isStaff,
+  onDeleted,
+}: {
+  material: ProjectMaterial;
+  isStaff: boolean;
+  onDeleted: () => void;
+}) {
+  const deleteFn = useServerFn(deleteMaterial);
+  const mut = useMutation({
+    mutationFn: () => deleteFn({ data: { materialId: material.id } } as any),
+    onSuccess: () => {
+      toast.success(`Matériau "${material.item_name}" supprimé`);
+      onDeleted();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
   const p = calcPct(material.quantity_gathered, material.quantity_required);
   const done = material.quantity_gathered >= material.quantity_required;
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
@@ -231,6 +311,24 @@ function MaterialRow({ material }: { material: ProjectMaterial }) {
               <span className="text-[10px] font-mono text-muted-foreground">
                 {material.points_per_unit} pts/u
               </span>
+              {isStaff && (
+                <ConfirmDialog
+                  trigger={
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
+                      disabled={mut.isPending}
+                      title="Supprimer ce matériau"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  }
+                  title={`Supprimer « ${material.item_name} » ?`}
+                  description="Impossible si des dons sont déjà enregistrés sur ce matériau — annulez-les d'abord dans le journal des dons."
+                  confirmLabel="Supprimer"
+                  onConfirm={() => mut.mutateAsync().then(() => {})}
+                />
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -242,6 +340,149 @@ function MaterialRow({ material }: { material: ProjectMaterial }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Journal des dons (staff) ──────────────────────────────────────────────────
+
+function ContributionsLog({
+  contributions,
+  materials,
+  membersMap,
+  onReversed,
+}: {
+  contributions: ProjectContribution[];
+  materials: ProjectMaterial[];
+  membersMap: Record<string, string>;
+  onReversed: () => void;
+}) {
+  const matMap: Record<string, string> = {};
+  for (const m of materials) matMap[m.id] = m.item_name;
+
+  return (
+    <PageCard>
+      <SectionLabel>Journal des dons ({contributions.length})</SectionLabel>
+      <div className="divide-y divide-border/50">
+        {contributions.map((c) => (
+          <ContributionRow
+            key={c.id}
+            contribution={c}
+            materialName={matMap[c.material_id] ?? "—"}
+            memberName={membersMap[c.member_discord_id] ?? c.member_discord_id}
+            onReversed={onReversed}
+          />
+        ))}
+      </div>
+    </PageCard>
+  );
+}
+
+function ContributionRow({
+  contribution,
+  materialName,
+  memberName,
+  onReversed,
+}: {
+  contribution: ProjectContribution;
+  materialName: string;
+  memberName: string;
+  onReversed: () => void;
+}) {
+  const reverseFn = useServerFn(reverseContribution);
+  const mut = useMutation({
+    mutationFn: () => reverseFn({ data: { contributionId: contribution.id } } as any),
+    onSuccess: (res: any) => {
+      toast.success(
+        `Don annulé — ${contribution.points_awarded} pts retirés. Nouveau solde : ${res.newBalance}`,
+      );
+      onReversed();
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  return (
+    <div className="flex items-center justify-between gap-3 py-2 text-xs">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 min-w-0">
+        <span className="font-mono text-muted-foreground shrink-0">
+          {fmtDate(contribution.created_at)}
+        </span>
+        <span className="font-bold text-foreground truncate">{memberName}</span>
+        <span className="text-muted-foreground">→ {materialName}</span>
+        <span className="font-mono text-primary shrink-0">
+          ×{contribution.quantity} = +{contribution.points_awarded} pts
+        </span>
+      </div>
+      <ConfirmDialog
+        trigger={
+          <button
+            type="button"
+            className="shrink-0 text-[10px] font-mono text-destructive border border-destructive/40 px-2 py-0.5 hover:bg-destructive/10 transition-colors disabled:opacity-50 whitespace-nowrap"
+            disabled={mut.isPending}
+          >
+            {mut.isPending ? "…" : "Annuler"}
+          </button>
+        }
+        title="Annuler ce don ?"
+        description={
+          <span>
+            Retire <strong>{contribution.points_awarded} pts</strong> à{" "}
+            <strong>{memberName}</strong> et décrémente ×{contribution.quantity}{" "}
+            <strong>{materialName}</strong>.
+            <br />
+            La trace reste conservée dans le ledger de points.
+          </span>
+        }
+        confirmLabel="Confirmer l'annulation"
+        onConfirm={() => mut.mutateAsync()}
+      />
+    </div>
+  );
+}
+
+// ── Zone dangereuse ───────────────────────────────────────────────────────────
+
+function DangerZone({
+  projectId,
+  projectName,
+  onDone,
+}: {
+  projectId: string;
+  projectName: string;
+  onDone: (action: "archived" | "deleted") => void;
+}) {
+  const archiveFn = useServerFn(deleteOrArchiveProject);
+  const mut = useMutation({
+    mutationFn: () => archiveFn({ data: { projectId } } as any),
+    onSuccess: (res: any) => {
+      if (res.action === "deleted") {
+        toast.success(`Projet "${projectName}" supprimé définitivement`);
+      } else {
+        toast.success(`Projet "${projectName}" archivé (historique de points préservé)`);
+      }
+      onDone(res.action);
+    },
+    onError: (e) => toast.error(toUserMessage(e)),
+  });
+
+  return (
+    <PageCard className="border-destructive/30">
+      <SectionLabel>Zone dangereuse</SectionLabel>
+      <p className="text-xs text-muted-foreground mb-3">
+        Si le projet a des dons enregistrés, il sera <strong>archivé</strong> pour préserver
+        l'historique de points. S'il n'en a aucun, il sera <strong>supprimé définitivement</strong>.
+      </p>
+      <ConfirmDialog
+        trigger={
+          <DaButton variant="danger" disabled={mut.isPending}>
+            {mut.isPending ? "…" : "Supprimer / Archiver le projet"}
+          </DaButton>
+        }
+        title={`Supprimer ou archiver « ${projectName} » ?`}
+        description="Le projet sera archivé si des dons existent, supprimé sinon. Cette action est irréversible."
+        confirmLabel="Confirmer"
+        onConfirm={() => mut.mutateAsync()}
+      />
+    </PageCard>
   );
 }
 
