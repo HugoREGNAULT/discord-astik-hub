@@ -147,17 +147,17 @@ export const PALADIUM_ROUTES: RouteSpec[] = [
     windowMin: 5,
   },
   {
-    template: "/v1/paladium/trixium/leaderboard/players",
-    match: /^\/v1\/paladium\/trixium\/leaderboard\/players(\?.*)?$/,
+    template: "/v1/paladium/ranking/trixium/player",
+    match: /^\/v1\/paladium\/ranking\/trixium\/player(\?.*)?$/,
     label: "Trixium — joueurs",
-    limit: 300,
+    limit: 10,
     windowMin: 5,
   },
   {
-    template: "/v1/paladium/trixium/leaderboard/factions",
-    match: /^\/v1\/paladium\/trixium\/leaderboard\/factions(\?.*)?$/,
+    template: "/v1/paladium/ranking/trixium/faction",
+    match: /^\/v1\/paladium\/ranking\/trixium\/faction(\?.*)?$/,
     label: "Trixium — factions",
-    limit: 300,
+    limit: 10,
     windowMin: 5,
   },
 ];

@@ -263,11 +263,11 @@ export const PaladiumApi = {
   getFactionQuest: () => paladiumFetch<unknown>(`/v1/paladium/faction/quest`),
   getTrixiumPlayers: () =>
     paladiumFetch<TrixiumEntry[] | { entries: TrixiumEntry[] }>(
-      `/v1/paladium/trixium/leaderboard/players`,
+      `/v1/paladium/ranking/trixium/player`,
     ),
   getTrixiumFactions: () =>
     paladiumFetch<TrixiumEntry[] | { entries: TrixiumEntry[] }>(
-      `/v1/paladium/trixium/leaderboard/factions`,
+      `/v1/paladium/ranking/trixium/faction`,
     ),
 };
 
