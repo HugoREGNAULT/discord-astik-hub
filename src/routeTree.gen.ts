@@ -22,20 +22,22 @@ import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedRecruitmentRouteImport } from './routes/_authenticated/recruitment'
+import { Route as AuthenticatedProjetsRouteImport } from './routes/_authenticated/projets'
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
-import { Route as AuthenticatedClassementRouteImport } from './routes/_authenticated/classement'
-import { Route as AuthenticatedAffluenceRouteImport } from './routes/_authenticated/affluence'
 import { Route as AuthenticatedClassementPointsRouteImport } from './routes/_authenticated/classement-points'
+import { Route as AuthenticatedClassementRouteImport } from './routes/_authenticated/classement'
 import { Route as AuthenticatedBlacklistRouteImport } from './routes/_authenticated/blacklist'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
+import { Route as AuthenticatedAffluenceRouteImport } from './routes/_authenticated/affluence'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
+import { Route as AuthenticatedProjetsIndexRouteImport } from './routes/_authenticated/projets.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiPublicMarketRouteImport } from './routes/api/public/market'
@@ -58,6 +60,7 @@ import { Route as AuthenticatedToolsClickerRouteImport } from './routes/_authent
 import { Route as AuthenticatedToolsAlertsRouteImport } from './routes/_authenticated/tools.alerts'
 import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authenticated/staff.appeals'
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
+import { Route as AuthenticatedProjetsIdRouteImport } from './routes/_authenticated/projets.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as ApiPublicHooksVerifyAuditChainRouteImport } from './routes/api/public/hooks/verify-audit-chain'
@@ -81,9 +84,6 @@ import { Route as ApiPublicBotMcLinkConfirmRouteImport } from './routes/api/publ
 import { Route as ApiPublicBotImportRouteImport } from './routes/api/public/bot/import'
 import { Route as ApiStaffMembersIdWarningsRouteImport } from './routes/api/staff/members.$id.warnings'
 import { Route as ApiStaffMembersIdNotesRouteImport } from './routes/api/staff/members.$id.notes'
-import { Route as AuthenticatedProjetsRouteImport } from './routes/_authenticated/projets'
-import { Route as AuthenticatedProjetsIdRouteImport } from './routes/_authenticated/projets.$id'
-import { Route as AuthenticatedProjetsIndexRouteImport } from './routes/_authenticated/projets.index'
 import { Route as ApiPublicBotQueryProfilRouteImport } from './routes/api/public/bot/query/profil'
 import { Route as ApiPublicBotQueryPointsRouteImport } from './routes/api/public/bot/query/points'
 import { Route as ApiPublicBotQueryDonValiderRouteImport } from './routes/api/public/bot/query/don-valider'
@@ -156,6 +156,11 @@ const AuthenticatedRecruitmentRoute =
     path: '/recruitment',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedProjetsRoute = AuthenticatedProjetsRouteImport.update({
+  id: '/projets',
+  path: '/projets',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedPointsRoute = AuthenticatedPointsRouteImport.update({
   id: '/points',
   path: '/points',
@@ -181,22 +186,17 @@ const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedClassementRoute = AuthenticatedClassementRouteImport.update({
-  id: '/classement',
-  path: '/classement',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAffluenceRoute = AuthenticatedAffluenceRouteImport.update({
-  id: '/_authenticated/affluence',
-  path: '/affluence',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedClassementPointsRoute =
   AuthenticatedClassementPointsRouteImport.update({
     id: '/classement-points',
     path: '/classement-points',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedClassementRoute = AuthenticatedClassementRouteImport.update({
+  id: '/classement',
+  path: '/classement',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedBlacklistRoute = AuthenticatedBlacklistRouteImport.update({
   id: '/blacklist',
   path: '/blacklist',
@@ -212,6 +212,11 @@ const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
   path: '/assistant',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAffluenceRoute = AuthenticatedAffluenceRouteImport.update({
+  id: '/affluence',
+  path: '/affluence',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -222,26 +227,17 @@ const AuthenticatedAbsencesRoute = AuthenticatedAbsencesRouteImport.update({
   path: '/absences',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedProjetsRoute = AuthenticatedProjetsRouteImport.update({
-  id: '/projets',
-  path: '/projets',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedProjetsIdRoute = AuthenticatedProjetsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedProjetsRoute,
-} as any)
-const AuthenticatedProjetsIndexRoute = AuthenticatedProjetsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedProjetsRoute,
-} as any)
 const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedToolsRoute,
 } as any)
+const AuthenticatedProjetsIndexRoute =
+  AuthenticatedProjetsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedProjetsRoute,
+  } as any)
 const ApiTestSeedPollRoute = ApiTestSeedPollRouteImport.update({
   id: '/api/test/seed-poll',
   path: '/api/test/seed-poll',
@@ -365,6 +361,11 @@ const AuthenticatedStaffAnnounceRoute =
     path: '/announce',
     getParentRoute: () => AuthenticatedStaffRoute,
   } as any)
+const AuthenticatedProjetsIdRoute = AuthenticatedProjetsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedProjetsRoute,
+} as any)
 const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -570,8 +571,8 @@ export interface FileRoutesByFullPath {
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
-  '/tools/': typeof AuthenticatedToolsIndexRoute
   '/projets/': typeof AuthenticatedProjetsIndexRoute
+  '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
   '/api/public/bot/member': typeof ApiPublicBotMemberRoute
@@ -617,7 +618,6 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
-  '/projets': typeof AuthenticatedProjetsIndexRoute
   '/recruitment': typeof AuthenticatedRecruitmentRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRouteWithChildren
@@ -649,6 +649,7 @@ export interface FileRoutesByTo {
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/projets': typeof AuthenticatedProjetsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
@@ -686,10 +687,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/absences': typeof AuthenticatedAbsencesRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/affluence': typeof AuthenticatedAffluenceRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/backlog': typeof AuthenticatedBacklogRoute
   '/_authenticated/blacklist': typeof AuthenticatedBlacklistRoute
   '/_authenticated/classement': typeof AuthenticatedClassementRoute
+  '/_authenticated/classement-points': typeof AuthenticatedClassementPointsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
@@ -706,7 +709,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/projets/$id': typeof AuthenticatedProjetsIdRoute
-  '/_authenticated/projets/': typeof AuthenticatedProjetsIndexRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
   '/_authenticated/staff/appeals': typeof AuthenticatedStaffAppealsRoute
   '/_authenticated/tools/alerts': typeof AuthenticatedToolsAlertsRoute
@@ -729,6 +731,7 @@ export interface FileRoutesById {
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/_authenticated/projets/': typeof AuthenticatedProjetsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
   '/api/public/bot/mc-link-confirm': typeof ApiPublicBotMcLinkConfirmRoute
@@ -810,8 +813,8 @@ export interface FileRouteTypes {
     | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
-    | '/tools/'
     | '/projets/'
+    | '/tools/'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -857,7 +860,6 @@ export interface FileRouteTypes {
     | '/me'
     | '/members'
     | '/points'
-    | '/projets'
     | '/recruitment'
     | '/shop'
     | '/staff'
@@ -889,6 +891,7 @@ export interface FileRouteTypes {
     | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/projets'
     | '/tools'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
@@ -969,8 +972,8 @@ export interface FileRouteTypes {
     | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
-    | '/_authenticated/tools/'
     | '/_authenticated/projets/'
+    | '/_authenticated/tools/'
     | '/api/public/bot/import'
     | '/api/public/bot/mc-link-confirm'
     | '/api/public/bot/member'
@@ -1134,6 +1137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecruitmentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/projets': {
+      id: '/_authenticated/projets'
+      path: '/projets'
+      fullPath: '/projets'
+      preLoaderRoute: typeof AuthenticatedProjetsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/points': {
       id: '/_authenticated/points'
       path: '/points'
@@ -1169,25 +1179,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfigRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/classement': {
-      id: '/_authenticated/classement'
-      path: '/classement'
-      fullPath: '/classement'
-      preLoaderRoute: typeof AuthenticatedClassementRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/affluence': {
-      id: '/_authenticated/affluence'
-      path: '/affluence'
-      fullPath: '/affluence'
-      preLoaderRoute: typeof AuthenticatedAffluenceRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/classement-points': {
       id: '/_authenticated/classement-points'
       path: '/classement-points'
       fullPath: '/classement-points'
       preLoaderRoute: typeof AuthenticatedClassementPointsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/classement': {
+      id: '/_authenticated/classement'
+      path: '/classement'
+      fullPath: '/classement'
+      preLoaderRoute: typeof AuthenticatedClassementRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/blacklist': {
@@ -1211,6 +1214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssistantRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/affluence': {
+      id: '/_authenticated/affluence'
+      path: '/affluence'
+      fullPath: '/affluence'
+      preLoaderRoute: typeof AuthenticatedAffluenceRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -1225,19 +1235,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAbsencesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/projets': {
-      id: '/_authenticated/projets'
-      path: '/projets'
-      fullPath: '/projets'
-      preLoaderRoute: typeof AuthenticatedProjetsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/projets/$id': {
-      id: '/_authenticated/projets/$id'
-      path: '/$id'
-      fullPath: '/projets/$id'
-      preLoaderRoute: typeof AuthenticatedProjetsIdRouteImport
-      parentRoute: typeof AuthenticatedProjetsRoute
+    '/_authenticated/tools/': {
+      id: '/_authenticated/tools/'
+      path: '/'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof AuthenticatedToolsIndexRouteImport
+      parentRoute: typeof AuthenticatedToolsRoute
     }
     '/_authenticated/projets/': {
       id: '/_authenticated/projets/'
@@ -1245,13 +1248,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/projets/'
       preLoaderRoute: typeof AuthenticatedProjetsIndexRouteImport
       parentRoute: typeof AuthenticatedProjetsRoute
-    }
-    '/_authenticated/tools/': {
-      id: '/_authenticated/tools/'
-      path: '/'
-      fullPath: '/tools/'
-      preLoaderRoute: typeof AuthenticatedToolsIndexRouteImport
-      parentRoute: typeof AuthenticatedToolsRoute
     }
     '/api/test/seed-poll': {
       id: '/api/test/seed-poll'
@@ -1406,6 +1402,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/staff/announce'
       preLoaderRoute: typeof AuthenticatedStaffAnnounceRouteImport
       parentRoute: typeof AuthenticatedStaffRoute
+    }
+    '/_authenticated/projets/$id': {
+      id: '/_authenticated/projets/$id'
+      path: '/$id'
+      fullPath: '/projets/$id'
+      preLoaderRoute: typeof AuthenticatedProjetsIdRouteImport
+      parentRoute: typeof AuthenticatedProjetsRoute
     }
     '/_authenticated/members/$id': {
       id: '/_authenticated/members/$id'
@@ -1621,6 +1624,19 @@ const AuthenticatedMembersRouteChildren: AuthenticatedMembersRouteChildren = {
 const AuthenticatedMembersRouteWithChildren =
   AuthenticatedMembersRoute._addFileChildren(AuthenticatedMembersRouteChildren)
 
+interface AuthenticatedProjetsRouteChildren {
+  AuthenticatedProjetsIdRoute: typeof AuthenticatedProjetsIdRoute
+  AuthenticatedProjetsIndexRoute: typeof AuthenticatedProjetsIndexRoute
+}
+
+const AuthenticatedProjetsRouteChildren: AuthenticatedProjetsRouteChildren = {
+  AuthenticatedProjetsIdRoute: AuthenticatedProjetsIdRoute,
+  AuthenticatedProjetsIndexRoute: AuthenticatedProjetsIndexRoute,
+}
+
+const AuthenticatedProjetsRouteWithChildren =
+  AuthenticatedProjetsRoute._addFileChildren(AuthenticatedProjetsRouteChildren)
+
 interface AuthenticatedStaffRouteChildren {
   AuthenticatedStaffAnnounceRoute: typeof AuthenticatedStaffAnnounceRoute
   AuthenticatedStaffAppealsRoute: typeof AuthenticatedStaffAppealsRoute
@@ -1669,26 +1685,13 @@ const AuthenticatedToolsRouteChildren: AuthenticatedToolsRouteChildren = {
 const AuthenticatedToolsRouteWithChildren =
   AuthenticatedToolsRoute._addFileChildren(AuthenticatedToolsRouteChildren)
 
-interface AuthenticatedProjetsRouteChildren {
-  AuthenticatedProjetsIdRoute: typeof AuthenticatedProjetsIdRoute
-  AuthenticatedProjetsIndexRoute: typeof AuthenticatedProjetsIndexRoute
-}
-
-const AuthenticatedProjetsRouteChildren: AuthenticatedProjetsRouteChildren = {
-  AuthenticatedProjetsIdRoute: AuthenticatedProjetsIdRoute,
-  AuthenticatedProjetsIndexRoute: AuthenticatedProjetsIndexRoute,
-}
-
-const AuthenticatedProjetsRouteWithChildren =
-  AuthenticatedProjetsRoute._addFileChildren(AuthenticatedProjetsRouteChildren)
-
 interface AuthenticatedRouteChildren {
   AuthenticatedAbsencesRoute: typeof AuthenticatedAbsencesRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAffluenceRoute: typeof AuthenticatedAffluenceRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
   AuthenticatedBlacklistRoute: typeof AuthenticatedBlacklistRoute
-  AuthenticatedAffluenceRoute: typeof AuthenticatedAffluenceRoute
   AuthenticatedClassementRoute: typeof AuthenticatedClassementRoute
   AuthenticatedClassementPointsRoute: typeof AuthenticatedClassementPointsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
@@ -1708,10 +1711,10 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAbsencesRoute: AuthenticatedAbsencesRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAffluenceRoute: AuthenticatedAffluenceRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
   AuthenticatedBlacklistRoute: AuthenticatedBlacklistRoute,
-  AuthenticatedAffluenceRoute: AuthenticatedAffluenceRoute,
   AuthenticatedClassementRoute: AuthenticatedClassementRoute,
   AuthenticatedClassementPointsRoute: AuthenticatedClassementPointsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
@@ -1782,13 +1785,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
