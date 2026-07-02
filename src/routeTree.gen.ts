@@ -26,7 +26,6 @@ import { Route as AuthenticatedProjetsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPointsRouteImport } from './routes/_authenticated/points'
 import { Route as AuthenticatedMembersRouteImport } from './routes/_authenticated/members'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
-import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedConfigRouteImport } from './routes/_authenticated/config'
 import { Route as AuthenticatedClassementPointsRouteImport } from './routes/_authenticated/classement-points'
 import { Route as AuthenticatedClassementRouteImport } from './routes/_authenticated/classement'
@@ -38,6 +37,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAbsencesRouteImport } from './routes/_authenticated/absences'
 import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedProjetsIndexRouteImport } from './routes/_authenticated/projets.index'
+import { Route as AuthenticatedLogsIndexRouteImport } from './routes/_authenticated/logs.index'
 import { Route as ApiTestSeedPollRouteImport } from './routes/api/test/seed-poll'
 import { Route as ApiTestLoginRouteImport } from './routes/api/test/login'
 import { Route as ApiPublicMarketRouteImport } from './routes/api/public/market'
@@ -177,11 +177,6 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedConfigRoute = AuthenticatedConfigRouteImport.update({
   id: '/config',
   path: '/config',
@@ -239,6 +234,11 @@ const AuthenticatedProjetsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedProjetsRoute,
   } as any)
+const AuthenticatedLogsIndexRoute = AuthenticatedLogsIndexRouteImport.update({
+  id: '/logs/',
+  path: '/logs/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ApiTestSeedPollRoute = ApiTestSeedPollRouteImport.update({
   id: '/api/test/seed-poll',
   path: '/api/test/seed-poll',
@@ -374,9 +374,9 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
 } as any)
 const AuthenticatedLogsApiExplorerRoute =
   AuthenticatedLogsApiExplorerRouteImport.update({
-    id: '/api-explorer',
-    path: '/api-explorer',
-    getParentRoute: () => AuthenticatedLogsRoute,
+    id: '/logs/api-explorer',
+    path: '/logs/api-explorer',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
@@ -541,7 +541,6 @@ export interface FileRoutesByFullPath {
   '/classement': typeof AuthenticatedClassementRoute
   '/classement-points': typeof AuthenticatedClassementPointsRoute
   '/config': typeof AuthenticatedConfigRoute
-  '/logs': typeof AuthenticatedLogsRouteWithChildren
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
@@ -579,6 +578,7 @@ export interface FileRoutesByFullPath {
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/logs/': typeof AuthenticatedLogsIndexRoute
   '/projets/': typeof AuthenticatedProjetsIndexRoute
   '/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -622,7 +622,6 @@ export interface FileRoutesByTo {
   '/classement': typeof AuthenticatedClassementRoute
   '/classement-points': typeof AuthenticatedClassementPointsRoute
   '/config': typeof AuthenticatedConfigRoute
-  '/logs': typeof AuthenticatedLogsRouteWithChildren
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
@@ -658,6 +657,7 @@ export interface FileRoutesByTo {
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/logs': typeof AuthenticatedLogsIndexRoute
   '/projets': typeof AuthenticatedProjetsIndexRoute
   '/tools': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -703,7 +703,6 @@ export interface FileRoutesById {
   '/_authenticated/classement': typeof AuthenticatedClassementRoute
   '/_authenticated/classement-points': typeof AuthenticatedClassementPointsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
-  '/_authenticated/logs': typeof AuthenticatedLogsRouteWithChildren
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/points': typeof AuthenticatedPointsRoute
@@ -741,6 +740,7 @@ export interface FileRoutesById {
   '/api/public/market': typeof ApiPublicMarketRoute
   '/api/test/login': typeof ApiTestLoginRoute
   '/api/test/seed-poll': typeof ApiTestSeedPollRoute
+  '/_authenticated/logs/': typeof AuthenticatedLogsIndexRoute
   '/_authenticated/projets/': typeof AuthenticatedProjetsIndexRoute
   '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/api/public/bot/import': typeof ApiPublicBotImportRoute
@@ -786,7 +786,6 @@ export interface FileRouteTypes {
     | '/classement'
     | '/classement-points'
     | '/config'
-    | '/logs'
     | '/me'
     | '/members'
     | '/points'
@@ -824,6 +823,7 @@ export interface FileRouteTypes {
     | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/logs/'
     | '/projets/'
     | '/tools/'
     | '/api/public/bot/import'
@@ -867,7 +867,6 @@ export interface FileRouteTypes {
     | '/classement'
     | '/classement-points'
     | '/config'
-    | '/logs'
     | '/me'
     | '/members'
     | '/points'
@@ -903,6 +902,7 @@ export interface FileRouteTypes {
     | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/logs'
     | '/projets'
     | '/tools'
     | '/api/public/bot/import'
@@ -947,7 +947,6 @@ export interface FileRouteTypes {
     | '/_authenticated/classement'
     | '/_authenticated/classement-points'
     | '/_authenticated/config'
-    | '/_authenticated/logs'
     | '/_authenticated/me'
     | '/_authenticated/members'
     | '/_authenticated/points'
@@ -985,6 +984,7 @@ export interface FileRouteTypes {
     | '/api/public/market'
     | '/api/test/login'
     | '/api/test/seed-poll'
+    | '/_authenticated/logs/'
     | '/_authenticated/projets/'
     | '/_authenticated/tools/'
     | '/api/public/bot/import'
@@ -1178,13 +1178,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/logs': {
-      id: '/_authenticated/logs'
-      path: '/logs'
-      fullPath: '/logs'
-      preLoaderRoute: typeof AuthenticatedLogsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/config': {
       id: '/_authenticated/config'
       path: '/config'
@@ -1261,6 +1254,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/projets/'
       preLoaderRoute: typeof AuthenticatedProjetsIndexRouteImport
       parentRoute: typeof AuthenticatedProjetsRoute
+    }
+    '/_authenticated/logs/': {
+      id: '/_authenticated/logs/'
+      path: '/logs'
+      fullPath: '/logs/'
+      preLoaderRoute: typeof AuthenticatedLogsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/api/test/seed-poll': {
       id: '/api/test/seed-poll'
@@ -1432,10 +1432,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/logs/api-explorer': {
       id: '/_authenticated/logs/api-explorer'
-      path: '/api-explorer'
+      path: '/logs/api-explorer'
       fullPath: '/logs/api-explorer'
       preLoaderRoute: typeof AuthenticatedLogsApiExplorerRouteImport
-      parentRoute: typeof AuthenticatedLogsRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
@@ -1633,17 +1633,6 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface AuthenticatedLogsRouteChildren {
-  AuthenticatedLogsApiExplorerRoute: typeof AuthenticatedLogsApiExplorerRoute
-}
-
-const AuthenticatedLogsRouteChildren: AuthenticatedLogsRouteChildren = {
-  AuthenticatedLogsApiExplorerRoute: AuthenticatedLogsApiExplorerRoute,
-}
-
-const AuthenticatedLogsRouteWithChildren =
-  AuthenticatedLogsRoute._addFileChildren(AuthenticatedLogsRouteChildren)
-
 interface AuthenticatedMembersRouteChildren {
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
 }
@@ -1726,7 +1715,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClassementRoute: typeof AuthenticatedClassementRoute
   AuthenticatedClassementPointsRoute: typeof AuthenticatedClassementPointsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
-  AuthenticatedLogsRoute: typeof AuthenticatedLogsRouteWithChildren
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
@@ -1737,6 +1725,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRouteWithChildren
   AuthenticatedTrialsRoute: typeof AuthenticatedTrialsRoute
   AuthenticatedWelcomeRoute: typeof AuthenticatedWelcomeRoute
+  AuthenticatedLogsApiExplorerRoute: typeof AuthenticatedLogsApiExplorerRoute
+  AuthenticatedLogsIndexRoute: typeof AuthenticatedLogsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1749,7 +1739,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClassementRoute: AuthenticatedClassementRoute,
   AuthenticatedClassementPointsRoute: AuthenticatedClassementPointsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
-  AuthenticatedLogsRoute: AuthenticatedLogsRouteWithChildren,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,
@@ -1760,6 +1749,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedToolsRoute: AuthenticatedToolsRouteWithChildren,
   AuthenticatedTrialsRoute: AuthenticatedTrialsRoute,
   AuthenticatedWelcomeRoute: AuthenticatedWelcomeRoute,
+  AuthenticatedLogsApiExplorerRoute: AuthenticatedLogsApiExplorerRoute,
+  AuthenticatedLogsIndexRoute: AuthenticatedLogsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -1816,13 +1807,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
