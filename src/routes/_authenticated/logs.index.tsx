@@ -21,7 +21,7 @@ import { Download, FileText, RotateCw } from "lucide-react";
 import { RowListSkeleton } from "@/components/Skeletons";
 import { EmptyState } from "@/components/EmptyState";
 
-export const Route = createFileRoute("/_authenticated/logs")({
+export const Route = createFileRoute("/_authenticated/logs/")({
   head: () => ({ meta: [{ title: "Logs · PunkAstik" }] }),
   component: () => (
     <Guard perm="admin.access">
