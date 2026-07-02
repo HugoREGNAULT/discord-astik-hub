@@ -1855,6 +1855,36 @@ export type Database = {
         }
         Relationships: []
       }
+      paladium_faction_wealth_history: {
+        Row: {
+          captured_at: string
+          faction_money: number
+          faction_name: string
+          id: string
+          listed_value: number
+          members_money: number
+          total_wealth: number
+        }
+        Insert: {
+          captured_at?: string
+          faction_money?: number
+          faction_name: string
+          id?: string
+          listed_value?: number
+          members_money?: number
+          total_wealth?: number
+        }
+        Update: {
+          captured_at?: string
+          faction_money?: number
+          faction_name?: string
+          id?: string
+          listed_value?: number
+          members_money?: number
+          total_wealth?: number
+        }
+        Relationships: []
+      }
       paladium_market_price_history: {
         Row: {
           captured_at: string
@@ -2089,6 +2119,33 @@ export type Database = {
         }
         Relationships: []
       }
+      point_reasons: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          label: string
+          pillar: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label: string
+          pillar: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string
+          pillar?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       points_ledger: {
         Row: {
           action_type: string
@@ -2097,6 +2154,7 @@ export type Database = {
           created_at: string
           id: string
           member_discord_id: string
+          pillar: string | null
           reason: string | null
           staff_discord_id: string
           staff_username: string | null
@@ -2109,6 +2167,7 @@ export type Database = {
           created_at?: string
           id?: string
           member_discord_id: string
+          pillar?: string | null
           reason?: string | null
           staff_discord_id: string
           staff_username?: string | null
@@ -2121,6 +2180,7 @@ export type Database = {
           created_at?: string
           id?: string
           member_discord_id?: string
+          pillar?: string | null
           reason?: string | null
           staff_discord_id?: string
           staff_username?: string | null

@@ -58,10 +58,8 @@ export const getPublicPoints = createServerFn({ method: "GET" }).handler(async (
   // 3. Projets actifs + ressources manquantes
   const { data: projects, error: pErr } = await db
     .from("projects")
-    .select("id, title, status, priority, deadline")
-    .in("status", ["planned", "in_progress"])
-    .order("priority", { ascending: false })
-    .order("deadline", { ascending: true, nullsFirst: false });
+    .select("id, name, status")
+    .in("status", ["actif"]);
   if (pErr) throw new Error(pErr.message);
 
   const projectIds = (projects ?? []).map((p) => p.id);
@@ -80,7 +78,7 @@ export const getPublicPoints = createServerFn({ method: "GET" }).handler(async (
     string,
     { item_name: string; qty_missing: number; unit_points: number; projects: string[] }
   >();
-  const projectTitle = new Map<string, string>((projects ?? []).map((p) => [p.id, p.title]));
+  const projectTitle = new Map<string, string>((projects ?? []).map((p) => [p.id, p.name]));
   for (const r of resources) {
     const missing = Math.max(0, Number(r.qty_needed) - Number(r.qty_collected));
     if (missing <= 0) continue;
