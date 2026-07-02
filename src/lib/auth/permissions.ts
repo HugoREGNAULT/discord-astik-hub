@@ -25,6 +25,7 @@ export type Permission =
   | "objectives.edit"
   | "quests.manage"
   | "shop.manage"
+  | "paladium.debug"
   | "admin.access";
 
 export interface SessionUser {
@@ -87,6 +88,8 @@ export function canAccess(user: SessionUser | null, perm: Permission): boolean {
       return isStaffFaction(user);
     case "shop.manage":
       return isStaffPoints(user);
+    case "paladium.debug":
+      return isStaffFaction(user);
     case "admin.access":
       return isHighStaff(user);
   }
@@ -125,6 +128,7 @@ export function listPermissions(user: SessionUser | null): Permission[] {
     "objectives.edit",
     "quests.manage",
     "shop.manage",
+    "paladium.debug",
     "admin.access",
   ];
   return all.filter((p) => canAccess(user, p));
