@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ROLES } from "@/lib/discord/constants";
-import {
-  canAccess,
-  listPermissions,
-  type Permission,
-  type SessionUser,
-} from "./permissions";
+import { canAccess, listPermissions, type Permission, type SessionUser } from "./permissions";
 
 const ALL_PERMISSIONS: Permission[] = [
   "profile.self",
@@ -20,6 +15,9 @@ const ALL_PERMISSIONS: Permission[] = [
   "config.manage",
   "recruit.access",
   "objectives.edit",
+  "quests.manage",
+  "shop.manage",
+  "paladium.debug",
   "admin.access",
 ];
 
@@ -44,7 +42,7 @@ describe("permissions matrix", () => {
     expect(sorted(listPermissions(u))).toEqual(sorted(HIGH_STAFF_ALL));
   });
 
-  it("STAFF_POINTS → profile.self, members.view, points/donations/config.manage", () => {
+  it("STAFF_POINTS → profile.self, members.view, points/donations/config/shop.manage", () => {
     const u = userWith(ROLES.STAFF_POINTS);
     expect(sorted(listPermissions(u))).toEqual(
       sorted([
@@ -53,15 +51,14 @@ describe("permissions matrix", () => {
         "points.manage",
         "donations.manage",
         "config.manage",
+        "shop.manage",
       ]),
     );
   });
 
   it("RECRUITER_PUBLIC → profile.self + recruit.access", () => {
     const u = userWith(ROLES.RECRUITER_PUBLIC);
-    expect(sorted(listPermissions(u))).toEqual(
-      sorted(["profile.self", "recruit.access"]),
-    );
+    expect(sorted(listPermissions(u))).toEqual(sorted(["profile.self", "recruit.access"]));
   });
 
   it("MEMBER_FACTION → seulement profile.self", () => {
@@ -101,9 +98,7 @@ describe("héritages explicites", () => {
   });
 
   it("isHighStaff (HIGH_STAFF_PUBLIC) → admin.access true", () => {
-    expect(canAccess(userWith(ROLES.HIGH_STAFF_PUBLIC), "admin.access")).toBe(
-      true,
-    );
+    expect(canAccess(userWith(ROLES.HIGH_STAFF_PUBLIC), "admin.access")).toBe(true);
   });
 
   it("STAFF_POINTS → points.manage true, members.edit false", () => {
@@ -141,5 +136,23 @@ describe("exhaustivité", () => {
         expect(typeof result).toBe("boolean");
       }
     }
+  });
+});
+
+describe("paladium.debug", () => {
+  it("STAFF_FACTION → paladium.debug true", () => {
+    expect(canAccess(userWith(ROLES.STAFF_FACTION), "paladium.debug")).toBe(true);
+  });
+
+  it("HIGH_STAFF_PUBLIC → paladium.debug true (via isHighStaff)", () => {
+    expect(canAccess(userWith(ROLES.HIGH_STAFF_PUBLIC), "paladium.debug")).toBe(true);
+  });
+
+  it("STAFF_POINTS seul → paladium.debug false", () => {
+    expect(canAccess(userWith(ROLES.STAFF_POINTS), "paladium.debug")).toBe(false);
+  });
+
+  it("MEMBER_FACTION seul → paladium.debug false", () => {
+    expect(canAccess(userWith(ROLES.MEMBER_FACTION), "paladium.debug")).toBe(false);
   });
 });

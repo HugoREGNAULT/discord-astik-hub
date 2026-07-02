@@ -62,6 +62,7 @@ import { Route as AuthenticatedStaffAppealsRouteImport } from './routes/_authent
 import { Route as AuthenticatedStaffAnnounceRouteImport } from './routes/_authenticated/staff.announce'
 import { Route as AuthenticatedProjetsIdRouteImport } from './routes/_authenticated/projets.$id'
 import { Route as AuthenticatedMembersIdRouteImport } from './routes/_authenticated/members.$id'
+import { Route as AuthenticatedLogsApiExplorerRouteImport } from './routes/_authenticated/logs.api-explorer'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin.audit'
 import { Route as ApiPublicHooksVerifyAuditChainRouteImport } from './routes/api/public/hooks/verify-audit-chain'
 import { Route as ApiPublicHooksSyncDiscordPresenceRouteImport } from './routes/api/public/hooks/sync-discord-presence'
@@ -371,6 +372,12 @@ const AuthenticatedMembersIdRoute = AuthenticatedMembersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedMembersRoute,
 } as any)
+const AuthenticatedLogsApiExplorerRoute =
+  AuthenticatedLogsApiExplorerRouteImport.update({
+    id: '/api-explorer',
+    path: '/api-explorer',
+    getParentRoute: () => AuthenticatedLogsRoute,
+  } as any)
 const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -534,7 +541,7 @@ export interface FileRoutesByFullPath {
   '/classement': typeof AuthenticatedClassementRoute
   '/classement-points': typeof AuthenticatedClassementPointsRoute
   '/config': typeof AuthenticatedConfigRoute
-  '/logs': typeof AuthenticatedLogsRoute
+  '/logs': typeof AuthenticatedLogsRouteWithChildren
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
@@ -547,6 +554,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/logs/api-explorer': typeof AuthenticatedLogsApiExplorerRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/projets/$id': typeof AuthenticatedProjetsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
@@ -614,7 +622,7 @@ export interface FileRoutesByTo {
   '/classement': typeof AuthenticatedClassementRoute
   '/classement-points': typeof AuthenticatedClassementPointsRoute
   '/config': typeof AuthenticatedConfigRoute
-  '/logs': typeof AuthenticatedLogsRoute
+  '/logs': typeof AuthenticatedLogsRouteWithChildren
   '/me': typeof AuthenticatedMeRoute
   '/members': typeof AuthenticatedMembersRouteWithChildren
   '/points': typeof AuthenticatedPointsRoute
@@ -625,6 +633,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/logs/api-explorer': typeof AuthenticatedLogsApiExplorerRoute
   '/members/$id': typeof AuthenticatedMembersIdRoute
   '/projets/$id': typeof AuthenticatedProjetsIdRoute
   '/staff/announce': typeof AuthenticatedStaffAnnounceRoute
@@ -694,7 +703,7 @@ export interface FileRoutesById {
   '/_authenticated/classement': typeof AuthenticatedClassementRoute
   '/_authenticated/classement-points': typeof AuthenticatedClassementPointsRoute
   '/_authenticated/config': typeof AuthenticatedConfigRoute
-  '/_authenticated/logs': typeof AuthenticatedLogsRoute
+  '/_authenticated/logs': typeof AuthenticatedLogsRouteWithChildren
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/_authenticated/members': typeof AuthenticatedMembersRouteWithChildren
   '/_authenticated/points': typeof AuthenticatedPointsRoute
@@ -707,6 +716,7 @@ export interface FileRoutesById {
   '/_authenticated/welcome': typeof AuthenticatedWelcomeRoute
   '/api/health': typeof ApiHealthRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/logs/api-explorer': typeof AuthenticatedLogsApiExplorerRoute
   '/_authenticated/members/$id': typeof AuthenticatedMembersIdRoute
   '/_authenticated/projets/$id': typeof AuthenticatedProjetsIdRoute
   '/_authenticated/staff/announce': typeof AuthenticatedStaffAnnounceRoute
@@ -789,6 +799,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
+    | '/logs/api-explorer'
     | '/members/$id'
     | '/projets/$id'
     | '/staff/announce'
@@ -867,6 +878,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/api/health'
     | '/admin/audit'
+    | '/logs/api-explorer'
     | '/members/$id'
     | '/projets/$id'
     | '/staff/announce'
@@ -948,6 +960,7 @@ export interface FileRouteTypes {
     | '/_authenticated/welcome'
     | '/api/health'
     | '/_authenticated/admin/audit'
+    | '/_authenticated/logs/api-explorer'
     | '/_authenticated/members/$id'
     | '/_authenticated/projets/$id'
     | '/_authenticated/staff/announce'
@@ -1417,6 +1430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMembersIdRouteImport
       parentRoute: typeof AuthenticatedMembersRoute
     }
+    '/_authenticated/logs/api-explorer': {
+      id: '/_authenticated/logs/api-explorer'
+      path: '/api-explorer'
+      fullPath: '/logs/api-explorer'
+      preLoaderRoute: typeof AuthenticatedLogsApiExplorerRouteImport
+      parentRoute: typeof AuthenticatedLogsRoute
+    }
     '/_authenticated/admin/audit': {
       id: '/_authenticated/admin/audit'
       path: '/audit'
@@ -1613,6 +1633,17 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedLogsRouteChildren {
+  AuthenticatedLogsApiExplorerRoute: typeof AuthenticatedLogsApiExplorerRoute
+}
+
+const AuthenticatedLogsRouteChildren: AuthenticatedLogsRouteChildren = {
+  AuthenticatedLogsApiExplorerRoute: AuthenticatedLogsApiExplorerRoute,
+}
+
+const AuthenticatedLogsRouteWithChildren =
+  AuthenticatedLogsRoute._addFileChildren(AuthenticatedLogsRouteChildren)
+
 interface AuthenticatedMembersRouteChildren {
   AuthenticatedMembersIdRoute: typeof AuthenticatedMembersIdRoute
 }
@@ -1695,7 +1726,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClassementRoute: typeof AuthenticatedClassementRoute
   AuthenticatedClassementPointsRoute: typeof AuthenticatedClassementPointsRoute
   AuthenticatedConfigRoute: typeof AuthenticatedConfigRoute
-  AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
+  AuthenticatedLogsRoute: typeof AuthenticatedLogsRouteWithChildren
   AuthenticatedMeRoute: typeof AuthenticatedMeRoute
   AuthenticatedMembersRoute: typeof AuthenticatedMembersRouteWithChildren
   AuthenticatedPointsRoute: typeof AuthenticatedPointsRoute
@@ -1718,7 +1749,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClassementRoute: AuthenticatedClassementRoute,
   AuthenticatedClassementPointsRoute: AuthenticatedClassementPointsRoute,
   AuthenticatedConfigRoute: AuthenticatedConfigRoute,
-  AuthenticatedLogsRoute: AuthenticatedLogsRoute,
+  AuthenticatedLogsRoute: AuthenticatedLogsRouteWithChildren,
   AuthenticatedMeRoute: AuthenticatedMeRoute,
   AuthenticatedMembersRoute: AuthenticatedMembersRouteWithChildren,
   AuthenticatedPointsRoute: AuthenticatedPointsRoute,

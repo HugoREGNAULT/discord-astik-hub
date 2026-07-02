@@ -17,6 +17,7 @@ import {
   Star,
   Activity,
   Hammer,
+  Terminal,
 } from "lucide-react";
 
 import {
@@ -93,6 +94,12 @@ const SECTIONS: Section[] = [
     label: "// administration",
     items: [
       { title: "Logs", url: "/logs", icon: FileText, perm: "admin.access" },
+      {
+        title: "Explorateur API",
+        url: "/logs/api-explorer",
+        icon: Terminal,
+        perm: "paladium.debug",
+      },
       { title: "Admin", url: "/admin", icon: ShieldAlert, perm: "admin.access" },
     ],
   },

@@ -13,7 +13,6 @@ export function dashUuid(uuid: string): string {
   return `${v.slice(0, 8)}-${v.slice(8, 12)}-${v.slice(12, 16)}-${v.slice(16, 20)}-${v.slice(20)}`;
 }
 
-
 export class PaladiumServerError extends Error {
   status: number;
   constructor(message: string, status: number) {
@@ -23,12 +22,30 @@ export class PaladiumServerError extends Error {
   }
 }
 
+export type PaladiumRate = { limit: number | null; remaining: number | null; reset: number | null };
+
 export type PaladiumFetchResult = {
   data: unknown;
-  rate: { limit: number | null; remaining: number | null; reset: number | null };
+  rate: PaladiumRate;
 };
 
-export async function fetchPaladium(path: string): Promise<PaladiumFetchResult> {
+export type PaladiumRawResult = {
+  status: number;
+  ok: boolean;
+  rate: PaladiumRate;
+  bodyText: string;
+};
+
+function parseRate(headers: Headers): PaladiumRate {
+  const num = (v: string | null) => (v == null || v === "" ? null : Number(v));
+  return {
+    limit: num(headers.get("x-ratelimit-limit")),
+    remaining: num(headers.get("x-ratelimit-remaining")),
+    reset: num(headers.get("x-ratelimit-reset")),
+  };
+}
+
+async function requestPaladium(path: string): Promise<PaladiumRawResult> {
   const key = process.env.PALADIUM_API_KEY?.trim();
   const headers: Record<string, string> = { Accept: "application/json" };
   if (key) headers["Authorization"] = `Bearer ${key}`;
@@ -43,24 +60,33 @@ export async function fetchPaladium(path: string): Promise<PaladiumFetchResult> 
     );
   }
 
-  const num = (v: string | null) => (v == null || v === "" ? null : Number(v));
-  const rate = {
-    limit: num(res.headers.get("x-ratelimit-limit")),
-    remaining: num(res.headers.get("x-ratelimit-remaining")),
-    reset: num(res.headers.get("x-ratelimit-reset")),
-  };
+  const rate = parseRate(res.headers);
+  let bodyText = "";
+  try {
+    bodyText = await res.text();
+  } catch {
+    /* ignore */
+  }
+  return { status: res.status, ok: res.ok, rate, bodyText };
+}
 
-  if (!res.ok) {
-    let detail = "";
-    try {
-      detail = await res.text();
-    } catch {
-      /* ignore */
-    }
+export async function fetchPaladium(path: string): Promise<PaladiumFetchResult> {
+  const result = await requestPaladium(path);
+  if (!result.ok) {
     throw new PaladiumServerError(
-      `Paladium API ${res.status}${detail ? `: ${detail.slice(0, 200)}` : ""}`,
-      res.status,
+      `Paladium API ${result.status}${result.bodyText ? `: ${result.bodyText.slice(0, 200)}` : ""}`,
+      result.status,
     );
   }
-  return { data: await res.json(), rate };
+  return { data: JSON.parse(result.bodyText), rate: result.rate };
+}
+
+/**
+ * Variante brute pour l'explorateur API de debug (staff) : ne lève jamais sur
+ * une réponse HTTP, même 4xx/5xx — renvoie toujours status/rate/corps complet
+ * (non tronqué) pour affichage tel quel. Seule une panne réseau reste une
+ * exception (comme fetchPaladium).
+ */
+export async function fetchPaladiumRaw(path: string): Promise<PaladiumRawResult> {
+  return requestPaladium(path);
 }
