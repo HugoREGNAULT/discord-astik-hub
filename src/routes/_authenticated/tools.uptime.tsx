@@ -15,7 +15,7 @@ import {
   EmptyBlock,
 } from "@/components/tools/ToolsUi";
 import { useServerFn } from "@tanstack/react-start";
-import { getStatusHistory } from "@/lib/paladium/history.functions";
+import { getStatusHistory, isExcludedServerKey } from "@/lib/paladium/history.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/uptime")({
   head: () => ({
@@ -53,20 +53,16 @@ function UptimePage() {
     queryKey: ["pala-status-history", days],
     queryFn: () => fetchHistory({ data: { days } }),
     staleTime: 60_000,
-    refetchInterval: 5 * 60_000,
+    refetchInterval: 60_000,
     retry: false,
   });
 
   const rows: Row[] = q.data?.rows ?? [];
 
-  // Serveurs retirés : plus maintenus par l'API
-  const EXCLUDED_KEYS = new Set(["anarchy", "launcher"]);
-  const isExcluded = (key: string) => EXCLUDED_KEYS.has(key) || key.toLowerCase().includes("event");
-
   const grouped = useMemo(() => {
     const map = new Map<string, Row[]>();
     for (const r of rows) {
-      if (isExcluded(r.server_key)) continue;
+      if (isExcludedServerKey(r.server_key)) continue;
       const arr = map.get(r.server_key) ?? [];
       arr.push(r);
       map.set(r.server_key, arr);
@@ -99,7 +95,6 @@ function UptimePage() {
         };
       })
       .sort((a, b) => a.label.localeCompare(b.label));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
   // Aggregate "Total joueurs Paladium" = java.global series
@@ -116,7 +111,7 @@ function UptimePage() {
       <ToolHeader
         code="// tools.uptime"
         title="Uptime serveurs"
-        description="Snapshot toutes les 5 min. Disponibilité (up/down) et joueurs en ligne par serveur."
+        description="Snapshot toutes les minutes. Disponibilité (up/down) et joueurs en ligne par serveur."
       />
 
       <div className="flex gap-2">
@@ -140,7 +135,7 @@ function UptimePage() {
       {q.isLoading && <LoadingBlock />}
       {q.error && <ErrorBlock message={(q.error as Error).message} />}
       {!q.isLoading && grouped.length === 0 && (
-        <EmptyBlock label="Aucun snapshot — attends le prochain passage du cron (5 min)." />
+        <EmptyBlock label="Aucun snapshot — attends le prochain passage du cron (1 min)." />
       )}
 
       {globalSeries.length > 0 && (

@@ -3,9 +3,33 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchPaladium } from "./paladium.server";
 import { requireSession } from "@/lib/auth/require.server";
 
-/* ============= Status snapshot (every 15min) ============= */
+/* ============= Status snapshot (every 1min) ============= */
 
 type AnyObj = Record<string, unknown>;
+
+// Serveurs retirés : plus maintenus par l'API. Filtré à la fois côté requête
+// (getStatusHistory) et côté page (tools.uptime.tsx) — source unique ici.
+export const EXCLUDED_SERVER_KEYS = ["anarchy", "launcher"] as const;
+export function isExcludedServerKey(key: string): boolean {
+  return (
+    (EXCLUDED_SERVER_KEYS as readonly string[]).includes(key) || key.toLowerCase().includes("event")
+  );
+}
+
+// Vocabulaire observé sur /v1/status pour les serveurs faction :
+// running | offline | starting | restart | stopping | whitelist | unknown.
+// Seul "running" (et "online" pour java.global/launcher/anarchy, qui n'utilisent
+// pas le même vocabulaire) compte comme UP — tout le reste, y compris
+// "whitelist", est DOWN pour le graphe de disponibilité.
+function isUp(s: unknown): boolean {
+  if (typeof s !== "string") return false;
+  const v = s.toLowerCase();
+  return v === "online" || v === "running";
+}
+
+function statusText(s: unknown): string | null {
+  return typeof s === "string" && s.length > 0 ? s : null;
+}
 
 function flattenStatus(raw: unknown): Array<{
   server_key: string;
@@ -13,6 +37,7 @@ function flattenStatus(raw: unknown): Array<{
   online_players: number | null;
   max_players: number | null;
   is_online: boolean;
+  status: string | null;
 }> {
   const out: Array<{
     server_key: string;
@@ -20,17 +45,13 @@ function flattenStatus(raw: unknown): Array<{
     online_players: number | null;
     max_players: number | null;
     is_online: boolean;
+    status: string | null;
   }> = [];
   if (!raw || typeof raw !== "object") return out;
   const r = raw as AnyObj;
 
   function num(v: unknown): number | null {
     return typeof v === "number" && Number.isFinite(v) ? v : null;
-  }
-  function isUp(s: unknown): boolean {
-    if (typeof s !== "string") return false;
-    const v = s.toLowerCase();
-    return v === "online" || v === "running" || v === "whitelist";
   }
 
   const java = r.java as AnyObj | undefined;
@@ -42,6 +63,7 @@ function flattenStatus(raw: unknown): Array<{
       online_players: num(global.players ?? global.online ?? global.playersOnline),
       max_players: num(global.max ?? global.maxPlayers),
       is_online: isUp(global.status as string | undefined),
+      status: statusText(global.status),
     });
   }
   const factions = java?.factions as AnyObj | undefined;
@@ -57,6 +79,7 @@ function flattenStatus(raw: unknown): Array<{
         online_players: obj ? num(obj.players ?? obj.online) : null,
         max_players: obj ? num(obj.max ?? obj.maxPlayers) : null,
         is_online: isUp(status),
+        status: statusText(status),
       });
     }
   }
@@ -68,6 +91,7 @@ function flattenStatus(raw: unknown): Array<{
       online_players: null,
       max_players: null,
       is_online: isUp(launcher.status as string | undefined),
+      status: statusText(launcher.status),
     });
   }
   const anarchy = r.anarchy as AnyObj | undefined;
@@ -78,6 +102,7 @@ function flattenStatus(raw: unknown): Array<{
       online_players: num(anarchy.players ?? anarchy.online),
       max_players: num(anarchy.max ?? anarchy.maxPlayers),
       is_online: isUp(anarchy.status as string | undefined),
+      status: statusText(anarchy.status),
     });
   }
   return out;
@@ -88,7 +113,14 @@ export const snapshotServerStatus = createServerFn({ method: "POST" }).handler(a
   const rows = flattenStatus(data);
   if (rows.length === 0) return { inserted: 0 };
 
-  const payload = rows.map((r) => ({ ...r, raw: data as unknown }));
+  // Le payload complet /v1/status n'est gardé que sur la ligne java.global :
+  // le dupliquer sur chaque ligne (une par serveur, à chaque relevé) est un
+  // gaspillage de stockage inutile maintenant que `status` est une colonne
+  // dédiée par serveur.
+  const payload = rows.map((r) => ({
+    ...r,
+    raw: r.server_key === "java.global" ? (data as unknown) : null,
+  }));
 
   const { error } = await supabaseAdmin
     .from("paladium_server_status_history")
@@ -107,17 +139,55 @@ type StatusRow = {
 };
 
 function downsampleStatusRows(rows: StatusRow[], bucketMs: number): StatusRow[] {
-  // Garde 1 row par bucket de temps × server_key (le premier rencontré dans l'ordre chrono)
-  const seen = new Map<string, Set<number>>();
-  const result: StatusRow[] = [];
+  // Agrège chaque bucket de temps × server_key : DOWN si AU MOINS UN relevé du
+  // bucket était DOWN (sinon une coupure plus courte que bucketMs deviendrait
+  // invisible — c'était le bug précédent, qui gardait seulement le premier
+  // relevé rencontré par bucket). online_players = moyenne des relevés du bucket.
+  type Acc = {
+    label: string | null;
+    allOnline: boolean;
+    sumPlayers: number;
+    nPlayers: number;
+    bucketStart: number;
+  };
+  const byKey = new Map<string, Map<number, Acc>>();
   for (const r of rows) {
     const t = new Date(r.captured_at).getTime();
-    const bucket = Math.floor(t / bucketMs);
-    if (!seen.has(r.server_key)) seen.set(r.server_key, new Set());
-    const buckets = seen.get(r.server_key)!;
-    if (!buckets.has(bucket)) {
-      buckets.add(bucket);
-      result.push(r);
+    const bucketStart = Math.floor(t / bucketMs) * bucketMs;
+    let buckets = byKey.get(r.server_key);
+    if (!buckets) {
+      buckets = new Map();
+      byKey.set(r.server_key, buckets);
+    }
+    const acc = buckets.get(bucketStart);
+    if (!acc) {
+      buckets.set(bucketStart, {
+        label: r.server_label,
+        allOnline: r.is_online,
+        sumPlayers: r.online_players ?? 0,
+        nPlayers: r.online_players != null ? 1 : 0,
+        bucketStart,
+      });
+    } else {
+      acc.allOnline = acc.allOnline && r.is_online;
+      if (r.online_players != null) {
+        acc.sumPlayers += r.online_players;
+        acc.nPlayers += 1;
+      }
+    }
+  }
+
+  const result: StatusRow[] = [];
+  for (const [key, buckets] of byKey) {
+    const ordered = [...buckets.values()].sort((a, b) => a.bucketStart - b.bucketStart);
+    for (const acc of ordered) {
+      result.push({
+        server_key: key,
+        server_label: acc.label,
+        online_players: acc.nPlayers > 0 ? Math.round(acc.sumPlayers / acc.nPlayers) : null,
+        is_online: acc.allOnline,
+        captured_at: new Date(acc.bucketStart).toISOString(),
+      });
     }
   }
   return result;
@@ -130,22 +200,32 @@ export const getStatusHistory = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     await requireSession();
     const since = new Date(Date.now() - data.days * 86400000).toISOString();
-    // Limite haute pour récupérer suffisamment de données avant downsampling
+
+    // 1j  → 1 pt / 1min (résolution brute, cadence du cron)
+    // 7j  → 1 pt / 10min
+    // 30j → 1 pt / 1h
+    const bucketMs = data.days <= 1 ? 0 : data.days <= 7 ? 10 * 60_000 : 60 * 60_000;
+
+    // Plafond de lignes brutes avant downsampling. Au relevé/minute, une
+    // fenêtre peut dépasser ce plafond si le nombre de serveurs faction est
+    // très élevé — dans ce cas on garde volontairement les relevés les plus
+    // RÉCENTS (tri desc + limit + reverse) plutôt que les plus anciens : le
+    // bug précédent (tri asc + limit) coupait silencieusement "maintenant" et
+    // gardait de vieilles données, ce qui produisait un graphe plat figé sur
+    // un point ancien.
+    const rawLimit = data.days <= 1 ? 60_000 : data.days <= 7 ? 250_000 : 400_000;
+
     const { data: rows, error } = await supabaseAdmin
       .from("paladium_server_status_history")
       .select("server_key, server_label, online_players, is_online, captured_at")
       .gte("captured_at", since)
-      .order("captured_at", { ascending: true })
-      .limit(50000);
+      .not("server_key", "in", `(${EXCLUDED_SERVER_KEYS.join(",")})`)
+      .not("server_key", "ilike", "%event%")
+      .order("captured_at", { ascending: false })
+      .limit(rawLimit);
     if (error) throw new Error(error.message);
 
-    const allRows = (rows ?? []) as StatusRow[];
-
-    // Downsampling selon le range pour limiter les points envoyés au client
-    // 1j  → 1 pt / 5min  (données brutes, ~288 pts/serveur)
-    // 7j  → 1 pt / 30min (~336 pts/serveur)
-    // 30j → 1 pt / 2h    (~360 pts/serveur)
-    const bucketMs = data.days <= 1 ? 0 : data.days <= 7 ? 30 * 60_000 : 2 * 60 * 60_000;
+    const allRows = ((rows ?? []) as StatusRow[]).slice().reverse();
 
     const sampled = bucketMs > 0 ? downsampleStatusRows(allRows, bucketMs) : allRows;
 
